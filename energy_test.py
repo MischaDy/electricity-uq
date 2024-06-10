@@ -135,8 +135,8 @@ def df_to_input_output(df, with_ts=False):
     output_cols = ['load_next_hour']
     ts_cols = ['ts_next_hour']
     
-    X = np.array(df[input_cols]).reshape(-1, len(input_cols))  # (n_samples, n_features)
-    y = np.array(df[output_cols]).reshape(-1, len(output_cols))  # (n_samples, n_targets)
+    X = np.array(df[input_cols], dtype=float).reshape(-1, len(input_cols))  # (n_samples, n_features)
+    y = np.array(df[output_cols], dtype=float).reshape(-1, len(output_cols))  # (n_samples, n_targets)
     ts = np.array(df[ts_cols]).reshape(-1, len(ts_cols))
     
     return (X, y, ts) if with_ts else (X, y)
