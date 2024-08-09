@@ -4,14 +4,14 @@
 
 # from IPython import get_ipython
 #
-# get_ipython().run_line_magic('matplotlib', 'inline')
+# get_ipython().run_line_magic('matplotlib')  #, 'inline')
 
 
 import warnings
 
 import numpy as np
 import pandas as pd
-from matplotlib import pylab as plt
+from matplotlib import pyplot as plt  # pylab as plt
 from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
@@ -20,6 +20,8 @@ from mapie.metrics import (coverage_width_based, regression_coverage_score,
                            regression_mean_width_score)
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
+
+plt.ion()
 
 warnings.simplefilter("ignore")
 
@@ -179,8 +181,10 @@ def get_model(model, filename, skip_training=True):
     pickle.dump(model, open(filename, 'wb'))
     return model
 
+
 def get_modelpath(filename):
     return os.path.join('models', filename)
+
 
 # For EnbPI
 skip_training_enbpi = True
@@ -190,7 +194,7 @@ mapie_enbpi = get_model(mapie_enbpi, get_modelpath('mapie_enbpi.model'), skip_tr
 print('predicting...')
 y_pred_enbpi_npfit, y_pis_enbpi_npfit = mapie_enbpi.predict(
     X_test, alpha=alpha, ensemble=True, optimize_beta=True,
-    allow_infinite_bounds=False
+    allow_infinite_bounds=True
 )
 
 print('computing scores...')
@@ -225,10 +229,11 @@ y_pis_aci_npfit = np.zeros(y_pis_enbpi_npfit.shape)
 print('predicting...')
 y_pred_aci_npfit[:gap], y_pis_aci_npfit[:gap, :, :] = mapie_aci.predict(
     X_test.iloc[:gap, :], alpha=alpha, ensemble=True, optimize_beta=True,
-    allow_infinite_bounds=False
+    allow_infinite_bounds=True
 )
 
 print('looping...')
+max_clipper = 5e4
 for step in range(gap, len(X_test), gap):
     if step % 10 == 0:
         print("step", step)
@@ -245,9 +250,9 @@ for step in range(gap, len(X_test), gap):
         alpha=alpha,
         ensemble=True,
         optimize_beta=True,
-        allow_infinite_bounds=False
+        allow_infinite_bounds=True
     )
-    # y_pis_aci_npfit[step:step + gap, :, :] = np.clip(y_pis_aci_npfit[step:step + gap, :, :], 1, 1e5)
+    y_pis_aci_npfit[step:step + gap, :, :] = np.clip(y_pis_aci_npfit[step:step + gap, :, :], 1, 1e5)
 
 print('computing scores...')
 coverage_aci_npfit = regression_coverage_score(
@@ -275,93 +280,12 @@ cwc_aci_npfit = coverage_width_based(
 
 
 
-
-#
-# # temp plot copy
-#
-# y_enbpi_preds = [y_pred_enbpi_npfit, y_pred_enbpi_pfit]
-# y_enbpi_pis = [y_pis_enbpi_npfit, y_pis_enbpi_pfit]
-# coverages_enbpi = [coverage_enbpi_npfit, coverage_enbpi_pfit]
-# widths_enbpi = [width_enbpi_npfit, width_enbpi_pfit]
-#
-# y_aci_preds = [y_pred_aci_npfit, y_pred_aci_pfit]
-# y_aci_pis = [y_pis_aci_npfit, y_pis_aci_pfit]
-# coverages_aci = [coverage_aci_npfit, coverage_aci_pfit]
-# widths_aci = [width_aci_npfit, width_aci_pfit]
-#
-# fig, axs = plt.subplots(
-#     nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
-# )
-# for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
-#     ax.set_ylabel("Hourly demand (GW)")
-#     ax.plot(
-#         y_train[int(-len(y_test)/2):],
-#         lw=2,
-#         label="Training data", c="C0"
-#     )
-#     ax.plot(y_test, lw=2, label="Test data", c="C1")
-#
-#     ax.plot(
-#         y_test.index, y_enbpi_preds[i], lw=2, c="C2", label="Predictions"
-#     )
-#     ax.fill_between(
-#         y_test.index,
-#         y_enbpi_pis[i][:, 0, 0],
-#         y_enbpi_pis[i][:, 1, 0],
-#         color="C2",
-#         alpha=0.2,
-#         label="Prediction intervals",
-#     )
-#     title = f"EnbPI, {w} update of residuals. "
-#     title += (f"Coverage:{coverages_enbpi[i]:.3f} and "
-#               f"Width:{widths_enbpi[i]:.3f}")
-#     ax.set_title(title)
-#     ax.legend()
-# fig.tight_layout()
-# plt.show()
-#
-# fig, axs = plt.subplots(
-#     nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
-# )
-# for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
-#     ax.set_ylabel("Hourly demand (GW)")
-#     ax.plot(
-#         y_train[int(-len(y_test)/2):],
-#         lw=2,
-#         label="Training data", c="C0"
-#     )
-#     ax.plot(y_test, lw=2, label="Test data", c="C1")
-#
-#     ax.plot(
-#         y_test.index, y_aci_preds[i], lw=2, c="C2", label="Predictions"
-#     )
-#     ax.fill_between(
-#         y_test.index,
-#         y_aci_pis[i][:, 0, 0],
-#         y_aci_pis[i][:, 1, 0],
-#         color="C2",
-#         alpha=0.2,
-#         label="Prediction intervals",
-#     )
-#     title = f"ACI, {w} update of residuals. "
-#     title += f"Coverage:{coverages_aci[i]:.3f} and Width:{widths_aci[i]:.3f}"
-#     ax.set_title(title)
-#     ax.legend()
-# fig.tight_layout()
-# plt.show()
-
-
-
-
-
 # [(i,x) for (i,x) in enumerate(y_pis_aci_npfit) if ~np.isinf(x).any()]
 
 
 # Let's now estimate prediction intervals with partial fit. As discussed
 # previously, the update of the residuals and the one-step ahead predictions
 # are performed sequentially in a loop.
-
-
 
 
 mapie_enbpi = MapieTimeSeriesRegressor(
@@ -376,7 +300,7 @@ y_pis_enbpi_pfit = np.zeros(y_pis_enbpi_npfit.shape)
 print('predicting')
 y_pred_enbpi_pfit[:gap], y_pis_enbpi_pfit[:gap, :, :] = mapie_enbpi.predict(
     X_test.iloc[:gap, :], alpha=alpha, ensemble=True, optimize_beta=True,
-    allow_infinite_bounds=False
+    allow_infinite_bounds=True
 )
 
 print('start loop')
@@ -395,7 +319,7 @@ for step in range(gap, len(X_test), gap):
         alpha=alpha,
         ensemble=True,
         optimize_beta=True,
-        allow_infinite_bounds=False
+        allow_infinite_bounds=True
     )
     # y_pis_enbpi_pfit[step:step + gap, :, :] = np.clip(y_pis_enbpi_pfit[step:step + gap, :, :], 1, 10)
 
@@ -434,7 +358,7 @@ y_pis_aci_pfit = np.zeros(y_pis_aci_npfit.shape)
 print('predicting')
 y_pred_aci_pfit[:gap], y_pis_aci_pfit[:gap, :, :] = mapie_aci.predict(
     X_test.iloc[:gap, :], alpha=alpha, ensemble=True, optimize_beta=True,
-    allow_infinite_bounds=False
+    allow_infinite_bounds=True
 )
 
 print('start loop')
@@ -458,7 +382,7 @@ for step in range(gap, len(X_test), gap):
         alpha=alpha,
         ensemble=True,
         optimize_beta=True,
-        allow_infinite_bounds=False
+        allow_infinite_bounds=True
     )
     # y_pis_aci_pfit[step:step + gap, :, :] = np.clip(y_pis_aci_pfit[step:step + gap, :, :], 1, 10)
 
