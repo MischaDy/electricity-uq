@@ -233,7 +233,7 @@ y_pred_aci_npfit[:gap], y_pis_aci_npfit[:gap, :, :] = mapie_aci.predict(
 )
 
 print('looping...')
-max_clipper = 5e4
+eps = -1
 for step in range(gap, len(X_test), gap):
     if step % 10 == 0:
         print("step", step)
@@ -252,7 +252,11 @@ for step in range(gap, len(X_test), gap):
         optimize_beta=True,
         allow_infinite_bounds=True
     )
-    y_pis_aci_npfit[step:step + gap, :, :] = np.clip(y_pis_aci_npfit[step:step + gap, :, :], 1, 1e5)
+    arr = y_pis_aci_npfit[step:step + gap, :, :]
+    print('max:', np.max(arr))
+    if np.isinf(arr).any():
+        print(f'inf found at step {step}:', arr)
+    arr[np.isinf(arr)] = eps
 
 print('computing scores...')
 coverage_aci_npfit = regression_coverage_score(
@@ -304,6 +308,7 @@ y_pred_enbpi_pfit[:gap], y_pis_enbpi_pfit[:gap, :, :] = mapie_enbpi.predict(
 )
 
 print('start loop')
+eps = -1
 for step in range(gap, len(X_test), gap):
     if step % 10 == 0:
         print("step", step)
@@ -321,7 +326,11 @@ for step in range(gap, len(X_test), gap):
         optimize_beta=True,
         allow_infinite_bounds=True
     )
-    # y_pis_enbpi_pfit[step:step + gap, :, :] = np.clip(y_pis_enbpi_pfit[step:step + gap, :, :], 1, 10)
+    arr = y_pis_enbpi_pfit[step:step + gap, :, :]
+    print('max:', np.max(arr))
+    if np.isinf(arr).any():
+        print(f'inf found at step {step}:', arr)
+    arr[np.isinf(arr)] = eps
 
 print('computing scores')
 coverage_enbpi_pfit = regression_coverage_score(
@@ -362,6 +371,7 @@ y_pred_aci_pfit[:gap], y_pis_aci_pfit[:gap, :, :] = mapie_aci.predict(
 )
 
 print('start loop')
+eps = -1
 for step in range(gap, len(X_test), gap):
     if step % 10 == 0:
         print("step", step)
@@ -384,7 +394,12 @@ for step in range(gap, len(X_test), gap):
         optimize_beta=True,
         allow_infinite_bounds=True
     )
-    # y_pis_aci_pfit[step:step + gap, :, :] = np.clip(y_pis_aci_pfit[step:step + gap, :, :], 1, 10)
+    arr = y_pis_aci_pfit[step:step + gap, :, :]
+    print('max:', np.max(arr))
+    if np.isinf(arr).any():
+        print(f'inf found at step {step}:', arr)
+    arr[np.isinf(arr)] = eps
+    #np.clip(y_pis_aci_pfit[step:step + gap, :, :], 1, max_clipper)
 
 print('computing scores')
 coverage_aci_pfit = regression_coverage_score(
