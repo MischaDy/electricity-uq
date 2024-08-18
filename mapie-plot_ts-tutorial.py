@@ -2,16 +2,10 @@
 # coding: utf-8
 
 """
-# Tutorial for time series
+source: https://mapie.readthedocs.io/en/latest/examples_regression/4-tutorials/plot_ts-tutorial.html
 
-In this tutorial we describe how to use
-:class:`~mapie.time_series_regression.MapieTimeSeriesRegressor`
-to estimate prediction intervals associated with time series forecast.
 
-Here, we use the Victoria electricity demand dataset used in the book
-"Forecasting: Principles and Practice" by R. J. Hyndman and G. Athanasopoulos.
-The electricity demand features daily and weekly seasonalities and is impacted
-by the temperature, considered here as a exogeneous variable.
+
 
 Before estimating prediction intervals with MAPIE, we optimize the base model,
 here a Random Forest model. The hyper-parameters are
@@ -93,7 +87,7 @@ def get_data(filepath='data.pkl', input_cols=None, output_cols=None):
     df = pd.read_pickle(filepath)
 
     # todo: remove
-    n_points_temp = 200  # per group
+    n_points_temp = 100  # per group
 
     mid = df.shape[0] // 2
     X = df[input_cols].iloc[mid - n_points_temp: mid + n_points_temp]
@@ -104,7 +98,7 @@ def get_data(filepath='data.pkl', input_cols=None, output_cols=None):
     return X_train, X_test, y_train, y_test
 
 
-def plot_data(X_train, X_test, y_train, y_test):
+def plot_data(X_train, X_test, y_train, y_test, filename='data'):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -117,6 +111,7 @@ def plot_data(X_train, X_test, y_train, y_test):
     plt.plot(x_plot_test, y_test)
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
+    plt.savefig(f'{filename}.png')
     plt.show()
 
 
@@ -138,7 +133,7 @@ def get_modelpath(filename):
     return os.path.join('models', filename)
 
 
-def train_base_model(X_train, y_train, model_params_fit_not_done=False):
+def train_base_model(X_train, y_train, load_trained_model=True):
     """Optimize the base estimator
 
     Before estimating the prediction intervals with MAPIE, let's optimize the
@@ -148,7 +143,7 @@ def train_base_model(X_train, y_train, model_params_fit_not_done=False):
     """
     # todo: accept different base models
 
-    if not model_params_fit_not_done:
+    if load_trained_model:
         # Model: Random Forest previously optimized with a cross-validation
         model = RandomForestRegressor(
             max_depth=26, n_estimators=45, random_state=59
@@ -463,13 +458,16 @@ def compute_scores_aci_pfit(y_pis_aci_pfit, y_test):
 def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_npfit, y_pred_enbpi_pfit, y_pis_enbpi_npfit,
                               y_pis_enbpi_pfit, coverage_enbpi_npfit, coverage_enbpi_pfit, width_enbpi_npfit,
                               width_enbpi_pfit, y_pred_aci_npfit, y_pred_aci_pfit, y_pis_aci_npfit, y_pis_aci_pfit,
-                              coverage_aci_npfit, coverage_aci_pfit, width_aci_npfit, width_aci_pfit):
+                              coverage_aci_npfit, coverage_aci_pfit, width_aci_npfit, width_aci_pfit,
+                              filename='prediction_intervals'):
     """
     Plot estimated prediction intervals on one-step ahead forecast
 
-    Let's now compare the prediction intervals estimated by MAPIE with and
+    compare the prediction intervals estimated by MAPIE with and
     without update of the residuals.
     """
+    print('plotting prediction intervals')
+
     y_enbpi_preds = [y_pred_enbpi_npfit, y_pred_enbpi_pfit]
     y_enbpi_pis = [y_pis_enbpi_npfit, y_pis_enbpi_pfit]
     coverages_enbpi = [coverage_enbpi_npfit, coverage_enbpi_pfit]
@@ -510,6 +508,7 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_npfit, y_pred_enbpi_
         ax.legend()
     fig.tight_layout()
     plt.show()
+    plt.savefig(f'{filename}1.png')
 
     fig, axs = plt.subplots(
         nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
@@ -540,10 +539,13 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_npfit, y_pred_enbpi_
         ax.legend()
     fig.tight_layout()
     plt.show()
+    plt.savefig(f'{filename}2.png')
 
 
-def compare_coverages(y_test, y_pis_aci_npfit, y_pis_aci_pfit, y_pis_enbpi_npfit, y_pis_enbpi_pfit):
-    """Let's now compare the coverages obtained by MAPIE with and without update of the residuals on a 24-hour rolling
+def compare_coverages(y_test, y_pis_aci_npfit, y_pis_aci_pfit, y_pis_enbpi_npfit, y_pis_enbpi_pfit,
+                      filename='coverages'):
+    """
+    compare coverages obtained by MAPIE with and without update of the residuals on a 24-hour rolling
     window of prediction intervals.
     """
     rolling_coverage_aci_pfit, rolling_coverage_aci_npfit = [], []
@@ -609,13 +611,22 @@ def compare_coverages(y_test, y_pis_aci_npfit, y_pis_aci_pfit, y_pis_enbpi_npfit
 
     plt.legend()
     plt.show()
+    plt.savefig(f'{filename}.png')
 
 
 def main():
+    print('loading data')
     X_train, X_test, y_train, y_test = get_data()
 
+    print('plotting data')
     plot_data(X_train, X_test, y_train, y_test)
 
-    model = train_base_model(X_train, y_train, model_params_fit_not_done=False)
+    print('training base model')
+    model = train_base_model(X_train, y_train, load_trained_model=True)
 
+    print('estimating prediction intervals')
     estimate_prediction_intervals(model, X_train, y_train, X_test, y_test)
+
+
+if __name__ == '__main__':
+    main()
