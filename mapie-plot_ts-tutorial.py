@@ -8,7 +8,7 @@ source: https://mapie.readthedocs.io/en/latest/examples_regression/4-tutorials/p
 
 
 Before estimating prediction intervals with MAPIE, we optimize the base model,
-here a Random Forest model. The hyper-parameters are
+here a Random Forest model. The hyperparameters are
 optimized with a :class:`~sklearn.model_selection.RandomizedSearchCV` using a
 sequential :class:`~sklearn.model_selection.TimeSeriesSplit` cross validation,
 in which the training set is prior to the validation set.
@@ -34,14 +34,13 @@ the ``partial_fit`` class method called at every step.
 
 
 The ACI strategy allows you to adapt the conformal inference
-(i.e the quantile). If the real values are not in the coverage,
+(i.e. the quantile). If the real values are not in the coverage,
 the size of the intervals will grow.
 Conversely, if the real values are in the coverage,
 the size of the intervals will decrease.
 You can use a gamma coefficient to adjust the strength of the correction.
 
 """
-
 
 import warnings
 
@@ -60,7 +59,6 @@ from mapie.metrics import (coverage_width_based, regression_coverage_score,
 from sklearn.metrics import mean_squared_error, r2_score
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
-
 
 # from energy_test import df_to_input_output
 
@@ -115,7 +113,7 @@ def plot_data(X_train, X_test, y_train, y_test, filename='data'):
     plt.show()
 
 
-def get_model(model, filename, X_train, y_train, skip_training=True):
+def get_model(model, filename, X_train=None, y_train=None, skip_training=True):
     if skip_training:
         try:
             model = pickle.load(open(filename, 'rb'))
@@ -124,6 +122,7 @@ def get_model(model, filename, X_train, y_train, skip_training=True):
         except FileNotFoundError:
             print(f'skipping training not possible')
     print('training...')
+    assert X_train is not None and y_train is not None
     model = model.fit(X_train, y_train)
     pickle.dump(model, open(filename, 'wb'))
     return model
@@ -133,7 +132,7 @@ def get_modelpath(filename):
     return os.path.join('models', filename)
 
 
-def train_base_model(X_train, y_train, load_trained_model=True):
+def train_base_model(X_train=None, y_train=None, load_trained_model=True):
     """Optimize the base estimator
 
     Before estimating the prediction intervals with MAPIE, let's optimize the
@@ -149,6 +148,9 @@ def train_base_model(X_train, y_train, load_trained_model=True):
             max_depth=26, n_estimators=45, random_state=59
         )
         return model
+
+    assert X_train is not None and y_train is not None
+    print('training')
 
     # CV parameter search
     n_iter = 100
@@ -216,16 +218,21 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
         model, method="aci", cv=cv_mapie_ts, agg_function="mean", n_jobs=-1
     )
 
-    y_pred_enbpi_npfit, y_pis_enbpi_npfit = estimate_pred_interals_no_pfit_enbpi(mapie_enbpi, alpha, X_test)
+    y_pred_enbpi_npfit, y_pis_enbpi_npfit = estimate_pred_interals_no_pfit_enbpi(mapie_enbpi, alpha, X_test, X_train, y_train)
     coverage_enbpi_npfit, width_enbpi_npfit, cwc_enbpi_npfit = compute_scores_enbpi_npfit(y_pis_enbpi_npfit, y_test)
 
-    y_pred_aci_npfit, y_pis_aci_npfit = estimate_pred_interals_no_pfit_aci(mapie_aci, y_pred_enbpi_npfit, y_pis_enbpi_npfit, alpha, gap, X_test, y_test)
+    y_pred_aci_npfit, y_pis_aci_npfit = estimate_pred_interals_no_pfit_aci(mapie_aci, y_pred_enbpi_npfit,
+                                                                           y_pis_enbpi_npfit, alpha, gap, X_test,
+                                                                           y_test, X_train, y_train)
     coverage_aci_npfit, width_aci_npfit, cwc_aci_npfit = compute_scores_aci_npfit(y_pis_aci_npfit, y_test)
 
-    y_pred_enbpi_pfit, y_pis_enbpi_pfit = estimate_pred_interals_pfit(model, cv_mapie_ts, y_pred_enbpi_npfit, y_pis_enbpi_npfit, alpha, gap, X_train, y_train, X_test, y_test)
+    y_pred_enbpi_pfit, y_pis_enbpi_pfit = estimate_pred_interals_pfit(model, cv_mapie_ts, y_pred_enbpi_npfit,
+                                                                      y_pis_enbpi_npfit, alpha, gap, X_train, y_train,
+                                                                      X_test, y_test)
     coverage_enbpi_pfit, width_enbpi_pfit, cwc_enbpi_pfit = compute_scores_enbpi_pfit(y_pis_enbpi_pfit, y_test)
 
-    y_pred_aci_pfit, y_pis_aci_pfit = estimate_pred_interals_aci(model, cv_mapie_ts, y_pred_aci_npfit, y_pis_aci_npfit, alpha, gap, X_train, y_train, X_test, y_test)
+    y_pred_aci_pfit, y_pis_aci_pfit = estimate_pred_interals_aci(model, cv_mapie_ts, y_pred_aci_npfit, y_pis_aci_npfit,
+                                                                 alpha, gap, X_train, y_train, X_test, y_test)
     coverage_aci_pfit, width_aci_pfit, cwc_aci_pfit = compute_scores_aci_pfit(y_pis_aci_pfit, y_test)
 
     compare_coverages(y_test, y_pis_aci_npfit, y_pis_aci_pfit, y_pis_enbpi_npfit, y_pis_enbpi_pfit)
@@ -236,9 +243,10 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
                               coverage_aci_npfit, coverage_aci_pfit, width_aci_npfit, width_aci_pfit)
 
 
-def estimate_pred_interals_no_pfit_enbpi(mapie_enbpi, alpha, X_test, skip_training_enbpi=True):
+def estimate_pred_interals_no_pfit_enbpi(mapie_enbpi, alpha, X_test, X_train=None, y_train=None,
+                                         skip_training_enbpi=True):
     """Let's start by estimating prediction intervals without partial fit, EnbPI."""
-    mapie_enbpi = get_model(mapie_enbpi, get_modelpath('mapie_enbpi.model'), skip_training_enbpi)
+    mapie_enbpi = get_model(mapie_enbpi, get_modelpath('mapie_enbpi.model'), X_train, y_train, skip_training_enbpi)
 
     print('predicting...')
     y_pred_enbpi_npfit, y_pis_enbpi_npfit = mapie_enbpi.predict(
@@ -283,9 +291,10 @@ def compute_scores_aci_npfit(y_pis_aci_npfit, y_test):
     return coverage_aci_npfit, width_aci_npfit, cwc_aci_npfit
 
 
-def estimate_pred_interals_no_pfit_aci(mapie_aci, y_pred_enbpi_npfit, y_pis_enbpi_npfit, alpha, gap, X_test, y_test, skip_training_aci=True):
-    """Let's start by estimating prediction intervals without partial fit, ACI."""
-    mapie_aci = get_model(mapie_aci, get_modelpath('mapie_aci.model'), skip_training_aci)
+def estimate_pred_interals_no_pfit_aci(mapie_aci, y_pred_enbpi_npfit, y_pis_enbpi_npfit, alpha, gap, X_test, y_test,
+                                       X_train=None, y_train=None, skip_training_aci=True):
+    """estimate prediction intervals without partial fit, ACI."""
+    mapie_aci = get_model(mapie_aci, get_modelpath('mapie_aci.model'), X_train, y_train, skip_training_aci)
 
     y_pred_aci_npfit = np.zeros(y_pred_enbpi_npfit.shape)
     y_pis_aci_npfit = np.zeros(y_pis_enbpi_npfit.shape)
@@ -325,7 +334,8 @@ def estimate_pred_interals_no_pfit_aci(mapie_aci, y_pred_enbpi_npfit, y_pis_enbp
     return y_pred_aci_npfit, y_pis_aci_npfit
 
 
-def estimate_pred_interals_pfit(model, cv_mapie_ts, y_pred_enbpi_npfit, y_pis_enbpi_npfit, alpha, gap, X_train, y_train, X_test, y_test):
+def estimate_pred_interals_pfit(model, cv_mapie_ts, y_pred_enbpi_npfit, y_pis_enbpi_npfit, alpha, gap, X_train, y_train,
+                                X_test, y_test):
     """Let's now estimate prediction intervals with partial fit. As discussed
     previously, the update of the residuals and the one-step ahead predictions
     are performed sequentially in a loop."""
@@ -387,7 +397,8 @@ def compute_scores_enbpi_pfit(y_pis_enbpi_pfit, y_test):
     return coverage_enbpi_pfit, width_enbpi_pfit, cwc_enbpi_pfit
 
 
-def estimate_pred_interals_aci(model, cv_mapie_ts, y_pred_aci_npfit, y_pis_aci_npfit, alpha, gap, X_train, y_train, X_test, y_test):
+def estimate_pred_interals_aci(model, cv_mapie_ts, y_pred_aci_npfit, y_pis_aci_npfit, alpha, gap, X_train, y_train,
+                               X_test, y_test):
     """Let's now estimate prediction intervals with adapt_conformal_inference.
     As discussed previously, the update of the current alpha and the one-step
     ahead predictions are performed sequentially in a loop."""
@@ -435,7 +446,7 @@ def estimate_pred_interals_aci(model, cv_mapie_ts, y_pred_aci_npfit, y_pis_aci_n
         if np.isinf(arr).any():
             print(f'inf found at step {step}:', arr)
         arr[np.isinf(arr)] = eps
-        #np.clip(y_pis_aci_pfit[step:step + gap, :, :], 1, max_clipper)
+        # np.clip(y_pis_aci_pfit[step:step + gap, :, :], 1, max_clipper)
     return y_pred_aci_pfit, y_pis_aci_pfit
 
 
@@ -484,7 +495,7 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_npfit, y_pred_enbpi_
     for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
         ax.set_ylabel("Hourly demand (GW)")
         ax.plot(
-            y_train[int(-len(y_test)/2):],
+            y_train[int(-len(y_test) / 2):],
             lw=2,
             label="Training data", c="C0"
         )
@@ -516,7 +527,7 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_npfit, y_pred_enbpi_
     for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
         ax.set_ylabel("Hourly demand (GW)")
         ax.plot(
-            y_train[int(-len(y_test)/2):],
+            y_train[int(-len(y_test) / 2):],
             lw=2,
             label="Training data", c="C0"
         )
@@ -556,27 +567,27 @@ def compare_coverages(y_test, y_pis_aci_npfit, y_pis_aci_pfit, y_pis_enbpi_npfit
     for i in range(window, len(y_test), 1):
         rolling_coverage_aci_npfit.append(
             regression_coverage_score(
-                y_test[i-window:i], y_pis_aci_npfit[i-window:i, 0, 0],
-                y_pis_aci_npfit[i-window:i, 1, 0]
+                y_test[i - window:i], y_pis_aci_npfit[i - window:i, 0, 0],
+                y_pis_aci_npfit[i - window:i, 1, 0]
             )
         )
         rolling_coverage_aci_pfit.append(
             regression_coverage_score(
-                y_test[i-window:i], y_pis_aci_pfit[i-window:i, 0, 0],
-                y_pis_aci_pfit[i-window:i, 1, 0]
+                y_test[i - window:i], y_pis_aci_pfit[i - window:i, 0, 0],
+                y_pis_aci_pfit[i - window:i, 1, 0]
             )
         )
 
         rolling_coverage_enbpi_npfit.append(
             regression_coverage_score(
-                y_test[i-window:i], y_pis_enbpi_npfit[i-window:i, 0, 0],
-                y_pis_enbpi_npfit[i-window:i, 1, 0]
+                y_test[i - window:i], y_pis_enbpi_npfit[i - window:i, 0, 0],
+                y_pis_enbpi_npfit[i - window:i, 1, 0]
             )
         )
         rolling_coverage_enbpi_pfit.append(
             regression_coverage_score(
-                y_test[i-window:i], y_pis_enbpi_pfit[i-window:i, 0, 0],
-                y_pis_enbpi_pfit[i-window:i, 1, 0]
+                y_test[i - window:i], y_pis_enbpi_pfit[i - window:i, 0, 0],
+                y_pis_enbpi_pfit[i - window:i, 1, 0]
             )
         )
 
