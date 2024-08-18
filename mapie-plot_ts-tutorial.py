@@ -211,28 +211,34 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
         n_resamplings=10, n_blocks=10, overlapping=False, random_state=59
     )
 
+    print('\n===== estimating PIs no_pfit_enbpi')
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = estimate_pred_interals_no_pfit_enbpi(
         model, cv_mapie_ts, alpha, X_test, X_train, y_train
     )
-    coverage_enbpi_no_pfit, width_enbpi_no_pfit, cwc_enbpi_no_pfit = compute_scores_enbpi_no_pfit(y_pis_enbpi_no_pfit, y_test)
-
+    coverage_enbpi_no_pfit, width_enbpi_no_pfit, cwc_enbpi_no_pfit = compute_scores_enbpi_no_pfit(y_pis_enbpi_no_pfit,
+                                                                                                  y_test)
+    print('\n===== estimating PIs no_pfit_aci')
     y_pred_aci_no_pfit, y_pis_aci_no_pfit = estimate_pred_interals_no_pfit_aci(
         model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_test, y_test, X_train, y_train
     )
     coverage_aci_no_pfit, width_aci_no_pfit, cwc_aci_no_pfit = compute_scores_aci_no_pfit(y_pis_aci_no_pfit, y_test)
 
+    print('\n===== estimating PIs pfit_enbpi')
     y_pred_enbpi_pfit, y_pis_enbpi_pfit = estimate_pred_interals_pfit_enbpi(
         model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_train, y_train, X_test, y_test
     )
     coverage_enbpi_pfit, width_enbpi_pfit, cwc_enbpi_pfit = compute_scores_enbpi_pfit(y_pis_enbpi_pfit, y_test)
 
+    print('\n===== estimating PIs pfit_aci')
     y_pred_aci_pfit, y_pis_aci_pfit = estimate_pred_interals_pfit_aci(
         model, cv_mapie_ts, y_pred_aci_no_pfit, y_pis_aci_no_pfit, alpha, gap, X_train, y_train, X_test, y_test
     )
     coverage_aci_pfit, width_aci_pfit, cwc_aci_pfit = compute_scores_aci_pfit(y_pis_aci_pfit, y_test)
 
+    print('\n===== comparing coverages')
     compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit)
 
+    print('\n===== plotting prediction intervals')
     plot_prediction_intervals(
         y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbpi_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit,
         coverage_enbpi_no_pfit, coverage_enbpi_pfit, width_enbpi_no_pfit, width_enbpi_pfit, y_pred_aci_no_pfit,
@@ -246,7 +252,6 @@ def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_tr
     """
     estimate prediction intervals without partial fit using EnbPI.
     """
-
     mapie_enbpi = MapieTimeSeriesRegressor(
         model, method="enbpi", cv=cv_mapie_ts, agg_function="mean", n_jobs=-1
     )
@@ -466,8 +471,6 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
     compare the prediction intervals estimated by MAPIE with and
     without update of the residuals.
     """
-    print('plotting prediction intervals')
-
     y_enbpi_preds = [y_pred_enbpi_no_pfit, y_pred_enbpi_pfit]
     y_enbpi_pis = [y_pis_enbpi_no_pfit, y_pis_enbpi_pfit]
     coverages_enbpi = [coverage_enbpi_no_pfit, coverage_enbpi_pfit]
