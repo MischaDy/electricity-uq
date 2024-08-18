@@ -67,6 +67,9 @@ from mapie.subsample import BlockBootstrap
 
 warnings.simplefilter("ignore")
 
+# todo: remove
+N_POINTS_TEMP = 100  # per group
+
 
 def get_data(filepath='data.pkl', input_cols=None, output_cols=None):
     """load and prepare data"""
@@ -84,12 +87,9 @@ def get_data(filepath='data.pkl', input_cols=None, output_cols=None):
         output_cols = ['load_next_hour']
     df = pd.read_pickle(filepath)
 
-    # todo: remove
-    n_points_temp = 100  # per group
-
     mid = df.shape[0] // 2
-    X = df[input_cols].iloc[mid - n_points_temp: mid + n_points_temp]
-    y = df[output_cols].iloc[mid - n_points_temp: mid + n_points_temp]
+    X = df[input_cols].iloc[mid - N_POINTS_TEMP: mid + N_POINTS_TEMP]
+    y = df[output_cols].iloc[mid - N_POINTS_TEMP: mid + N_POINTS_TEMP]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
     print('data shapes:', X_train.shape, X_test.shape, y_train.shape, y_test.shape)
@@ -109,7 +109,7 @@ def plot_data(X_train, X_test, y_train, y_test, filename='data'):
     plt.plot(x_plot_test, y_test)
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
-    plt.savefig(f'{filename}.png')
+    plt.savefig(f'{filename}_{N_POINTS_TEMP}.png')
     plt.show()
 
 
@@ -206,6 +206,8 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
 
     alpha = 0.05
     gap = 1
+    skip_base_training = False
+    skip_adaptation = False
 
     cv_mapie_ts = BlockBootstrap(
         n_resamplings=10, n_blocks=10, overlapping=False, random_state=59
@@ -213,25 +215,28 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
 
     print('\n===== estimating PIs no_pfit_enbpi')
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = estimate_pred_interals_no_pfit_enbpi(
-        model, cv_mapie_ts, alpha, X_test, X_train, y_train
+        model, cv_mapie_ts, alpha, X_test, X_train, y_train, skip_base_training=skip_base_training
     )
     coverage_enbpi_no_pfit, width_enbpi_no_pfit, cwc_enbpi_no_pfit = compute_scores_enbpi_no_pfit(y_pis_enbpi_no_pfit,
                                                                                                   y_test)
     print('\n===== estimating PIs no_pfit_aci')
     y_pred_aci_no_pfit, y_pis_aci_no_pfit = estimate_pred_interals_no_pfit_aci(
-        model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_test, y_test, X_train, y_train
+        model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_test, y_test, X_train, y_train,
+        skip_base_training=skip_base_training, skip_adaptation=skip_adaptation
     )
     coverage_aci_no_pfit, width_aci_no_pfit, cwc_aci_no_pfit = compute_scores_aci_no_pfit(y_pis_aci_no_pfit, y_test)
 
     print('\n===== estimating PIs pfit_enbpi')
     y_pred_enbpi_pfit, y_pis_enbpi_pfit = estimate_pred_interals_pfit_enbpi(
-        model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_train, y_train, X_test, y_test
+        model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_train, y_train, X_test, y_test,
+        skip_base_training=skip_base_training, skip_adaptation=skip_adaptation
     )
     coverage_enbpi_pfit, width_enbpi_pfit, cwc_enbpi_pfit = compute_scores_enbpi_pfit(y_pis_enbpi_pfit, y_test)
 
     print('\n===== estimating PIs pfit_aci')
     y_pred_aci_pfit, y_pis_aci_pfit = estimate_pred_interals_pfit_aci(
-        model, cv_mapie_ts, y_pred_aci_no_pfit, y_pis_aci_no_pfit, alpha, gap, X_train, y_train, X_test, y_test
+        model, cv_mapie_ts, y_pred_aci_no_pfit, y_pis_aci_no_pfit, alpha, gap, X_train, y_train, X_test, y_test,
+        skip_base_training=skip_base_training, skip_adaptation=skip_adaptation
     )
     coverage_aci_pfit, width_aci_pfit, cwc_aci_pfit = compute_scores_aci_pfit(y_pis_aci_pfit, y_test)
 
@@ -248,7 +253,7 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
 
 
 def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_train=None, y_train=None,
-                                         skip_training_enbpi=True):
+                                         skip_base_training=True):
     """
     estimate prediction intervals without partial fit using EnbPI.
     """
@@ -256,16 +261,16 @@ def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_tr
         model, method="enbpi", cv=cv_mapie_ts, agg_function="mean", n_jobs=-1
     )
 
-    filename_enbpi_no_pfit = 'mapie_enbpi_no_pfit.model'
-    if skip_training_enbpi:
+    filename_enbpi_no_pfit = f'mapie_enbpi_no_pfit_{N_POINTS_TEMP}.model'
+    if skip_base_training:
         try:
             mapie_enbpi = get_model(filename_enbpi_no_pfit)
             print('loaded model successfully')
         except FileNotFoundError:
             print(f'skipping training not possible')
-            skip_training_enbpi = False
+            skip_base_training = False
 
-    if not skip_training_enbpi:
+    if not skip_base_training:
         print('training...')
         mapie_enbpi = mapie_enbpi.fit(X_train, y_train)
         save_model(mapie_enbpi, filename_enbpi_no_pfit)
@@ -328,10 +333,10 @@ def estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pis
                                          skip_adaptation=True):
     """overarching function for estimating prediction intervals"""
     pfit_str = 'pfit' if with_partial_fit else 'no_pfit'
-    filename_model_base = f'mapie_{method}.model'
-    filename_model_adapted = f'model_{method}_{pfit_str}.model'
-    filename_arr_y_pred = f'y_pred_{method}_{pfit_str}.npy'
-    filename_arr_y_pis = f'y_pis_{method}_{pfit_str}.npy'
+    filename_model_base = f'mapie_{method}_{N_POINTS_TEMP}.model'
+    filename_model_adapted = f'model_{method}_{pfit_str}_{N_POINTS_TEMP}.model'
+    filename_arr_y_pred = f'y_pred_{method}_{pfit_str}_{N_POINTS_TEMP}.npy'
+    filename_arr_y_pis = f'y_pis_{method}_{pfit_str}_{N_POINTS_TEMP}.npy'
 
     if skip_adaptation:
         try:
@@ -376,7 +381,7 @@ def estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pis
                 X_test.iloc[(step - gap):step, :],
                 y_test.iloc[(step - gap):step],
             )
-        if method == 'enbpi':
+        if method == 'aci':
             mapie_ts_regressor.adapt_conformal_inference(
                 X_test.iloc[(step - gap):step, :].to_numpy(),
                 y_test.iloc[(step - gap):step].to_numpy(),
@@ -511,7 +516,7 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
         ax.legend()
     fig.tight_layout()
     plt.show()
-    plt.savefig(f'{filename}1.png')
+    plt.savefig(f'{filename}1_{N_POINTS_TEMP}.png')
 
     fig, axs = plt.subplots(
         nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
@@ -542,7 +547,7 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
         ax.legend()
     fig.tight_layout()
     plt.show()
-    plt.savefig(f'{filename}2.png')
+    plt.savefig(f'{filename}2_{N_POINTS_TEMP}.png')
 
 
 def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit,
@@ -614,7 +619,7 @@ def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_
 
     plt.legend()
     plt.show()
-    plt.savefig(f'{filename}.png')
+    plt.savefig(f'{filename}_{N_POINTS_TEMP}.png')
 
 
 def main():
