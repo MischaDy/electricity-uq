@@ -70,6 +70,11 @@ warnings.simplefilter("ignore")
 # todo: remove
 N_POINTS_TEMP = 100  # per group
 
+BASE_FOLDER = 'mapie_storage'
+PLOTS_FOLDER = os.path.join(BASE_FOLDER, 'plots')
+ARRAYS_FOLDER = os.path.join(BASE_FOLDER, 'arrays')
+MODELS_FOLDER = os.path.join(BASE_FOLDER, 'models')
+
 
 def get_data(filepath='data.pkl', input_cols=None, output_cols=None):
     """load and prepare data"""
@@ -109,28 +114,32 @@ def plot_data(X_train, X_test, y_train, y_test, filename='data'):
     plt.plot(x_plot_test, y_test)
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
-    plt.savefig(f'{filename}_{N_POINTS_TEMP}.png')
+    save_figure(f'{filename}_{N_POINTS_TEMP}.png')
     plt.show()
 
 
+def get_plot_savepath(filename):
+    return os.path.join(PLOTS_FOLDER, filename)
+
+
+def get_array_savepath(filename):
+    return os.path.join(ARRAYS_FOLDER, filename)
+
+
 def get_model(filename):
-    try:
-        model = pickle.load(open(filename, 'rb'))
-    except FileNotFoundError:
-        print('file not found, retrying with path')
-        model = pickle.load(open(get_modelpath(filename), 'rb'))
-    return model
+    return pickle.load(open(get_model_savepath(filename), 'rb'))
 
 
 def save_model(model, filename):
-    pickle.dump(model, open(filename, 'wb'))
+    pickle.dump(model, open(get_array_savepath(filename), 'wb'))
 
 
-def get_modelpath(filename):
-    return os.path.join('models', filename)
+def get_model_savepath(filename):
+    return os.path.join(MODELS_FOLDER, filename)
 
 
-def train_base_model(X_train=None, y_train=None, load_trained_model=True):
+def train_base_model(model_class, model_params_choices=None, model_init_params=None, X_train=None, y_train=None,
+                     load_trained_model=True):
     """Optimize the base estimator
 
     Before estimating the prediction intervals with MAPIE, let's optimize the
@@ -138,39 +147,48 @@ def train_base_model(X_train=None, y_train=None, load_trained_model=True):
     :class:`~RandomizedSearchCV` with a temporal cross-validation strategy.
     For the sake of computational time, the best parameters are already tuned.
     """
-    # todo: accept different base models
+    random_state = 59
+    if model_init_params is None:
+        model_init_params = {}
+    elif 'random_state' not in model_init_params:
+        model_init_params['random_state'] = random_state
+
+    filename_base_model = f'base_{model_class.__name__}_{N_POINTS_TEMP}.model'
 
     if load_trained_model:
-        # Model: Random Forest previously optimized with a cross-validation
-        model = RandomForestRegressor(
-            max_depth=26, n_estimators=45, random_state=59
-        )
-        return model
+        # Model previously optimized with a cross-validation
+        # model = RandomForestRegressor(
+        #     max_depth=26, n_estimators=45, random_state=59
+        # )
+        try:
+            model = get_model(filename_base_model)
+            return model
+        except FileNotFoundError:
+            print(f"trained base model '{filename_base_model}' not found")
 
-    assert X_train is not None and y_train is not None
+    assert all(item is not None for item in [X_train, y_train, model_params_choices])
     print('training')
 
     # CV parameter search
     n_iter = 100
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
-    random_state = 59
-    rf_model = RandomForestRegressor(random_state=random_state)
-    rf_params = {"max_depth": randint(2, 30), "n_estimators": randint(10, 100)}
+    model = model_class(random_state=random_state, **model_init_params)
     cv_obj = RandomizedSearchCV(
-        rf_model,
-        param_distributions=rf_params,
+        model,
+        param_distributions=model_params_choices,
         n_iter=n_iter,
         cv=tscv,
         scoring="neg_root_mean_squared_error",
         random_state=random_state,
-        verbose=3,
+        verbose=1,
         n_jobs=-1,
     )
-    cv_obj.fit(X_train, y_train)
-    model = cv_obj.best_estimator_
+    cv_obj.fit(X_train, y_train.values.ravel())
+    model_class = cv_obj.best_estimator_
     print('done')
-    return model
+    save_model(model_class, filename_base_model)
+    return model_class
 
 
 def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
@@ -206,8 +224,8 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
 
     alpha = 0.05
     gap = 1
-    skip_base_training = False
-    skip_adaptation = False
+    skip_base_training = True
+    skip_adaptation = True
 
     cv_mapie_ts = BlockBootstrap(
         n_resamplings=10, n_blocks=10, overlapping=False, random_state=59
@@ -240,8 +258,8 @@ def estimate_prediction_intervals(model, X_train, y_train, X_test, y_test):
     )
     coverage_aci_pfit, width_aci_pfit, cwc_aci_pfit = compute_scores_aci_pfit(y_pis_aci_pfit, y_test)
 
-    print('\n===== comparing coverages')
-    compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit)
+    # print('\n===== comparing coverages')
+    # compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit)
 
     print('\n===== plotting prediction intervals')
     plot_prediction_intervals(
@@ -318,7 +336,8 @@ def compute_scores_aci_no_pfit(y_pis_aci_no_pfit, y_test):
     return coverage_aci_no_pfit, width_aci_no_pfit, cwc_aci_no_pfit
 
 
-def estimate_pred_interals_no_pfit_aci(model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_test, y_test,
+def estimate_pred_interals_no_pfit_aci(model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap,
+                                       X_test, y_test,
                                        X_train=None, y_train=None, skip_base_training=True, skip_adaptation=True):
     """estimate prediction intervals without partial fit, ACI."""
     return estimate_prediction_intervals_worker(
@@ -326,6 +345,10 @@ def estimate_pred_interals_no_pfit_aci(model, cv_mapie_ts, y_pred_enbpi_no_pfit,
         method='aci', with_partial_fit=False, X_train=X_train, y_train=y_train, skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation
     )
+
+
+def load_array(filename):
+    return np.load(get_array_savepath(filename))
 
 
 def estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pis_shape, alpha, gap, X_test, y_test,
@@ -340,8 +363,8 @@ def estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pis
 
     if skip_adaptation:
         try:
-            y_pred = np.load(filename_arr_y_pred)
-            y_pis = np.load(filename_arr_y_pis)
+            y_pred = load_array(filename_arr_y_pred)
+            y_pis = load_array(filename_arr_y_pis)
             return y_pred, y_pis
         except FileNotFoundError:
             print('skipping adaptation not possible')
@@ -400,14 +423,19 @@ def estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pis
         arr = y_pis[step:step + gap, :, :]
         arr[np.isinf(arr)] = eps
 
-    np.save(filename_arr_y_pred, y_pred)
-    np.save(filename_arr_y_pis, y_pis)
+    save_array(filename_arr_y_pred, y_pred)
+    save_array(filename_arr_y_pis, y_pis)
     save_model(mapie_ts_regressor, filename_model_adapted)
 
     return y_pred, y_pis
 
 
-def estimate_pred_interals_pfit_enbpi(model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_train, y_train,
+def save_array(array, filename):
+    np.save(get_array_savepath(filename), array)
+
+
+def estimate_pred_interals_pfit_enbpi(model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap,
+                                      X_train, y_train,
                                       X_test, y_test, skip_base_training=True, skip_adaptation=True):
     """
     estimate prediction intervals with partial fit.
@@ -444,7 +472,7 @@ def estimate_pred_interals_pfit_aci(model, cv_mapie_ts, y_pred_aci_no_pfit, y_pi
     """
     return estimate_prediction_intervals_worker(
         model, cv_mapie_ts, y_pred_aci_no_pfit.shape, y_pis_aci_no_pfit.shape, alpha, gap, X_test, y_test,
-        method='aci', with_partial_fit=True, X_train=X_train, y_train=y_train,skip_base_training=skip_base_training,
+        method='aci', with_partial_fit=True, X_train=X_train, y_train=y_train, skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation
     )
 
@@ -515,8 +543,8 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
+    save_figure(f'{filename}1_{N_POINTS_TEMP}.png')
     plt.show()
-    plt.savefig(f'{filename}1_{N_POINTS_TEMP}.png')
 
     fig, axs = plt.subplots(
         nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
@@ -546,8 +574,12 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
+    save_figure(f'{filename}2_{N_POINTS_TEMP}.png')
     plt.show()
-    plt.savefig(f'{filename}2_{N_POINTS_TEMP}.png')
+
+
+def save_figure(filename):
+    plt.savefig(get_plot_savepath(filename))
 
 
 def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit,
@@ -618,19 +650,21 @@ def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_
     )
 
     plt.legend()
+    save_figure(f'{filename}_{N_POINTS_TEMP}.png')
     plt.show()
-    plt.savefig(f'{filename}_{N_POINTS_TEMP}.png')
 
 
 def main():
     print('loading data')
     X_train, X_test, y_train, y_test = get_data()
 
-    print('plotting data')
-    plot_data(X_train, X_test, y_train, y_test)
+    # print('plotting data')
+    # plot_data(X_train, X_test, y_train, y_test)
 
     print('training base model')
-    model = train_base_model(X_train, y_train, load_trained_model=True)
+    model_params_choices = {"max_depth": randint(2, 30), "n_estimators": randint(10, 100)}
+    model = train_base_model(RandomForestRegressor, model_params_choices=model_params_choices, X_train=X_train,
+                             y_train=y_train, load_trained_model=True)
 
     print('estimating prediction intervals')
     estimate_prediction_intervals(model, X_train, y_train, X_test, y_test)
