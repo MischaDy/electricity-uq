@@ -18,27 +18,35 @@ N_POINTS_TEMP = 100  # per group
 def main():
     X_train, X_test, y_train, y_test, X, y = get_data(N_POINTS_TEMP, return_full_data=True)
 
-    y_preds, y_pis = estimate_quantiles(X, y, X_train, y_train, ci_width=0.1)
+    y_preds, y_pis = estimate_quantiles(X_train, y_train, X_test, ci_alpha=0.1)
 
-    plot(X, y, X_train, y_train, y_preds, y_pis)
+    plot_intervals(X, y, X_train, y_train, y_preds, y_pis)
 
 
-def estimate_quantiles(X, y, X_train, y_train, ci_width=0.1):
-    quant_min = ci_width/2
+def estimate_quantiles(X_train, y_train, X_test, ci_alpha=0.1):
+    quant_min = ci_alpha / 2
     quant_median = 0.5
     quant_max = 1 - quant_min
 
     predictions = {}
+    my_predictions = {}
+    my_qrs = {}
+    # y_train_np = y_train.values  # .ravel()
+    # X_train_np = X_train.values
+    # X_test_np = X_test.values
     for quantile in [quant_min, quant_median, quant_max]:
-        qr = QuantileRegressor(quantile=quantile, alpha=0)
-        y_pred = qr.fit(X_train, y_train.values.ravel()).predict(X)
+        qr = QuantileRegressor(quantile=quantile, alpha=0.0)
+        qr_fit = qr.fit(X_train, y_train)
+        y_pred = qr_fit.predict(X_test)
         predictions[quantile] = y_pred
+        my_predictions[quantile] = qr_fit.predict(X_train)
+        my_qrs[quantile] = qr_fit
     y_preds = predictions[quant_median]
-    y_pis = np.stack([predictions[quant_min], predictions[quant_max]]).reshape((-1, 2))  # (n_samples, 2)
+    y_pis = np.stack([predictions[quant_min], predictions[quant_max]], axis=1)  # (n_samples, 2)
     return y_preds, y_pis
 
 
-def plot(X, y, X_train, y_train, y_preds, y_pis):
+def plot_intervals(X, y, X_train, y_train, y_preds, y_pis):
     num_train_steps = X_train.shape[0]
     num_steps_total = X.shape[0]
     x_plot_train = np.arange(num_train_steps)
