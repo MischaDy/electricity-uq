@@ -90,7 +90,7 @@ def main():
 
 
 def train_base_model(model_class, model_params_choices=None, model_init_params=None, X_train=None, y_train=None,
-                     load_trained_model=True):
+                     load_trained_model=True, cv_n_iter=100):
     """Optimize the base estimator
 
     Before estimating the prediction intervals with MAPIE, let's optimize the
@@ -121,14 +121,13 @@ def train_base_model(model_class, model_params_choices=None, model_init_params=N
     print('training')
 
     # CV parameter search
-    n_iter = 100
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
     model = model_class(random_state=random_state, **model_init_params)
     cv_obj = RandomizedSearchCV(
         model,
         param_distributions=model_params_choices,
-        n_iter=n_iter,
+        n_iter=cv_n_iter,
         cv=tscv,
         scoring="neg_root_mean_squared_error",
         random_state=random_state,
@@ -136,10 +135,10 @@ def train_base_model(model_class, model_params_choices=None, model_init_params=N
         n_jobs=-1,
     )
     cv_obj.fit(X_train, y_train.values.ravel())
-    model_class = cv_obj.best_estimator_
+    model = cv_obj.best_estimator_
     print('done')
-    save_model(model_class, filename_base_model)
-    return model_class
+    save_model(model, filename_base_model)
+    return model
 
 
 ### PREDICTION INTERVALS
@@ -245,7 +244,7 @@ def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_tr
         X_test, alpha=alpha, ensemble=True, optimize_beta=True,
         allow_infinite_bounds=True
     )
-    return y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit
+    return y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit.squeeze()
 
 
 def estimate_pred_interals_no_pfit_aci(model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap,
@@ -358,6 +357,7 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
         arr = y_pis[step:step + gap, :, :]
         arr[np.isinf(arr)] = eps
 
+    y_pis = y_pis.squeeze()
     save_array(filename_arr_y_pred, y_pred)
     save_array(filename_arr_y_pis, y_pis)
     save_model(mapie_ts_regressor, filename_model_adapted)
@@ -578,7 +578,7 @@ def get_model(filename):
 
 
 def save_model(model, filename):
-    pickle.dump(model, open(get_array_savepath(filename), 'wb'))
+    pickle.dump(model, open(get_model_savepath(filename), 'wb'))
 
 
 def get_model_savepath(filename):
