@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-def get_data(n_points_temp, filepath='data.pkl', input_cols=None, output_cols=None):
+def get_data(n_points_temp, filepath='data.pkl', input_cols=None, output_cols=None, return_full_data=False):
     """load and prepare data"""
     if input_cols is None:
         input_cols = [
@@ -23,5 +23,7 @@ def get_data(n_points_temp, filepath='data.pkl', input_cols=None, output_cols=No
     y = df[output_cols].iloc[mid - n_points_temp: mid + n_points_temp]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
+    if return_full_data:
+        return X_train, X_test, y_train, y_test, X, y
     return X_train, X_test, y_train, y_test
 
