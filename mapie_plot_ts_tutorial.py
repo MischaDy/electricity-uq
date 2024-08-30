@@ -44,9 +44,6 @@ You can use a gamma coefficient to adjust the strength of the correction.
 
 import warnings
 
-import pickle
-import os
-
 import numpy as np
 from matplotlib import pylab as plt
 from scipy.stats import randint
@@ -58,18 +55,14 @@ from mapie.metrics import (coverage_width_based, regression_coverage_score,
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
 
-from helpers import get_data
+from helpers import get_data, IOHelper
 
-
-warnings.simplefilter("ignore")
+warnings.simplefilter('ignore')
 
 # todo: remove
 N_POINTS_TEMP = 100  # per group
 
-BASE_FOLDER = 'mapie_storage'
-PLOTS_FOLDER = os.path.join(BASE_FOLDER, 'plots')
-ARRAYS_FOLDER = os.path.join(BASE_FOLDER, 'arrays')
-MODELS_FOLDER = os.path.join(BASE_FOLDER, 'models')
+IO_HELPER = IOHelper('mapie_storage')
 
 
 def main():
@@ -112,7 +105,7 @@ def train_base_model(model_class, model_params_choices=None, model_init_params=N
         #     max_depth=26, n_estimators=45, random_state=59
         # )
         try:
-            model = get_model(filename_base_model)
+            model = IO_HELPER.load_model(filename_base_model)
             return model
         except FileNotFoundError:
             print(f"trained base model '{filename_base_model}' not found")
@@ -137,7 +130,7 @@ def train_base_model(model_class, model_params_choices=None, model_init_params=N
     cv_obj.fit(X_train, y_train.values.ravel())
     model = cv_obj.best_estimator_
     print('done')
-    save_model(model, filename_base_model)
+    IO_HELPER.save_model(model, filename_base_model)
     return model
 
 
@@ -228,7 +221,7 @@ def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_tr
     filename_enbpi_no_pfit = f'mapie_enbpi_no_pfit_{N_POINTS_TEMP}.model'
     if skip_base_training:
         try:
-            mapie_enbpi = get_model(filename_enbpi_no_pfit)
+            mapie_enbpi = IO_HELPER.load_model(filename_enbpi_no_pfit)
             print('loaded model successfully')
         except FileNotFoundError:
             print(f'skipping training not possible')
@@ -237,7 +230,7 @@ def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_tr
     if not skip_base_training:
         print('training...')
         mapie_enbpi = mapie_enbpi.fit(X_train, y_train)
-        save_model(mapie_enbpi, filename_enbpi_no_pfit)
+        IO_HELPER.save_model(mapie_enbpi, filename_enbpi_no_pfit)
 
     print('predicting...')
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = mapie_enbpi.predict(
@@ -297,8 +290,8 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
 
     if skip_adaptation:
         try:
-            y_pred = load_array(filename_arr_y_pred)
-            y_pis = load_array(filename_arr_y_pis)
+            y_pred = IO_HELPER.load_array(filename_arr_y_pred)
+            y_pis = IO_HELPER.load_array(filename_arr_y_pis)
             return y_pred, y_pis
         except FileNotFoundError:
             print('skipping adaptation not possible')
@@ -309,7 +302,7 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
 
     if skip_base_training:
         try:
-            mapie_ts_regressor = get_model(filename_model_base)
+            mapie_ts_regressor = IO_HELPER.load_model(filename_model_base)
             print('loaded model successfully')
         except FileNotFoundError:
             print(f'skipping training not possible')
@@ -318,7 +311,7 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
     if not skip_base_training:
         print('training...')
         mapie_ts_regressor = mapie_ts_regressor.fit(X_train, y_train)
-        save_model(mapie_ts_regressor, filename_model_base)
+        IO_HELPER.save_model(mapie_ts_regressor, filename_model_base)
 
     y_pred = np.zeros(y_pred_shape)
     y_pis = np.zeros(y_pis_shape)
@@ -358,9 +351,9 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
         arr[np.isinf(arr)] = eps
 
     y_pis = y_pis.squeeze()
-    save_array(filename_arr_y_pred, y_pred)
-    save_array(filename_arr_y_pis, y_pis)
-    save_model(mapie_ts_regressor, filename_model_adapted)
+    IO_HELPER.save_array(filename_arr_y_pred, y_pred)
+    IO_HELPER.save_array(filename_arr_y_pis, y_pis)
+    IO_HELPER.save_model(mapie_ts_regressor, filename_model_adapted)
 
     return y_pred, y_pis
 
@@ -399,7 +392,7 @@ def plot_data(X_train, X_test, y_train, y_test, filename='data', do_save_figure=
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
     if do_save_figure:
-        save_figure(f'{filename}_{N_POINTS_TEMP}.png')
+        IO_HELPER.save_plot(f'{filename}_{N_POINTS_TEMP}.png')
     plt.show()
 
 
@@ -456,7 +449,7 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
-    save_figure(f'{filename}1_{N_POINTS_TEMP}.png')
+    IO_HELPER.save_plot(f'{filename}1_{N_POINTS_TEMP}.png')
     plt.show()
 
     fig, axs = plt.subplots(
@@ -487,7 +480,7 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
-    save_figure(f'{filename}2_{N_POINTS_TEMP}.png')
+    IO_HELPER.save_plot(f'{filename}2_{N_POINTS_TEMP}.png')
     plt.show()
 
 
@@ -559,42 +552,8 @@ def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_
     )
 
     plt.legend()
-    save_figure(f'{filename}_{N_POINTS_TEMP}.png')
+    IO_HELPER.save_plot(f'{filename}_{N_POINTS_TEMP}.png')
     plt.show()
-
-
-### I/O
-
-def get_plot_savepath(filename):
-    return os.path.join(PLOTS_FOLDER, filename)
-
-
-def get_array_savepath(filename):
-    return os.path.join(ARRAYS_FOLDER, filename)
-
-
-def get_model(filename):
-    return pickle.load(open(get_model_savepath(filename), 'rb'))
-
-
-def save_model(model, filename):
-    pickle.dump(model, open(get_model_savepath(filename), 'wb'))
-
-
-def get_model_savepath(filename):
-    return os.path.join(MODELS_FOLDER, filename)
-
-
-def load_array(filename):
-    return np.load(get_array_savepath(filename))
-
-
-def save_array(array, filename):
-    np.save(get_array_savepath(filename), array)
-
-
-def save_figure(filename):
-    plt.savefig(get_plot_savepath(filename))
 
 
 if __name__ == '__main__':
