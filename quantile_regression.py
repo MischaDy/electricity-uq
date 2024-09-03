@@ -18,12 +18,12 @@ N_POINTS_TEMP = 100  # per group
 def main():
     X_train, X_test, y_train, y_test, X, y = get_data(N_POINTS_TEMP, return_full_data=True)
 
-    y_preds, y_pis = estimate_quantiles(X_train, y_train, X_test, ci_alpha=0.1)
+    y_preds, y_pis = estimate_quantiles(X_train, y_train, x_pred=X, ci_alpha=0.1)
 
     plot_intervals(X, y, X_train, y_train, y_preds, y_pis)
 
 
-def estimate_quantiles(X_train, y_train, X_test, ci_alpha=0.1):
+def estimate_quantiles(X_train, y_train, x_pred, ci_alpha=0.1):
     quant_min = ci_alpha / 2
     quant_median = 0.5
     quant_max = 1 - quant_min
@@ -37,7 +37,7 @@ def estimate_quantiles(X_train, y_train, X_test, ci_alpha=0.1):
     for quantile in [quant_min, quant_median, quant_max]:
         qr = QuantileRegressor(quantile=quantile, alpha=0.0)
         qr_fit = qr.fit(X_train, y_train)
-        y_pred = qr_fit.predict(X_test)
+        y_pred = qr_fit.predict(x_pred)
         predictions[quantile] = y_pred
         my_predictions[quantile] = qr_fit.predict(X_train)
         my_qrs[quantile] = qr_fit
@@ -55,14 +55,16 @@ def plot_intervals(X, y, X_train, y_train, y_preds, y_pis):
     fig, ax = plt.subplots(figsize=(14, 6))
     ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
 
-    plt.scatter(
-        x_plot_train,
-        y_train,
-        color="black",
-        marker="o",
-        alpha=0.8,
-        label="training points",
-    )
+    # plt.scatter(
+    #     x_plot_train,
+    #     y_train,
+    #     color="black",
+    #     marker="o",
+    #     alpha=0.5,
+    #     label="training points",
+    # )
+
+    plt.vlines(x_plot_train.max(), y.min(), y.max(), colors='black', linestyles='solid', label='Train boundary')
 
     ax.plot(x_plot_full, y_preds, label="QR median prediction", color='green')
     ax.fill_between(
@@ -95,7 +97,7 @@ def plot_data(X_train, X_test, y_train, y_test):
     plt.plot(x_plot_test, y_test)
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
-    plt.show()
+    plt.show(block=True)
 
 
 if __name__ == '__main__':
