@@ -33,6 +33,28 @@ def get_data(n_points_temp, filepath='data.pkl', input_cols=None, output_cols=No
     return X_train, X_test, y_train, y_test
 
 
+def plot_data(X_train, X_test, y_train, y_test, filename='data', do_save_figure=False):
+    """visualize training and test sets"""
+    num_train_steps = X_train.shape[0]
+    num_test_steps = X_test.shape[0]
+
+    x_plot_train = np.arange(num_train_steps)
+    x_plot_test = x_plot_train + num_test_steps
+
+    plt.figure(figsize=(16, 5))
+    plt.plot(x_plot_train, y_train)
+    plt.plot(x_plot_test, y_test)
+    plt.ylabel("energy data (details TODO)")
+    plt.legend(["Training data", "Test data"])
+    if do_save_figure:
+        IO_HELPER.save_plot(f'{filename}_{N_POINTS_TEMP}.png')
+    plt.show()
+
+
+def unzip(iterable):
+    return np.array(list(zip(*iterable)))
+
+
 class IOHelper:
     def __init__(self, base_folder, arrays_folder='arrays', models_folder='models', plots_folder='plots'):
         # (self.arrays_folder,
@@ -42,6 +64,10 @@ class IOHelper:
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
         self.plots_folder = os.path.join(base_folder, plots_folder)
+        self.folders = [self.arrays_folder, self.models_folder, self.plots_folder]
+        for folder in self.folders:
+            try: os.mkdir(folder)
+            except FileExistsError: pass
 
     def get_array_savepath(self, filename):
         return os.path.join(self.arrays_folder, filename)
