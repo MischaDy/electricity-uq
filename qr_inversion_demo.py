@@ -1,46 +1,46 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 from sklearn.linear_model import QuantileRegressor
-
-from helpers import get_data
-
-# source: https://scikit-learn.org/stable/auto_examples/linear_model/plot_quantile_regression.html
-
-
-# todo: potential for bugs!
-N_POINTS_TEMP = 100  # per group
+from sklearn.model_selection import train_test_split
 
 
 def main():
-    X_train, X_test, y_train, y_test, X, y = get_data(N_POINTS_TEMP, return_full_data=True)
+    N = 100
+    X = np.arange(N).reshape(-1, 1)
+    scale = 50  # N / 2  # 50
+    shift = 50  # N / 3  # 50
+    y = scale * X + (X-shift)**2 * np.sin(X)
+    y = y.squeeze()
 
-    y_preds, y_pis = estimate_quantiles(X_train, y_train, x_pred=X, ci_alpha=0.1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=66, shuffle=False, random_state=42)
+    # plot_data(X_train, X_test, y_train, y_test)
+
+    qrs = fit_qrs(X_train, y_train, ci_alpha=0.1, qr_alpha=0.0)
+    y_preds, y_pis = estimate_quantiles(X, qrs)
 
     plot_intervals(X, y, X_train, y_train, y_preds, y_pis)
 
 
-def estimate_quantiles(X_train, y_train, x_pred, ci_alpha=0.1):
+def fit_qrs(X_train, y_train, ci_alpha=0.1, qr_alpha=0.0):
     quant_min = ci_alpha / 2
     quant_median = 0.5
     quant_max = 1 - quant_min
 
-    predictions = {}
-    my_predictions = {}
-    my_qrs = {}
-    # y_train_np = y_train.values  # .ravel()
-    # X_train_np = X_train.values
-    # X_test_np = X_test.values
+    qrs = {}
     for quantile in [quant_min, quant_median, quant_max]:
-        qr = QuantileRegressor(quantile=quantile, alpha=0.0)
+        qr = QuantileRegressor(quantile=quantile, alpha=qr_alpha)
         qr_fit = qr.fit(X_train, y_train)
-        y_pred = qr_fit.predict(x_pred)
+        qrs[quantile] = qr_fit
+    return qrs
+
+
+def estimate_quantiles(X_test, qrs):
+    quant_min, quant_median, quant_max = sorted(qr.quantile for qr in qrs.values())
+    predictions = {}
+    for quantile, qr in qrs.items():
+        y_pred = qr.predict(X_test)
         predictions[quantile] = y_pred
-        my_predictions[quantile] = qr_fit.predict(X_train)
-        my_qrs[quantile] = qr_fit
     y_preds = predictions[quant_median]
     y_pis = np.stack([predictions[quant_min], predictions[quant_max]], axis=1)  # (n_samples, 2)
     return y_preds, y_pis
@@ -55,18 +55,18 @@ def plot_intervals(X, y, X_train, y_train, y_preds, y_pis):
     fig, ax = plt.subplots(figsize=(14, 6))
     ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
 
-    # plt.scatter(
-    #     x_plot_train,
-    #     y_train,
-    #     color="black",
-    #     marker="o",
-    #     alpha=0.5,
-    #     label="training points",
-    # )
-
-    plt.vlines(x_plot_train.max(), y.min(), y.max(), colors='black', linestyles='solid', label='Train boundary')
+    plt.scatter(
+        x_plot_train,
+        y_train,
+        color="black",
+        marker="o",
+        alpha=0.8,
+        label="training points",
+    )
 
     ax.plot(x_plot_full, y_preds, label="QR median prediction", color='green')
+    ax.plot(x_plot_full, y_pis[:, 0], label="QR 5% quantile prediction", color='blue')
+    ax.plot(x_plot_full, y_pis[:, 1], label="QR 95% quantile prediction", color='red')
     ax.fill_between(
         x_plot_full.ravel(),
         y_pis[:, 0],
@@ -95,9 +95,8 @@ def plot_data(X_train, X_test, y_train, y_test):
     plt.figure(figsize=(16, 5))
     plt.plot(x_plot_train, y_train)
     plt.plot(x_plot_test, y_test)
-    plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
-    plt.show(block=True)
+    plt.show()
 
 
 if __name__ == '__main__':
