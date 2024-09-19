@@ -1,3 +1,5 @@
+from itertools import chain
+
 import numpy as np
 from mapie.subsample import BlockBootstrap
 from matplotlib import pyplot as plt
@@ -15,6 +17,8 @@ from quantile_regression import estimate_quantiles
 
 # todo: potential for bugs!
 N_POINTS_TEMP = 100  # per group
+
+PLOT_DATA = False
 
 GET_DATA_FUNC = lambda: get_data(N_POINTS_TEMP, return_full_data=True)
 
@@ -35,7 +39,7 @@ NATIVE_METHODS = {
 }
 
 
-def extimate_quantiles_cp(model, X_test, X_train, y_train):
+def estimate_quantiles_cp(model, X_train, y_train, X_test):
     random_state = 59
     alpha = 0.05
     cv_mapie_ts = BlockBootstrap(
@@ -47,7 +51,7 @@ def extimate_quantiles_cp(model, X_test, X_train, y_train):
     return y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit
 
 
-POSTHOC_METHODS = {"CP": extimate_quantiles_cp}
+POSTHOC_METHODS = {"CP": estimate_quantiles_cp}
 
 
 METRICS = {
@@ -57,14 +61,24 @@ METRICS = {
 }
 
 
-def main(
+def compare_methods(
     get_data_func,
     train_base_model_func,
     native_methods,
     posthoc_methods,
     metrics,
     should_plot_data=True,
-):
+) -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]:
+    """
+
+    :param get_data_func:
+    :param train_base_model_func:
+    :param native_methods:
+    :param posthoc_methods:
+    :param metrics:
+    :param should_plot_data:
+    :return: native_results, posthoc_results
+    """
     print("loading data")
     X_train, X_test, y_train, y_test, X, y = get_data_func()
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
@@ -74,45 +88,33 @@ def main(
         plot_data(X_train, X_test, y_train, y_test)
 
     print("running native methods")
-    native_results = {}
-    for name, native_method in native_methods.items():
-        print(f"estimating {name} intervals")
-        y_pred_native, y_pis_native = native_method(X_train, y_train, X_test)
-        native_results[name] = y_pred_native, y_pis_native
-
-    print("training base model")
-    model = train_base_model_func(X_train, y_train)
-
-    print("running posthoc methods")
-    posthoc_results = {}
-    for name, posthoc_method in posthoc_methods.items():
-        print(f"estimating {name} intervals")
-        y_pred_posthoc, y_pis_posthoc = posthoc_method(model, X_train, y_train, X_test)
-        posthoc_results[name] = y_pred_posthoc, y_pis_posthoc
-
-    print("plotting native vs posthoc results")
-    plot_intervals(
-        X, y, X_train, y_train, X_test, y_test, native_results, posthoc_results
+    native_results = run_uq_methods(X_test, X_train, y_train, native_methods)
+    posthoc_results = run_uq_methods(
+        X_test, X_train, y_train, posthoc_methods, train_base_model_func
     )
 
-    print("computing metrics")
+    print("plotting native vs posthoc results")
+    plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
 
-    native_metrics = {}
-    for name, native_result in native_results.items():
-        print(f"========= {name} =========\n")
-        y_pred_native, y_pis_native = native_result
-        for metric_name, metric_func in metrics.items():
-            metric_value = metric_func(y_pred_native, y_pis_native, y_test)
-            native_metrics[metric_name] = metric_value
-            print(f"{metric_name}: {metric_value}")
+    # print("computing metrics")
+    # native_metrics, posthoc_metrics = compute_metrics(
+    #     metrics, native_results, posthoc_results, y_test
+    # )
+    return native_results, posthoc_results
 
-    posthoc_metrics = {}
-    for name, posthoc_result in posthoc_results.items():
-        print(f"========= {name} =========\n")
-        y_pred_posthoc, y_pis_posthoc = posthoc_result
+
+def compute_metrics(metrics, native_results, posthoc_results, y_test):
+    native_metrics, posthoc_metrics = {}, {}
+    for method_name, (y_pred, y_pis) in chain(
+        native_results.items(), posthoc_results.items()
+    ):
+        print(f"\n========= {method_name} =========\n")
+        metric_dict = (
+            native_metrics if method_name in native_results else posthoc_metrics
+        )
         for metric_name, metric_func in metrics.items():
-            metric_value = metric_func(y_pred_posthoc, y_pis_posthoc, y_test)
-            posthoc_metrics[metric_name] = metric_value
+            metric_value = metric_func(y_pred, y_pis, y_test)
+            metric_dict[metric_name] = metric_value
             print(f"{metric_name}: {metric_value}")
 
     # acc_cp, acc_qr = ..., ...  # todo
@@ -120,6 +122,26 @@ def main(
     #
     # crps_cp, crps_qr = ..., ...  # todo
     # print('CRPS CP vs QR:', crps_cp, crps_qr)
+    return native_metrics, posthoc_metrics
+
+
+def run_uq_methods(X_test, X_train, y_train, uq_methods, train_base_model_func=None):
+    is_posthoc = train_base_model_func is not None
+    if is_posthoc:
+        print("training base model")
+        model = train_base_model_func(X_train, y_train)
+
+    print(f"running {'posthoc' if is_posthoc else 'native'} methods")
+    uq_results = {}
+    for method_name, uq_method in uq_methods.items():
+        print(f"estimating {method_name} intervals")
+        if is_posthoc:
+            # noinspection PyUnboundLocalVariable
+            y_pred, y_pis = uq_method(model, X_train, y_train, X_test)
+        else:
+            y_pred, y_pis = uq_method(X_train, y_train, X_test)
+        uq_results[method_name] = y_pred, y_pis
+    return uq_results
 
 
 # PLOTTING
@@ -148,58 +170,60 @@ def plot_data(
     plt.show()
 
 
-def plot_intervals(
-    X, y, X_train, y_train, X_test, y_test, native_results, posthoc_results
-):
+def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results):
+    res_dict = {"native": native_results, "posthoc": posthoc_results}
+    for res_type, results in res_dict.items():
+        print(f"plotting {res_type} results...")
+        for method_name, (y_preds, y_pis) in results.items():
+            plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, method_name)
+
+
+def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, method_name):
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
     num_steps_total = num_train_steps + num_test_steps
-    assert X.shape[0] == num_steps_total
 
     x_plot_train = np.arange(num_train_steps)
     x_plot_test = x_plot_train + num_test_steps
     x_plot_full = np.arange(num_steps_total)
 
-    # todo: what to plot?
-    fig, axs = plt.subplots(
-        nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
+    ax.scatter(
+        x_plot_train,
+        y_train,
+        color="black",
+        marker="o",
+        alpha=0.8,
+        label="training points",
     )
-    for i, (ax, y_pred, y_pis, label) in enumerate(zip(axs, y_preds, y_pis, labels)):
-        ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
-
-        ax.scatter(
-            x_plot_train,
-            y_train,
-            color="black",
-            marker="o",
-            alpha=0.8,
-            label="training points",
-        )
-
-        ax.plot(
-            x_plot_test, y_pred, label=f"mean/median prediction {label}", color="green"
-        )
-        ax.fill_between(
-            x_plot_test.ravel(),
-            y_pis[:, 0],
-            y_pis[:, 1],
-            color="green",
-            alpha=0.2,
-            label=rf"{label} 95% confidence interval",
-        )
-
-        ax.legend()
-        ax.set_xlabel("data")
-        ax.set_ylabel("target")
-        ax.set_title(label)
+    ax.plot(
+        x_plot_test,
+        y_preds,
+        label=f"mean/median prediction {method_name}",
+        color="green",
+    )
+    ax.fill_between(
+        x_plot_test.ravel(),
+        y_pis[:, 0],
+        y_pis[:, 1],
+        color="green",
+        alpha=0.2,
+        label=rf"{method_name} 95% confidence interval",
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    ax.set_title(method_name)
     plt.show()
 
 
 if __name__ == "__main__":
-    main(
+    compare_methods(
         GET_DATA_FUNC,
         TRAIN_BASE_MODEL_FUNC,
         NATIVE_METHODS,
         POSTHOC_METHODS,
-        should_plot_data=True,
+        METRICS,
+        should_plot_data=PLOT_DATA,
     )
