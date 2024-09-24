@@ -16,7 +16,9 @@ N_POINTS_TEMP = 100  # per group
 
 
 def main():
-    X_train, X_test, y_train, y_test, X, y = get_data(N_POINTS_TEMP, return_full_data=True)
+    X_train, X_test, y_train, y_test, X, y = get_data(
+        N_POINTS_TEMP, return_full_data=True
+    )
 
     y_preds, y_pis = estimate_quantiles(X_train, y_train, x_pred=X, ci_alpha=0.1)
 
@@ -42,7 +44,30 @@ def estimate_quantiles(X_train, y_train, x_pred, ci_alpha=0.1):
         my_predictions[quantile] = qr_fit.predict(X_train)
         my_qrs[quantile] = qr_fit
     y_preds = predictions[quant_median]
-    y_pis = np.stack([predictions[quant_min], predictions[quant_max]], axis=1)  # (n_samples, 2)
+    y_pis = np.stack(
+        [predictions[quant_min], predictions[quant_max]], axis=1
+    )  # (n_samples, 2)
+    return y_preds, y_pis
+
+
+def estimate_all_quantiles(X_train, y_train, x_pred):
+    predictions = {}
+    # my_predictions = {}
+    # my_qrs = {}
+    # y_train_np = y_train.values  # .ravel()
+    # X_train_np = X_train.values
+    # X_test_np = X_test.values
+
+    quantiles = np.linspace(0.01, 0.99, num=99, endpoint=True)
+    for quantile in quantiles:
+        qr = QuantileRegressor(quantile=quantile, alpha=0.0)
+        qr_fit = qr.fit(X_train, y_train)
+        y_pred = qr_fit.predict(x_pred)
+        predictions[quantile] = y_pred
+        # my_predictions[quantile] = qr_fit.predict(X_train)
+        # my_qrs[quantile] = qr_fit
+    y_preds = predictions[0.5]  # median prediction
+    y_pis = np.stack(list(predictions.values()), axis=1)  # (n_samples, 2)
     return y_preds, y_pis
 
 
@@ -64,14 +89,21 @@ def plot_intervals(X, y, X_train, y_train, y_preds, y_pis):
     #     label="training points",
     # )
 
-    plt.vlines(x_plot_train.max(), y.min(), y.max(), colors='black', linestyles='solid', label='Train boundary')
+    plt.vlines(
+        x_plot_train.max(),
+        y.min(),
+        y.max(),
+        colors="black",
+        linestyles="solid",
+        label="Train boundary",
+    )
 
-    ax.plot(x_plot_full, y_preds, label="QR median prediction", color='green')
+    ax.plot(x_plot_full, y_preds, label="QR median prediction", color="green")
     ax.fill_between(
         x_plot_full.ravel(),
         y_pis[:, 0],
         y_pis[:, 1],
-        color='green',
+        color="green",
         alpha=0.2,
         label=r"QR 95% confidence interval",
     )
@@ -100,5 +132,5 @@ def plot_data(X_train, X_test, y_train, y_test):
     plt.show(block=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
