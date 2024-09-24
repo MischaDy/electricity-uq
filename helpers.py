@@ -110,6 +110,7 @@ class IOHelper:
         plt.savefig(self.get_plot_savepath(filename))
 
 
+<<<<<<< Updated upstream
 def check_is_ordered(pred, pis):
     lower_ordered = np.all(pis[:, 0] > pred)
     higher_ordered = np.all(pred <= pis[:, 1])
@@ -121,3 +122,7 @@ def check_is_ordered(pred, pis):
         print("ordered.")
         return True
     return False
+=======
+def starfilter(pred, iterable):
+    return filter(lambda args: pred(*args), iterable)
+>>>>>>> Stashed changes
