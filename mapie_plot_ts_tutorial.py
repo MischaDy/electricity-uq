@@ -50,40 +50,62 @@ from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
 
-from mapie.metrics import (coverage_width_based, regression_coverage_score,
-                           regression_mean_width_score)
+from mapie.metrics import (
+    coverage_width_based,
+    regression_coverage_score,
+    regression_mean_width_score,
+)
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
 
 from helpers import get_data, IOHelper
 
-warnings.simplefilter('ignore')
+warnings.simplefilter("ignore")
 
 # todo: remove
 N_POINTS_TEMP = 100  # per group
 
-IO_HELPER = IOHelper('mapie_storage')
+IO_HELPER = IOHelper("mapie_storage")
 
 
 def main():
-    print('loading data')
+    print("loading data")
     X_train, X_test, y_train, y_test = get_data(N_POINTS_TEMP)
-    print('data shapes:', X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
-    print('plotting data')
+    print("plotting data")
     plot_data(X_train, X_test, y_train, y_test)
 
-    print('training base model')
-    model_params_choices = {"max_depth": randint(2, 30), "n_estimators": randint(10, 100)}
-    model = train_base_model(RandomForestRegressor, model_params_choices=model_params_choices, X_train=X_train,
-                             y_train=y_train, load_trained_model=True)
+    print("training base model")
+    model_params_choices = {
+        "max_depth": randint(2, 30),
+        "n_estimators": randint(10, 100),
+    }
+    model = train_base_model(
+        RandomForestRegressor,
+        model_params_choices=model_params_choices,
+        X_train=X_train,
+        y_train=y_train,
+        load_trained_model=True,
+    )
 
-    print('estimating prediction intervals')
-    estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test)
+    # print('estimating prediction intervals')
+    # estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test)
+    print("estimating prediction intervals enbpi without partial fit")
+    estimate_prediction_intervals_enbpi_nopfit_all_quantiles(
+        model, X_train, y_train, X_test, y_test
+    )
 
 
-def train_base_model(model_class, model_params_choices=None, model_init_params=None, X_train=None, y_train=None,
-                     load_trained_model=True, cv_n_iter=100):
+def train_base_model(
+    model_class,
+    model_params_choices=None,
+    model_init_params=None,
+    X_train=None,
+    y_train=None,
+    load_trained_model=True,
+    cv_n_iter=100,
+):
     """Optimize the base estimator
 
     Before estimating the prediction intervals with MAPIE, let's optimize the
@@ -94,10 +116,10 @@ def train_base_model(model_class, model_params_choices=None, model_init_params=N
     random_state = 59
     if model_init_params is None:
         model_init_params = {}
-    elif 'random_state' not in model_init_params:
-        model_init_params['random_state'] = random_state
+    elif "random_state" not in model_init_params:
+        model_init_params["random_state"] = random_state
 
-    filename_base_model = f'base_{model_class.__name__}_{N_POINTS_TEMP}.model'
+    filename_base_model = f"base_{model_class.__name__}_{N_POINTS_TEMP}.model"
 
     if load_trained_model:
         # Model previously optimized with a cross-validation
@@ -111,7 +133,7 @@ def train_base_model(model_class, model_params_choices=None, model_init_params=N
             print(f"trained base model '{filename_base_model}' not found")
 
     assert all(item is not None for item in [X_train, y_train, model_params_choices])
-    print('training')
+    print("training")
 
     # CV parameter search
     n_splits = 5
@@ -129,12 +151,13 @@ def train_base_model(model_class, model_params_choices=None, model_init_params=N
     )
     cv_obj.fit(X_train, y_train.values.ravel())
     model = cv_obj.best_estimator_
-    print('done')
+    print("done")
     IO_HELPER.save_model(model, filename_base_model)
     return model
 
 
 ### PREDICTION INTERVALS
+
 
 def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test):
     """
@@ -176,41 +199,121 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test):
         n_resamplings=10, n_blocks=10, overlapping=False, random_state=59
     )
 
-    print('\n===== estimating PIs no_pfit_enbpi')
+    print("\n===== estimating PIs no_pfit_enbpi")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = estimate_pred_interals_no_pfit_enbpi(
-        model, cv_mapie_ts, alpha, X_test, X_train, y_train, skip_base_training=skip_base_training
+        model,
+        cv_mapie_ts,
+        alpha,
+        X_test,
+        X_train,
+        y_train,
+        skip_base_training=skip_base_training,
     )
 
-    print('\n===== estimating PIs no_pfit_aci')
+    print("\n===== estimating PIs no_pfit_aci")
     y_pred_aci_no_pfit, y_pis_aci_no_pfit = estimate_pred_interals_no_pfit_aci(
-        model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_test, y_test, X_train, y_train,
-        skip_base_training=skip_base_training, skip_adaptation=skip_adaptation
+        model,
+        cv_mapie_ts,
+        y_pred_enbpi_no_pfit,
+        y_pis_enbpi_no_pfit,
+        alpha,
+        gap,
+        X_test,
+        y_test,
+        X_train,
+        y_train,
+        skip_base_training=skip_base_training,
+        skip_adaptation=skip_adaptation,
     )
 
-    print('\n===== estimating PIs pfit_enbpi')
+    print("\n===== estimating PIs pfit_enbpi")
     y_pred_enbpi_pfit, y_pis_enbpi_pfit = estimate_pred_interals_pfit_enbpi(
-        model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap, X_train, y_train, X_test, y_test,
-        skip_base_training=skip_base_training, skip_adaptation=skip_adaptation
+        model,
+        cv_mapie_ts,
+        y_pred_enbpi_no_pfit,
+        y_pis_enbpi_no_pfit,
+        alpha,
+        gap,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        skip_base_training=skip_base_training,
+        skip_adaptation=skip_adaptation,
     )
 
-    print('\n===== estimating PIs pfit_aci')
+    print("\n===== estimating PIs pfit_aci")
     y_pred_aci_pfit, y_pis_aci_pfit = estimate_pred_interals_pfit_aci(
-        model, cv_mapie_ts, y_pred_aci_no_pfit, y_pis_aci_no_pfit, alpha, gap, X_train, y_train, X_test, y_test,
-        skip_base_training=skip_base_training, skip_adaptation=skip_adaptation
+        model,
+        cv_mapie_ts,
+        y_pred_aci_no_pfit,
+        y_pis_aci_no_pfit,
+        alpha,
+        gap,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        skip_base_training=skip_base_training,
+        skip_adaptation=skip_adaptation,
     )
 
-    print('\n===== comparing coverages')
-    compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit)
+    print("\n===== comparing coverages")
+    compare_coverages(
+        y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit
+    )
 
-    print('\n===== plotting prediction intervals')
+    print("\n===== plotting prediction intervals")
     plot_prediction_intervals(
-        y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbpi_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit,
-        y_pred_aci_no_pfit, y_pred_aci_pfit, y_pis_aci_no_pfit, y_pis_aci_pfit
+        y_train,
+        y_test,
+        y_pred_enbpi_no_pfit,
+        y_pred_enbpi_pfit,
+        y_pis_enbpi_no_pfit,
+        y_pis_enbpi_pfit,
+        y_pred_aci_no_pfit,
+        y_pred_aci_pfit,
+        y_pis_aci_no_pfit,
+        y_pis_aci_pfit,
     )
 
 
-def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_train=None, y_train=None,
-                                         skip_base_training=True):
+def estimate_prediction_intervals_enbpi_nopfit_all_quantiles(
+    model, X_train, y_train, X_test, y_test
+):
+    alpha = np.linspace(0.01, 0.99, num=99, endpoint=True)
+    skip_base_training = True
+
+    cv_mapie_ts = BlockBootstrap(
+        n_resamplings=10, n_blocks=10, overlapping=False, random_state=59
+    )
+
+    print("\n===== estimating PIs no_pfit_enbpi")
+    y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = estimate_pred_interals_no_pfit_enbpi(
+        model,
+        cv_mapie_ts,
+        alpha,
+        X_test,
+        X_train,
+        y_train,
+        skip_base_training=skip_base_training,
+    )
+
+    print("\n===== plotting prediction intervals")
+    plot_prediction_intervals_all_quantiles(
+        y_train, y_test, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit
+    )
+
+
+def estimate_pred_interals_no_pfit_enbpi(
+    model,
+    cv_mapie_ts,
+    alpha,
+    X_test,
+    X_train=None,
+    y_train=None,
+    skip_base_training=True,
+):
     """
     estimate prediction intervals without partial fit using EnbPI.
     """
@@ -218,75 +321,159 @@ def estimate_pred_interals_no_pfit_enbpi(model, cv_mapie_ts, alpha, X_test, X_tr
         model, method="enbpi", cv=cv_mapie_ts, agg_function="mean", n_jobs=-1
     )
 
-    filename_enbpi_no_pfit = f'mapie_enbpi_no_pfit_{N_POINTS_TEMP}.model'
+    filename_enbpi_no_pfit = f"mapie_enbpi_no_pfit_{N_POINTS_TEMP}.model"
     if skip_base_training:
         try:
             mapie_enbpi = IO_HELPER.load_model(filename_enbpi_no_pfit)
-            print('loaded model successfully')
+            print("loaded model successfully")
         except FileNotFoundError:
-            print(f'skipping training not possible')
+            print(f"skipping training not possible")
             skip_base_training = False
 
     if not skip_base_training:
-        print('training...')
+        print("training...")
         mapie_enbpi = mapie_enbpi.fit(X_train, y_train)
         IO_HELPER.save_model(mapie_enbpi, filename_enbpi_no_pfit)
 
-    print('predicting...')
+    print("predicting...")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = mapie_enbpi.predict(
-        X_test, alpha=alpha, ensemble=True, optimize_beta=True,
-        allow_infinite_bounds=True
+        X_test,
+        alpha=list(alpha),
+        ensemble=True,
+        optimize_beta=False,
+        allow_infinite_bounds=True,
     )
     return y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit.squeeze()
 
 
-def estimate_pred_interals_no_pfit_aci(model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap,
-                                       X_test, y_test,
-                                       X_train=None, y_train=None, skip_base_training=True, skip_adaptation=True):
+def estimate_pred_interals_no_pfit_aci(
+    model,
+    cv_mapie_ts,
+    y_pred_enbpi_no_pfit,
+    y_pis_enbpi_no_pfit,
+    alpha,
+    gap,
+    X_test,
+    y_test,
+    X_train=None,
+    y_train=None,
+    skip_base_training=True,
+    skip_adaptation=True,
+):
     """estimate prediction intervals without partial fit, ACI."""
     return _estimate_prediction_intervals_worker(
-        model, cv_mapie_ts, y_pred_enbpi_no_pfit.shape, y_pis_enbpi_no_pfit.shape, alpha, gap, X_test, y_test,
-        method='aci', with_partial_fit=False, X_train=X_train, y_train=y_train, skip_base_training=skip_base_training,
-        skip_adaptation=skip_adaptation
+        model,
+        cv_mapie_ts,
+        y_pred_enbpi_no_pfit.shape,
+        y_pis_enbpi_no_pfit.shape,
+        alpha,
+        gap,
+        X_test,
+        y_test,
+        method="aci",
+        with_partial_fit=False,
+        X_train=X_train,
+        y_train=y_train,
+        skip_base_training=skip_base_training,
+        skip_adaptation=skip_adaptation,
     )
 
 
-def estimate_pred_interals_pfit_enbpi(model, cv_mapie_ts, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, alpha, gap,
-                                      X_train, y_train,
-                                      X_test, y_test, skip_base_training=True, skip_adaptation=True):
+def estimate_pred_interals_pfit_enbpi(
+    model,
+    cv_mapie_ts,
+    y_pred_enbpi_no_pfit,
+    y_pis_enbpi_no_pfit,
+    alpha,
+    gap,
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    skip_base_training=True,
+    skip_adaptation=True,
+):
     """
     estimate prediction intervals with partial fit.
     The update of the residuals and the one-step ahead predictions are performed sequentially in a loop.
     """
-    return _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_enbpi_no_pfit.shape,
-                                                 y_pis_enbpi_no_pfit.shape, alpha, gap, X_test, y_test, method='enbpi',
-                                                 with_partial_fit=True, X_train=X_train, y_train=y_train,
-                                                 skip_base_training=skip_base_training, skip_adaptation=skip_adaptation)
+    return _estimate_prediction_intervals_worker(
+        model,
+        cv_mapie_ts,
+        y_pred_enbpi_no_pfit.shape,
+        y_pis_enbpi_no_pfit.shape,
+        alpha,
+        gap,
+        X_test,
+        y_test,
+        method="enbpi",
+        with_partial_fit=True,
+        X_train=X_train,
+        y_train=y_train,
+        skip_base_training=skip_base_training,
+        skip_adaptation=skip_adaptation,
+    )
 
 
-def estimate_pred_interals_pfit_aci(model, cv_mapie_ts, y_pred_aci_no_pfit, y_pis_aci_no_pfit, alpha, gap, X_train,
-                                    y_train, X_test, y_test, skip_base_training=True, skip_adaptation=True):
+def estimate_pred_interals_pfit_aci(
+    model,
+    cv_mapie_ts,
+    y_pred_aci_no_pfit,
+    y_pis_aci_no_pfit,
+    alpha,
+    gap,
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    skip_base_training=True,
+    skip_adaptation=True,
+):
     """
     estimate prediction intervals with adapt_conformal_inference.
     As discussed previously, the update of the current alpha and the one-step
     ahead predictions are performed sequentially in a loop.
     """
     return _estimate_prediction_intervals_worker(
-        model, cv_mapie_ts, y_pred_aci_no_pfit.shape, y_pis_aci_no_pfit.shape, alpha, gap, X_test, y_test,
-        method='aci', with_partial_fit=True, X_train=X_train, y_train=y_train, skip_base_training=skip_base_training,
-        skip_adaptation=skip_adaptation
+        model,
+        cv_mapie_ts,
+        y_pred_aci_no_pfit.shape,
+        y_pis_aci_no_pfit.shape,
+        alpha,
+        gap,
+        X_test,
+        y_test,
+        method="aci",
+        with_partial_fit=True,
+        X_train=X_train,
+        y_train=y_train,
+        skip_base_training=skip_base_training,
+        skip_adaptation=skip_adaptation,
     )
 
 
-def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pis_shape, alpha, gap, X_test, y_test,
-                                          method, with_partial_fit, X_train=None, y_train=None, skip_base_training=True,
-                                          skip_adaptation=True):
+def _estimate_prediction_intervals_worker(
+    model,
+    cv_mapie_ts,
+    y_pred_shape,
+    y_pis_shape,
+    alpha,
+    gap,
+    X_test,
+    y_test,
+    method,
+    with_partial_fit,
+    X_train=None,
+    y_train=None,
+    skip_base_training=True,
+    skip_adaptation=True,
+):
     """overarching function for estimating prediction intervals"""
-    pfit_str = 'pfit' if with_partial_fit else 'no_pfit'
-    filename_model_base = f'mapie_{method}_{N_POINTS_TEMP}.model'
-    filename_model_adapted = f'model_{method}_{pfit_str}_{N_POINTS_TEMP}.model'
-    filename_arr_y_pred = f'y_pred_{method}_{pfit_str}_{N_POINTS_TEMP}.npy'
-    filename_arr_y_pis = f'y_pis_{method}_{pfit_str}_{N_POINTS_TEMP}.npy'
+    pfit_str = "pfit" if with_partial_fit else "no_pfit"
+    filename_model_base = f"mapie_{method}_{N_POINTS_TEMP}.model"
+    filename_model_adapted = f"model_{method}_{pfit_str}_{N_POINTS_TEMP}.model"
+    filename_arr_y_pred = f"y_pred_{method}_{pfit_str}_{N_POINTS_TEMP}.npy"
+    filename_arr_y_pis = f"y_pis_{method}_{pfit_str}_{N_POINTS_TEMP}.npy"
 
     if skip_adaptation:
         try:
@@ -294,7 +481,7 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
             y_pis = IO_HELPER.load_array(filename_arr_y_pis)
             return y_pred, y_pis
         except FileNotFoundError:
-            print('skipping adaptation not possible')
+            print("skipping adaptation not possible")
 
     mapie_ts_regressor = MapieTimeSeriesRegressor(
         model, method=method, cv=cv_mapie_ts, agg_function="mean", n_jobs=-1
@@ -303,51 +490,55 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
     if skip_base_training:
         try:
             mapie_ts_regressor = IO_HELPER.load_model(filename_model_base)
-            print('loaded model successfully')
+            print("loaded model successfully")
         except FileNotFoundError:
-            print(f'skipping training not possible')
+            print(f"skipping training not possible")
             skip_base_training = False
 
     if not skip_base_training:
-        print('training...')
+        print("training...")
         mapie_ts_regressor = mapie_ts_regressor.fit(X_train, y_train)
         IO_HELPER.save_model(mapie_ts_regressor, filename_model_base)
 
     y_pred = np.zeros(y_pred_shape)
     y_pis = np.zeros(y_pis_shape)
 
-    print('predicting...')
+    print("predicting...")
     y_pred[:gap], y_pis[:gap, :, :] = mapie_ts_regressor.predict(
-        X_test.iloc[:gap, :], alpha=alpha, ensemble=True, optimize_beta=True, allow_infinite_bounds=True
+        X_test.iloc[:gap, :],
+        alpha=alpha,
+        ensemble=True,
+        optimize_beta=True,
+        allow_infinite_bounds=True,
     )
 
-    print('looping...')
+    print("looping...")
     eps = -1
     for step in range(gap, len(X_test), gap):
         if step % 10 == 0:
             print("step", step)
         if with_partial_fit:
             mapie_ts_regressor.partial_fit(
-                X_test.iloc[(step - gap):step, :],
-                y_test.iloc[(step - gap):step],
+                X_test.iloc[(step - gap) : step, :],
+                y_test.iloc[(step - gap) : step],
             )
-        if method == 'aci':
+        if method == "aci":
             mapie_ts_regressor.adapt_conformal_inference(
-                X_test.iloc[(step - gap):step, :].to_numpy(),
-                y_test.iloc[(step - gap):step].to_numpy(),
-                gamma=0.05
+                X_test.iloc[(step - gap) : step, :].to_numpy(),
+                y_test.iloc[(step - gap) : step].to_numpy(),
+                gamma=0.05,
             )
         (
-            y_pred[step:step + gap],
-            y_pis[step:step + gap, :, :],
+            y_pred[step : step + gap],
+            y_pis[step : step + gap, :, :],
         ) = mapie_ts_regressor.predict(
-            X_test.iloc[step:(step + gap), :],
+            X_test.iloc[step : (step + gap), :],
             alpha=alpha,
             ensemble=True,
             optimize_beta=True,
-            allow_infinite_bounds=True
+            allow_infinite_bounds=True,
         )
-        arr = y_pis[step:step + gap, :, :]
+        arr = y_pis[step : step + gap, :, :]
         arr[np.isinf(arr)] = eps
 
     y_pis = y_pis.squeeze()
@@ -360,25 +551,21 @@ def _estimate_prediction_intervals_worker(model, cv_mapie_ts, y_pred_shape, y_pi
 
 ### COMPUTE SCORES
 
+
 def compute_scores(y_pis, y_test, eta):
-    print('computing scores')
-    coverage = regression_coverage_score(
-        y_test, y_pis[:, 0, 0], y_pis[:, 1, 0]
-    )
-    width = regression_mean_width_score(
-        y_pis[:, 0, 0], y_pis[:, 1, 0]
-    )
+    print("computing scores")
+    coverage = regression_coverage_score(y_test, y_pis[:, 0, 0], y_pis[:, 1, 0])
+    width = regression_mean_width_score(y_pis[:, 0, 0], y_pis[:, 1, 0])
     cwc = coverage_width_based(
-        y_test, y_pis[:, 0, 0], y_pis[:, 1, 0],
-        eta=eta,
-        alpha=0.05
+        y_test, y_pis[:, 0, 0], y_pis[:, 1, 0], eta=eta, alpha=0.05
     )
     return coverage, width, cwc
 
 
 ### PLOTTING
 
-def plot_data(X_train, X_test, y_train, y_test, filename='data', do_save_figure=True):
+
+def plot_data(X_train, X_test, y_train, y_test, filename="data", do_save_figure=True):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -392,23 +579,41 @@ def plot_data(X_train, X_test, y_train, y_test, filename='data', do_save_figure=
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
     if do_save_figure:
-        IO_HELPER.save_plot(f'{filename}_{N_POINTS_TEMP}.png')
+        IO_HELPER.save_plot(f"{filename}_{N_POINTS_TEMP}.png")
     plt.show()
 
 
-def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbpi_pfit, y_pis_enbpi_no_pfit,
-                              y_pis_enbpi_pfit, y_pred_aci_no_pfit, y_pred_aci_pfit, y_pis_aci_no_pfit, y_pis_aci_pfit,
-                              filename='prediction_intervals'):
+def plot_prediction_intervals(
+    y_train,
+    y_test,
+    y_pred_enbpi_no_pfit,
+    y_pred_enbpi_pfit,
+    y_pis_enbpi_no_pfit,
+    y_pis_enbpi_pfit,
+    y_pred_aci_no_pfit,
+    y_pred_aci_pfit,
+    y_pis_aci_no_pfit,
+    y_pis_aci_pfit,
+    filename="prediction_intervals",
+):
     """
     Plot estimated prediction intervals on one-step ahead forecast
 
     compare the prediction intervals estimated by MAPIE with and
     without update of the residuals.
     """
-    coverage_enbpi_no_pfit, width_enbpi_no_pfit, cwc_enbpi_no_pfit = compute_scores(y_pis_enbpi_no_pfit, y_test, eta=10)
-    coverage_aci_no_pfit, width_aci_no_pfit, cwc_aci_no_pfit = compute_scores(y_pis_aci_no_pfit, y_test, eta=10)
-    coverage_enbpi_pfit, width_enbpi_pfit, cwc_enbpi_pfit = compute_scores(y_pis_enbpi_pfit, y_test, eta=10)
-    coverage_aci_pfit, width_aci_pfit, cwc_aci_pfit = compute_scores(y_pis_aci_pfit, y_test, eta=0.01)
+    coverage_enbpi_no_pfit, width_enbpi_no_pfit, cwc_enbpi_no_pfit = compute_scores(
+        y_pis_enbpi_no_pfit, y_test, eta=10
+    )
+    coverage_aci_no_pfit, width_aci_no_pfit, cwc_aci_no_pfit = compute_scores(
+        y_pis_aci_no_pfit, y_test, eta=10
+    )
+    coverage_enbpi_pfit, width_enbpi_pfit, cwc_enbpi_pfit = compute_scores(
+        y_pis_enbpi_pfit, y_test, eta=10
+    )
+    coverage_aci_pfit, width_aci_pfit, cwc_aci_pfit = compute_scores(
+        y_pis_aci_pfit, y_test, eta=0.01
+    )
 
     y_enbpi_preds = [y_pred_enbpi_no_pfit, y_pred_enbpi_pfit]
     y_enbpi_pis = [y_pis_enbpi_no_pfit, y_pis_enbpi_pfit]
@@ -425,16 +630,10 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
     )
     for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
         ax.set_ylabel("Hourly demand (GW)")
-        ax.plot(
-            y_train[int(-len(y_test) / 2):],
-            lw=2,
-            label="Training data", c="C0"
-        )
+        ax.plot(y_train[int(-len(y_test) / 2) :], lw=2, label="Training data", c="C0")
         ax.plot(y_test, lw=2, label="Test data", c="C1")
 
-        ax.plot(
-            y_test.index, y_enbpi_preds[i], lw=2, c="C2", label="Predictions"
-        )
+        ax.plot(y_test.index, y_enbpi_preds[i], lw=2, c="C2", label="Predictions")
         ax.fill_between(
             y_test.index,
             y_enbpi_pis[i][:, 0, 0],
@@ -444,12 +643,13 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
             label="Prediction intervals",
         )
         title = f"EnbPI, {w} update of residuals. "
-        title += (f"Coverage:{coverages_enbpi[i]:.3f} and "
-                  f"Width:{widths_enbpi[i]:.3f}")
+        title += (
+            f"Coverage:{coverages_enbpi[i]:.3f} and " f"Width:{widths_enbpi[i]:.3f}"
+        )
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
-    IO_HELPER.save_plot(f'{filename}1_{N_POINTS_TEMP}.png')
+    IO_HELPER.save_plot(f"{filename}1_{N_POINTS_TEMP}.png")
     plt.show()
 
     fig, axs = plt.subplots(
@@ -457,16 +657,10 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
     )
     for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
         ax.set_ylabel("Hourly demand (GW)")
-        ax.plot(
-            y_train[int(-len(y_test) / 2):],
-            lw=2,
-            label="Training data", c="C0"
-        )
+        ax.plot(y_train[int(-len(y_test) / 2) :], lw=2, label="Training data", c="C0")
         ax.plot(y_test, lw=2, label="Test data", c="C1")
 
-        ax.plot(
-            y_test.index, y_aci_preds[i], lw=2, c="C2", label="Predictions"
-        )
+        ax.plot(y_test.index, y_aci_preds[i], lw=2, c="C2", label="Predictions")
         ax.fill_between(
             y_test.index,
             y_aci_pis[i][:, 0, 0],
@@ -480,12 +674,49 @@ def plot_prediction_intervals(y_train, y_test, y_pred_enbpi_no_pfit, y_pred_enbp
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
-    IO_HELPER.save_plot(f'{filename}2_{N_POINTS_TEMP}.png')
+    IO_HELPER.save_plot(f"{filename}2_{N_POINTS_TEMP}.png")
     plt.show()
 
 
-def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit,
-                      filename='coverages'):
+def plot_prediction_intervals_all_quantiles(
+    y_train, y_test, y_pred, y_pis, filename="prediction_intervals_all_quantiles"
+):
+    coverage, width, cwc = compute_scores(y_pis, y_test, eta=10)
+
+    fig, axs = plt.subplots(
+        nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
+    )
+    for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
+        ax.set_ylabel("Hourly demand (GW)")
+        ax.plot(y_train[int(-len(y_test) / 2) :], lw=2, label="Training data", c="C0")
+        ax.plot(y_test, lw=2, label="Test data", c="C1")
+
+        ax.plot(y_test.index, y_pred, lw=2, c="C2", label="Predictions")
+        ax.fill_between(
+            y_test.index,
+            y_pis[:, 0],
+            y_pis[i][:, 1],
+            color="C2",
+            alpha=0.2,
+            label="Prediction intervals",
+        )
+        title = f"EnbPI, {w} update of residuals. "
+        title += f"Coverage:{coverage:.3f} and " f"Width:{width:.3f}"
+        ax.set_title(title)
+        ax.legend()
+    fig.tight_layout()
+    IO_HELPER.save_plot(f"{filename}1_{N_POINTS_TEMP}.png")
+    plt.show()
+
+
+def compare_coverages(
+    y_test,
+    y_pis_aci_no_pfit,
+    y_pis_aci_pfit,
+    y_pis_enbpi_no_pfit,
+    y_pis_enbpi_pfit,
+    filename="coverages",
+):
     """
     compare coverages obtained by MAPIE with and without update of the residuals on a 24-hour rolling
     window of prediction intervals.
@@ -498,27 +729,31 @@ def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_
     for i in range(window, len(y_test), 1):
         rolling_coverage_aci_no_pfit.append(
             regression_coverage_score(
-                y_test[i - window:i], y_pis_aci_no_pfit[i - window:i, 0, 0],
-                y_pis_aci_no_pfit[i - window:i, 1, 0]
+                y_test[i - window : i],
+                y_pis_aci_no_pfit[i - window : i, 0, 0],
+                y_pis_aci_no_pfit[i - window : i, 1, 0],
             )
         )
         rolling_coverage_aci_pfit.append(
             regression_coverage_score(
-                y_test[i - window:i], y_pis_aci_pfit[i - window:i, 0, 0],
-                y_pis_aci_pfit[i - window:i, 1, 0]
+                y_test[i - window : i],
+                y_pis_aci_pfit[i - window : i, 0, 0],
+                y_pis_aci_pfit[i - window : i, 1, 0],
             )
         )
 
         rolling_coverage_enbpi_no_pfit.append(
             regression_coverage_score(
-                y_test[i - window:i], y_pis_enbpi_no_pfit[i - window:i, 0, 0],
-                y_pis_enbpi_no_pfit[i - window:i, 1, 0]
+                y_test[i - window : i],
+                y_pis_enbpi_no_pfit[i - window : i, 0, 0],
+                y_pis_enbpi_no_pfit[i - window : i, 1, 0],
             )
         )
         rolling_coverage_enbpi_pfit.append(
             regression_coverage_score(
-                y_test[i - window:i], y_pis_enbpi_pfit[i - window:i, 0, 0],
-                y_pis_enbpi_pfit[i - window:i, 1, 0]
+                y_test[i - window : i],
+                y_pis_enbpi_pfit[i - window : i, 0, 0],
+                y_pis_enbpi_pfit[i - window : i, 1, 0],
             )
         )
 
@@ -529,32 +764,40 @@ def compare_coverages(y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_
         y_test[window:].index,
         rolling_coverage_aci_no_pfit,
         label="ACI Without update of residuals (NPfit)",
-        linestyle='--', color='r', alpha=0.5
+        linestyle="--",
+        color="r",
+        alpha=0.5,
     )
     plt.plot(
         y_test[window:].index,
         rolling_coverage_aci_pfit,
         label="ACI With update of residuals (Pfit)",
-        linestyle='-', color='r', alpha=0.5
+        linestyle="-",
+        color="r",
+        alpha=0.5,
     )
 
     plt.plot(
         y_test[window:].index,
         rolling_coverage_enbpi_no_pfit,
         label="ENBPI Without update of residuals (NPfit)",
-        linestyle='--', color='b', alpha=0.5
+        linestyle="--",
+        color="b",
+        alpha=0.5,
     )
     plt.plot(
         y_test[window:].index,
         rolling_coverage_enbpi_pfit,
         label="ENBPI With update of residuals (Pfit)",
-        linestyle='-', color='b', alpha=0.5
+        linestyle="-",
+        color="b",
+        alpha=0.5,
     )
 
     plt.legend()
-    IO_HELPER.save_plot(f'{filename}_{N_POINTS_TEMP}.png')
+    IO_HELPER.save_plot(f"{filename}_{N_POINTS_TEMP}.png")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
