@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
-from uncertainty_toolbox import get_all_accuracy_metrics
+from uncertainty_toolbox import get_all_metrics
 
 from helpers import get_data
 from mapie_plot_ts_tutorial import (
@@ -39,9 +39,7 @@ NATIVE_METHODS = {
 }
 
 
-def estimate_quantiles_cp(model, X_train, y_train, X_test):
-    random_state = 59
-    alpha = 0.05
+def estimate_quantiles_cp(model, X_train, y_train, X_test, alpha=0.05, random_state=59):
     cv_mapie_ts = BlockBootstrap(
         n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
     )
@@ -55,8 +53,11 @@ POSTHOC_METHODS = {"CP": estimate_quantiles_cp}
 
 
 METRICS = {
-    "all": lambda y_pred, y_pis, y_true: get_all_accuracy_metrics(
-        y_pred, y_true.to_numpy().squeeze()
+    "all": lambda y_pred, y_pis, y_true: get_all_metrics(
+        # todo: correct?
+        y_pred,
+        y_pis[:, 1] - y_pis[:, 0],
+        y_true.to_numpy().squeeze(),
     ),
 }
 
