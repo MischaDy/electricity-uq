@@ -43,6 +43,7 @@ You can use a gamma coefficient to adjust the strength of the correction.
 """
 
 import warnings
+from typing import Iterable
 
 import numpy as np
 from matplotlib import pylab as plt
@@ -308,7 +309,7 @@ def estimate_prediction_intervals_enbpi_nopfit_all_quantiles(
 def estimate_pred_interals_no_pfit_enbpi(
     model,
     cv_mapie_ts,
-    alpha,
+    alpha: float | Iterable[float],
     X_test,
     X_train=None,
     y_train=None,
@@ -317,6 +318,11 @@ def estimate_pred_interals_no_pfit_enbpi(
     """
     estimate prediction intervals without partial fit using EnbPI.
     """
+    try:
+        alpha = list(alpha)
+    except TypeError:
+        pass
+
     mapie_enbpi = MapieTimeSeriesRegressor(
         model, method="enbpi", cv=cv_mapie_ts, agg_function="mean", n_jobs=-1
     )
@@ -338,7 +344,7 @@ def estimate_pred_interals_no_pfit_enbpi(
     print("predicting...")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = mapie_enbpi.predict(
         X_test,
-        alpha=list(alpha),
+        alpha=alpha,
         ensemble=True,
         optimize_beta=False,
         allow_infinite_bounds=True,
