@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from itertools import chain
 from typing import Iterable
 
 import numpy as np
@@ -59,11 +58,7 @@ class UQ_Comparer(ABC):
 
     @classmethod
     def _get_methods_by_prefix(cls, prefix):
-        return dict(
-            starfilter(
-                lambda k, v: k.startswith(prefix), cls.__dict__.items()
-            )
-        )
+        return dict(starfilter(lambda k, v: k.startswith(prefix), cls.__dict__.items()))
 
     # todo: make classmethod?
     def run_posthoc_methods(self, X_train, y_train, X_test):
@@ -107,13 +102,17 @@ class UQ_Comparer(ABC):
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
-    def get_data(self):
-        N_POINTS_TEMP = 100  # per group
-        return get_data(N_POINTS_TEMP, return_full_data=True)
+    # todo: remove param?
+    def get_data(self, _n_points_per_group=100):
+        return get_data(_n_points_per_group, return_full_data=True)
 
     def compute_metrics(self, y_pred, y_pis, y_true):
+        """
+        - pinball loss
+        - CRPS
+        - net loglik
+        """
         return get_all_metrics(
-            # todo: correct?
             y_pred,
             y_pis[:, 1] - y_pis[:, 0],
             y_true.to_numpy().squeeze(),
@@ -183,33 +182,10 @@ def compare_methods(
     print("plotting native vs posthoc results")
     plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
 
-    # todo
-    # print("computing metrics")
-    # native_metrics, posthoc_metrics = UQ_Comparer.compute_metrics(
-    #     metrics, native_results, posthoc_results, y_test
-    # )
-    return native_results, posthoc_results
-
-
-def compute_metrics(metrics, native_results, posthoc_results, y_test):
-    native_metrics, posthoc_metrics = {}, {}
-    for method_name, (y_pred, y_pis) in chain(
-        native_results.items(), posthoc_results.items()
-    ):
-        print(f"\n========= {method_name} =========\n")
-        metric_dict = (
-            native_metrics if method_name in native_results else posthoc_metrics
-        )
-        for metric_name, metric_func in metrics.items():
-            metric_value = metric_func(y_pred, y_pis, y_test)
-            metric_dict[metric_name] = metric_value
-            print(f"{metric_name}: {metric_value}")
-
-    # acc_cp, acc_qr = ..., ...  # todo
-    # print('accuracy CP vs QR:', acc_cp, acc_qr)
-    #
-    # crps_cp, crps_qr = ..., ...  # todo
-    # print('CRPS CP vs QR:', crps_cp, crps_qr)
+    print("computing metrics")
+    native_metrics, posthoc_metrics = UQ_Comparer.compute_metrics(
+        native_results, posthoc_results, y_test
+    )
     return native_metrics, posthoc_metrics
 
 
@@ -243,9 +219,19 @@ def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
     res_dict = {"native": native_results, "posthoc": posthoc_results}
     for res_type, results in res_dict.items():
         print(f"plotting {res_type} results...")
+        # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_pis) in results.items():
-            uq_type, *method_name_parts = method_name.split('_')
-            plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, plot_name=' '.join(method_name_parts), uq_type=uq_type)
+            uq_type, *method_name_parts = method_name.split("_")
+            plot_uq_results(
+                X_train,
+                X_test,
+                y_train,
+                y,
+                y_pis,
+                y_preds,
+                plot_name=" ".join(method_name_parts),
+                uq_type=uq_type,
+            )
 
 
 def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, plot_name, uq_type):
@@ -284,7 +270,7 @@ def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, plot_name, uq_t
     ax.legend()
     ax.set_xlabel("data")
     ax.set_ylabel("target")
-    ax.set_title(f'{plot_name} ({uq_type})')
+    ax.set_title(f"{plot_name} ({uq_type})")
     plt.show()
 
 

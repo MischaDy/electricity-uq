@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 
 
 def get_data(
-    n_points_temp,
+    _n_points_per_group,
     filepath="data.pkl",
     input_cols=None,
     output_cols=None,
@@ -31,8 +31,8 @@ def get_data(
     df = pd.read_pickle(filepath)
 
     mid = df.shape[0] // 2
-    X = df[input_cols].iloc[mid - n_points_temp : mid + n_points_temp]
-    y = df[output_cols].iloc[mid - n_points_temp : mid + n_points_temp]
+    X = df[input_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
+    y = df[output_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.5, shuffle=False
