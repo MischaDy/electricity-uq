@@ -2,12 +2,14 @@ from abc import ABC, abstractmethod
 from typing import Iterable
 
 import numpy as np
+import numpy.typing as npt
 from mapie.subsample import BlockBootstrap
 from matplotlib import pyplot as plt
 
 from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
-from uncertainty_toolbox import get_all_metrics
+from sklearn.metrics import mean_pinball_loss
+from uncertainty_toolbox.metrics_scoring_rule import crps_gaussian, nll_gaussian
 
 from helpers import get_data, starfilter
 from mapie_plot_ts_tutorial import (
@@ -20,6 +22,7 @@ from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 PLOT_DATA = False
 
 
+# todo: add type hints
 # noinspection PyPep8Naming
 class UQ_Comparer(ABC):
     """
@@ -30,19 +33,36 @@ class UQ_Comparer(ABC):
        'posthoc_' and 'native_', respectively
     """
 
-    # todo: add type hints
     # todo: make classmethod?
     @abstractmethod
     def get_data(self) -> Iterable[...]:
         raise NotImplementedError
 
-    # todo: add type hints
     # todo: make classmethod?
     @abstractmethod
-    def compute_metrics(self, y_pred: ..., y_pis: ..., y_true: ...) -> ...:
+    def compute_metrics(
+        self, y_pred: ..., y_pis: ..., y_true: ..., alpha: ... = None
+    ) -> ...:
         raise NotImplementedError
 
-    # todo: add type hints
+    # todo: make classmethod?
+    def compute_all_metrics(
+        self,
+        uq_results: dict[str, tuple[npt.NDArray[float], npt.NDArray[float]]],
+        y_true: ...,
+        alpha=None,
+    ) -> ...:
+        """
+
+        :param uq_results:
+        :param y_true:
+        :return:
+        """
+        return {
+            method_name: self.compute_metrics(y_pred, y_pis, y_true, alpha=alpha)
+            for method_name, (y_pred, y_pis) in uq_results.items()
+        }
+
     # todo: make classmethod?
     @abstractmethod
     def train_base_model(self, X_train: ..., y_train: ...) -> ...:
@@ -69,14 +89,16 @@ class UQ_Comparer(ABC):
         return self._run_methods(X_train, y_train, X_test, uq_type="native")
 
     # todo: make classmethod?
-    def _run_methods(self, X_train, y_train, X_test, *, uq_type):
+    def _run_methods(
+        self, X_train, y_train, X_test, *, uq_type
+    ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float]]]:
         """
 
         :param X_train:
         :param y_train:
         :param X_test:
         :param uq_type: one of: "posthoc", "native"
-        :return:
+        :return: dict of (method_name, (y_pred, y_pis)), where y_pred and y_pis are 1D and 2D, respectively
         """
         assert uq_type in ["posthoc", "native"]
         is_posthoc = uq_type == "posthoc"
@@ -106,17 +128,16 @@ class My_UQ_Comparer(UQ_Comparer):
     def get_data(self, _n_points_per_group=100):
         return get_data(_n_points_per_group, return_full_data=True)
 
-    def compute_metrics(self, y_pred, y_pis, y_true):
-        """
-        - pinball loss
-        - CRPS
-        - net loglik
-        """
-        return get_all_metrics(
-            y_pred,
-            y_pis[:, 1] - y_pis[:, 0],
-            y_true.to_numpy().squeeze(),
-        )
+    def compute_metrics(self, y_pred, y_pis, y_true, alpha=None, verbose=True):
+        # todo: handle alpha!
+        y_std = y_pis[:, 1] - y_pis[:, 0]
+        y_true_np = y_true.to_numpy().squeeze()
+        metrics = {
+            "crps": crps_gaussian(y_pred, y_std, y_true_np),
+            "neg_log_lik": nll_gaussian(y_pred, y_std, y_true_np),
+            "pinball": mean_pinball_loss(y_true_np, y_pred, alpha=alpha),
+        }
+        return metrics
 
     def train_base_model(self, X_train, y_train, model_params_choices=None):
         if model_params_choices is None:
@@ -134,9 +155,7 @@ class My_UQ_Comparer(UQ_Comparer):
         )
 
     @staticmethod
-    def posthoc_conformal_prediction(model, X_train, y_train, X_test):
-        random_state = 59
-        alpha = 0.05
+    def posthoc_conformal_prediction(model, X_train, y_train, X_test, alpha=0.05, random_state=42):
         cv_mapie_ts = BlockBootstrap(
             n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
         )
@@ -154,6 +173,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
     @staticmethod
     def native_quantile_regression(X_train, y_train, X_test, ci_alpha=0.1):
+        # todo: how to translate to normal alpha here?
         return estimate_quantiles_qr(X_train, y_train, X_test, ci_alpha=ci_alpha)
 
 
@@ -182,9 +202,11 @@ def compare_methods(
     print("plotting native vs posthoc results")
     plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
 
-    print("computing metrics")
-    native_metrics, posthoc_metrics = UQ_Comparer.compute_metrics(
-        native_results, posthoc_results, y_test
+    print("computing and comparing metrics")
+
+    native_metrics, posthoc_metrics = (
+        uq_comparer.compute_all_metrics(results, y_test, alpha=alpha)
+        for results in [native_results, posthoc_results]
     )
     return native_metrics, posthoc_metrics
 
