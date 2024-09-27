@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from itertools import chain
 from typing import Iterable
 
@@ -20,7 +21,8 @@ from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 PLOT_DATA = False
 
 
-class UQ_Comparer:
+# noinspection PyPep8Naming
+class UQ_Comparer(ABC):
     """
     Usage:
     1. inherit from this class
@@ -31,16 +33,19 @@ class UQ_Comparer:
 
     # todo: add type hints
     # todo: make classmethod?
+    @abstractmethod
     def get_data(self) -> Iterable[...]:
         raise NotImplementedError
 
     # todo: add type hints
     # todo: make classmethod?
+    @abstractmethod
     def compute_metrics(self, y_pred: ..., y_pis: ..., y_true: ...) -> ...:
         raise NotImplementedError
 
     # todo: add type hints
     # todo: make classmethod?
+    @abstractmethod
     def train_base_model(self, X_train: ..., y_train: ...) -> ...:
         raise NotImplementedError
 
@@ -100,6 +105,7 @@ class UQ_Comparer:
         return uq_results
 
 
+# noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
     def get_data(self):
         N_POINTS_TEMP = 100  # per group
@@ -163,7 +169,7 @@ def compare_methods(
     :return: native_results, posthoc_results
     """
     print("loading data")
-    X_train, X_test, y_train, y_test, X, y = UQ_Comparer.get_data()
+    X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
     if should_plot_data:
