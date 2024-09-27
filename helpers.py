@@ -13,7 +13,8 @@ def get_data(
     input_cols=None,
     output_cols=None,
     return_full_data=False,
-):
+) -> (tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
+      | tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]):  # fmt: skip
     """load and prepare data"""
     if input_cols is None:
         input_cols = [
@@ -41,7 +42,7 @@ def get_data(
     return X_train, X_test, y_train, y_test
 
 
-def plot_data(X_train, X_test, y_train, y_test, filename="data", do_save_figure=False):
+def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper", filename="data", do_save_figure=False):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -55,7 +56,7 @@ def plot_data(X_train, X_test, y_train, y_test, filename="data", do_save_figure=
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
     if do_save_figure:
-        IO_HELPER.save_plot(f"{filename}_{N_POINTS_TEMP}.png")
+        io_helper.save_plot(f"{filename}.png")
     plt.show()
 
 
@@ -63,7 +64,8 @@ def unzip(iterable):
     return np.array(list(zip(*iterable)))
 
 
-class IOHelper:
+# noinspection PyPep8Naming
+class IO_Helper:
     def __init__(
         self,
         base_folder,
@@ -71,10 +73,6 @@ class IOHelper:
         models_folder="models",
         plots_folder="plots",
     ):
-        # (self.arrays_folder,
-        #  self.models_folder,
-        #  self.plots_folder) = (os.path.join(base_folder, folder_name)
-        #                        for folder_name in (arrays_folder, models_folder, plots_folder))
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
         self.plots_folder = os.path.join(base_folder, plots_folder)

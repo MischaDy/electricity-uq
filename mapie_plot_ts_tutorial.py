@@ -59,14 +59,14 @@ from mapie.metrics import (
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
 
-from helpers import get_data, IOHelper
+from helpers import get_data, IO_Helper
 
 warnings.simplefilter("ignore")
 
 # todo: remove
 N_POINTS_TEMP = 100  # per group
 
-IO_HELPER = IOHelper("mapie_storage")
+IO_HELPER = IO_Helper("mapie_storage")
 
 
 def main():
