@@ -67,30 +67,30 @@ class UQ_Comparer(ABC):
 
     # todo: make classmethod?
     def run_posthoc_methods(self, X_train, y_train, X_test):
-        return self._run_methods(X_train, y_train, X_test, kind="posthoc")
+        return self._run_methods(X_train, y_train, X_test, uq_type="posthoc")
 
     # todo: make classmethod?
     def run_native_methods(self, X_train, y_train, X_test):
-        return self._run_methods(X_train, y_train, X_test, kind="native")
+        return self._run_methods(X_train, y_train, X_test, uq_type="native")
 
     # todo: make classmethod?
-    def _run_methods(self, X_train, y_train, X_test, *, kind):
+    def _run_methods(self, X_train, y_train, X_test, *, uq_type):
         """
 
         :param X_train:
         :param y_train:
         :param X_test:
-        :param kind: one of: "posthoc", "native"
+        :param uq_type: one of: "posthoc", "native"
         :return:
         """
-        assert kind in ["posthoc", "native"]
-        is_posthoc = kind == "posthoc"
+        assert uq_type in ["posthoc", "native"]
+        is_posthoc = uq_type == "posthoc"
         if is_posthoc:
             print("training base model")
             base_model = self.train_base_model(X_train, y_train)
-        print(f"running {'posthoc' if is_posthoc else 'native'} methods")
+        print(f"running {uq_type} methods")
         uq_methods: Iterable[tuple] = starfilter(
-            lambda k, v: k.startswith("posthoc"), self.__class__.__dict__.items()
+            lambda k, v: k.startswith(uq_type), self.__class__.__dict__.items()
         )
         uq_results = {}
         for method_name, method in uq_methods:
@@ -222,7 +222,7 @@ def plot_data(
     y_train,
     y_test,
     figsize=(16, 5),
-    ylabel="energy data (details TODO)",
+    ylabel="energy data",  # todo: details!
 ):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
@@ -244,10 +244,11 @@ def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
     for res_type, results in res_dict.items():
         print(f"plotting {res_type} results...")
         for method_name, (y_preds, y_pis) in results.items():
-            plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, method_name)
+            uq_type, *method_name_parts = method_name.split('_')
+            plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, plot_name=' '.join(method_name_parts), uq_type=uq_type)
 
 
-def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, method_name):
+def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, plot_name, uq_type):
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
     num_steps_total = num_train_steps + num_test_steps
@@ -269,7 +270,7 @@ def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, method_name):
     ax.plot(
         x_plot_test,
         y_preds,
-        label=f"mean/median prediction {method_name}",
+        label=f"mean/median prediction {plot_name}",  # todo: mean or median?
         color="green",
     )
     ax.fill_between(
@@ -278,12 +279,12 @@ def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, method_name):
         y_pis[:, 1],
         color="green",
         alpha=0.2,
-        label=rf"{method_name} 95% confidence interval",
+        label=rf"{plot_name} 95% CI",  # todo: should depend on alpha!
     )
     ax.legend()
     ax.set_xlabel("data")
     ax.set_ylabel("target")
-    ax.set_title(method_name)
+    ax.set_title(f'{plot_name} ({uq_type})')
     plt.show()
 
 
