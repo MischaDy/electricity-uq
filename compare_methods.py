@@ -31,11 +31,61 @@ class UQ_Comparer(ABC):
     2. override get_data, compute_metrics, and train_base_model
     3. define all desired posthoc and native UQ methods. all posthoc and native UQ method names should start with
        'posthoc_' and 'native_', respectively
+    4. Call compare_methods from the child class
     """
+    def compare_methods(
+        self,
+        should_plot_data=True,
+        should_plot_results=True,
+        return_results=False,
+    ):  # -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
+        """
+        :param should_plot_data:
+        :param should_plot_results:
+        :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
+        :return: native and posthoc metrics if return_results is False, else also native and posthoc results
+        """
+        print("loading data")
+        X_train, X_test, y_train, y_test, X, y = self.get_data()
+        print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+
+        if should_plot_data:
+            print("plotting data")
+            plot_data(X_train, X_test, y_train, y_test)
+
+        print("running native methods")
+        native_results = self.run_native_methods(X_train, y_train, X_test)
+        posthoc_results = self.run_posthoc_methods(X_train, y_train, X_test)
+
+        if should_plot_results:
+            print("plotting native vs posthoc results")
+            plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
+
+        print("computing and comparing metrics")
+        native_metrics, posthoc_metrics = (
+            self.compute_all_metrics(results, y_test, alpha=alpha)
+            for results in [native_results, posthoc_results]
+        )
+        if return_results:
+            return native_metrics, posthoc_metrics, native_results, posthoc_results
+        return native_metrics, posthoc_metrics
 
     # todo: make classmethod?
     @abstractmethod
-    def get_data(self) -> Iterable[...]:
+    def get_data(
+        self,
+    ) -> tuple[
+        npt.NDArray[float],
+        npt.NDArray[float],
+        npt.NDArray[float],
+        npt.NDArray[float],
+        npt.NDArray[float],
+        npt.NDArray[float],
+    ]:
+        """
+
+        :return: X_train, X_test, y_train, y_test, X, y
+        """
         raise NotImplementedError
 
     # todo: make classmethod?
@@ -43,6 +93,14 @@ class UQ_Comparer(ABC):
     def compute_metrics(
         self, y_pred: ..., y_pis: ..., y_true: ..., alpha: ... = None
     ) -> ...:
+        """
+
+        :param y_pred:
+        :param y_pis: array of shape (number of datapoints, number of quantiles). If number of quantiles is 2, they are assumed to represent 1 std.
+        :param y_true:
+        :param alpha:
+        :return:
+        """
         raise NotImplementedError
 
     # todo: make classmethod?
@@ -54,7 +112,8 @@ class UQ_Comparer(ABC):
     ) -> ...:
         """
 
-        :param uq_results:
+        :param alpha: quantiles the y_pis
+        :param uq_results: dict of (method_name, (predictions, prediction intervals)).
         :param y_true:
         :return:
         """
@@ -121,6 +180,14 @@ class UQ_Comparer(ABC):
             uq_results[method_name] = y_pred, y_pis
         return uq_results
 
+    @staticmethod
+    def stds_from_quantiles(quantiles):
+        """
+        :param quantiles: array of shape (number of datapoints, number of quantiles), where number of quantiles should be at least about 100
+        :return:
+        """
+        return np.std(quantiles, ddof=1, axis=1)
+
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
@@ -129,8 +196,29 @@ class My_UQ_Comparer(UQ_Comparer):
         return get_data(_n_points_per_group, return_full_data=True)
 
     def compute_metrics(self, y_pred, y_pis, y_true, alpha=None, verbose=True):
+        """
+
+        :param y_pred:
+        :param y_pis:
+        :param y_true:
+        :param alpha:
+        :param verbose:
+        :return:
+        """
         # todo: handle alpha!
-        y_std = y_pis[:, 1] - y_pis[:, 0]
+        assert len(y_pis.shape) == 2
+        num_quantiles = y_pis.shape[1]
+        if num_quantiles == 2:
+            # only 2 quantiles ==> represents 1 std
+            y_std = y_pis[:, 1] - y_pis[:, 0]
+        else:
+            # many quantiles ==> generate std from them
+            if num_quantiles < 50:
+                print(
+                    f"Warning: std computation from only {num_quantiles} quantiles is inaccurate."
+                    f" Should be about 100 quantiles."
+                )
+            y_std = self.stds_from_quantiles(y_pis)
         y_true_np = y_true.to_numpy().squeeze()
         metrics = {
             "crps": crps_gaussian(y_pred, y_std, y_true_np),
@@ -155,7 +243,9 @@ class My_UQ_Comparer(UQ_Comparer):
         )
 
     @staticmethod
-    def posthoc_conformal_prediction(model, X_train, y_train, X_test, alpha=0.05, random_state=42):
+    def posthoc_conformal_prediction(
+        model, X_train, y_train, X_test, alpha=None, random_state=42
+    ):
         cv_mapie_ts = BlockBootstrap(
             n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
         )
@@ -172,43 +262,14 @@ class My_UQ_Comparer(UQ_Comparer):
         return y_pred, y_pis
 
     @staticmethod
-    def native_quantile_regression(X_train, y_train, X_test, ci_alpha=0.1):
-        # todo: how to translate to normal alpha here?
-        return estimate_quantiles_qr(X_train, y_train, X_test, ci_alpha=ci_alpha)
+    def native_quantile_regression(X_train, y_train, X_test, alpha=None):
+        return estimate_quantiles_qr(X_train, y_train, X_test, alpha=alpha)
 
 
-def compare_methods(
-    uq_comparer: UQ_Comparer,
-    should_plot_data=True,
-) -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]:
-    """
+def main():
+    uq_comparer = My_UQ_Comparer()
+    uq_comparer.compare_methods(should_plot_data=PLOT_DATA)
 
-    :param uq_comparer:
-    :param should_plot_data:
-    :return: native_results, posthoc_results
-    """
-    print("loading data")
-    X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
-    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
-
-    if should_plot_data:
-        print("plotting data")
-        plot_data(X_train, X_test, y_train, y_test)
-
-    print("running native methods")
-    native_results = uq_comparer.run_native_methods(X_train, y_train, X_test)
-    posthoc_results = uq_comparer.run_posthoc_methods(X_train, y_train, X_test)
-
-    print("plotting native vs posthoc results")
-    plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
-
-    print("computing and comparing metrics")
-
-    native_metrics, posthoc_metrics = (
-        uq_comparer.compute_all_metrics(results, y_test, alpha=alpha)
-        for results in [native_results, posthoc_results]
-    )
-    return native_metrics, posthoc_metrics
 
 
 # PLOTTING
@@ -297,7 +358,4 @@ def plot_uq_results(X_train, X_test, y_train, y, y_pis, y_preds, plot_name, uq_t
 
 
 if __name__ == "__main__":
-    compare_methods(
-        My_UQ_Comparer(),
-        should_plot_data=PLOT_DATA,
-    )
+    main()
