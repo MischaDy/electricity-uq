@@ -17,22 +17,22 @@ class UQ_Comparer(ABC):
     1. Inherit from this class.
     2. Override get_data, compute_metrics, and train_base_model.
     3. Define all desired posthoc and native UQ methods. The required signature is:
-            (X_train, y_train, X_test, alphas) -> (y_pred, y_quantiles, y_std)
+            (X_train, y_train, X_test, quantiles) -> (y_pred, y_quantiles, y_std)
        Posthoc methods receive an additional base_model parameter, so their signature looks like:
-            (..., alphas, base_model, *args, **kwargs) -> (y_pred, ...)
+            (..., quantiles, base_model, *args, **kwargs) -> (y_pred, ...)
        All posthoc and native UQ method names should start with 'posthoc_' and 'native_', respectively. They should
        all be instance methods, not class or static methods.
     4. Call compare_methods from the child class
     """
     def compare_methods(
         self,
-        alphas,
+        quantiles,
         should_plot_data=True,
         should_plot_results=True,
         return_results=False,
     ):  # -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
-        :param alphas:
+        :param quantiles:
         :param should_plot_data:
         :param should_plot_results:
         :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
@@ -47,8 +47,8 @@ class UQ_Comparer(ABC):
             plot_data(X_train, X_test, y_train, y_test)
 
         print("running native methods")
-        native_results = self.run_native_methods(X_train, y_train, X_test, alphas=alphas)
-        posthoc_results = self.run_posthoc_methods(X_train, y_train, X_test, alphas=alphas)
+        native_results = self.run_native_methods(X_train, y_train, X_test, quantiles=quantiles)
+        posthoc_results = self.run_posthoc_methods(X_train, y_train, X_test, quantiles=quantiles)
 
         if should_plot_results:
             print("plotting native vs posthoc results")
@@ -56,7 +56,7 @@ class UQ_Comparer(ABC):
 
         print("computing and comparing metrics")
         native_metrics, posthoc_metrics = (
-            self.compute_all_metrics(results, y_test, alphas=alphas)
+            self.compute_all_metrics(results, y_test, quantiles=quantiles)
             for results in [native_results, posthoc_results]
         )
         if return_results:
@@ -83,7 +83,7 @@ class UQ_Comparer(ABC):
 
     # todo: make classmethod?
     @abstractmethod
-    def compute_metrics(self, y_pred, y_quantiles: Optional[npt.NDArray], y_std: Optional[npt.NDArray], y_true, alphas):
+    def compute_metrics(self, y_pred, y_quantiles: Optional[npt.NDArray], y_std: Optional[npt.NDArray], y_true, quantiles):
         """
         Evaluate a UQ method by compute all desired metrics.
 
@@ -91,7 +91,7 @@ class UQ_Comparer(ABC):
         :param y_quantiles: array of shape (n_samples, n_quantiles) containing the predicted quantiles of y_true
         :param y_std: 1D array-like of predicted standard deviations around y_true
         :param y_true:
-        :param alphas: list of quantiles with which test to measure performance. They are expected to be symmetric
+        :param quantiles: list of quantiles with which test to measure performance. They are expected to be symmetric
         :return:
         """
         raise NotImplementedError
@@ -101,17 +101,17 @@ class UQ_Comparer(ABC):
         self,
         uq_results: dict[str, tuple[npt.NDArray[float], Optional[npt.NDArray[float]], Optional[npt.NDArray[float]]]],
         y_true,
-        alphas=None,
+        quantiles=None,
     ):
         """
 
-        :param alphas: quantiles
+        :param quantiles: quantiles
         :param uq_results: dict of (method_name, (y_pred, y_quantiles, y_std))
         :param y_true:
         :return:
         """
         return {
-            method_name: self.compute_metrics(y_pred, y_quantiles, y_std, y_true, alphas=alphas)
+            method_name: self.compute_metrics(y_pred, y_quantiles, y_std, y_true, quantiles=quantiles)
             for method_name, (y_pred, y_quantiles, y_std) in uq_results.items()
         }
 
@@ -131,14 +131,14 @@ class UQ_Comparer(ABC):
     def _get_methods_by_prefix(cls, prefix):
         return dict(starfilter(lambda k, v: k.startswith(prefix), cls.__dict__.items()))
 
-    def run_posthoc_methods(self, X_train, y_train, X_test, alphas):
-        return self._run_methods(X_train, y_train, X_test, alphas=alphas, uq_type="posthoc")
+    def run_posthoc_methods(self, X_train, y_train, X_test, quantiles):
+        return self._run_methods(X_train, y_train, X_test, quantiles=quantiles, uq_type="posthoc")
 
-    def run_native_methods(self, X_train, y_train, X_test, alphas):
-        return self._run_methods(X_train, y_train, X_test, alphas=alphas, uq_type="native")
+    def run_native_methods(self, X_train, y_train, X_test, quantiles):
+        return self._run_methods(X_train, y_train, X_test, quantiles=quantiles, uq_type="native")
 
     def _run_methods(
-        self, X_train, y_train, X_test, alphas, *, uq_type
+        self, X_train, y_train, X_test, quantiles, *, uq_type
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 
@@ -154,17 +154,18 @@ class UQ_Comparer(ABC):
             print("training base model")
             base_model = self.train_base_model(X_train, y_train)
         print(f"running {uq_type} methods")
-        uq_methods: Iterable[tuple] = starfilter(
-            lambda k, v: k.startswith(uq_type), self.__class__.__dict__.items()
+        uq_method_names = filter(
+            lambda name: name.startswith(uq_type), self.__class__.__dict__.keys()
         )
         uq_results = {}
-        for method_name, method in uq_methods:
+        for method_name in uq_method_names:
             # todo: pass deepcopy instead?
+            method = getattr(self, method_name)
             # noinspection PyUnboundLocalVariable
             y_pred, y_quantiles, y_std = (
-                method(base_model, X_train, y_train, X_test, alphas=alphas)
+                method(X_train, y_train, X_test, quantiles, base_model)
                 if is_posthoc
-                else method(X_train, y_train, X_test, alphas=alphas)
+                else method(X_train, y_train, X_test, quantiles)
             )
             uq_results[method_name] = y_pred, y_quantiles, y_std
         return uq_results
@@ -222,7 +223,7 @@ def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
     for res_type, results in res_dict.items():
         print(f"plotting {res_type} results...")
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
-        for method_name, (y_preds, y_quantiles) in results.items():
+        for method_name, (y_preds, y_quantiles, y_std) in results.items():
             uq_type, *method_name_parts = method_name.split("_")
             plot_uq_results(
                 X_train,
