@@ -11,12 +11,17 @@ from helpers import starfilter
 # todo: add type hints
 # noinspection PyPep8Naming
 class UQ_Comparer(ABC):
+    # todo: After these required inputs, they may accept any args or kwargs you wish.
     """
     Usage:
-    1. inherit from this class
-    2. override get_data, compute_metrics, and train_base_model
-    3. define all desired posthoc and native UQ methods. all posthoc and native UQ method names should start with
-       'posthoc_' and 'native_', respectively. They should all be instance methods, not class or static methods.
+    1. Inherit from this class.
+    2. Override get_data, compute_metrics, and train_base_model.
+    3. Define all desired posthoc and native UQ methods. The required signature is:
+            (X_train, y_train, X_test, alphas) -> (y_pred, y_quantiles, y_std)
+       Posthoc methods receive an additional base_model parameter, so their signature looks like:
+            (..., alphas, base_model, *args, **kwargs) -> (y_pred, ...)
+       All posthoc and native UQ method names should start with 'posthoc_' and 'native_', respectively. They should
+       all be instance methods, not class or static methods.
     4. Call compare_methods from the child class
     """
     def compare_methods(
@@ -86,7 +91,7 @@ class UQ_Comparer(ABC):
         :param y_quantiles: array of shape (n_samples, n_quantiles) containing the predicted quantiles of y_true
         :param y_std: 1D array-like of predicted standard deviations around y_true
         :param y_true:
-        :param alphas: list of quantiles with which test to measure performance
+        :param alphas: list of quantiles with which test to measure performance. They are expected to be symmetric
         :return:
         """
         raise NotImplementedError
