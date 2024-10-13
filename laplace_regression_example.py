@@ -1,7 +1,7 @@
 import numpy as np
 import torch
-from helper.dataloaders import get_sinusoid_example
-from helper.util import plot_regression
+from laplace_helper.dataloaders import get_sinusoid_example
+from laplace_helper.util import plot_regression
 
 from laplace import Laplace, marglik_training
 from laplace.curvature.backpack import BackPackGGN
