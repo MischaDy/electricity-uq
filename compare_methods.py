@@ -183,6 +183,14 @@ class UQ_Comparer(ABC):
         return np.std(quantiles, ddof=1, axis=1)
 
     @staticmethod
+    def pis_from_quantiles(quantiles):
+        mid = len(quantiles) // 2
+        first, second = quantiles[:mid], quantiles[mid:]
+        pi_limits = zip(first, reversed(second))
+        pis = [high - low for low, high in pi_limits]
+        return pis
+
+    @staticmethod
     def optional(func):
         # todo
         """

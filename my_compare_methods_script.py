@@ -67,27 +67,25 @@ class My_UQ_Comparer(UQ_Comparer):
     def posthoc_conformal_prediction(
         self, X_train, y_train, X_test, quantiles, model, random_state=42
     ):
-        cv_mapie_ts = BlockBootstrap(
+        cv = BlockBootstrap(
             n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
         )
-        alphas = ...  # todo: sth with quantiles
+        alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
             model,
-            cv_mapie_ts,
+            cv,
             alphas,
             X_test,
             X_train,
             y_train,
             skip_base_training=True,
         )
-        # shape y_pis: (n_samples, 2, n_alphas)
-        # todo: reasonable with few quantiles?
         y_std = self.stds_from_quantiles(y_pis)
-        return y_pred, y_pis, y_std
+        y_quantiles = None  # todo: sth with y_pis
+        return y_pred, y_quantiles, y_std
 
     def native_quantile_regression(self, X_train, y_train, X_test, quantiles):
         y_pred, y_quantiles = estimate_quantiles_qr(X_train, y_train, X_test, alpha=quantiles)
-        # todo: reasonable with few quantiles?
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
