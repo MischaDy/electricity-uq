@@ -17,7 +17,7 @@ def download_pretrained_model():
 
 
 def plot_regression(
-    X_train, y_train, X_test, f_test, y_std, plot=True, save=True, file_name="regression_example", figsize=(4.5, 2.8),
+    X_train, y_train, X_test, f_test, y_std, plot=True, save=True, file_name="regression_example", figsize=(4.5, 2.8), file_path='docs'
 ):
     assert plot or save
     
@@ -49,4 +49,4 @@ def plot_regression(
     if plot:
         plt.show()
     if save:
-        plt.savefig(f"docs/{file_name}.png")
+        plt.savefig(os.path.join(file_path, f"{file_name}.png"))

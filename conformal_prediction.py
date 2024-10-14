@@ -46,6 +46,8 @@ import warnings
 from typing import Iterable
 
 import numpy as np
+import numpy.typing as npt
+
 from matplotlib import pylab as plt
 from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
@@ -210,6 +212,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test):
         y_train,
         skip_base_training=skip_base_training,
     )
+    y_pis_enbpi_no_pfit = y_pis_enbpi_no_pfit.squeeze()
 
     print("\n===== estimating PIs no_pfit_aci")
     y_pred_aci_no_pfit, y_pis_aci_no_pfit = estimate_pred_interals_no_pfit_aci(
@@ -226,6 +229,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test):
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
     )
+    y_pis_aci_no_pfit = y_pis_aci_no_pfit.squeeze()
 
     print("\n===== estimating PIs pfit_enbpi")
     y_pred_enbpi_pfit, y_pis_enbpi_pfit = estimate_pred_interals_pfit_enbpi(
@@ -242,6 +246,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test):
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
     )
+    y_pis_enbpi_pfit = y_pis_enbpi_pfit.squeeze()
 
     print("\n===== estimating PIs pfit_aci")
     y_pred_aci_pfit, y_pis_aci_pfit = estimate_pred_interals_pfit_aci(
@@ -258,6 +263,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test):
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
     )
+    y_pis_aci_pfit = y_pis_aci_pfit.squeeze()
 
     print("\n===== comparing coverages")
     compare_coverages(
@@ -314,10 +320,22 @@ def estimate_pred_interals_no_pfit_enbpi(
     X_train=None,
     y_train=None,
     skip_base_training=True,
-):
+) -> tuple[npt.NDArray, npt.NDArray]:
     """
-    estimate prediction intervals without partial fit using EnbPI.
+    Estimate prediction intervals without partial fit using EnbPI.
+
+    :param model:
+    :param cv_mapie_ts:
+    :param alpha:
+    :param X_test:
+    :param X_train:
+    :param y_train:
+    :param skip_base_training:
+    :return: tuple (y_pred, y_prediction_intervals) of shapes (n_samples,) and (n_samples, 2, n_alpha).
+    [:, 0, :]: Lower bound of the prediction interval.
+    [:, 1, :]: Upper bound of the prediction interval.
     """
+    # todo: return type taken from mapie
     try:
         alpha = list(alpha)
     except TypeError:
@@ -349,7 +367,7 @@ def estimate_pred_interals_no_pfit_enbpi(
         optimize_beta=False,
         allow_infinite_bounds=True,
     )
-    return y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit.squeeze()
+    return y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit
 
 
 def estimate_pred_interals_no_pfit_aci(
@@ -547,7 +565,6 @@ def _estimate_prediction_intervals_worker(
         arr = y_pis[step : step + gap, :, :]
         arr[np.isinf(arr)] = eps
 
-    y_pis = y_pis.squeeze()
     IO_HELPER.save_array(filename_arr_y_pred, y_pred)
     IO_HELPER.save_array(filename_arr_y_pis, y_pis)
     IO_HELPER.save_model(mapie_ts_regressor, filename_model_adapted)
