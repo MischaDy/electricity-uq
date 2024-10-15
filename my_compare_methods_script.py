@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from mapie.subsample import BlockBootstrap
 
 from scipy.stats import randint
@@ -86,7 +87,7 @@ class My_UQ_Comparer(UQ_Comparer):
         )
 
         # todo: consistent input expectations!
-        X_train, y_train = map(torch.Tensor, (X_train, y_train))
+        X_train, y_train = map(self._df_to_tensor, (X_train, y_train))
         train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size)
 
@@ -220,6 +221,10 @@ class My_UQ_Comparer(UQ_Comparer):
         y_pred, y_quantiles = estimate_quantiles_qr(X_train, y_train, X_test, alpha=quantiles)
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
+
+    @staticmethod
+    def _df_to_tensor(df: pd.DataFrame) -> torch.Tensor:
+        return torch.Tensor(df.to_numpy())
 
 
 def main():
