@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import numpy as np
 import numpy.typing as npt
 
@@ -26,8 +28,9 @@ from laplace import Laplace
 
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
-PLOT_DATA = False
-PLOT_RESULTS = False
+PLOT_DATA = True
+PLOT_RESULTS = True
+SAVE_PLOTS = True
 
 
 torch.set_default_dtype(torch.float32)
@@ -124,14 +127,16 @@ class My_UQ_Comparer(UQ_Comparer):
         ).float()
 
         if load_trained:
-            print('skipping base model training')
+            print("skipping base model training")
             try:
                 model = torch.load(model_path, weights_only=False)
                 model.eval()
                 return model
             except FileNotFoundError:
                 # todo
-                print("error. model not found, so training cannot be skipped. training from scratch")
+                print(
+                    "error. model not found, so training cannot be skipped. training from scratch"
+                )
 
         # todo: consistent input expectations!
         train_loader = self._get_train_loader(X_train, y_train, batch_size)
@@ -242,11 +247,20 @@ class My_UQ_Comparer(UQ_Comparer):
         return train_loader
 
 
+def print_metrics(native_metrics, posthoc_metrics):
+    pprint(native_metrics)
+    pprint(posthoc_metrics)
+
+
 def main():
     uq_comparer = My_UQ_Comparer()
-    uq_comparer.compare_methods(
-        QUANTILES, should_plot_data=PLOT_DATA, should_plot_results=PLOT_RESULTS
+    native_metrics, posthoc_metrics = uq_comparer.compare_methods(
+        QUANTILES,
+        should_plot_data=PLOT_DATA,
+        should_plot_results=PLOT_RESULTS,
+        should_save_plots=SAVE_PLOTS,
     )
+    print_metrics(native_metrics, posthoc_metrics)
 
 
 if __name__ == "__main__":

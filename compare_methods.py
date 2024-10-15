@@ -24,11 +24,13 @@ class UQ_Comparer(ABC):
        all be instance methods, not class or static methods.
     4. Call compare_methods from the child class
     """
+
     def compare_methods(
         self,
         quantiles,
         should_plot_data=True,
         should_plot_results=True,
+        should_save_plots=True,
         return_results=False,
     ):  # -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
@@ -44,15 +46,19 @@ class UQ_Comparer(ABC):
 
         if should_plot_data:
             print("plotting data")
-            plot_data(X_train, X_test, y_train, y_test)
+            plot_data(X_train, X_test, y_train, y_test, save_plot=should_save_plots)
 
         print("running UQ methods")
-        native_results = self.run_native_methods(X_train, y_train, X_test, quantiles=quantiles)
-        posthoc_results = self.run_posthoc_methods(X_train, y_train, X_test, quantiles=quantiles)
+        native_results = self.run_native_methods(
+            X_train, y_train, X_test, quantiles=quantiles
+        )
+        posthoc_results = self.run_posthoc_methods(
+            X_train, y_train, X_test, quantiles=quantiles
+        )
 
         if should_plot_results:
             print("plotting native vs posthoc results")
-            plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
+            plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=should_save_plots)
 
         print("computing and comparing metrics")
         native_metrics, posthoc_metrics = (
@@ -83,7 +89,14 @@ class UQ_Comparer(ABC):
 
     # todo: make classmethod?
     @abstractmethod
-    def compute_metrics(self, y_pred, y_quantiles: Optional[npt.NDArray], y_std: Optional[npt.NDArray], y_true, quantiles):
+    def compute_metrics(
+        self,
+        y_pred,
+        y_quantiles: Optional[npt.NDArray],
+        y_std: Optional[npt.NDArray],
+        y_true,
+        quantiles,
+    ):
         """
         Evaluate a UQ method by compute all desired metrics.
 
@@ -99,7 +112,14 @@ class UQ_Comparer(ABC):
     # todo: make classmethod?
     def compute_all_metrics(
         self,
-        uq_results: dict[str, tuple[npt.NDArray[float], Optional[npt.NDArray[float]], Optional[npt.NDArray[float]]]],
+        uq_results: dict[
+            str,
+            tuple[
+                npt.NDArray[float],
+                Optional[npt.NDArray[float]],
+                Optional[npt.NDArray[float]],
+            ],
+        ],
         y_true,
         quantiles=None,
     ):
@@ -111,7 +131,9 @@ class UQ_Comparer(ABC):
         :return:
         """
         return {
-            method_name: self.compute_metrics(y_pred, y_quantiles, y_std, y_true, quantiles=quantiles)
+            method_name: self.compute_metrics(
+                y_pred, y_quantiles, y_std, y_true, quantiles=quantiles
+            )
             for method_name, (y_pred, y_quantiles, y_std) in uq_results.items()
         }
 
@@ -132,10 +154,14 @@ class UQ_Comparer(ABC):
         return dict(starfilter(lambda k, v: k.startswith(prefix), cls.__dict__.items()))
 
     def run_posthoc_methods(self, X_train, y_train, X_test, quantiles):
-        return self._run_methods(X_train, y_train, X_test, quantiles=quantiles, uq_type="posthoc")
+        return self._run_methods(
+            X_train, y_train, X_test, quantiles=quantiles, uq_type="posthoc"
+        )
 
     def run_native_methods(self, X_train, y_train, X_test, quantiles):
-        return self._run_methods(X_train, y_train, X_test, quantiles=quantiles, uq_type="native")
+        return self._run_methods(
+            X_train, y_train, X_test, quantiles=quantiles, uq_type="native"
+        )
 
     def _run_methods(
         self, X_train, y_train, X_test, quantiles, *, uq_type
@@ -179,7 +205,9 @@ class UQ_Comparer(ABC):
         """
         num_quantiles = quantiles.shape[1]
         if num_quantiles < 50:
-            print(f'warning: {num_quantiles} quantiles are too few to compute a reliable std from (should be about 100)')
+            print(
+                f"warning: {num_quantiles} quantiles are too few to compute a reliable std from (should be about 100)"
+            )
         return np.std(quantiles, ddof=1, axis=1)
 
     @staticmethod
@@ -197,11 +225,13 @@ class UQ_Comparer(ABC):
         :param func:
         :return:
         """
+
         def optional_func(*args, **kwargs):
             pass
 
 
 # PLOTTING
+
 
 def plot_data(
     X_train,
@@ -210,6 +240,8 @@ def plot_data(
     y_test,
     figsize=(16, 5),
     ylabel="energy data",  # todo: details!
+    save_plot=True,
+    filename="data.png",
 ):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
@@ -223,10 +255,12 @@ def plot_data(
     plt.plot(x_plot_test, y_test)
     plt.ylabel(ylabel)
     plt.legend(["Training data", "Test data"])
+    if save_plot:
+        plt.savefig(filename)
     plt.show()
 
 
-def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results):
+def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=True):
     res_dict = {"native": native_results, "posthoc": posthoc_results}
     for res_type, results in res_dict.items():
         print(f"plotting {res_type} results...")
@@ -242,10 +276,13 @@ def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results)
                 y_preds,
                 plot_name=" ".join(method_name_parts),
                 uq_type=uq_type,
+                save_plot=save_plots
             )
 
 
-def plot_uq_results(X_train, X_test, y_train, y, y_quantiles, y_preds, plot_name, uq_type):
+def plot_uq_results(
+    X_train, X_test, y_train, y, y_quantiles, y_preds, plot_name, uq_type, save_plot=True
+):
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
     num_steps_total = num_train_steps + num_test_steps
@@ -282,4 +319,6 @@ def plot_uq_results(X_train, X_test, y_train, y, y_quantiles, y_preds, plot_name
     ax.set_xlabel("data")
     ax.set_ylabel("target")
     ax.set_title(f"{plot_name} ({uq_type})")
+    if save_plot:
+        plt.savefig(f"{plot_name}_{uq_type}.png")
     plt.show()
