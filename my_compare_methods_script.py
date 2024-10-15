@@ -15,7 +15,7 @@ from compare_methods import UQ_Comparer
 from helpers import get_data
 
 from conformal_prediction import (
-    train_base_model,
+    train_base_model as train_base_model_cp,
     estimate_pred_interals_no_pfit_enbpi,
 )
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
@@ -28,6 +28,9 @@ from laplace import Laplace
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 PLOT_DATA = False
 PLOT_RESULTS = False
+
+
+torch.set_default_dtype(torch.float32)
 
 
 # noinspection PyPep8Naming
@@ -76,7 +79,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 "max_depth": randint(2, 30),
                 "n_estimators": randint(10, 100),
             }
-        return train_base_model(
+        return train_base_model_cp(
             RandomForestRegressor,
             model_params_choices=model_params_choices,
             X_train=X_train,
@@ -94,9 +97,16 @@ class My_UQ_Comparer(UQ_Comparer):
         batch_size=1,
         random_state=711,
         verbose=True,
+        load_trained=True,
+        save_trained=True,
+        model_path="_laplace_base.pth",
     ):
         """
 
+        :param model_path:
+        :param save_trained:
+        :param load_trained:
+        :param verbose:
         :param X_train: shape (n_samples, n_dims)
         :param y_train: shape (n_samples, n_dims)
         :param model_params_choices:
@@ -108,14 +118,23 @@ class My_UQ_Comparer(UQ_Comparer):
         # todo: more flexibility in choosing (multiple) base models
         torch.manual_seed(random_state)
 
+        dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
         model = torch.nn.Sequential(
-            torch.nn.Linear(1, 50), torch.nn.Tanh(), torch.nn.Linear(50, 1)
-        )
+            torch.nn.Linear(dim_in, 50), torch.nn.Tanh(), torch.nn.Linear(50, dim_out)
+        ).float()
+
+        if load_trained:
+            print('skipping base model training')
+            try:
+                model = torch.load(model_path, weights_only=False)
+                model.eval()
+                return model
+            except FileNotFoundError:
+                # todo
+                print("error. model not found, so training cannot be skipped. training from scratch")
 
         # todo: consistent input expectations!
-        X_train, y_train = map(self._df_to_tensor, (X_train, y_train))
-        train_dataset = TensorDataset(X_train, y_train)
-        train_loader = DataLoader(train_dataset, batch_size=batch_size)
+        train_loader = self._get_train_loader(X_train, y_train, batch_size)
 
         criterion = torch.nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
@@ -126,33 +145,37 @@ class My_UQ_Comparer(UQ_Comparer):
                 loss = criterion(model(X), y)
                 loss.backward()
                 optimizer.step()
+        if save_trained:
+            torch.save(model, model_path)
+        model.eval()
         return model
 
-    def posthoc_conformal_prediction(
-        self, X_train, y_train, X_test, quantiles, model, random_state=42
-    ):
-        cv = BlockBootstrap(
-            n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
-        )
-        alphas = self.pis_from_quantiles(quantiles)
-        y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
-            model,
-            cv,
-            alphas,
-            X_test,
-            X_train,
-            y_train,
-            skip_base_training=True,
-        )
-        y_std = self.stds_from_quantiles(y_pis)
-        y_quantiles = None  # todo: sth with y_pis
-        return y_pred, y_quantiles, y_std
+    #
+    # def posthoc_conformal_prediction(
+    #     self, X_train, y_train, X_test, quantiles, model, random_state=42
+    # ):
+    #     cv = BlockBootstrap(
+    #         n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
+    #     )
+    #     alphas = self.pis_from_quantiles(quantiles)
+    #     y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
+    #         model,
+    #         cv,
+    #         alphas,
+    #         X_test,
+    #         X_train,
+    #         y_train,
+    #         skip_base_training=True,
+    #     )
+    #     y_std = self.stds_from_quantiles(y_pis)
+    #     y_quantiles = None  # todo: sth with y_pis
+    #     return y_pred, y_quantiles, y_std
 
     def posthoc_laplace(
         self,
-        X_train,
-        y_train,
-        X_test,
+        X_train: pd.DataFrame,
+        y_train: pd.DataFrame,
+        X_test: pd.DataFrame,
         quantiles,
         model,
         n_epochs=100,
@@ -162,8 +185,7 @@ class My_UQ_Comparer(UQ_Comparer):
     ):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
-        train_dataset = TensorDataset(X_train, y_train)
-        train_loader = DataLoader(train_dataset, batch_size=batch_size)
+        train_loader = self._get_train_loader(X_train, y_train, batch_size)
 
         la = Laplace(
             model, "regression"
@@ -189,6 +211,7 @@ class My_UQ_Comparer(UQ_Comparer):
         # # Load serialized, fitted quantities
         # la.load_state_dict(torch.load("state_dict.bin"))
 
+        X_test = self._df_to_tensor(X_test)
         f_mu, f_var = la(X_test)
 
         f_mu = f_mu.squeeze().detach().cpu().numpy()
@@ -199,13 +222,24 @@ class My_UQ_Comparer(UQ_Comparer):
         return y_pred, y_quantiles, y_std
 
     def native_quantile_regression(self, X_train, y_train, X_test, quantiles):
-        y_pred, y_quantiles = estimate_quantiles_qr(X_train, y_train, X_test, alpha=quantiles)
+        y_pred, y_quantiles = estimate_quantiles_qr(
+            X_train, y_train, X_test, alpha=quantiles
+        )
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
     @staticmethod
-    def _df_to_tensor(df: pd.DataFrame) -> torch.Tensor:
-        return torch.Tensor(df.to_numpy())
+    def _df_to_tensor(df: pd.DataFrame, dtype=float) -> torch.Tensor:
+        return torch.Tensor(df.to_numpy(dtype=dtype))
+
+    @classmethod
+    def _get_train_loader(cls, X_train, y_train, batch_size):
+        X_train, y_train = map(
+            lambda df: cls._df_to_tensor(df, dtype=float), (X_train, y_train)
+        )
+        train_dataset = TensorDataset(X_train, y_train)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size)
+        return train_loader
 
 
 def main():

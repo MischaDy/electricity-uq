@@ -46,7 +46,7 @@ class UQ_Comparer(ABC):
             print("plotting data")
             plot_data(X_train, X_test, y_train, y_test)
 
-        print("running native methods")
+        print("running UQ methods")
         native_results = self.run_native_methods(X_train, y_train, X_test, quantiles=quantiles)
         posthoc_results = self.run_posthoc_methods(X_train, y_train, X_test, quantiles=quantiles)
 
