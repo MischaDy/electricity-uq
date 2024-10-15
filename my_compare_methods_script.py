@@ -34,6 +34,8 @@ PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
 
+PLOTS_PATH = 'plots'
+
 
 torch.set_default_dtype(torch.float32)
 
@@ -98,11 +100,11 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
         model_params_choices=None,
-        n_epochs=100,
+        n_epochs=1000,
         batch_size=1,
         random_state=711,
         verbose=True,
-        load_trained=True,
+        skip_training=False,
         save_trained=True,
         model_path="_laplace_base.pth",
     ):
@@ -110,7 +112,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
         :param model_path:
         :param save_trained:
-        :param load_trained:
+        :param skip_training:
         :param verbose:
         :param X_train: shape (n_samples, n_dims)
         :param y_train: shape (n_samples, n_dims)
@@ -128,7 +130,7 @@ class My_UQ_Comparer(UQ_Comparer):
             torch.nn.Linear(dim_in, 50), torch.nn.Tanh(), torch.nn.Linear(50, dim_out)
         ).float()
 
-        if load_trained:
+        if skip_training:
             print("skipping base model training")
             try:
                 model = torch.load(model_path, weights_only=False)
@@ -185,7 +187,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_test: pd.DataFrame,
         quantiles,
         model,
-        n_epochs=100,
+        n_epochs=1000,
         batch_size=1,
         random_state=711,
         verbose=True,
@@ -274,6 +276,7 @@ def main():
         should_plot_data=PLOT_DATA,
         should_plot_results=PLOT_RESULTS,
         should_save_plots=SAVE_PLOTS,
+        plots_path=PLOTS_PATH,
     )
     print_metrics(native_metrics, posthoc_metrics)
 

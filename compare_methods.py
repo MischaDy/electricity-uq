@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -31,6 +32,7 @@ class UQ_Comparer(ABC):
         should_plot_data=True,
         should_plot_results=True,
         should_save_plots=True,
+        plots_path='.',
         return_results=False,
     ):  # -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
@@ -46,7 +48,7 @@ class UQ_Comparer(ABC):
 
         if should_plot_data:
             print("plotting data")
-            plot_data(X_train, X_test, y_train, y_test, save_plot=should_save_plots)
+            plot_data(X_train, X_test, y_train, y_test, save_plot=should_save_plots, plots_path=plots_path)
 
         print("running UQ methods")
         native_results = self.run_native_methods(
@@ -250,6 +252,7 @@ def plot_data(
     ylabel="energy data",  # todo: details!
     save_plot=True,
     filename="data.png",
+        plots_path='.',
 ):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
@@ -264,12 +267,13 @@ def plot_data(
     plt.ylabel(ylabel)
     plt.legend(["Training data", "Test data"])
     if save_plot:
-        plt.savefig(filename)
+        filepath = os.path.join(plots_path, filename)
+        plt.savefig(filepath)
     plt.show()
 
 
 def plot_intervals(
-    X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=True
+    X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=True, plots_path='.',
 ):
     res_dict = {"native": native_results, "posthoc": posthoc_results}
     for res_type, results in res_dict.items():
@@ -288,6 +292,7 @@ def plot_intervals(
                 plot_name=" ".join(method_name_parts),
                 uq_type=uq_type,
                 save_plot=save_plots,
+                plots_path=plots_path,
             )
 
 
@@ -302,6 +307,7 @@ def plot_uq_results(
     plot_name,
     uq_type,
     save_plot=True,
+        plots_path='.',
 ):
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -345,5 +351,7 @@ def plot_uq_results(
     ax.set_ylabel("target")
     ax.set_title(f"{plot_name} ({uq_type})")
     if save_plot:
-        plt.savefig(f"{plot_name}_{uq_type}.png")
+        filename = f"{plot_name}_{uq_type}.png"
+        filepath = os.path.join(plots_path, filename)
+        plt.savefig(filepath)
     plt.show()

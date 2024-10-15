@@ -17,10 +17,19 @@ def download_pretrained_model():
 
 
 def plot_regression(
-    X_train, y_train, X_test, f_test, y_std, plot=True, save=True, file_name="regression_example", figsize=(4.5, 2.8), file_path='docs'
+    X_train,
+    y_train,
+    X_test,
+    f_test,
+    y_std,
+    plot=True,
+    save=True,
+    file_name="regression_example",
+    figsize=(4.5, 2.8),
+    file_path="docs",
 ):
     assert plot or save
-    
+
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, sharey=True, figsize=figsize)
     ax1.set_title("MAP")
     ax1.scatter(X_train.flatten(), y_train.flatten(), alpha=0.3, color="tab:orange")
