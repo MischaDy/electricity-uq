@@ -8,6 +8,8 @@ from mapie.subsample import BlockBootstrap
 
 from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF
 from sklearn.metrics import mean_pinball_loss
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
@@ -231,6 +233,19 @@ class My_UQ_Comparer(UQ_Comparer):
             X_train, y_train, X_test, alpha=quantiles
         )
         y_std = self.stds_from_quantiles(y_quantiles)
+        return y_pred, y_quantiles, y_std
+
+    def native_gp(self, X_train, y_train, X_test, quantiles):
+        kernel = 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
+        gaussian_process = GaussianProcessRegressor(
+            kernel=kernel, n_restarts_optimizer=200
+        )
+        gaussian_process.fit(X_train, y_train)
+
+        mean_prediction, std_prediction = gaussian_process.predict(
+            X_test, return_std=True
+        )
+        y_pred, y_quantiles, y_std = mean_prediction, None, std_prediction
         return y_pred, y_quantiles, y_std
 
     @staticmethod
