@@ -1,4 +1,6 @@
 import numpy as np
+import numpy.typing as npt
+
 import pandas as pd
 from mapie.subsample import BlockBootstrap
 
@@ -6,6 +8,7 @@ from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_pinball_loss
 from torch.utils.data import TensorDataset, DataLoader
+from tqdm import tqdm
 from uncertainty_toolbox.metrics_scoring_rule import crps_gaussian, nll_gaussian
 
 from compare_methods import UQ_Comparer
@@ -36,9 +39,17 @@ class My_UQ_Comparer(UQ_Comparer):
     def compute_metrics(self, y_pred, y_quantiles, y_std, y_true, quantiles=None):
         y_true_np = y_true.to_numpy().squeeze()
         metrics = {  # todo: improve
-            "crps": crps_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None,
-            "neg_log_lik": nll_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None,
-            "mean_pinball": self._mean_pinball_loss(y_pred, y_quantiles, quantiles) if y_quantiles is not None else None,
+            "crps": (
+                crps_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None
+            ),
+            "neg_log_lik": (
+                nll_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None
+            ),
+            "mean_pinball": (
+                self._mean_pinball_loss(y_pred, y_quantiles, quantiles)
+                if y_quantiles is not None
+                else None
+            ),
         }
         return metrics
 
@@ -51,8 +62,12 @@ class My_UQ_Comparer(UQ_Comparer):
         :param quantiles:
         :return:
         """
-        return np.mean([mean_pinball_loss(y_true, y_quantiles[:, ind], alpha=quantile)
-                        for ind, quantile in enumerate(quantiles)])
+        return np.mean(
+            [
+                mean_pinball_loss(y_true, y_quantiles[:, ind], alpha=quantile)
+                for ind, quantile in enumerate(quantiles)
+            ]
+        )
 
     def train_base_model_normal(self, X_train, y_train, model_params_choices=None):
         # todo: more flexibility in choosing (multiple) base models
@@ -78,7 +93,18 @@ class My_UQ_Comparer(UQ_Comparer):
         n_epochs=100,
         batch_size=1,
         random_state=711,
+        verbose=True,
     ):
+        """
+
+        :param X_train: shape (n_samples, n_dims)
+        :param y_train: shape (n_samples, n_dims)
+        :param model_params_choices:
+        :param n_epochs:
+        :param batch_size:
+        :param random_state:
+        :return:
+        """
         # todo: more flexibility in choosing (multiple) base models
         torch.manual_seed(random_state)
 
@@ -93,7 +119,8 @@ class My_UQ_Comparer(UQ_Comparer):
 
         criterion = torch.nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
-        for i in range(n_epochs):
+        iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
+        for _ in iterable:
             for X, y in train_loader:
                 optimizer.zero_grad()
                 loss = criterion(model(X), y)
@@ -131,6 +158,7 @@ class My_UQ_Comparer(UQ_Comparer):
         n_epochs=100,
         batch_size=1,
         random_state=711,
+        verbose=True,
     ):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
@@ -146,7 +174,8 @@ class My_UQ_Comparer(UQ_Comparer):
             torch.ones(1, requires_grad=True),
         )
         hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
-        for i in range(n_epochs):
+        iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
+        for _ in iterable:
             hyper_optimizer.zero_grad()
             neg_marglik = -la.log_marginal_likelihood(log_prior.exp(), log_sigma.exp())
             neg_marglik.backward()
@@ -160,61 +189,13 @@ class My_UQ_Comparer(UQ_Comparer):
         # # Load serialized, fitted quantities
         # la.load_state_dict(torch.load("state_dict.bin"))
 
-        # x = X_test.flatten().cpu().numpy()
-
-        # Two options:
-        # 1.) Marginal predictive distribution N(f_map(x_i), var(x_i))
-        # The mean is (m,k), the var is (m,k,k)
         f_mu, f_var = la(X_test)
-
-        # # 2.) Joint pred. dist. N((f_map(x_1),...,f_map(x_m)), Cov(f(x_1),...,f(x_m)))
-        # # The mean is (m*k,) where k is the output dim. The cov is (m*k,m*k)
-        # f_mu_joint, f_cov = la(X_test, joint=True)
-
-        # # Both should be true
-        # assert torch.allclose(f_mu.flatten(), f_mu_joint)
-        # assert torch.allclose(f_var.flatten(), f_cov.diag())
 
         f_mu = f_mu.squeeze().detach().cpu().numpy()
         f_sigma = f_var.squeeze().detach().sqrt().cpu().numpy()
         pred_std = np.sqrt(f_sigma**2 + la.sigma_noise.item() ** 2)
 
-        # plot_regression(
-        #     X_train, y_train, x, f_mu, pred_std, file_name="regression_example", plot=True, file_path='.'
-        # )
-
         y_pred, y_quantiles, y_std = f_mu, None, pred_std
-
-        # model = get_model()
-        # la, model, margliks, losses = marglik_training(
-        #     model=model,
-        #     train_loader=train_loader,
-        #     likelihood="regression",
-        #     hessian_structure="full",
-        #     backend=BackPackGGN,
-        #     n_epochs=n_epochs,
-        #     optimizer_kwargs={"lr": 1e-2},
-        #     prior_structure="scalar",
-        # )
-        #
-        # print(
-        #     f"sigma={la.sigma_noise.item():.2f}",
-        #     f"prior precision={la.prior_precision.numpy()}",
-        # )
-        #
-        # f_mu, f_var = la(X_test)
-        # f_mu = f_mu.squeeze().detach().cpu().numpy()
-        # f_sigma = f_var.squeeze().sqrt().cpu().numpy()
-        # pred_std = np.sqrt(f_sigma**2 + la.sigma_noise.item() ** 2)
-        # plot_regression(
-        #     X_train,
-        #     y_train,
-        #     x,
-        #     f_mu,
-        #     pred_std,
-        #     file_name="regression_example_online",
-        #     plot=False,
-        # )
         return y_pred, y_quantiles, y_std
 
     def native_quantile_regression(self, X_train, y_train, X_test, quantiles):
@@ -229,7 +210,9 @@ class My_UQ_Comparer(UQ_Comparer):
 
 def main():
     uq_comparer = My_UQ_Comparer()
-    uq_comparer.compare_methods(QUANTILES, should_plot_data=PLOT_DATA, should_plot_results=PLOT_RESULTS)
+    uq_comparer.compare_methods(
+        QUANTILES, should_plot_data=PLOT_DATA, should_plot_results=PLOT_RESULTS
+    )
 
 
 if __name__ == "__main__":
