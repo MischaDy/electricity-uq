@@ -58,7 +58,15 @@ class UQ_Comparer(ABC):
 
         if should_plot_results:
             print("plotting native vs posthoc results")
-            plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=should_save_plots)
+            plot_intervals(
+                X_train,
+                y_train,
+                X_test,
+                y,
+                native_results,
+                posthoc_results,
+                save_plots=should_save_plots,
+            )
 
         print("computing and comparing metrics")
         native_metrics, posthoc_metrics = (
@@ -260,7 +268,9 @@ def plot_data(
     plt.show()
 
 
-def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=True):
+def plot_intervals(
+    X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=True
+):
     res_dict = {"native": native_results, "posthoc": posthoc_results}
     for res_type, results in res_dict.items():
         print(f"plotting {res_type} results...")
@@ -272,16 +282,26 @@ def plot_intervals(X_train, y_train, X_test, y, native_results, posthoc_results,
                 X_test,
                 y_train,
                 y,
-                y_quantiles,
                 y_preds,
+                y_quantiles,
+                y_std,
                 plot_name=" ".join(method_name_parts),
                 uq_type=uq_type,
-                save_plot=save_plots
+                save_plot=save_plots,
             )
 
 
 def plot_uq_results(
-    X_train, X_test, y_train, y, y_quantiles, y_preds, plot_name, uq_type, save_plot=True
+    X_train,
+    X_test,
+    y_train,
+    y,
+    y_preds,
+    y_quantiles,
+    y_std,
+    plot_name,
+    uq_type,
+    save_plot=True,
 ):
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -307,13 +327,18 @@ def plot_uq_results(
         label=f"mean/median prediction {plot_name}",  # todo: mean or median?
         color="green",
     )
+
+    if y_std is None:
+        ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1],
+    else:
+        ci_low, ci_high = y_preds - y_std/2, y_preds + y_std/2
     ax.fill_between(
         x_plot_test.ravel(),
-        y_quantiles[:, 0],
-        y_quantiles[:, 1],
+        ci_low,
+        ci_high,
         color="green",
         alpha=0.2,
-        label=rf"{plot_name} 95% CI",  # todo: should depend on alpha!
+        label=rf"{plot_name} CI",  # todo: should depend on alpha!
     )
     ax.legend()
     ax.set_xlabel("data")

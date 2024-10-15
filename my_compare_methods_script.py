@@ -30,7 +30,7 @@ from laplace import Laplace
 
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
-PLOT_DATA = True
+PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
 
