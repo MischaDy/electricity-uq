@@ -15,7 +15,8 @@ from sklearn.metrics import mean_pinball_loss
 from statsmodels.tools.eval_measures import rmse
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
-from uncertainty_toolbox.metrics_scoring_rule import crps_gaussian, nll_gaussian
+from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
+from properscoring import crps_ensemble
 
 from compare_methods import UQ_Comparer
 from helpers import get_data
@@ -73,7 +74,7 @@ class My_UQ_Comparer(UQ_Comparer):
             "rmse": rmse(y_true, y_pred),
             "smape": smape(y_true, y_pred) / 100,  # scale down to [0, 1]
             "crps": (
-                crps_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None
+                crps_ensemble(y_pred, y_std, y_true_np) if y_std is not None else None
             ),
             "neg_log_lik": (
                 nll_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None
