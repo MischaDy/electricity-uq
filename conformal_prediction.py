@@ -332,8 +332,8 @@ def estimate_pred_interals_no_pfit_enbpi(
     :param y_train:
     :param skip_base_training:
     :return: tuple (y_pred, y_prediction_intervals) of shapes (n_samples,) and (n_samples, 2, n_alpha).
-    [:, 0, :]: Lower bound of the prediction interval.
-    [:, 1, :]: Upper bound of the prediction interval.
+    [:, 0, alpha]: Lower bound of the prediction interval corresp. to confidence level alpha.
+    [:, 1, alpha]: Upper bound of the prediction interval corresp. to confidence level alpha.
     """
     # todo: return type taken from mapie
     try:

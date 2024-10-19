@@ -123,3 +123,13 @@ def check_is_ordered(pred, pis):
 
 def starfilter(pred, iterable):
     return filter(lambda args: pred(*args), iterable)
+
+
+def identity(*args):
+    if len(args) > 2:
+        res = args
+    elif len(args) == 1:
+        res = args[0]
+    else:
+        res = None
+    return res

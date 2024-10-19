@@ -274,7 +274,13 @@ class UQ_Comparer(ABC):
         first, second = quantiles[:mid], quantiles[mid:]
         pi_limits = zip(first, reversed(second))
         pis = [high - low for low, high in pi_limits]
-        return pis
+        return sorted(pis)
+
+    @staticmethod
+    def quantiles_from_pis(pis):
+        # todo
+        for pi in pis:
+            pass
 
     @staticmethod
     def optional(func):

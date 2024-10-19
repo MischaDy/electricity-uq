@@ -5,12 +5,14 @@ import numpy.typing as npt
 
 import pandas as pd
 from mapie.subsample import BlockBootstrap
+from pmdarima.metrics import smape
 
 from scipy.stats import randint
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.metrics import mean_pinball_loss
+from statsmodels.tools.eval_measures import rmse
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 from uncertainty_toolbox.metrics_scoring_rule import crps_gaussian, nll_gaussian
@@ -36,11 +38,12 @@ METHOD_WHITELIST = [
     "native_gp",
 ]
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
+
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
 
-PLOTS_PATH = 'plots'
+PLOTS_PATH = "plots"
 
 torch.set_default_dtype(torch.float32)
 
@@ -51,9 +54,24 @@ class My_UQ_Comparer(UQ_Comparer):
     def get_data(self, _n_points_per_group=100):
         return get_data(_n_points_per_group, return_full_data=True)
 
+    # todo: type hints!
     def compute_metrics(self, y_pred, y_quantiles, y_std, y_true, quantiles=None):
+        """
+
+        :param y_pred: predicted y-values
+        :param y_quantiles:
+        :param y_std:
+        :param y_true:
+        :param quantiles:
+        :return:
+        """
         y_true_np = y_true.to_numpy().squeeze()
+        # todo: sharpness? calibration? PIT? coverage?
+        # todo: skill score (but what to use as benchmark)?
+
         metrics = {  # todo: improve
+            "rmse": rmse(y_true, y_pred),
+            "smape": smape(y_true, y_pred) / 100,  # scale down to [0, 1]
             "crps": (
                 crps_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None
             ),
@@ -109,7 +127,7 @@ class My_UQ_Comparer(UQ_Comparer):
         batch_size=1,
         random_state=711,
         verbose=True,
-        skip_training=False,
+        skip_training=True,
         save_trained=True,
         model_path="_laplace_base.pth",
     ):
@@ -164,26 +182,26 @@ class My_UQ_Comparer(UQ_Comparer):
         model.eval()
         return model
 
-    #
-    # def posthoc_conformal_prediction(
-    #     self, X_train, y_train, X_test, quantiles, model, random_state=42
-    # ):
-    #     cv = BlockBootstrap(
-    #         n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
-    #     )
-    #     alphas = self.pis_from_quantiles(quantiles)
-    #     y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
-    #         model,
-    #         cv,
-    #         alphas,
-    #         X_test,
-    #         X_train,
-    #         y_train,
-    #         skip_base_training=True,
-    #     )
-    #     y_std = self.stds_from_quantiles(y_pis)
-    #     y_quantiles = None  # todo: sth with y_pis
-    #     return y_pred, y_quantiles, y_std
+    def posthoc_conformal_prediction(
+        self, X_train, y_train, X_test, quantiles, model, random_state=42
+    ):
+        cv = BlockBootstrap(
+            n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
+        )
+        alphas = self.pis_from_quantiles(quantiles)
+        y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
+            model,
+            cv,
+            alphas,
+            X_test,
+            X_train,
+            y_train,
+            skip_base_training=True,
+        )
+        # todo!
+        y_quantiles = None  # self.quantiles_from_pis(y_pis)
+        y_std = None  # self.stds_from_quantiles(y_quantiles)
+        return y_pred, y_quantiles, y_std
 
     def posthoc_laplace(
         self,
