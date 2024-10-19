@@ -1,3 +1,4 @@
+import copy
 import os
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -32,10 +33,14 @@ class UQ_Comparer(ABC):
         should_plot_data=True,
         should_plot_results=True,
         should_save_plots=True,
-        plots_path='.',
+        plots_path=".",
         return_results=False,
+        skip_deepcopy=False,
     ):  # -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
+        :param skip_deepcopy:
+        :param plots_path:
+        :param should_save_plots:
         :param quantiles:
         :param should_plot_data:
         :param should_plot_results:
@@ -48,14 +53,21 @@ class UQ_Comparer(ABC):
 
         if should_plot_data:
             print("plotting data")
-            plot_data(X_train, X_test, y_train, y_test, save_plot=should_save_plots, plots_path=plots_path)
+            plot_data(
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                save_plot=should_save_plots,
+                plots_path=plots_path,
+            )
 
         print("running UQ methods")
         native_results = self.run_native_methods(
             X_train, y_train, X_test, quantiles=quantiles
         )
         posthoc_results = self.run_posthoc_methods(
-            X_train, y_train, X_test, quantiles=quantiles
+            X_train, y_train, X_test, quantiles=quantiles, skip_deepcopy=skip_deepcopy
         )
 
         if should_plot_results:
@@ -68,6 +80,7 @@ class UQ_Comparer(ABC):
                 native_results,
                 posthoc_results,
                 save_plots=should_save_plots,
+                plots_path=plots_path,
             )
 
         print("computing and comparing metrics")
@@ -153,19 +166,28 @@ class UQ_Comparer(ABC):
 
     @classmethod
     def get_posthoc_methods(cls):
-        return cls._get_methods_by_prefix("posthoc")
+        return cls._get_uq_methods_by_type("posthoc")
 
     @classmethod
     def get_native_methods(cls):
-        return cls._get_methods_by_prefix("native")
+        return cls._get_uq_methods_by_type("native")
 
-    @classmethod
-    def _get_methods_by_prefix(cls, prefix):
-        return dict(starfilter(lambda k, v: k.startswith(prefix), cls.__dict__.items()))
+    def _get_uq_methods_by_type(self, uq_type: str):
+        """
 
-    def run_posthoc_methods(self, X_train, y_train, X_test, quantiles):
+        :param uq_type: one of "native", "posthoc"
+        :return: all instance methods (i.e. callable attributes) with prefix given by uq_type
+        """
+        for attr_name in self.__class__.__dict__.keys():
+            attr = getattr(self, attr_name)
+            if attr_name.startswith(uq_type) and callable(attr):
+                yield attr_name, attr
+
+    def run_posthoc_methods(
+        self, X_train, y_train, X_test, quantiles, skip_deepcopy=False,
+    ):
         return self._run_methods(
-            X_train, y_train, X_test, quantiles=quantiles, uq_type="posthoc"
+            X_train, y_train, X_test, quantiles=quantiles, uq_type="posthoc", skip_deepcopy=skip_deepcopy,
         )
 
     def run_native_methods(self, X_train, y_train, X_test, quantiles):
@@ -174,10 +196,11 @@ class UQ_Comparer(ABC):
         )
 
     def _run_methods(
-        self, X_train, y_train, X_test, quantiles, *, uq_type
+        self, X_train, y_train, X_test, quantiles, *, uq_type, skip_deepcopy=False,
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 
+        :param skip_deepcopy: whether to skip making a deepcopy of the base model. speed up execution, but can lead to bugs if posthoc method affects the base model object. ignored for native methods
         :param X_train:
         :param y_train:
         :param X_test:
@@ -190,19 +213,18 @@ class UQ_Comparer(ABC):
             print("training base model")
             base_model = self.train_base_model(X_train, y_train)
         print(f"running {uq_type} methods")
-        uq_method_names = filter(
-            lambda name: name.startswith(uq_type), self.__class__.__dict__.keys()
-        )
         uq_results = {}
-        for method_name in uq_method_names:
-            # todo: pass deepcopy instead?
-            method = getattr(self, method_name)
-            # noinspection PyUnboundLocalVariable
-            y_pred, y_quantiles, y_std = (
-                method(X_train, y_train, X_test, quantiles, base_model)
-                if is_posthoc
-                else method(X_train, y_train, X_test, quantiles)
-            )
+        for method_name, method in self._get_uq_methods_by_type(uq_type):
+            if is_posthoc:
+                # noinspection PyUnboundLocalVariable
+                base_model_copy = (
+                    copy.deepcopy(base_model) if not skip_deepcopy else base_model
+                )
+                y_pred, y_quantiles, y_std = method(
+                    X_train, y_train, X_test, quantiles, base_model_copy
+                )
+            else:
+                y_pred, y_quantiles, y_std = method(X_train, y_train, X_test, quantiles)
             uq_results[method_name] = y_pred, y_quantiles, y_std
         return uq_results
 
@@ -252,7 +274,7 @@ def plot_data(
     ylabel="energy data",  # todo: details!
     save_plot=True,
     filename="data.png",
-        plots_path='.',
+    plots_path=".",
 ):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
@@ -273,7 +295,14 @@ def plot_data(
 
 
 def plot_intervals(
-    X_train, y_train, X_test, y, native_results, posthoc_results, save_plots=True, plots_path='.',
+    X_train,
+    y_train,
+    X_test,
+    y,
+    native_results,
+    posthoc_results,
+    save_plots=True,
+    plots_path=".",
 ):
     res_dict = {"native": native_results, "posthoc": posthoc_results}
     for res_type, results in res_dict.items():
@@ -307,7 +336,7 @@ def plot_uq_results(
     plot_name,
     uq_type,
     save_plot=True,
-        plots_path='.',
+    plots_path=".",
 ):
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -335,9 +364,12 @@ def plot_uq_results(
     )
 
     if y_std is None:
-        ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1],
+        ci_low, ci_high = (
+            y_quantiles[:, 0],
+            y_quantiles[:, -1],
+        )
     else:
-        ci_low, ci_high = y_preds - y_std/2, y_preds + y_std/2
+        ci_low, ci_high = y_preds - y_std / 2, y_preds + y_std / 2
     ax.fill_between(
         x_plot_test.ravel(),
         ci_low,
