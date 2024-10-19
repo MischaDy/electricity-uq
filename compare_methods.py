@@ -27,6 +27,9 @@ class UQ_Comparer(ABC):
     4. Call compare_methods from the child class
     """
 
+    def __init__(self, method_whitelist=None):
+        self.method_whitelist = method_whitelist
+
     def compare_methods(
         self,
         quantiles,
@@ -184,10 +187,20 @@ class UQ_Comparer(ABC):
                 yield attr_name, attr
 
     def run_posthoc_methods(
-        self, X_train, y_train, X_test, quantiles, skip_deepcopy=False,
+        self,
+        X_train,
+        y_train,
+        X_test,
+        quantiles,
+        skip_deepcopy=False,
     ):
         return self._run_methods(
-            X_train, y_train, X_test, quantiles=quantiles, uq_type="posthoc", skip_deepcopy=skip_deepcopy,
+            X_train,
+            y_train,
+            X_test,
+            quantiles=quantiles,
+            uq_type="posthoc",
+            skip_deepcopy=skip_deepcopy,
         )
 
     def run_native_methods(self, X_train, y_train, X_test, quantiles):
@@ -196,11 +209,19 @@ class UQ_Comparer(ABC):
         )
 
     def _run_methods(
-        self, X_train, y_train, X_test, quantiles, *, uq_type, skip_deepcopy=False,
+        self,
+        X_train,
+        y_train,
+        X_test,
+        quantiles,
+        *,
+        uq_type,
+        skip_deepcopy=False,
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 
-        :param skip_deepcopy: whether to skip making a deepcopy of the base model. speed up execution, but can lead to bugs if posthoc method affects the base model object. ignored for native methods
+        :param skip_deepcopy: whether to skip making a deepcopy of the base model. speed up execution, but can lead to
+         bugs if posthoc method affects the base model object. ignored for native methods
         :param X_train:
         :param y_train:
         :param X_test:
@@ -213,8 +234,13 @@ class UQ_Comparer(ABC):
             print("training base model")
             base_model = self.train_base_model(X_train, y_train)
         print(f"running {uq_type} methods")
+        uq_methods = self._get_uq_methods_by_type(uq_type)
+        if self.method_whitelist is not None:
+            uq_methods = starfilter(
+                lambda name, _: name in self.method_whitelist, uq_methods
+            )
         uq_results = {}
-        for method_name, method in self._get_uq_methods_by_type(uq_type):
+        for method_name, method in uq_methods:
             if is_posthoc:
                 # noinspection PyUnboundLocalVariable
                 base_model_copy = (

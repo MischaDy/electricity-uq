@@ -29,13 +29,18 @@ import torch
 from laplace import Laplace
 
 
+METHOD_WHITELIST = [
+    "posthoc_conformal_prediction",
+    # "posthoc_laplace",
+    "native_quantile_regression",
+    "native_gp",
+]
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
 
 PLOTS_PATH = 'plots'
-
 
 torch.set_default_dtype(torch.float32)
 
@@ -270,7 +275,7 @@ def print_metrics(native_metrics, posthoc_metrics):
 
 
 def main():
-    uq_comparer = My_UQ_Comparer()
+    uq_comparer = My_UQ_Comparer(METHOD_WHITELIST)
     native_metrics, posthoc_metrics = uq_comparer.compare_methods(
         QUANTILES,
         should_plot_data=PLOT_DATA,
