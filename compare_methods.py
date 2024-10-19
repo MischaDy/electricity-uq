@@ -335,6 +335,9 @@ def plot_intervals(
         print(f"plotting {res_type} results...")
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in results.items():
+            if y_quantiles is None and y_std is None:
+                print(f'warning: cannot plot method {method_name}, because both y_quantiles and y_std are None')
+                continue
             uq_type, *method_name_parts = method_name.split("_")
             plot_uq_results(
                 X_train,
