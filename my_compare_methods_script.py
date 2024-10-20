@@ -41,7 +41,7 @@ METHOD_WHITELIST = [
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
 PLOT_DATA = False
-PLOT_RESULTS = True
+PLOT_RESULTS = False  # todo: fix plotting timing!
 SAVE_PLOTS = True
 
 PLOTS_PATH = "plots"
@@ -71,8 +71,8 @@ class My_UQ_Comparer(UQ_Comparer):
         # todo: skill score (but what to use as benchmark)?
 
         metrics = {  # todo: improve
-            "rmse": rmse(y_true, y_pred),
-            "smape": smape(y_true, y_pred) / 100,  # scale down to [0, 1]
+            "rmse": rmse(y_true_np, y_pred),
+            "smape": smape(y_true_np, y_pred) / 100,  # scale down to [0, 1]
             "crps": (
                 crps_ensemble(y_pred, y_std, y_true_np) if y_std is not None else None
             ),
