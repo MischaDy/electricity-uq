@@ -35,16 +35,21 @@ from laplace import Laplace
 METHOD_WHITELIST = [
     "posthoc_conformal_prediction",
     # "posthoc_laplace",
-    "native_quantile_regression",
-    "native_gp",
+    # "native_quantile_regression",
+    # "native_gp",
 ]
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
 PLOT_DATA = False
-PLOT_RESULTS = False  # todo: fix plotting timing!
+PLOT_RESULTS = True  # todo: fix plotting timing!
 SAVE_PLOTS = True
 
 PLOTS_PATH = "plots"
+
+BASE_MODEL_PARAMS = {
+    'load_trained_model': False,
+    # 'model_params_choices': None,
+}
 
 torch.set_default_dtype(torch.float32)
 
@@ -103,7 +108,7 @@ class My_UQ_Comparer(UQ_Comparer):
             ]
         )
 
-    def train_base_model_normal(self, X_train, y_train, model_params_choices=None):
+    def train_base_model(self, X_train, y_train, model_params_choices=None, load_trained_model=False):
         # todo: more flexibility in choosing (multiple) base models
         if model_params_choices is None:
             model_params_choices = {
@@ -115,11 +120,11 @@ class My_UQ_Comparer(UQ_Comparer):
             model_params_choices=model_params_choices,
             X_train=X_train,
             y_train=y_train,
-            load_trained_model=True,
+            load_trained_model=load_trained_model,
             cv_n_iter=10,
         )
 
-    def train_base_model(
+    def train_base_model2(
         self,
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
@@ -301,6 +306,7 @@ def main():
         should_plot_results=PLOT_RESULTS,
         should_save_plots=SAVE_PLOTS,
         plots_path=PLOTS_PATH,
+        base_model_params=BASE_MODEL_PARAMS
     )
     print_metrics(native_metrics, posthoc_metrics)
 

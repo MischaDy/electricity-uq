@@ -39,8 +39,10 @@ class UQ_Comparer(ABC):
         plots_path=".",
         return_results=False,
         skip_deepcopy=False,
+        base_model_params=None,
     ):  # -> tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
+        :param base_model_params:
         :param skip_deepcopy:
         :param plots_path:
         :param should_save_plots:
@@ -66,12 +68,10 @@ class UQ_Comparer(ABC):
             )
 
         print("running UQ methods")
-        native_results = self.run_native_methods(
-            X_train, y_train, X_test, quantiles=quantiles
+        uq_results = self.run_all_methods(
+            X_train, y_train, X_test, quantiles=quantiles, skip_deepcopy=skip_deepcopy, base_model_params=base_model_params
         )
-        posthoc_results = self.run_posthoc_methods(
-            X_train, y_train, X_test, quantiles=quantiles, skip_deepcopy=skip_deepcopy
-        )
+        native_results, posthoc_results = uq_results['native'], uq_results['posthoc']
 
         if should_plot_results:
             print("plotting native vs posthoc results")
@@ -186,6 +186,39 @@ class UQ_Comparer(ABC):
             if attr_name.startswith(uq_type) and callable(attr):
                 yield attr_name, attr
 
+    def run_all_methods(
+        self,
+        X_train,
+        y_train,
+        X_test,
+        quantiles,
+        skip_deepcopy=False,
+        base_model_params=None,
+    ):
+        """
+
+        :param X_train:
+        :param y_train:
+        :param X_test:
+        :param quantiles:
+        :param skip_deepcopy:
+        :param base_model_params:
+        :return: dict of results: {'posthoc': posthoc_results, 'native': native_results\
+        """
+        uq_results = {}
+        for uq_type in ['posthoc', 'native']:
+            uq_result = self._run_methods(
+                X_train,
+                y_train,
+                X_test,
+                quantiles=quantiles,
+                uq_type=uq_type,
+                skip_deepcopy=skip_deepcopy,
+                base_model_params=base_model_params,
+            )
+            uq_results[uq_type] = uq_result
+        return uq_result
+
     def run_posthoc_methods(
         self,
         X_train,
@@ -193,6 +226,7 @@ class UQ_Comparer(ABC):
         X_test,
         quantiles,
         skip_deepcopy=False,
+        base_model_params=None,
     ):
         return self._run_methods(
             X_train,
@@ -201,11 +235,18 @@ class UQ_Comparer(ABC):
             quantiles=quantiles,
             uq_type="posthoc",
             skip_deepcopy=skip_deepcopy,
+            base_model_params=base_model_params,
         )
 
-    def run_native_methods(self, X_train, y_train, X_test, quantiles):
+    def run_native_methods(
+        self, X_train, y_train, X_test, quantiles,
+    ):
         return self._run_methods(
-            X_train, y_train, X_test, quantiles=quantiles, uq_type="native"
+            X_train,
+            y_train,
+            X_test,
+            quantiles=quantiles,
+            uq_type="native",
         )
 
     def _run_methods(
@@ -217,9 +258,11 @@ class UQ_Comparer(ABC):
         *,
         uq_type,
         skip_deepcopy=False,
+        base_model_params: dict = None,
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 
+        : param base_model_params:
         :param skip_deepcopy: whether to skip making a deepcopy of the base model. speed up execution, but can lead to
          bugs if posthoc method affects the base model object. ignored for native methods
         :param X_train:
@@ -232,7 +275,9 @@ class UQ_Comparer(ABC):
         is_posthoc = uq_type == "posthoc"
         if is_posthoc:
             print("training base model")
-            base_model = self.train_base_model(X_train, y_train)
+            if base_model_params is None:
+                base_model_params = {}
+            base_model = self.train_base_model(X_train, y_train, **base_model_params)
         print(f"running {uq_type} methods")
         uq_methods = self._get_uq_methods_by_type(uq_type)
         if self.method_whitelist is not None:
@@ -342,7 +387,9 @@ def plot_intervals(
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in results.items():
             if y_quantiles is None and y_std is None:
-                print(f'warning: cannot plot method {method_name}, because both y_quantiles and y_std are None')
+                print(
+                    f"warning: cannot plot method {method_name}, because both y_quantiles and y_std are None"
+                )
                 continue
             uq_type, *method_name_parts = method_name.split("_")
             plot_uq_results(
