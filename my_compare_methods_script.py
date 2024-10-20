@@ -48,6 +48,7 @@ PLOTS_PATH = "plots"
 
 BASE_MODEL_PARAMS = {
     'load_trained_model': False,
+    'n_jobs': -1,
     # 'model_params_choices': None,
 }
 
@@ -108,7 +109,7 @@ class My_UQ_Comparer(UQ_Comparer):
             ]
         )
 
-    def train_base_model(self, X_train, y_train, model_params_choices=None, load_trained_model=False):
+    def train_base_model(self, X_train, y_train, model_params_choices=None, load_trained_model=False, n_jobs=2):
         # todo: more flexibility in choosing (multiple) base models
         if model_params_choices is None:
             model_params_choices = {
@@ -122,6 +123,7 @@ class My_UQ_Comparer(UQ_Comparer):
             y_train=y_train,
             load_trained_model=load_trained_model,
             cv_n_iter=10,
+            n_jobs=n_jobs,
         )
 
     def train_base_model2(

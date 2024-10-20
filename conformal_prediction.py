@@ -108,6 +108,7 @@ def train_base_model(
     y_train=None,
     load_trained_model=True,
     cv_n_iter=100,
+    n_jobs=2,  # -1
 ):
     """Optimize the base estimator
 
@@ -150,7 +151,7 @@ def train_base_model(
         scoring="neg_root_mean_squared_error",
         random_state=random_state,
         verbose=1,
-        n_jobs=-1,
+        n_jobs=n_jobs,
     )
     cv_obj.fit(X_train, y_train.values.ravel())
     model = cv_obj.best_estimator_
