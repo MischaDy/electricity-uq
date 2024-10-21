@@ -3,6 +3,7 @@ import pickle
 
 import numpy as np
 import pandas as pd
+import torch
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 
@@ -78,10 +79,7 @@ class IO_Helper:
         self.plots_folder = os.path.join(base_folder, plots_folder)
         self.folders = [self.arrays_folder, self.models_folder, self.plots_folder]
         for folder in self.folders:
-            try:
-                os.mkdir(folder)
-            except FileExistsError:
-                pass
+            os.makedirs(folder, exist_ok=True)
 
     def get_array_savepath(self, filename):
         return os.path.join(self.arrays_folder, filename)
@@ -97,6 +95,16 @@ class IO_Helper:
 
     def load_model(self, filename):
         return pickle.load(open(self.get_model_savepath(filename), "rb"))
+
+    def load_torch_model(self, filename, *args, **kwargs):
+        """
+
+        :param filename:
+        :param args: args for torch.load
+        :param kwargs: kwargs for torch.load
+        :return:
+        """
+        return torch.load(filename, *args, **kwargs)
 
     def save_array(self, array, filename):
         np.save(self.get_array_savepath(filename), array)

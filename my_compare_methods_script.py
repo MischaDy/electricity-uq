@@ -19,7 +19,7 @@ from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
 from properscoring import crps_ensemble
 
 from compare_methods import UQ_Comparer
-from helpers import get_data
+from helpers import get_data, IO_Helper
 
 from conformal_prediction import (
     train_base_model as train_base_model_cp,
@@ -47,8 +47,8 @@ SAVE_PLOTS = True
 PLOTS_PATH = "plots"
 
 BASE_MODEL_PARAMS = {
-    'load_trained_model': False,
-    'n_jobs': -1,
+    'skip_training': True,
+    # 'n_jobs': -1,
     # 'model_params_choices': None,
 }
 
@@ -57,6 +57,16 @@ torch.set_default_dtype(torch.float32)
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
+    def __init__(self, storage_path='comparison_storage', *args, **kwargs):
+        """
+
+        :param storage_path:
+        :param args: passed to super.__init__
+        :param kwargs: passed to super.__init__
+        """
+        super().__init__(*args, **kwargs)
+        self.io_helper = IO_Helper(storage_path)
+
     # todo: remove param?
     def get_data(self, _n_points_per_group=100):
         return get_data(_n_points_per_group, return_full_data=True)
@@ -109,7 +119,7 @@ class My_UQ_Comparer(UQ_Comparer):
             ]
         )
 
-    def train_base_model(self, X_train, y_train, model_params_choices=None, load_trained_model=False, n_jobs=2):
+    def train_base_model(self, X_train, y_train, model_params_choices=None, skip_training=True, n_jobs=-1):
         # todo: more flexibility in choosing (multiple) base models
         if model_params_choices is None:
             model_params_choices = {
@@ -121,9 +131,10 @@ class My_UQ_Comparer(UQ_Comparer):
             model_params_choices=model_params_choices,
             X_train=X_train,
             y_train=y_train,
-            load_trained_model=load_trained_model,
+            skip_training=skip_training,
             cv_n_iter=10,
             n_jobs=n_jobs,
+            io_helper=self.io_helper
         )
 
     def train_base_model2(
@@ -137,11 +148,11 @@ class My_UQ_Comparer(UQ_Comparer):
         verbose=True,
         skip_training=True,
         save_trained=True,
-        model_path="_laplace_base.pth",
+        model_filename="_laplace_base.pth",
     ):
         """
 
-        :param model_path:
+        :param model_filename:
         :param save_trained:
         :param skip_training:
         :param verbose:
@@ -164,7 +175,7 @@ class My_UQ_Comparer(UQ_Comparer):
         if skip_training:
             print("skipping base model training")
             try:
-                model = torch.load(model_path, weights_only=False)
+                model = self.io_helper.load_torch_model(model_filename, weights_only=False)
                 model.eval()
                 return model
             except FileNotFoundError:
@@ -186,7 +197,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 loss.backward()
                 optimizer.step()
         if save_trained:
-            torch.save(model, model_path)
+            torch.save(model, model_filename)
         model.eval()
         return model
 
@@ -205,6 +216,7 @@ class My_UQ_Comparer(UQ_Comparer):
             X_train,
             y_train,
             skip_base_training=True,
+            io_helper=self.io_helper
         )
         # todo!
         y_quantiles = None  # self.quantiles_from_pis(y_pis)
@@ -227,9 +239,7 @@ class My_UQ_Comparer(UQ_Comparer):
         #  script)?
         train_loader = self._get_train_loader(X_train, y_train, batch_size)
 
-        la = Laplace(
-            model, "regression"
-        )  # , subset_of_weights="all", hessian_structure="full")
+        la = Laplace(model, "regression")
         la.fit(train_loader)
         log_prior, log_sigma = (
             torch.ones(1, requires_grad=True),
@@ -301,7 +311,7 @@ def print_metrics(native_metrics, posthoc_metrics):
 
 
 def main():
-    uq_comparer = My_UQ_Comparer(METHOD_WHITELIST)
+    uq_comparer = My_UQ_Comparer(method_whitelist=METHOD_WHITELIST)
     native_metrics, posthoc_metrics = uq_comparer.compare_methods(
         QUANTILES,
         should_plot_data=PLOT_DATA,

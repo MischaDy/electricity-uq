@@ -217,7 +217,7 @@ class UQ_Comparer(ABC):
                 base_model_params=base_model_params,
             )
             uq_results[uq_type] = uq_result
-        return uq_result
+        return uq_results
 
     def run_posthoc_methods(
         self,
@@ -262,7 +262,7 @@ class UQ_Comparer(ABC):
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 
-        : param base_model_params:
+        :param base_model_params:
         :param skip_deepcopy: whether to skip making a deepcopy of the base model. speed up execution, but can lead to
          bugs if posthoc method affects the base model object. ignored for native methods
         :param X_train:
