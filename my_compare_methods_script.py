@@ -90,7 +90,8 @@ class My_UQ_Comparer(UQ_Comparer):
             "rmse": rmse(y_true_np, y_pred),
             "smape": smape(y_true_np, y_pred) / 100,  # scale down to [0, 1]
             "crps": (
-                crps_ensemble(y_pred, y_std, y_true_np) if y_std is not None else None
+                # todo: implement
+                None  # crps_ensemble(y_pred, y_std, y_true_np) if y_std is not None else None
             ),
             "neg_log_lik": (
                 nll_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None
