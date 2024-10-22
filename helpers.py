@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 from matplotlib import pyplot as plt
+from more_itertools import flatten, collapse
 from sklearn.model_selection import train_test_split
 
 
@@ -141,3 +142,14 @@ def identity(*args):
     else:
         res = None
     return res
+
+
+def is_ascending(*arrays):
+    """
+
+    :param arrays:
+    :return: whether the (fully!) flattened concat of the arrays is ascending
+    """
+    # todo: generalize to is_ordered
+    arr = list(collapse(arrays))
+    return all(a <= b for a, b in zip(arr, arr[1:]))

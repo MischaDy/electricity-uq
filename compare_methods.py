@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib import pyplot as plt
 
-from helpers import starfilter
+from helpers import starfilter, is_ascending
 
 
 # todo: add type hints
@@ -322,12 +322,17 @@ class UQ_Comparer(ABC):
         return sorted(pis)
 
     @staticmethod
-    def quantiles_from_pis(pis: npt.NDArray):
+    def quantiles_from_pis(pis: npt.NDArray, check_order=False):
         """
         currently "buggy" for odd number of quantiles.
+        :param check_order:
         :param pis: prediction intervals array of shape (n_samples, 2, n_intervals)
         :return: array of quantiles of shape (n_samples, 2 * n_intervals)
         """
+        # todo: assumption that quantile ordering is definitely consistant fulfilled?
+        if check_order:
+            assert np.all([is_ascending(pi[0, :], reversed(pi[1, :]))
+                           for pi in pis])
         y_quantiles = np.array(
             sorted(pi.flatten())
             for pi in pis
