@@ -38,7 +38,7 @@ METHOD_WHITELIST = [
     # "native_quantile_regression",
     # "native_gp",
 ]
-QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
+QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5?
 
 PLOT_DATA = False
 PLOT_RESULTS = True  # todo: fix plotting timing!
@@ -220,7 +220,7 @@ class My_UQ_Comparer(UQ_Comparer):
             io_helper=self.io_helper
         )
         # todo!
-        y_quantiles = None  # self.quantiles_from_pis(y_pis)
+        y_quantiles = self.quantiles_from_pis(y_pis)
         y_std = None  # self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 

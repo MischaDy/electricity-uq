@@ -322,10 +322,17 @@ class UQ_Comparer(ABC):
         return sorted(pis)
 
     @staticmethod
-    def quantiles_from_pis(pis):
-        # todo
-        for pi in pis:
-            pass
+    def quantiles_from_pis(pis: npt.NDArray):
+        """
+        currently "buggy" for odd number of quantiles.
+        :param pis: prediction intervals array of shape (n_samples, 2, n_intervals)
+        :return: array of quantiles of shape (n_samples, 2 * n_intervals)
+        """
+        y_quantiles = np.array(
+            sorted(pi.flatten())
+            for pi in pis
+        )
+        return y_quantiles
 
     @staticmethod
     def optional(func):
