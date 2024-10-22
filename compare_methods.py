@@ -333,10 +333,10 @@ class UQ_Comparer(ABC):
         if check_order:
             assert np.all([is_ascending(pi[0, :], reversed(pi[1, :]))
                            for pi in pis])
-        y_quantiles = np.array(
+        y_quantiles = np.array([
             sorted(pi.flatten())
             for pi in pis
-        )
+        ])
         return y_quantiles
 
     @staticmethod
@@ -395,7 +395,10 @@ def plot_intervals(
 ):
     res_dict = {"native": native_results, "posthoc": posthoc_results}
     for res_type, results in res_dict.items():
-        print(f"plotting {res_type} results...")
+        if results:
+            print(f"plotting {res_type} results...")
+        else:
+            continue
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in results.items():
             if y_quantiles is None and y_std is None:
@@ -457,7 +460,7 @@ def plot_uq_results(
         color="green",
     )
 
-    if y_std is None:
+    if y_quantiles is not None:
         ci_low, ci_high = (
             y_quantiles[:, 0],
             y_quantiles[:, -1],

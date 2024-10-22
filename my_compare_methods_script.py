@@ -7,7 +7,7 @@ import pandas as pd
 from mapie.subsample import BlockBootstrap
 from pmdarima.metrics import smape
 
-from scipy.stats import randint
+from scipy.stats import randint, norm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
@@ -279,6 +279,8 @@ class My_UQ_Comparer(UQ_Comparer):
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
+    # noinspection PyMethodMayBeStatic
+    # todo: make static?
     def native_gp(self, X_train, y_train, X_test, quantiles):
         kernel = 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
         gaussian_process = GaussianProcessRegressor(
@@ -289,7 +291,10 @@ class My_UQ_Comparer(UQ_Comparer):
         mean_prediction, std_prediction = gaussian_process.predict(
             X_test, return_std=True
         )
-        y_pred, y_quantiles, y_std = mean_prediction, None, std_prediction
+        y_pred, y_std = mean_prediction, std_prediction
+        # todo: does this work for multi-dim outputs?
+        y_quantiles = np.array([norm.ppf(quantiles, loc=mean, scale=std)
+                                for mean, std in zip(y_pred, y_std)])
         return y_pred, y_quantiles, y_std
 
     @staticmethod
