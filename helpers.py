@@ -105,7 +105,9 @@ class IO_Helper:
         :param kwargs: kwargs for torch.load
         :return:
         """
-        return torch.load(filename, *args, **kwargs)
+        # todo: correct?
+        filepath = self.get_model_savepath(filename)
+        return torch.load(filepath, *args, **kwargs)
 
     def save_array(self, array, filename):
         np.save(self.get_array_savepath(filename), array)
