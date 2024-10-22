@@ -1,7 +1,7 @@
 from pprint import pprint
 
 import numpy as np
-import numpy.typing as npt
+# import numpy.typing as npt
 
 import pandas as pd
 from mapie.subsample import BlockBootstrap
@@ -16,7 +16,7 @@ from statsmodels.tools.eval_measures import rmse
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
-from properscoring import crps_ensemble
+# from properscoring import crps_ensemble
 
 from compare_methods import UQ_Comparer
 from helpers import get_data, IO_Helper
