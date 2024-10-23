@@ -1,8 +1,7 @@
-from pprint import pprint
 from typing import Any
 
 import numpy as np
-import numpy.typing as npt
+# import numpy.typing as npt
 
 import pandas as pd
 from mapie.subsample import BlockBootstrap
@@ -39,10 +38,10 @@ METHOD_WHITELIST = [
     # "native_quantile_regression",
     # "native_gp",
 ]
-QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5?
+QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
 PLOT_DATA = False
-PLOT_RESULTS = True  # todo: fix plotting timing!
+PLOT_RESULTS = True  # todo: fix plotting timing?
 SAVE_PLOTS = True
 
 PLOTS_PATH = "plots"
@@ -58,7 +57,7 @@ torch.set_default_dtype(torch.float32)
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
-    def __init__(self, storage_path='comparison_storage', *args, **kwargs):
+    def __init__(self, storage_path="comparison_storage", *args, **kwargs):
         """
 
         :param storage_path:
@@ -121,7 +120,9 @@ class My_UQ_Comparer(UQ_Comparer):
             ]
         )
 
-    def train_base_model(self, X_train, y_train, model_params_choices=None, skip_training=True, n_jobs=-1):
+    def train_base_model(
+        self, X_train, y_train, model_params_choices=None, skip_training=True, n_jobs=-1
+    ):
         # todo: more flexibility in choosing (multiple) base models
         if model_params_choices is None:
             model_params_choices = {
@@ -136,7 +137,7 @@ class My_UQ_Comparer(UQ_Comparer):
             skip_training=skip_training,
             cv_n_iter=10,
             n_jobs=n_jobs,
-            io_helper=self.io_helper
+            io_helper=self.io_helper,
         )
 
     def train_base_model2(
@@ -177,7 +178,9 @@ class My_UQ_Comparer(UQ_Comparer):
         if skip_training:
             print("skipping base model training")
             try:
-                model = self.io_helper.load_torch_model(model_filename, weights_only=False)
+                model = self.io_helper.load_torch_model(
+                    model_filename, weights_only=False
+                )
                 model.eval()
                 return model
             except FileNotFoundError:
@@ -204,7 +207,7 @@ class My_UQ_Comparer(UQ_Comparer):
         return model
 
     def posthoc_conformal_prediction(
-        self, X_train, y_train, X_test, quantiles, model, random_state=42
+        self, X_train, y_train, X_uq, quantiles, model, random_state=42
     ):
         cv = BlockBootstrap(
             n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
@@ -214,11 +217,11 @@ class My_UQ_Comparer(UQ_Comparer):
             model,
             cv,
             alphas,
-            X_test,
+            X_uq,
             X_train,
             y_train,
             skip_base_training=True,
-            io_helper=self.io_helper
+            io_helper=self.io_helper,
         )
         # todo!
         y_quantiles = self.quantiles_from_pis(y_pis)
@@ -229,7 +232,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self,
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
-        X_test: pd.DataFrame,
+        X_uq: pd.DataFrame,
         quantiles,
         model,
         n_epochs=1000,
@@ -263,8 +266,8 @@ class My_UQ_Comparer(UQ_Comparer):
         # # Load serialized, fitted quantities
         # la.load_state_dict(torch.load("state_dict.bin"))
 
-        X_test = self._df_to_tensor(X_test)
-        f_mu, f_var = la(X_test)
+        X_uq = self._df_to_tensor(X_uq)
+        f_mu, f_var = la(X_uq)
 
         f_mu = f_mu.squeeze().detach().cpu().numpy()
         f_sigma = f_var.squeeze().detach().sqrt().cpu().numpy()
@@ -274,16 +277,16 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
-    def native_quantile_regression(self, X_train, y_train, X_test, quantiles):
+    def native_quantile_regression(self, X_train, y_train, X_uq, quantiles):
         y_pred, y_quantiles = estimate_quantiles_qr(
-            X_train, y_train, X_test, alpha=quantiles
+            X_train, y_train, X_uq, alpha=quantiles
         )
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
     # noinspection PyMethodMayBeStatic
     # todo: make static?
-    def native_gp(self, X_train, y_train, X_test, quantiles):
+    def native_gp(self, X_train, y_train, X_uq, quantiles):
         kernel = 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
         gaussian_process = GaussianProcessRegressor(
             kernel=kernel, n_restarts_optimizer=200
@@ -291,7 +294,7 @@ class My_UQ_Comparer(UQ_Comparer):
         gaussian_process.fit(X_train, y_train)
 
         mean_prediction, std_prediction = gaussian_process.predict(
-            X_test, return_std=True
+            X_uq, return_std=True
         )
         y_pred, y_std = mean_prediction, std_prediction
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
@@ -313,8 +316,12 @@ class My_UQ_Comparer(UQ_Comparer):
     @staticmethod
     def quantiles_gaussian(quantiles, y_pred, y_std):
         # todo: does this work for multi-dim outputs?
-        return np.array([norm.ppf(quantiles, loc=mean, scale=std)
-                                for mean, std in zip(y_pred, y_std)])
+        return np.array(
+            [
+                norm.ppf(quantiles, loc=mean, scale=std)
+                for mean, std in zip(y_pred, y_std)
+            ]
+        )
 
 
 def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
