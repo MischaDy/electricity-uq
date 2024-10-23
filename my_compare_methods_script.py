@@ -1,7 +1,8 @@
 from pprint import pprint
+from typing import Any
 
 import numpy as np
-# import numpy.typing as npt
+import numpy.typing as npt
 
 import pandas as pd
 from mapie.subsample import BlockBootstrap
@@ -311,22 +312,28 @@ class My_UQ_Comparer(UQ_Comparer):
         return train_loader
 
 
-def print_metrics(native_metrics, posthoc_metrics):
-    pprint(native_metrics)
-    pprint(posthoc_metrics)
+def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
+    for uq_type, method_metrics in uq_metrics.items():
+        print(f'{uq_type} metrics:')
+        for method, metrics in method_metrics.items():
+            print(f'\t{method}:')
+            for metric, value in metrics.items():
+                print(f'\t\t{metric}: {value}')
 
 
 def main():
     uq_comparer = My_UQ_Comparer(method_whitelist=METHOD_WHITELIST)
-    native_metrics, posthoc_metrics = uq_comparer.compare_methods(
+    uq_metrics = uq_comparer.compare_methods(
         QUANTILES,
         should_plot_data=PLOT_DATA,
         should_plot_results=PLOT_RESULTS,
         should_save_plots=SAVE_PLOTS,
         plots_path=PLOTS_PATH,
-        base_model_params=BASE_MODEL_PARAMS
+        base_model_params=BASE_MODEL_PARAMS,
+        output_uq_on_train=True,
+        return_results=False,
     )
-    print_metrics(native_metrics, posthoc_metrics)
+    print_metrics(uq_metrics)
 
 
 if __name__ == "__main__":
