@@ -270,7 +270,8 @@ class My_UQ_Comparer(UQ_Comparer):
         f_sigma = f_var.squeeze().detach().sqrt().cpu().numpy()
         pred_std = np.sqrt(f_sigma**2 + la.sigma_noise.item() ** 2)
 
-        y_pred, y_quantiles, y_std = f_mu, None, pred_std
+        y_pred, y_std = f_mu, pred_std
+        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
     def native_quantile_regression(self, X_train, y_train, X_test, quantiles):
@@ -293,9 +294,7 @@ class My_UQ_Comparer(UQ_Comparer):
             X_test, return_std=True
         )
         y_pred, y_std = mean_prediction, std_prediction
-        # todo: does this work for multi-dim outputs?
-        y_quantiles = np.array([norm.ppf(quantiles, loc=mean, scale=std)
-                                for mean, std in zip(y_pred, y_std)])
+        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
     @staticmethod
@@ -310,6 +309,12 @@ class My_UQ_Comparer(UQ_Comparer):
         train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size)
         return train_loader
+
+    @staticmethod
+    def quantiles_gaussian(quantiles, y_pred, y_std):
+        # todo: does this work for multi-dim outputs?
+        return np.array([norm.ppf(quantiles, loc=mean, scale=std)
+                                for mean, std in zip(y_pred, y_std)])
 
 
 def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
