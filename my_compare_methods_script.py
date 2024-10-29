@@ -10,7 +10,7 @@ from pmdarima.metrics import smape
 from scipy.stats import randint, norm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
 from sklearn.metrics import mean_pinball_loss
 from statsmodels.tools.eval_measures import rmse
 from torch.utils.data import TensorDataset, DataLoader
@@ -33,10 +33,10 @@ from laplace import Laplace
 
 
 METHOD_WHITELIST = [
-    "posthoc_conformal_prediction",
+    # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    # "native_gp",
+    "native_gp",
 ]
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
@@ -287,7 +287,7 @@ class My_UQ_Comparer(UQ_Comparer):
     # noinspection PyMethodMayBeStatic
     # todo: make static?
     def native_gp(self, X_train, y_train, X_uq, quantiles):
-        kernel = 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
+        kernel = self._get_kernel()
         gaussian_process = GaussianProcessRegressor(
             kernel=kernel, n_restarts_optimizer=200
         )
@@ -322,6 +322,35 @@ class My_UQ_Comparer(UQ_Comparer):
                 for mean, std in zip(y_pred, y_std)
             ]
         )
+
+    @staticmethod
+    def _get_kernel():
+        # old kernel: 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
+
+        # todo: how to set values and bounds without "cheating"
+        output_shift, output_shift_bounds = 1, (1e-6, 1e6)
+        output_scale, output_scale_bounds = 1, (1e-6, 1e6)
+        rbf_scale, rbf_scale_bounds = 1, (1e-6, 1e6)
+        noise_scale, noise_scale_bounds = 1, (1e-6, 1e6)
+
+        ## better values:
+        # output_shift, output_shift_bounds = 13_000, (10_000, 20_000)
+        # output_scale, output_scale_bounds = 5000, (5000, 40000)
+        # rbf_scale, rbf_scale_bounds = 100, (10, 500)
+        # noise_scale, noise_scale_bounds = 100, (0.1, 1000)
+        
+        def kernelize(kernel, value, bounds):
+            return kernel(value**2, (bounds[0] ** 2, bounds[1] ** 2))
+
+        # fmt: off
+        # elaborating values explicitly
+        kernel = (
+            kernelize(ConstantKernel, output_shift, output_shift_bounds)
+            + (kernelize(ConstantKernel, output_scale, output_scale_bounds)
+               * kernelize(RBF, rbf_scale, rbf_scale_bounds))
+            + kernelize(WhiteKernel, noise_scale, noise_scale_bounds)
+        )
+        return kernel
 
 
 def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
