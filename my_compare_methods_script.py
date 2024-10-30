@@ -354,12 +354,14 @@ class My_UQ_Comparer(UQ_Comparer):
 
 
 def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
+    print()
     for uq_type, method_metrics in uq_metrics.items():
         print(f'{uq_type} metrics:')
         for method, metrics in method_metrics.items():
             print(f'\t{method}:')
             for metric, value in metrics.items():
                 print(f'\t\t{metric}: {value}')
+        print()
 
 
 def main():
