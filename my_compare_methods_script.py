@@ -120,7 +120,13 @@ class My_UQ_Comparer(UQ_Comparer):
             ]
         )
 
-    def train_base_model(
+    def train_base_model(self, *args, **kwargs):
+        # todo: more flexibility in choosing (multiple) base models
+        # res = self.my_train_base_model_cp(*args, **kwargs)
+        res = self.my_train_base_model_nn(*args, **kwargs)
+        return res
+
+    def my_train_base_model_cp(
         self, X_train, y_train, model_params_choices=None, skip_training=True, n_jobs=-1
     ):
         # todo: more flexibility in choosing (multiple) base models
@@ -140,7 +146,7 @@ class My_UQ_Comparer(UQ_Comparer):
             io_helper=self.io_helper,
         )
 
-    def train_base_model2(
+    def my_train_base_model_nn(
         self,
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
@@ -167,13 +173,14 @@ class My_UQ_Comparer(UQ_Comparer):
         :param random_state:
         :return:
         """
-        # todo: more flexibility in choosing (multiple) base models
         torch.manual_seed(random_state)
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-        model = torch.nn.Sequential(
-            torch.nn.Linear(dim_in, 50), torch.nn.Tanh(), torch.nn.Linear(50, dim_out)
-        ).float()
+        # model = torch.nn.Sequential(
+        #     torch.nn.Linear(dim_in, 50), torch.nn.Tanh(), torch.nn.Linear(50, dim_out)
+        # )
+        model = torch.nn.Linear(dim_in, dim_out)
+        model = model.float()
 
         if skip_training:
             print("skipping base model training")
@@ -184,7 +191,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 model.eval()
                 return model
             except FileNotFoundError:
-                # todo
+                # todo???
                 print(
                     "error. model not found, so training cannot be skipped. training from scratch"
                 )
