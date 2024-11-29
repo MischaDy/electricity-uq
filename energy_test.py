@@ -123,17 +123,19 @@ def get_data(as_df: bool):
 
 
 def df_to_input_output(df, with_ts=False):
-    input_cols = [
-        'load_last_week',
-        'load_last_hour',
-        'load_last_15_minutes',
-        'is_workday',
-        'is_saturday_and_not_holiday',
-        'is_sunday_or_holiday',
-        'is_heating_period',
-    ]
+    # input_cols = [
+    #     'load_last_week',
+    #     'load_last_hour',
+    #     'load_last_15_minutes',
+    #     'is_workday',
+    #     'is_saturday_and_not_holiday',
+    #     'is_sunday_or_holiday',
+    #     'is_heating_period',
+    # ]
     output_cols = ['load_to_pred']
     ts_cols = ['ts_pred']
+    input_cols = [col for col in df.columns
+                  if col not in output_cols + ts_cols]
     
     X = np.array(df[input_cols], dtype=float).reshape(-1, len(input_cols))  # (n_samples, n_features)
     y = np.array(df[output_cols], dtype=float).reshape(-1, len(output_cols))  # (n_samples, n_targets)
