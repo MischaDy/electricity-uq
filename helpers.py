@@ -8,6 +8,8 @@ from matplotlib import pyplot as plt
 from more_itertools import flatten, collapse
 from sklearn.model_selection import train_test_split
 
+from sklearn.preprocessing import StandardScaler
+
 
 def get_data(
     _n_points_per_group,
@@ -18,19 +20,21 @@ def get_data(
 ) -> (tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
       | tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]):  # fmt: skip
     """load and prepare data"""
-    if input_cols is None:
-        input_cols = [
-            "load_last_week",
-            "load_last_hour",
-            "load_now",
-            "is_workday",
-            "is_saturday_and_not_holiday",
-            "is_sunday_or_holiday",
-            "is_heating_period",
-        ]
-    if output_cols is None:
-        output_cols = ["load_next_hour"]
     df = pd.read_pickle(filepath)
+    if output_cols is None:
+        output_cols = ["load_to_pred"]
+    if input_cols is None:
+        # input_cols = [
+        #     "load_last_week",
+        #     "load_last_hour",
+        #     "load_now",
+        #     "is_workday",
+        #     "is_saturday_and_not_holiday",
+        #     "is_sunday_or_holiday",
+        #     "is_heating_period",
+        # ]
+        input_cols = [col for col in df.columns
+                      if col not in output_cols and not col.startswith('ts')]
 
     mid = df.shape[0] // 2
     X = df[input_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
@@ -155,3 +159,10 @@ def is_ascending(*arrays):
     # todo: generalize to is_ordered
     arr = list(collapse(arrays))
     return all(a <= b for a, b in zip(arr, arr[1:]))
+
+
+def standardize(return_scaler, train_data, *arrays_to_standardize):
+    scaler = StandardScaler()
+    scaler.fit(train_data)
+    standardized_data = map(scaler.transform, [train_data, *arrays_to_standardize])
+    return standardized_data if not return_scaler else (scaler, standardized_data)
