@@ -1,30 +1,31 @@
 from typing import Any
 
 import numpy as np
-# import numpy.typing as npt
+import numpy.typing as npt
 
 import pandas as pd
 from mapie.subsample import BlockBootstrap
+from more_itertools import collapse
 from pmdarima.metrics import smape
 
 from scipy.stats import randint, norm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
+from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from sklearn.metrics import mean_pinball_loss
+from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
 from statsmodels.tools.eval_measures import rmse
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
+
 # from properscoring import crps_ensemble
 
 from compare_methods import UQ_Comparer
-from helpers import get_data, IO_Helper
+from helpers import get_data, IO_Helper, standardize
 
-from conformal_prediction import (
-    train_base_model as train_base_model_cp,
-    estimate_pred_interals_no_pfit_enbpi,
-)
+from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 
 import torch
@@ -34,11 +35,16 @@ from laplace import Laplace
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-    # "posthoc_laplace",
+    "posthoc_laplace",
     # "native_quantile_regression",
-    "native_gp",
+    # "native_gp",
 ]
-QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
+QUANTILES = [
+    0.05,
+    0.25,
+    0.75,
+    0.95,
+]  # todo: how to handle 0.5? ==> just use mean if needed
 
 PLOT_DATA = False
 PLOT_RESULTS = True  # todo: fix plotting timing?
@@ -47,7 +53,7 @@ SAVE_PLOTS = True
 PLOTS_PATH = "plots"
 
 BASE_MODEL_PARAMS = {
-    'skip_training': True,
+    "skip_training": True,
     # 'n_jobs': -1,
     # 'model_params_choices': None,
 }
@@ -57,19 +63,38 @@ torch.set_default_dtype(torch.float32)
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
-    def __init__(self, storage_path="comparison_storage", *args, **kwargs):
+    def __init__(
+        self, storage_path="comparison_storage", to_standardize="X", *args, **kwargs
+    ):
         """
 
         :param storage_path:
+        :param to_standardize: iterable of variables to standardize. Can contain 'x' and/or 'y', or neither.
         :param args: passed to super.__init__
         :param kwargs: passed to super.__init__
         """
         super().__init__(*args, **kwargs)
         self.io_helper = IO_Helper(storage_path)
+        self.to_standardize = to_standardize
 
     # todo: remove param?
-    def get_data(self, _n_points_per_group=100):
-        return get_data(_n_points_per_group, return_full_data=True)
+    def get_data(self, _n_points_per_group=800):
+        """
+
+        :param _n_points_per_group:
+        :return: X_train, X_test, y_train, y_test, X, y
+        """
+        X_train, X_test, y_train, y_test, X, y = get_data(
+            _n_points_per_group, return_full_data=True
+        )
+        X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
+        y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
+        return X_train, X_test, y_train, y_test, X, y
+
+    def _standardize_or_to_array(self, variable, *dfs):
+        if variable in self.to_standardize:
+            return standardize(False, *dfs)
+        return map(lambda df: df.to_numpy(dtype=float), dfs)
 
     # todo: type hints!
     def compute_metrics(self, y_pred, y_quantiles, y_std, y_true, quantiles=None):
@@ -122,12 +147,19 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
-        # res = self.my_train_base_model_cp(*args, **kwargs)
+        # res = self.my_train_base_model_rf(*args, **kwargs)
         res = self.my_train_base_model_nn(*args, **kwargs)
         return res
 
-    def my_train_base_model_cp(
-        self, X_train, y_train, model_params_choices=None, skip_training=True, n_jobs=-1
+    def my_train_base_model_rf(
+        self,
+        X_train,
+        y_train,
+        model_params_choices=None,
+        model_init_params=None,
+        skip_training=True,
+        n_jobs=-1,
+        cv_n_iter=10,
     ):
         # todo: more flexibility in choosing (multiple) base models
         if model_params_choices is None:
@@ -135,32 +167,70 @@ class My_UQ_Comparer(UQ_Comparer):
                 "max_depth": randint(2, 30),
                 "n_estimators": randint(10, 100),
             }
-        return train_base_model_cp(
-            RandomForestRegressor,
-            model_params_choices=model_params_choices,
-            X_train=X_train,
-            y_train=y_train,
-            skip_training=skip_training,
-            cv_n_iter=10,
-            n_jobs=n_jobs,
-            io_helper=self.io_helper,
+        random_state = 59
+        if model_init_params is None:
+            model_init_params = {}
+        elif "random_state" not in model_init_params:
+            model_init_params["random_state"] = random_state
+
+        model_class = RandomForestRegressor
+        filename_base_model = f"base_{model_class.__name__}.model"
+
+        if skip_training:
+            # Model previously optimized with a cross-validation:
+            # RandomForestRegressor(max_depth=13, n_estimators=89, random_state=59)
+            try:
+                model = self.io_helper.load_model(filename_base_model)
+                return model
+            except FileNotFoundError:
+                print(f"trained base model '{filename_base_model}' not found")
+
+        assert all(
+            item is not None for item in [X_train, y_train, model_params_choices]
         )
+        print("training")
+
+        # CV parameter search
+        n_splits = 5
+        tscv = TimeSeriesSplit(n_splits=n_splits)
+        model = model_class(random_state=random_state, **model_init_params)
+        cv_obj = RandomizedSearchCV(
+            model,
+            param_distributions=model_params_choices,
+            n_iter=cv_n_iter,
+            cv=tscv,
+            scoring="neg_root_mean_squared_error",
+            random_state=random_state,
+            verbose=1,
+            n_jobs=n_jobs,
+        )
+        cv_obj.fit(X_train, y_train.values.ravel())
+        model = cv_obj.best_estimator_
+        print("done")
+        self.io_helper.save_model(model, filename_base_model)
+        return model
 
     def my_train_base_model_nn(
         self,
-        X_train: pd.DataFrame,
-        y_train: pd.DataFrame,
+        X_train: npt.NDArray[float],
+        y_train: npt.NDArray[float],
         model_params_choices=None,
         n_epochs=1000,
-        batch_size=1,
+        batch_size=20,
         random_state=711,
         verbose=True,
         skip_training=True,
         save_trained=True,
         model_filename="_laplace_base.pth",
+        lr=0.1,
+        lr_patience=5,
+        lr_reduction_factor=0.1,
     ):
         """
 
+        :param lr_reduction_factor:
+        :param lr:
+        :param lr_patience:
         :param model_filename:
         :param save_trained:
         :param skip_training:
@@ -174,13 +244,21 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         torch.manual_seed(random_state)
+        X_train, y_train = map(
+            lambda arr: self._arr_to_tensor(arr), (X_train, y_train)
+        )
+        val_frac = 0.1
+        val_size = round(val_frac * y_train.shape[0])
+        X_val, y_val = X_train[:val_size], y_train[:val_size]
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-        # model = torch.nn.Sequential(
-        #     torch.nn.Linear(dim_in, 50), torch.nn.Tanh(), torch.nn.Linear(50, dim_out)
-        # )
-        model = torch.nn.Linear(dim_in, dim_out)
-        model = model.float()
+        model = self._nn_builder(
+            dim_in,
+            dim_out,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+            # activation=torch.nn.LeakyReLU,
+        )
 
         if skip_training:
             print("skipping base model training")
@@ -200,18 +278,54 @@ class My_UQ_Comparer(UQ_Comparer):
         train_loader = self._get_train_loader(X_train, y_train, batch_size)
 
         criterion = torch.nn.MSELoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        scheduler = ReduceLROnPlateau(
+            optimizer, patience=lr_patience, factor=lr_reduction_factor
+        )
+
         iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
         for _ in iterable:
+            model.train()
             for X, y in train_loader:
                 optimizer.zero_grad()
                 loss = criterion(model(X), y)
                 loss.backward()
                 optimizer.step()
+            model.eval()
+            with torch.no_grad():
+                val_loss = self._mse_torch(model(X_val), y_val)
+            scheduler.step(val_loss)
+
         if save_trained:
             torch.save(model, model_filename)
         model.eval()
         return model
+
+    @staticmethod
+    def _mse_torch(y_pred, y_test):
+        return torch.mean((y_pred - y_test) ** 2)
+
+    @staticmethod
+    def _nn_builder(
+        dim_in,
+        dim_out,
+        num_hidden_layers=2,
+        hidden_layer_size=50,
+        activation=torch.nn.LeakyReLU,
+    ):
+        layers = collapse(
+            [
+                # fmt: off
+            torch.nn.Linear(dim_in, hidden_layer_size), activation(),
+            [
+                [torch.nn.Linear(hidden_layer_size, hidden_layer_size), activation()]
+                for _ in range(num_hidden_layers)
+            ],
+            torch.nn.Linear(hidden_layer_size, dim_out),
+            ]
+        )
+        model = torch.nn.Sequential(*layers)
+        return model.float()
 
     def posthoc_conformal_prediction(
         self, X_train, y_train, X_uq, quantiles, model, random_state=42
@@ -237,18 +351,21 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def posthoc_laplace(
         self,
-        X_train: pd.DataFrame,
-        y_train: pd.DataFrame,
+        X_train: npt.NDArray[float],
+        y_train: npt.NDArray[float],
         X_uq: pd.DataFrame,
         quantiles,
         model,
         n_epochs=1000,
-        batch_size=1,
+        batch_size=20,
         random_state=711,
         verbose=True,
     ):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
+        X_train, y_train = map(
+            lambda arr: self._arr_to_tensor(arr), (X_train, y_train)
+        )
         train_loader = self._get_train_loader(X_train, y_train, batch_size)
 
         la = Laplace(model, "regression")
@@ -307,15 +424,18 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
+    @classmethod
+    def _df_to_tensor(cls, df: pd.DataFrame, dtype=float) -> torch.Tensor:
+        return cls._arr_to_tensor(df.to_numpy(dtype=dtype))
+
     @staticmethod
-    def _df_to_tensor(df: pd.DataFrame, dtype=float) -> torch.Tensor:
-        return torch.Tensor(df.to_numpy(dtype=dtype))
+    def _arr_to_tensor(arr) -> torch.Tensor:
+        return torch.Tensor(arr).float()
 
     @classmethod
-    def _get_train_loader(cls, X_train, y_train, batch_size):
-        X_train, y_train = map(
-            lambda df: cls._df_to_tensor(df, dtype=float), (X_train, y_train)
-        )
+    def _get_train_loader(
+        cls, X_train: torch.Tensor, y_train: torch.Tensor, batch_size
+    ):
         train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size)
         return train_loader
@@ -338,11 +458,11 @@ class My_UQ_Comparer(UQ_Comparer):
 def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
     print()
     for uq_type, method_metrics in uq_metrics.items():
-        print(f'{uq_type} metrics:')
+        print(f"{uq_type} metrics:")
         for method, metrics in method_metrics.items():
-            print(f'\t{method}:')
+            print(f"\t{method}:")
             for metric, value in metrics.items():
-                print(f'\t\t{metric}: {value}')
+                print(f"\t\t{metric}: {value}")
         print()
 
 
