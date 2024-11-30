@@ -332,32 +332,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
     @staticmethod
     def _get_kernel():
-        # old kernel: 1 * RBF(length_scale=1.0, length_scale_bounds=(1e-2, 1e2))
-
-        # todo: how to set values and bounds without "cheating"
-        output_shift, output_shift_bounds = 1, (1e-6, 1e6)
-        output_scale, output_scale_bounds = 1, (1e-6, 1e6)
-        rbf_scale, rbf_scale_bounds = 1, (1e-6, 1e6)
-        noise_scale, noise_scale_bounds = 1, (1e-6, 1e6)
-
-        ## better values:
-        # output_shift, output_shift_bounds = 13_000, (10_000, 20_000)
-        # output_scale, output_scale_bounds = 5000, (5000, 40000)
-        # rbf_scale, rbf_scale_bounds = 100, (10, 500)
-        # noise_scale, noise_scale_bounds = 100, (0.1, 1000)
-        
-        def kernelize(kernel, value, bounds):
-            return kernel(value**2, (bounds[0] ** 2, bounds[1] ** 2))
-
-        # fmt: off
-        # elaborating values explicitly
-        kernel = (
-            kernelize(ConstantKernel, output_shift, output_shift_bounds)
-            + (kernelize(ConstantKernel, output_scale, output_scale_bounds)
-               * kernelize(RBF, rbf_scale, rbf_scale_bounds))
-            + kernelize(WhiteKernel, noise_scale, noise_scale_bounds)
-        )
-        return kernel
+        return RBF() + WhiteKernel()
 
 
 def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
