@@ -19,7 +19,16 @@ def get_data(
     return_full_data=False,
 ) -> (tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
       | tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]):  # fmt: skip
-    """load and prepare data"""
+    """
+    load and prepare data
+
+    :param _n_points_per_group:
+    :param filepath:
+    :param input_cols:
+    :param output_cols:
+    :param return_full_data:
+    :return: tuple (X_train, X_test, y_train, y_test), or (..., X, y) if return_full_data is True
+    """
     df = pd.read_pickle(filepath)
     if output_cols is None:
         output_cols = ["load_to_pred"]

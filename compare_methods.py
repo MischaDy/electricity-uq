@@ -423,7 +423,7 @@ def plot_uq_result(
 
     x_plot_train = np.arange(num_train_steps)
     x_plot_full = np.arange(num_train_steps + num_test_steps)
-    x_plot_test = x_plot_train + num_test_steps  # shifting
+    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
     x_plot_uq = x_plot_full if output_uq_on_train else x_plot_test
 
     drawing_std = y_quantiles is not None
@@ -437,15 +437,17 @@ def plot_uq_result(
         ci_low, ci_high = y_preds - y_std / 2, y_preds + y_std / 2
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
-    ax.scatter(
-        x_plot_train,
-        y_train,
-        color="black",
-        marker="o",
-        alpha=0.8,
-        label="training points",
-    )
+    # ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
+    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+    # ax.scatter(
+    #     x_plot_train,
+    #     y_train,
+    #     color="black",
+    #     marker="o",
+    #     alpha=0.8,
+    #     label="training points",
+    # )
     ax.plot(
         x_plot_uq,
         y_preds,
