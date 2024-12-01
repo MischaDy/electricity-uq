@@ -312,7 +312,7 @@ class UQ_Comparer(ABC):
         :param pis: prediction intervals array of shape (n_samples, 2, n_intervals)
         :return: array of quantiles of shape (n_samples, 2 * n_intervals)
         """
-        # todo: assumption that quantile ordering is definitely consistant fulfilled?
+        # todo: assumption that quantile ordering is definitely consistent fulfilled?
         if check_order:
             assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
         y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])

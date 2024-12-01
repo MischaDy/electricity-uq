@@ -16,6 +16,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from sklearn.metrics import mean_pinball_loss
 from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
+from skorch import NeuralNetRegressor
 from statsmodels.tools.eval_measures import rmse
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import TensorDataset, DataLoader
@@ -31,17 +32,18 @@ from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 
 import torch
+from torch import nn
 
 from laplace import Laplace
 
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
+    "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    "native_gp",
+    # "native_gp",
 ]
-TO_STANDARDIZE = 'xy'
+TO_STANDARDIZE = "xy"
 QUANTILES = [
     0.05,
     0.25,
@@ -64,6 +66,17 @@ BASE_MODEL_PARAMS = {
 torch.set_default_dtype(torch.float32)
 
 
+def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
+    print()
+    for uq_type, method_metrics in uq_metrics.items():
+        print(f"{uq_type} metrics:")
+        for method, metrics in method_metrics.items():
+            print(f"\t{method}:")
+            for metric, value in metrics.items():
+                print(f"\t\t{metric}: {value}")
+        print()
+
+
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
     def __init__(
@@ -81,7 +94,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self.to_standardize = to_standardize
 
     # todo: remove param?
-    def get_data(self, _n_points_per_group=800):
+    def get_data(self, _n_points_per_group=100):
         """
 
         :param _n_points_per_group:
@@ -100,7 +113,9 @@ class My_UQ_Comparer(UQ_Comparer):
         return map(lambda df: df.to_numpy(dtype=float), dfs)
 
     # todo: type hints!
-    def compute_metrics(self, y_pred, y_quantiles, y_std, y_true: npt.NDArray[float], quantiles=None):
+    def compute_metrics(
+        self, y_pred, y_quantiles, y_std, y_true: npt.NDArray[float], quantiles=None
+    ):
         """
 
         :param y_pred: predicted y-values
@@ -150,9 +165,9 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
-        # res = self.my_train_base_model_rf(*args, **kwargs)
-        res = self.my_train_base_model_nn(*args, **kwargs)
-        return res
+        model = self.my_train_base_model_rf(*args, **kwargs)
+        # model = self.my_train_base_model_nn(*args, **kwargs)
+        return model
 
     def my_train_base_model_rf(
         self,
@@ -247,21 +262,21 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         torch.manual_seed(random_state)
-        X_train, y_train = map(
-            lambda arr: self._arr_to_tensor(arr), (X_train, y_train)
-        )
+        X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X_train, y_train))
         # val_frac = 0.1
         val_size = 20  # round(val_frac * y_train.shape[0])
         X_val, y_val = X_train[-val_size:], y_train[-val_size:]
         X_train, y_train = X_train[:-val_size], y_train[:-val_size]
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-        model = self._nn_builder(
+        # todo: finish!
+        model = NeuralNetRegressor(
+            My_NN,
             dim_in,
             dim_out,
             num_hidden_layers=2,
             hidden_layer_size=50,
-            # activation=torch.nn.LeakyReLU,
+            # activation=nn.LeakyReLU,
         )
 
         if skip_training:
@@ -270,18 +285,47 @@ class My_UQ_Comparer(UQ_Comparer):
                 model = self.io_helper.load_torch_model(
                     model_filename, weights_only=False
                 )
-                model.eval()
-                return model
             except FileNotFoundError:
                 # todo???
                 print(
                     "error. model not found, so training cannot be skipped. training from scratch"
                 )
+                skip_training = False
+
+        # add sklearn-like API
+        if not hasattr(model, "fit") or not hasattr(model, "pred"):
+            # implement sklearn-like API for CP
+            def fit(self2, X, y) -> nn.Module:
+                return self.my_train_base_model_nn(
+                    X,
+                    y,
+                    model_params_choices=model_params_choices,
+                    n_epochs=n_epochs,
+                    batch_size=batch_size,
+                    random_state=random_state,
+                    verbose=False,
+                    skip_training=skip_training,
+                    save_trained=False,
+                    lr=lr,
+                    lr_patience=lr_patience,
+                    lr_reduction_factor=lr_reduction_factor,
+                )
+
+            def predict(self, X) -> npt.NDArray[float]:
+                """output: array of shape (n_samples, n_features)"""
+                return self(X)
+
+            model.fit = fit.__get__(model)
+            model.predict = predict.__get__(model)
+
+        if skip_training:
+            model.eval()
+            return model
 
         # todo: consistent input expectations!
         train_loader = self._get_train_loader(X_train, y_train, batch_size)
 
-        criterion = torch.nn.MSELoss()
+        criterion = nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         scheduler = ReduceLROnPlateau(
             optimizer, patience=lr_patience, factor=lr_reduction_factor
@@ -299,7 +343,9 @@ class My_UQ_Comparer(UQ_Comparer):
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
-                train_loss = self._mse_torch(model(X_train[:val_size]), y_val[:val_size])
+                train_loss = self._mse_torch(
+                    model(X_train[:val_size]), y_val[:val_size]
+                )
             scheduler.step(val_loss)
             val_losses.append(val_loss)
             train_losses.append(train_loss)
@@ -311,42 +357,23 @@ class My_UQ_Comparer(UQ_Comparer):
 
         if verbose:
             loss_skip = 0
-            self._plot_training_progress(train_losses[loss_skip:], val_losses[loss_skip:])
+            self._plot_training_progress(
+                train_losses[loss_skip:], val_losses[loss_skip:]
+            )
+
         return model
 
     @staticmethod
     def _plot_training_progress(train_losses, test_losses):
         fig, ax = plt.subplots()
-        ax.semilogy(train_losses, label='train')
-        ax.semilogy(test_losses, label='val')
+        ax.semilogy(train_losses, label="train")
+        ax.semilogy(test_losses, label="val")
         ax.legend()
         plt.show()
 
     @staticmethod
     def _mse_torch(y_pred, y_test):
         return torch.mean((y_pred - y_test) ** 2)
-
-    @staticmethod
-    def _nn_builder(
-        dim_in,
-        dim_out,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
-        activation=torch.nn.LeakyReLU,
-    ):
-        layers = collapse(
-            [
-                # fmt: off
-            torch.nn.Linear(dim_in, hidden_layer_size), activation(),
-            [
-                [torch.nn.Linear(hidden_layer_size, hidden_layer_size), activation()]
-                for _ in range(num_hidden_layers)
-            ],
-            torch.nn.Linear(hidden_layer_size, dim_out),
-            ]
-        )
-        model = torch.nn.Sequential(*layers)
-        return model.float()
 
     def posthoc_conformal_prediction(
         self, X_train, y_train, X_uq, quantiles, model, random_state=42
@@ -362,11 +389,14 @@ class My_UQ_Comparer(UQ_Comparer):
             X_uq,
             X_train,
             y_train,
-            skip_base_training=True,
+            skip_training=False,
             io_helper=self.io_helper,
         )
-        # todo!
-        y_quantiles = self.quantiles_from_pis(y_pis)
+        y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
+        if 0.5 in quantiles:
+            num_quantiles = y_quantiles.shape[-1]
+            ind = num_quantiles / 2
+            y_quantiles = np.insert(y_quantiles, ind, y_pred, axis=1)
         y_std = None  # self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
@@ -384,9 +414,7 @@ class My_UQ_Comparer(UQ_Comparer):
     ):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
-        X_train, y_train = map(
-            lambda arr: self._arr_to_tensor(arr), (X_train, y_train)
-        )
+        X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X_train, y_train))
         train_loader = self._get_train_loader(X_train, y_train, batch_size)
 
         la = Laplace(model, "regression")
@@ -432,7 +460,8 @@ class My_UQ_Comparer(UQ_Comparer):
     # noinspection PyMethodMayBeStatic
     # todo: make static?
     def native_gp(self, X_train, y_train, X_uq, quantiles, verbose=True):
-        if verbose: print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
+        if verbose:
+            print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
         kernel = self._get_kernel()
         gaussian_process = GaussianProcessRegressor(
             kernel=kernel, random_state=0, normalize_y=False, n_restarts_optimizer=10
@@ -440,12 +469,13 @@ class My_UQ_Comparer(UQ_Comparer):
         gaussian_process.fit(X_train, y_train)
         if verbose:
             print(f"done. [{time.strftime('%H:%M:%S')}]")
-            print('kernel:', gaussian_process.kernel_)
+            print("kernel:", gaussian_process.kernel_)
             print("GP predicting...")
         mean_prediction, std_prediction = gaussian_process.predict(
             X_uq, return_std=True
         )
-        if verbose: print('done.')
+        if verbose:
+            print("done.")
         y_pred, y_std = mean_prediction, std_prediction
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
@@ -481,19 +511,35 @@ class My_UQ_Comparer(UQ_Comparer):
         return RBF() + WhiteKernel()
 
 
-def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
-    print()
-    for uq_type, method_metrics in uq_metrics.items():
-        print(f"{uq_type} metrics:")
-        for method, metrics in method_metrics.items():
-            print(f"\t{method}:")
-            for metric, value in metrics.items():
-                print(f"\t\t{metric}: {value}")
-        print()
+class My_NN(nn.Module):
+    def __init__(
+        self,
+        dim_in,
+        dim_out,
+        num_hidden_layers=2,
+        hidden_layer_size=50,
+        activation=nn.LeakyReLU,
+    ):
+        super().__init__()
+        # fmt: off
+        layers = collapse([
+            nn.Linear(dim_in, hidden_layer_size),
+            activation(),
+            [[nn.Linear(hidden_layer_size, hidden_layer_size),
+              activation()]
+             for _ in range(num_hidden_layers)],
+            nn.Linear(hidden_layer_size, dim_out),
+        ])
+        self.model = nn.Sequential(*layers).float()
+
+    def forward(self, X, **kwargs):
+        return self.model(X)
 
 
 def main():
-    uq_comparer = My_UQ_Comparer(method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE)
+    uq_comparer = My_UQ_Comparer(
+        method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE
+    )
     uq_metrics = uq_comparer.compare_methods(
         QUANTILES,
         should_plot_data=PLOT_DATA,

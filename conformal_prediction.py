@@ -212,7 +212,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
         X_test,
         X_train,
         y_train,
-        skip_base_training=skip_base_training,
+        skip_training=skip_base_training,
         io_helper=io_helper,
     )
     y_pis_enbpi_no_pfit = y_pis_enbpi_no_pfit.squeeze()
@@ -311,7 +311,7 @@ def estimate_prediction_intervals_enbpi_nopfit_all_quantiles(
         X_test,
         X_train,
         y_train,
-        skip_base_training=skip_base_training,
+        skip_training=skip_base_training,
         io_helper=io_helper,
     )
 
@@ -329,7 +329,7 @@ def estimate_pred_interals_no_pfit_enbpi(
     X_test,
     X_train=None,
     y_train=None,
-    skip_base_training=True,
+    skip_training=False,
     io_helper: IO_Helper = None,
 ) -> tuple[npt.NDArray, npt.NDArray]:
     """
@@ -342,7 +342,7 @@ def estimate_pred_interals_no_pfit_enbpi(
     :param X_test:
     :param X_train:
     :param y_train:
-    :param skip_base_training:
+    :param skip_training:
     :return: tuple (y_pred, y_prediction_intervals) of shapes (n_samples,) and (n_samples, 2, n_alpha).
     [:, 0, alpha]: Lower bound of the prediction interval corresp. to confidence level alpha.
     [:, 1, alpha]: Upper bound of the prediction interval corresp. to confidence level alpha.
@@ -358,15 +358,15 @@ def estimate_pred_interals_no_pfit_enbpi(
     )
 
     filename_enbpi_no_pfit = f"mapie_enbpi_no_pfit_{N_POINTS_TEMP}.model"
-    if skip_base_training:
+    if skip_training:
         try:
             mapie_enbpi = io_helper.load_model(filename_enbpi_no_pfit)
             print("loaded model successfully")
         except FileNotFoundError:
             print(f"skipping training not possible")
-            skip_base_training = False
+            skip_training = False
 
-    if not skip_base_training:
+    if not skip_training:
         print("training...")
         mapie_enbpi = mapie_enbpi.fit(X_train, y_train)
         io_helper.save_model(mapie_enbpi, filename_enbpi_no_pfit)

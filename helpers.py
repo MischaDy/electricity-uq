@@ -175,6 +175,7 @@ def is_ascending(*arrays):
 
 
 def standardize(return_scaler, train_data, *arrays_to_standardize):
+    # todo: bugfix - only standardize continuous columns!
     scaler = StandardScaler()
     scaler.fit(train_data)
     standardized_data = map(scaler.transform, [train_data, *arrays_to_standardize])
