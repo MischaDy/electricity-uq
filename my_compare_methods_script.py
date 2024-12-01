@@ -94,7 +94,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self.to_standardize = to_standardize
 
     # todo: remove param?
-    def get_data(self, _n_points_per_group=100):
+    def get_data(self, _n_points_per_group=800):
         """
 
         :param _n_points_per_group:
@@ -171,8 +171,8 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def my_train_base_model_rf(
         self,
-        X_train,
-        y_train,
+        X_train: npt.NDArray[float],
+        y_train: npt.NDArray[float],
         model_params_choices=None,
         model_init_params=None,
         skip_training=True,
@@ -222,7 +222,7 @@ class My_UQ_Comparer(UQ_Comparer):
             verbose=1,
             n_jobs=n_jobs,
         )
-        cv_obj.fit(X_train, y_train.values.ravel())
+        cv_obj.fit(X_train, y_train.ravel())
         model = cv_obj.best_estimator_
         print("done")
         self.io_helper.save_model(model, filename_base_model)
