@@ -45,9 +45,13 @@ def get_data(
         input_cols = [col for col in df.columns
                       if col not in output_cols and not col.startswith('ts')]
 
-    mid = df.shape[0] // 2
-    X = df[input_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
-    y = df[output_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
+    # mid = df.shape[0] // 2
+    # X = df[input_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
+    # y = df[output_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
+
+    lim = 2*_n_points_per_group if _n_points_per_group is not None else -1
+    X = df[input_cols].iloc[:lim]
+    y = df[output_cols].iloc[:lim]
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.5, shuffle=False

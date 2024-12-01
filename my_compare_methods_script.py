@@ -1,3 +1,4 @@
+import time
 from typing import Any
 
 import numpy as np
@@ -36,10 +37,11 @@ from laplace import Laplace
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-    "posthoc_laplace",
+    # "posthoc_laplace",
     # "native_quantile_regression",
-    # "native_gp",
+    "native_gp",
 ]
+TO_STANDARDIZE = 'xy'
 QUANTILES = [
     0.05,
     0.25,
@@ -54,7 +56,7 @@ SAVE_PLOTS = True
 PLOTS_PATH = "plots"
 
 BASE_MODEL_PARAMS = {
-    "skip_training": False,
+    "skip_training": True,
     # 'n_jobs': -1,
     # 'model_params_choices': None,
 }
@@ -303,7 +305,8 @@ class My_UQ_Comparer(UQ_Comparer):
             train_losses.append(train_loss)
 
         if save_trained:
-            torch.save(model, model_filename)
+            model_savepath = self.io_helper.get_model_savepath(model_filename)
+            torch.save(model, model_savepath)
         model.eval()
 
         if verbose:
@@ -428,16 +431,21 @@ class My_UQ_Comparer(UQ_Comparer):
 
     # noinspection PyMethodMayBeStatic
     # todo: make static?
-    def native_gp(self, X_train, y_train, X_uq, quantiles):
+    def native_gp(self, X_train, y_train, X_uq, quantiles, verbose=True):
+        if verbose: print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
         kernel = self._get_kernel()
         gaussian_process = GaussianProcessRegressor(
-            kernel=kernel, n_restarts_optimizer=200
+            kernel=kernel, random_state=0, normalize_y=False, n_restarts_optimizer=10
         )
         gaussian_process.fit(X_train, y_train)
-
+        if verbose:
+            print(f"done. [{time.strftime('%H:%M:%S')}]")
+            print('kernel:', gaussian_process.kernel_)
+            print("GP predicting...")
         mean_prediction, std_prediction = gaussian_process.predict(
             X_uq, return_std=True
         )
+        if verbose: print('done.')
         y_pred, y_std = mean_prediction, std_prediction
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
@@ -485,7 +493,7 @@ def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
 
 
 def main():
-    uq_comparer = My_UQ_Comparer(method_whitelist=METHOD_WHITELIST)
+    uq_comparer = My_UQ_Comparer(method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE)
     uq_metrics = uq_comparer.compare_methods(
         QUANTILES,
         should_plot_data=PLOT_DATA,
