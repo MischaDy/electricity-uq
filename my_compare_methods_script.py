@@ -5,6 +5,7 @@ import numpy.typing as npt
 
 import pandas as pd
 from mapie.subsample import BlockBootstrap
+from matplotlib import pyplot as plt
 from more_itertools import collapse
 from pmdarima.metrics import smape
 
@@ -53,7 +54,7 @@ SAVE_PLOTS = True
 PLOTS_PATH = "plots"
 
 BASE_MODEL_PARAMS = {
-    "skip_training": True,
+    "skip_training": False,
     # 'n_jobs': -1,
     # 'model_params_choices': None,
 }
@@ -97,7 +98,7 @@ class My_UQ_Comparer(UQ_Comparer):
         return map(lambda df: df.to_numpy(dtype=float), dfs)
 
     # todo: type hints!
-    def compute_metrics(self, y_pred, y_quantiles, y_std, y_true, quantiles=None):
+    def compute_metrics(self, y_pred, y_quantiles, y_std, y_true: npt.NDArray[float], quantiles=None):
         """
 
         :param y_pred: predicted y-values
@@ -107,19 +108,19 @@ class My_UQ_Comparer(UQ_Comparer):
         :param quantiles:
         :return:
         """
-        y_true_np = y_true.to_numpy().squeeze()
+        y_true = y_true.squeeze()
         # todo: sharpness? calibration? PIT? coverage?
         # todo: skill score (but what to use as benchmark)?
 
         metrics = {  # todo: improve
-            "rmse": rmse(y_true_np, y_pred),
-            "smape": smape(y_true_np, y_pred) / 100,  # scale down to [0, 1]
+            "rmse": rmse(y_true, y_pred),
+            "smape": smape(y_true, y_pred) / 100,  # scale down to [0, 1]
             "crps": (
                 # todo: implement
                 None  # crps_ensemble(y_pred, y_std, y_true_np) if y_std is not None else None
             ),
             "neg_log_lik": (
-                nll_gaussian(y_pred, y_std, y_true_np) if y_std is not None else None
+                nll_gaussian(y_pred, y_std, y_true) if y_std is not None else None
             ),
             "mean_pinball": (
                 self._mean_pinball_loss(y_pred, y_quantiles, quantiles)
@@ -247,9 +248,10 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train, y_train = map(
             lambda arr: self._arr_to_tensor(arr), (X_train, y_train)
         )
-        val_frac = 0.1
-        val_size = round(val_frac * y_train.shape[0])
-        X_val, y_val = X_train[:val_size], y_train[:val_size]
+        # val_frac = 0.1
+        val_size = 20  # round(val_frac * y_train.shape[0])
+        X_val, y_val = X_train[-val_size:], y_train[-val_size:]
+        X_train, y_train = X_train[:-val_size], y_train[:-val_size]
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
         model = self._nn_builder(
@@ -283,6 +285,7 @@ class My_UQ_Comparer(UQ_Comparer):
             optimizer, patience=lr_patience, factor=lr_reduction_factor
         )
 
+        train_losses, val_losses = [], []
         iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
         for _ in iterable:
             model.train()
@@ -294,12 +297,27 @@ class My_UQ_Comparer(UQ_Comparer):
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
+                train_loss = self._mse_torch(model(X_train[:val_size]), y_val[:val_size])
             scheduler.step(val_loss)
+            val_losses.append(val_loss)
+            train_losses.append(train_loss)
 
         if save_trained:
             torch.save(model, model_filename)
         model.eval()
+
+        if verbose:
+            loss_skip = 0
+            self._plot_training_progress(train_losses[loss_skip:], val_losses[loss_skip:])
         return model
+
+    @staticmethod
+    def _plot_training_progress(train_losses, test_losses):
+        fig, ax = plt.subplots()
+        ax.semilogy(train_losses, label='train')
+        ax.semilogy(test_losses, label='val')
+        ax.legend()
+        plt.show()
 
     @staticmethod
     def _mse_torch(y_pred, y_test):
@@ -353,7 +371,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self,
         X_train: npt.NDArray[float],
         y_train: npt.NDArray[float],
-        X_uq: pd.DataFrame,
+        X_uq: npt.NDArray[float],
         quantiles,
         model,
         n_epochs=1000,
@@ -390,7 +408,7 @@ class My_UQ_Comparer(UQ_Comparer):
         # # Load serialized, fitted quantities
         # la.load_state_dict(torch.load("state_dict.bin"))
 
-        X_uq = self._df_to_tensor(X_uq)
+        X_uq = self._arr_to_tensor(X_uq)
         f_mu, f_var = la(X_uq)
 
         f_mu = f_mu.squeeze().detach().cpu().numpy()
