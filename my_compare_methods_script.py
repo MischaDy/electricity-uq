@@ -5,6 +5,7 @@ import numpy as np
 import numpy.typing as npt
 
 import pandas as pd
+import skorch.callbacks
 from mapie.subsample import BlockBootstrap
 from matplotlib import pyplot as plt
 from more_itertools import collapse
@@ -17,6 +18,7 @@ from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from sklearn.metrics import mean_pinball_loss
 from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
 from skorch import NeuralNetRegressor
+from skorch.dataset import Dataset
 from statsmodels.tools.eval_measures import rmse
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import TensorDataset, DataLoader
@@ -58,7 +60,7 @@ SAVE_PLOTS = True
 PLOTS_PATH = "plots"
 
 BASE_MODEL_PARAMS = {
-    "skip_training": True,
+    "skip_training": False,
     # 'n_jobs': -1,
     # 'model_params_choices': None,
 }
@@ -165,8 +167,8 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
-        model = self.my_train_base_model_rf(*args, **kwargs)
-        # model = self.my_train_base_model_nn(*args, **kwargs)
+        # model = self.my_train_base_model_rf(*args, **kwargs)
+        model = self.my_train_base_model_nn(*args, **kwargs)
         return model
 
     def my_train_base_model_rf(
@@ -233,7 +235,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train: npt.NDArray[float],
         y_train: npt.NDArray[float],
         model_params_choices=None,
-        n_epochs=1000,
+        n_epochs=100,
         batch_size=20,
         random_state=711,
         verbose=True,
@@ -261,105 +263,88 @@ class My_UQ_Comparer(UQ_Comparer):
         :param random_state:
         :return:
         """
-        torch.manual_seed(random_state)
-        X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X_train, y_train))
-        # val_frac = 0.1
-        val_size = 20  # round(val_frac * y_train.shape[0])
-        X_val, y_val = X_train[-val_size:], y_train[-val_size:]
-        X_train, y_train = X_train[:-val_size], y_train[:-val_size]
-
-        dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-        # todo: finish!
-        model = NeuralNetRegressor(
-            My_NN,
-            dim_in,
-            dim_out,
-            num_hidden_layers=2,
-            hidden_layer_size=50,
-            # activation=nn.LeakyReLU,
-        )
-
         if skip_training:
             print("skipping base model training")
             try:
-                model = self.io_helper.load_torch_model(
-                    model_filename, weights_only=False
-                )
+                model = self.io_helper.load_model(model_filename)
+                model.eval()
+                return model
             except FileNotFoundError:
                 # todo???
                 print(
                     "error. model not found, so training cannot be skipped. training from scratch"
                 )
-                skip_training = False
 
-        # add sklearn-like API
-        if not hasattr(model, "fit") or not hasattr(model, "pred"):
-            # implement sklearn-like API for CP
-            def fit(self2, X, y) -> nn.Module:
-                return self.my_train_base_model_nn(
-                    X,
-                    y,
-                    model_params_choices=model_params_choices,
-                    n_epochs=n_epochs,
-                    batch_size=batch_size,
-                    random_state=random_state,
-                    verbose=False,
-                    skip_training=skip_training,
-                    save_trained=False,
-                    lr=lr,
-                    lr_patience=lr_patience,
-                    lr_reduction_factor=lr_reduction_factor,
+        torch.manual_seed(random_state)
+        X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X_train, y_train))
+        dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
+
+        def train_split(X, y):
+            # val_frac = 0.1
+            val_size = 20  # round(val_frac * y_train.shape[0])
+            X_val, y_val = X[-val_size:], y[-val_size:]
+            X_train, y_train = X[:-val_size], y[:-val_size]
+            dataset_train = Dataset(X_train, y_train)
+            dataset_val = Dataset(X_val, y_val)
+            return dataset_train, dataset_val
+
+        model = NeuralNetRegressor(
+            module=My_NN,
+            criterion=nn.MSELoss(),
+            optimizer=torch.optim.Adam,
+            module__dim_in=dim_in,
+            module__dim_out=dim_out,
+            module__num_hidden_layers=2,
+            module__hidden_layer_size=50,
+            # module__activation=nn.LeakyReLU,
+            lr=lr,
+            max_epochs=n_epochs,
+            batch_size=batch_size,
+            train_split=train_split,
+            predict_nonlinearity=None,
+            verbose=0,
+            callbacks=[
+                skorch.callbacks.LRScheduler(
+                    policy=ReduceLROnPlateau,
+                    monitor="valid_loss",
+                    patience=lr_patience,
+                    factor=lr_reduction_factor,
                 )
-
-            def predict(self, X) -> npt.NDArray[float]:
-                """output: array of shape (n_samples, n_features)"""
-                return self(X)
-
-            model.fit = fit.__get__(model)
-            model.predict = predict.__get__(model)
-
-        if skip_training:
-            model.eval()
-            return model
-
-        # todo: consistent input expectations!
-        train_loader = self._get_train_loader(X_train, y_train, batch_size)
-
-        criterion = nn.MSELoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-        scheduler = ReduceLROnPlateau(
-            optimizer, patience=lr_patience, factor=lr_reduction_factor
+            ],
         )
 
-        train_losses, val_losses = [], []
-        iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
-        for _ in iterable:
-            model.train()
-            for X, y in train_loader:
-                optimizer.zero_grad()
-                loss = criterion(model(X), y)
-                loss.backward()
-                optimizer.step()
-            model.eval()
-            with torch.no_grad():
-                val_loss = self._mse_torch(model(X_val), y_val)
-                train_loss = self._mse_torch(
-                    model(X_train[:val_size]), y_val[:val_size]
-                )
-            scheduler.step(val_loss)
-            val_losses.append(val_loss)
-            train_losses.append(train_loss)
+        # todo: consistent input expectations!
+        model.fit(X_train, y_train)
 
-        if save_trained:
-            model_savepath = self.io_helper.get_model_savepath(model_filename)
-            torch.save(model, model_savepath)
-        model.eval()
-
-        if verbose:
-            loss_skip = 0
-            self._plot_training_progress(
-                train_losses[loss_skip:], val_losses[loss_skip:]
-            )
+        # train_losses, val_losses = [], []
+        # iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
+        # for _ in iterable:
+        #     model.train()
+        #     for X, y in train_loader:
+        #         optimizer.zero_grad()
+        #         loss = criterion(model(X), y)
+        #         loss.backward()
+        #         optimizer.step()
+        #     model.eval()
+        #     with torch.no_grad():
+        #         val_loss = self._mse_torch(model(X_val), y_val)
+        #         train_loss = self._mse_torch(
+        #             model(X_train[:val_size]), y_val[:val_size]
+        #         )
+        #     scheduler.step(val_loss)
+        #     val_losses.append(val_loss)
+        #     train_losses.append(train_loss)
+        #
+        # if save_trained:
+        #     model_savepath = self.io_helper.get_model_savepath(model_filename)
+        #     torch.save(model, model_savepath)
+        # model.eval()
+        #
+        # if verbose:
+        #     loss_skip = 0
+        #     self._plot_training_progress(
+        #         train_losses[loss_skip:], val_losses[loss_skip:]
+        #     )
 
         return model
 
@@ -532,7 +517,8 @@ class My_NN(nn.Module):
         ])
         self.model = nn.Sequential(*layers).float()
 
-    def forward(self, X, **kwargs):
+    def forward(self, input_list, **kwargs):
+        X, y = input_list
         return self.model(X)
 
 

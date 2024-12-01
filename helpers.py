@@ -56,9 +56,14 @@ def get_data(
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.5, shuffle=False
     )
+    X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
     if return_full_data:
         return X_train, X_test, y_train, y_test, X, y
     return X_train, X_test, y_train, y_test
+
+
+def set_dtype_float(*arrs):
+    return map(lambda arr: arr.astype('float32'), arrs)
 
 
 def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper", filename="data", do_save_figure=False):
@@ -112,7 +117,9 @@ class IO_Helper:
         return np.load(self.get_array_savepath(filename))
 
     def load_model(self, filename):
-        return pickle.load(open(self.get_model_savepath(filename), "rb"))
+        with open(self.get_model_savepath(filename), "rb") as file:
+            model = pickle.load(file)
+        return model
 
     def load_torch_model(self, filename, *args, **kwargs):
         """
@@ -130,7 +137,8 @@ class IO_Helper:
         np.save(self.get_array_savepath(filename), array)
 
     def save_model(self, model, filename):
-        pickle.dump(model, open(self.get_model_savepath(filename), "wb"))
+        with open(self.get_model_savepath(filename), "wb") as file:
+            pickle.dump(model, file)
 
     def save_plot(self, filename):
         plt.savefig(self.get_plot_savepath(filename))
