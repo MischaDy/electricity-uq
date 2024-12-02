@@ -376,7 +376,7 @@ def estimate_pred_interals_no_pfit_enbpi(
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = mapie_enbpi.predict(
         X_test,
         alpha=alpha,
-        ensemble=True,
+        ensemble=False,
         optimize_beta=False,
         allow_infinite_bounds=True,
     )

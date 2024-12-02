@@ -97,7 +97,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self.to_standardize = to_standardize
 
     # todo: remove param?
-    def get_data(self, _n_points_per_group=40):
+    def get_data(self, _n_points_per_group=800):
         """
 
         :param _n_points_per_group:
@@ -200,6 +200,7 @@ class My_UQ_Comparer(UQ_Comparer):
             # Model previously optimized with a cross-validation:
             # RandomForestRegressor(max_depth=13, n_estimators=89, random_state=59)
             try:
+                print('skipping base model training')
                 model = self.io_helper.load_model(filename_base_model)
                 return model
             except FileNotFoundError:
@@ -236,7 +237,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train: npt.NDArray[float],
         y_train: npt.NDArray[float],
         model_params_choices=None,
-        n_iter=10,
+        n_iter=20,
         batch_size=20,
         random_state=711,
         verbose=True,
