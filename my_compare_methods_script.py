@@ -237,7 +237,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train: npt.NDArray[float],
         y_train: npt.NDArray[float],
         model_params_choices=None,
-        n_iter=20,
+        n_iter=200,
         batch_size=20,
         random_state=711,
         verbose=True,
