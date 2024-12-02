@@ -153,6 +153,7 @@ def train_base_model(
         verbose=1,
         n_jobs=n_jobs,
     )
+    # todo: ravel?
     cv_obj.fit(X_train, y_train.values.ravel())
     model = cv_obj.best_estimator_
     print("done")

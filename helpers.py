@@ -131,6 +131,7 @@ class IO_Helper:
         """
         # todo: correct?
         filepath = self.get_model_savepath(filename)
+        kwargs['weights_only'] = True
         return torch.load(filepath, *args, **kwargs)
 
     def save_array(self, array, filename):

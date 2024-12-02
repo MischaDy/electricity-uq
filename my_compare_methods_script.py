@@ -38,6 +38,7 @@ from torch import nn
 
 from laplace import Laplace
 
+from temp_nn_file import My_NN
 
 METHOD_WHITELIST = [
     "posthoc_conformal_prediction",
@@ -54,8 +55,9 @@ QUANTILES = [
 ]  # todo: how to handle 0.5? ==> just use mean if needed
 
 PLOT_DATA = False
-PLOT_RESULTS = True  # todo: fix plotting timing?
+PLOT_RESULTS = True
 SAVE_PLOTS = True
+SAVE_TRAINED = False
 
 PLOTS_PATH = "plots"
 
@@ -81,9 +83,7 @@ def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
-    def __init__(
-        self, storage_path="comparison_storage", to_standardize="X", *args, **kwargs
-    ):
+    def __init__(self, storage_path="comparison_storage", to_standardize="X", *args, **kwargs):
         """
 
         :param storage_path:
@@ -96,7 +96,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self.to_standardize = to_standardize
 
     # todo: remove param?
-    def get_data(self, _n_points_per_group=800):
+    def get_data(self, _n_points_per_group=40):
         """
 
         :param _n_points_per_group:
@@ -158,17 +158,16 @@ class My_UQ_Comparer(UQ_Comparer):
         :param quantiles:
         :return:
         """
-        return np.mean(
-            [
-                mean_pinball_loss(y_true, y_quantiles[:, ind], alpha=quantile)
-                for ind, quantile in enumerate(quantiles)
-            ]
-        )
+        # fmt: off
+        return np.mean([
+            mean_pinball_loss(y_true, y_quantiles[:, ind], alpha=quantile)
+            for ind, quantile in enumerate(quantiles)
+        ])
 
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
         # model = self.my_train_base_model_rf(*args, **kwargs)
-        model = self.my_train_base_model_nn(*args, **kwargs)
+        model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, **kwargs)
         return model
 
     def my_train_base_model_rf(
@@ -224,6 +223,7 @@ class My_UQ_Comparer(UQ_Comparer):
             verbose=1,
             n_jobs=n_jobs,
         )
+        # todo: ravel?
         cv_obj.fit(X_train, y_train.ravel())
         model = cv_obj.best_estimator_
         print("done")
@@ -235,7 +235,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train: npt.NDArray[float],
         y_train: npt.NDArray[float],
         model_params_choices=None,
-        n_epochs=100,
+        n_epochs=10,
         batch_size=20,
         random_state=711,
         verbose=True,
@@ -270,23 +270,12 @@ class My_UQ_Comparer(UQ_Comparer):
                 model.eval()
                 return model
             except FileNotFoundError:
-                # todo???
-                print(
-                    "error. model not found, so training cannot be skipped. training from scratch"
-                )
+                # fmt: off
+                print("error. model not found, so training cannot be skipped. training from scratch")
 
         torch.manual_seed(random_state)
         X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X_train, y_train))
-        dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-
-        def train_split(X, y):
-            # val_frac = 0.1
-            val_size = 20  # round(val_frac * y_train.shape[0])
-            X_val, y_val = X[-val_size:], y[-val_size:]
-            X_train, y_train = X[:-val_size], y[:-val_size]
-            dataset_train = Dataset(X_train, y_train)
-            dataset_val = Dataset(X_val, y_val)
-            return dataset_train, dataset_val
+        dim_in, dim_out = X_train.shape[-1], y_train.shape[0]
 
         model = NeuralNetRegressor(
             module=My_NN,
@@ -300,21 +289,21 @@ class My_UQ_Comparer(UQ_Comparer):
             lr=lr,
             max_epochs=n_epochs,
             batch_size=batch_size,
-            train_split=train_split,
+            # train_split=self.train_split,
             predict_nonlinearity=None,
             verbose=0,
-            callbacks=[
-                skorch.callbacks.LRScheduler(
-                    policy=ReduceLROnPlateau,
-                    monitor="valid_loss",
-                    patience=lr_patience,
-                    factor=lr_reduction_factor,
-                )
-            ],
+            # callbacks=[
+            #     skorch.callbacks.LRScheduler(
+            #         policy=ReduceLROnPlateau,
+            #         monitor="valid_loss",
+            #         patience=lr_patience,
+            #         factor=lr_reduction_factor,
+            #     )
+            # ],
         )
 
         # todo: consistent input expectations!
-        model.fit(X_train, y_train)
+        model.fit(X_train, y_train.reshape(-1, 1))
 
         # train_losses, val_losses = [], []
         # iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
@@ -334,12 +323,12 @@ class My_UQ_Comparer(UQ_Comparer):
         #     scheduler.step(val_loss)
         #     val_losses.append(val_loss)
         #     train_losses.append(train_loss)
-        #
-        # if save_trained:
-        #     model_savepath = self.io_helper.get_model_savepath(model_filename)
-        #     torch.save(model, model_savepath)
-        # model.eval()
-        #
+
+        if save_trained:
+            model_savepath = self.io_helper.get_model_savepath(model_filename)
+            torch.save(model, model_savepath)
+        # model.fr
+
         # if verbose:
         #     loss_skip = 0
         #     self._plot_training_progress(
@@ -347,6 +336,16 @@ class My_UQ_Comparer(UQ_Comparer):
         #     )
 
         return model
+
+    @staticmethod
+    def train_split(X, y):
+        # val_frac = 0.1
+        val_size = 20  # round(val_frac * y_train.shape[0])
+        X_val, y_val = X[-val_size:], y[-val_size:]
+        X_train, y_train = X[:-val_size], y[:-val_size]
+        dataset_train = Dataset(X_train, y_train)
+        dataset_val = Dataset(X_val, y_val)
+        return dataset_train, dataset_val
 
     @staticmethod
     def _plot_training_progress(train_losses, test_losses):
@@ -392,7 +391,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_uq: npt.NDArray[float],
         quantiles,
         model,
-        n_epochs=1000,
+        n_epochs=10,
         batch_size=20,
         random_state=711,
         verbose=True,
@@ -494,32 +493,6 @@ class My_UQ_Comparer(UQ_Comparer):
     @staticmethod
     def _get_kernel():
         return RBF() + WhiteKernel()
-
-
-class My_NN(nn.Module):
-    def __init__(
-        self,
-        dim_in,
-        dim_out,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
-        activation=nn.LeakyReLU,
-    ):
-        super().__init__()
-        # fmt: off
-        layers = collapse([
-            nn.Linear(dim_in, hidden_layer_size),
-            activation(),
-            [[nn.Linear(hidden_layer_size, hidden_layer_size),
-              activation()]
-             for _ in range(num_hidden_layers)],
-            nn.Linear(hidden_layer_size, dim_out),
-        ])
-        self.model = nn.Sequential(*layers).float()
-
-    def forward(self, input_list, **kwargs):
-        X, y = input_list
-        return self.model(X)
 
 
 def main():
