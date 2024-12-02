@@ -10,8 +10,6 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 
-from helpers import IO_Helper
-
 
 # noinspection PyAttributeOutsideInit
 class MyEstimator(RegressorMixin, BaseEstimator):
@@ -62,14 +60,12 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         "n_iter": [int],
         "batch_size": [int],
         "random_state": [int],
-        "model_filename": [str],
         "lr": [float],
         "lr_patience": [int],
         "lr_reduction_factor": [float],
         "verbose": [bool],
         "skip_training": [bool],
         "save_trained": [bool],
-        "storage_path": [str],
         "to_standardize": [str],
         "val_frac": [float],
     }
@@ -84,40 +80,24 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         lr_patience=5,
         lr_reduction_factor=0.1,
         verbose=True,
-        skip_training=True,
-        save_trained=True,
-        model_filename="_laplace_base.pth",
-        storage_path="comparison_storage",
-        to_standardize='X',
     ):
         """
         :param n_iter: 
         :param batch_size:
-        :param random_state: 
-        :param model_filename: 
+        :param random_state:
         :param lr: 
         :param lr_patience: 
         :param lr_reduction_factor: 
-        :param verbose: 
-        :param skip_training: 
-        :param save_trained: 
-        :param storage_path: 
-        :param to_standardize: 
+        :param verbose:
         """
         self.n_iter = n_iter
         self.batch_size = batch_size
         self.random_state = random_state
         self.val_frac = val_frac
-        self.model_filename = model_filename
         self.lr = lr
         self.lr_patience = lr_patience
         self.lr_reduction_factor = lr_reduction_factor
         self.verbose = verbose
-        self.skip_training = skip_training
-        self.save_trained = save_trained
-        # todo: bad/inappropriate params to pass (not refering to algorithm)?
-        self.storage_path = storage_path
-        self.to_standardize = to_standardize
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
@@ -146,17 +126,6 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         X, y = self._validate_data(X, y, accept_sparse=False)
 
         ##########
-        io_helper = IO_Helper(self.storage_path)
-
-        # if skip_training:
-        #     print("skipping base model training")
-        #     try:
-        #         model = self.io_helper.load_model(model_filename)
-        #         model.eval()
-        #         return model
-        #     except FileNotFoundError:
-        #         # fmt: off
-        #         print("error. model not found, so training cannot be skipped. training from scratch")
 
         torch.manual_seed(self.random_state)
 
@@ -217,10 +186,6 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         model.eval()
         self.model_ = model
 
-        if self.save_trained:
-            model_savepath = io_helper.get_model_savepath(self.model_filename)
-            torch.save(model, model_savepath)
-
         if self.verbose:
             loss_skip = 0
             self._plot_training_progress(
@@ -274,7 +239,7 @@ class MyEstimator(RegressorMixin, BaseEstimator):
     def _mse_torch(y_pred, y_test):
         return torch.mean((y_pred - y_test) ** 2)
 
-    def predict(self, X):
+    def predict(self, X, as_np=True):
         """A reference implementation of a predicting function.
 
         Parameters
@@ -295,8 +260,9 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         X = self._arr_to_tensor(X)
         with torch.no_grad():
             res = self.model_(X)
-        if self.is_y_2d_:
-            res = res.reshape(-1, 1)
+        res = res.reshape(-1, 1) if self.is_y_2d_ else res.ravel()
+        if as_np:
+            res = np.array(res, dtype='float32')
         return res
 
     def _more_tags(self):

@@ -39,6 +39,7 @@ from torch import nn
 from laplace import Laplace
 
 from temp_nn_file import My_NN
+from temp_sklearn_estimator import MyEstimator
 
 METHOD_WHITELIST = [
     "posthoc_conformal_prediction",
@@ -235,19 +236,21 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train: npt.NDArray[float],
         y_train: npt.NDArray[float],
         model_params_choices=None,
-        n_epochs=10,
+        n_iter=10,
         batch_size=20,
         random_state=711,
         verbose=True,
         skip_training=True,
         save_trained=True,
         model_filename="_laplace_base.pth",
+        val_frac=0.1,
         lr=0.1,
         lr_patience=5,
         lr_reduction_factor=0.1,
     ):
         """
 
+        :param val_frac:
         :param lr_reduction_factor:
         :param lr:
         :param lr_patience:
@@ -258,7 +261,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param X_train: shape (n_samples, n_dims)
         :param y_train: shape (n_samples, n_dims)
         :param model_params_choices:
-        :param n_epochs:
+        :param n_iter:
         :param batch_size:
         :param random_state:
         :return:
@@ -273,67 +276,22 @@ class My_UQ_Comparer(UQ_Comparer):
                 # fmt: off
                 print("error. model not found, so training cannot be skipped. training from scratch")
 
-        torch.manual_seed(random_state)
-        X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X_train, y_train))
-        dim_in, dim_out = X_train.shape[-1], y_train.shape[0]
-
-        model = NeuralNetRegressor(
-            module=My_NN,
-            criterion=nn.MSELoss(),
-            optimizer=torch.optim.Adam,
-            module__dim_in=dim_in,
-            module__dim_out=dim_out,
-            module__num_hidden_layers=2,
-            module__hidden_layer_size=50,
-            # module__activation=nn.LeakyReLU,
-            lr=lr,
-            max_epochs=n_epochs,
+        model = MyEstimator(
+            n_iter=n_iter,
             batch_size=batch_size,
-            # train_split=self.train_split,
-            predict_nonlinearity=None,
-            verbose=0,
-            # callbacks=[
-            #     skorch.callbacks.LRScheduler(
-            #         policy=ReduceLROnPlateau,
-            #         monitor="valid_loss",
-            #         patience=lr_patience,
-            #         factor=lr_reduction_factor,
-            #     )
-            # ],
+            random_state=random_state,
+            val_frac=val_frac,
+            lr=lr,
+            lr_patience=lr_patience,
+            lr_reduction_factor=lr_reduction_factor,
+            verbose=verbose,
         )
-
-        # todo: consistent input expectations!
-        model.fit(X_train, y_train.reshape(-1, 1))
-
-        # train_losses, val_losses = [], []
-        # iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
-        # for _ in iterable:
-        #     model.train()
-        #     for X, y in train_loader:
-        #         optimizer.zero_grad()
-        #         loss = criterion(model(X), y)
-        #         loss.backward()
-        #         optimizer.step()
-        #     model.eval()
-        #     with torch.no_grad():
-        #         val_loss = self._mse_torch(model(X_val), y_val)
-        #         train_loss = self._mse_torch(
-        #             model(X_train[:val_size]), y_val[:val_size]
-        #         )
-        #     scheduler.step(val_loss)
-        #     val_losses.append(val_loss)
-        #     train_losses.append(train_loss)
+        model.fit(X_train, y_train)
+        model.set_params(verbose=False)
 
         if save_trained:
             model_savepath = self.io_helper.get_model_savepath(model_filename)
             torch.save(model, model_savepath)
-        # model.fr
-
-        # if verbose:
-        #     loss_skip = 0
-        #     self._plot_training_progress(
-        #         train_losses[loss_skip:], val_losses[loss_skip:]
-        #     )
 
         return model
 
