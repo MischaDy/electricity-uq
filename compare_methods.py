@@ -318,18 +318,6 @@ class UQ_Comparer(ABC):
         y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
         return y_quantiles
 
-    @staticmethod
-    def optional(func):
-        # todo
-        """
-        :param func:
-        :return:
-        """
-
-        def optional_func(*args, **kwargs):
-            # todo: needed?
-            pass
-
 
 # PLOTTING
 
