@@ -287,23 +287,17 @@ class My_UQ_Comparer(UQ_Comparer):
             verbose=verbose,
         )
         model.fit(X_train, y_train)
-        model.set_params(verbose=False)
+
+        if verbose:
+            self.plot_post_training_perf(model, X_train, y_train, do_save_figure=True)
 
         if save_trained:
             model_savepath = self.io_helper.get_model_savepath(model_filename)
             torch.save(model, model_savepath)
 
+        # noinspection PyTypeChecker
+        model.set_params(verbose=False)
         return model
-
-    @staticmethod
-    def train_split(X, y):
-        # val_frac = 0.1
-        val_size = 20  # round(val_frac * y_train.shape[0])
-        X_val, y_val = X[-val_size:], y[-val_size:]
-        X_train, y_train = X[:-val_size], y[:-val_size]
-        dataset_train = Dataset(X_train, y_train)
-        dataset_val = Dataset(X_val, y_val)
-        return dataset_train, dataset_val
 
     @staticmethod
     def _plot_training_progress(train_losses, test_losses):
@@ -311,6 +305,27 @@ class My_UQ_Comparer(UQ_Comparer):
         ax.semilogy(train_losses, label="train")
         ax.semilogy(test_losses, label="val")
         ax.legend()
+        plt.show()
+
+    def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
+        y_preds = base_model.predict(X_train)
+
+        num_train_steps = X_train.shape[0]
+        x_plot_train = np.arange(num_train_steps)
+
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+        ax.plot(
+            x_plot_train,
+            y_preds,
+            label=f"base model prediction",
+            color="green",
+        )
+        ax.legend()
+        ax.set_xlabel("data")
+        ax.set_ylabel("target")
+        if do_save_figure:
+            self.io_helper.save_plot(f"{filename}.png")
         plt.show()
 
     @staticmethod
@@ -349,7 +364,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_uq: npt.NDArray[float],
         quantiles,
         model,
-        n_epochs=10,
+        n_iter=100,
         batch_size=20,
         random_state=711,
         verbose=True,
@@ -366,7 +381,7 @@ class My_UQ_Comparer(UQ_Comparer):
             torch.ones(1, requires_grad=True),
         )
         hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
-        iterable = tqdm(range(n_epochs)) if verbose else range(n_epochs)
+        iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
         for _ in iterable:
             hyper_optimizer.zero_grad()
             neg_marglik = -la.log_marginal_likelihood(log_prior.exp(), log_sigma.exp())
