@@ -5,10 +5,8 @@ import numpy as np
 import numpy.typing as npt
 
 import pandas as pd
-import skorch.callbacks
 from mapie.subsample import BlockBootstrap
 from matplotlib import pyplot as plt
-from more_itertools import collapse
 from pmdarima.metrics import smape
 
 from scipy.stats import randint, norm
@@ -17,10 +15,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from sklearn.metrics import mean_pinball_loss
 from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-from skorch import NeuralNetRegressor
-from skorch.dataset import Dataset
 from statsmodels.tools.eval_measures import rmse
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
@@ -34,11 +29,9 @@ from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 
 import torch
-from torch import nn
 
 from laplace import Laplace
 
-from temp_nn_file import My_NN
 from temp_sklearn_estimator import MyEstimator
 
 METHOD_WHITELIST = [
@@ -60,6 +53,7 @@ PLOT_RESULTS = True
 SAVE_PLOTS = True
 SKIP_TRAINING = False
 SAVE_TRAINED = True
+VERBOSE = False
 
 PLOTS_PATH = "plots"
 
@@ -104,9 +98,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param _n_points_per_group:
         :return: X_train, X_test, y_train, y_test, X, y
         """
-        X_train, X_test, y_train, y_test, X, y = get_data(
-            _n_points_per_group, return_full_data=True
-        )
+        X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True)
         X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
         y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
         return X_train, X_test, y_train, y_test, X, y
@@ -169,7 +161,7 @@ class My_UQ_Comparer(UQ_Comparer):
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
         # model = self.my_train_base_model_rf(*args, **kwargs)
-        model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, **kwargs)
+        model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, verbose=VERBOSE, **kwargs)
         return model
 
     def my_train_base_model_rf(

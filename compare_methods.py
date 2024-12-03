@@ -56,12 +56,12 @@ class UQ_Comparer(ABC):
         :param output_uq_on_train: whether to produce results for X_train, too. Output for X_test is always produced.
         :return: UQ metrics and UQ results if return_results is False, else UQ metrics also native and posthoc results
         """
-        print("loading data")
+        print("loading data...")
         X_train, X_test, y_train, y_test, X, y = self.get_data()
         print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
         if should_plot_data:
-            print("plotting data")
+            print("plotting data...")
             plot_data(
                 X_train,
                 X_test,
@@ -71,7 +71,7 @@ class UQ_Comparer(ABC):
                 plots_path=plots_path,
             )
 
-        print("running UQ methods")
+        print("running UQ methods...")
         X_uq = np.row_stack((X_train, X_test)) if output_uq_on_train else X_test
         uq_results = self.run_all_methods(
             X_train,
@@ -83,7 +83,7 @@ class UQ_Comparer(ABC):
         )
 
         if should_plot_results:
-            print("plotting native vs posthoc results")
+            print("plotting native vs posthoc results...")
             plot_uq_results_all(
                 X_train,
                 y_train,
@@ -97,7 +97,7 @@ class UQ_Comparer(ABC):
             )
 
         y_uq = y if output_uq_on_train else y_test
-        print("computing and comparing metrics")
+        print("computing and comparing metrics...")
         uq_metrics = {
             uq_type: self.compute_all_metrics(methods_results, y_uq, quantiles=quantiles)
             for uq_type, methods_results in uq_results.items()
@@ -256,11 +256,11 @@ class UQ_Comparer(ABC):
         assert uq_type in ["posthoc", "native"]
         is_posthoc = uq_type == "posthoc"
         if is_posthoc:
-            print("training base model")
+            print("training base model...")
             if base_model_params is None:
                 base_model_params = {}
             base_model = self.train_base_model(X_train, y_train, **base_model_params)
-        print(f"running {uq_type} methods")
+        print(f"running {uq_type} methods...")
         uq_methods = self._get_uq_methods_by_type(uq_type)
         if self.method_whitelist is not None:
             uq_methods = starfilter(
@@ -291,9 +291,7 @@ class UQ_Comparer(ABC):
         """
         num_quantiles = quantiles.shape[1]
         if num_quantiles < 50:
-            print(
-                f"warning: {num_quantiles} quantiles are too few to compute a reliable std from (should be about 100)"
-            )
+            print(f"warning: {num_quantiles} quantiles are too few to compute a reliable std from (should be about 100)")
         return np.std(quantiles, ddof=1, axis=1)
 
     @staticmethod
@@ -370,9 +368,7 @@ def plot_uq_results_all(
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in results.items():
             if y_quantiles is None and y_std is None:
-                print(
-                    f"warning: cannot plot method {method_name}, because both y_quantiles and y_std are None"
-                )
+                print(f"warning: cannot plot method {method_name}, because both y_quantiles and y_std are None")
                 continue
             uq_type, *method_name_parts = method_name.split("_")
             plot_uq_result(
