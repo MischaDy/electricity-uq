@@ -78,7 +78,7 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         val_frac=0.1,
         lr=0.1,
         lr_patience=5,
-        lr_reduction_factor=0.1,
+        lr_reduction_factor=0.5,
         verbose=True,
     ):
         """

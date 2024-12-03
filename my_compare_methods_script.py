@@ -238,7 +238,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train: npt.NDArray[float],
         y_train: npt.NDArray[float],
         model_params_choices=None,
-        n_iter=200,
+        n_iter=500,
         batch_size=20,
         random_state=711,
         verbose=True,
@@ -248,7 +248,7 @@ class My_UQ_Comparer(UQ_Comparer):
         val_frac=0.1,
         lr=0.1,
         lr_patience=5,
-        lr_reduction_factor=0.1,
+        lr_reduction_factor=0.5,
     ):
         """
 
@@ -344,7 +344,7 @@ class My_UQ_Comparer(UQ_Comparer):
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
             model, cv, alphas, X_uq, X_train, y_train, skip_training=SKIP_TRAINING, io_helper=self.io_helper,
-            agg_function='median'
+            agg_function='mean'
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
         if 0.5 in quantiles:
