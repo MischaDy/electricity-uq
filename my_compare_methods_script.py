@@ -51,7 +51,7 @@ QUANTILES = [
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
-SKIP_TRAINING = False
+SKIP_TRAINING = True
 SAVE_TRAINED = True
 VERBOSE = False
 
@@ -474,5 +474,27 @@ def main():
     print_metrics(uq_metrics)
 
 
+def temp_test():
+    uq_comparer = My_UQ_Comparer(
+        method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE
+    )
+    X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
+    filename_enbpi_no_pfit = f"mapie_enbpi_no_pfit_800_1600.model"
+    mapie_enbpi = uq_comparer.io_helper.load_model(filename_enbpi_no_pfit)
+
+    multi_y = [e.predict(X) for e in mapie_enbpi.estimator_.estimators_]
+    x_plot_full = np.arange(X.shape[0])
+    x_plot_train = np.arange(X_train.shape[0])
+    x_plot_test = np.arange(X_test.shape[0], len(x_plot_train) + X_test.shape[0])
+    fig, ax = plt.subplots(figsize=(14, 6))
+    for i, y_i in enumerate(multi_y):
+        ax.plot(x_plot_full, y_i, alpha=0.5, label=f'y_pred{i}')
+    ax.plot(x_plot_train, y_train, color='black', linestyle="dashed", label='y_train')
+    ax.plot(x_plot_test, y_test, color='black', label='y_test')
+    ax.legend(loc='lower right')
+    plt.show()
+
+
 if __name__ == "__main__":
-    main()
+    temp_test()
+    # main()
