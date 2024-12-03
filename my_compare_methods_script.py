@@ -58,8 +58,8 @@ QUANTILES = [
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
-SKIP_TRAINING = True
-SAVE_TRAINED = False
+SKIP_TRAINING = False
+SAVE_TRAINED = True
 
 PLOTS_PATH = "plots"
 
@@ -293,8 +293,8 @@ class My_UQ_Comparer(UQ_Comparer):
         )
         model.fit(X_train, y_train)
 
-        if verbose:
-            self.plot_post_training_perf(model, X_train, y_train, do_save_figure=True)
+        # if verbose:
+        #     self.plot_post_training_perf(model, X_train, y_train, do_save_figure=True)
 
         if save_trained:
             model_savepath = self.io_helper.get_model_savepath(model_filename)
@@ -344,6 +344,7 @@ class My_UQ_Comparer(UQ_Comparer):
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
             model, cv, alphas, X_uq, X_train, y_train, skip_training=SKIP_TRAINING, io_helper=self.io_helper,
+            agg_function='median'
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
         if 0.5 in quantiles:
