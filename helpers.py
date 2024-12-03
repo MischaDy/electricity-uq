@@ -121,6 +121,21 @@ class IO_Helper:
             model = pickle.load(file)
         return model
 
+    def load_torch_model2(self, model_class, filename, *args, **kwargs):
+        """
+
+        :param model_class:
+        :param filename:
+        :param args: args for model_class constructor
+        :param kwargs: kwargs for model_class constructor
+        :return:
+        """
+        model = model_class(*args, **kwargs)
+        filepath = self.get_model_savepath(filename)
+        model.load_state_dict(torch.load(filepath, weights_only=True))
+        model.eval()
+        return model
+
     def load_torch_model(self, filename, *args, **kwargs):
         """
 
@@ -129,10 +144,11 @@ class IO_Helper:
         :param kwargs: kwargs for torch.load
         :return:
         """
-        # todo: correct?
         filepath = self.get_model_savepath(filename)
         kwargs['weights_only'] = True
-        return torch.load(filepath, *args, **kwargs)
+        model = torch.load(filepath, *args, **kwargs)
+        model.eval()
+        return model
 
     def save_array(self, array, filename):
         np.save(self.get_array_savepath(filename), array)
@@ -140,6 +156,9 @@ class IO_Helper:
     def save_model(self, model, filename):
         with open(self.get_model_savepath(filename), "wb") as file:
             pickle.dump(model, file)
+
+    def save_torch_model(self, model, filename):
+        torch.save(model.state_dict(), self.get_model_savepath(filename))
 
     def save_plot(self, filename):
         plt.savefig(self.get_plot_savepath(filename))

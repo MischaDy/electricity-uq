@@ -58,12 +58,13 @@ QUANTILES = [
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
-SAVE_TRAINED = False
+SKIP_TRAINING = False
+SAVE_TRAINED = True
 
 PLOTS_PATH = "plots"
 
 BASE_MODEL_PARAMS = {
-    "skip_training": False,
+    "skip_training": SKIP_TRAINING,
     # 'n_jobs': -1,
     # 'model_params_choices': None,
 }
@@ -243,7 +244,7 @@ class My_UQ_Comparer(UQ_Comparer):
         verbose=True,
         skip_training=True,
         save_trained=True,
-        model_filename="_laplace_base.pth",
+        model_filename=None,
         val_frac=0.1,
         lr=0.1,
         lr_patience=5,
@@ -267,10 +268,13 @@ class My_UQ_Comparer(UQ_Comparer):
         :param random_state:
         :return:
         """
+        if model_filename is None:
+            n_training_points = X_train.shape[0]
+            model_filename = f"base_nn_{n_training_points}.pth"
         if skip_training:
             print("skipping base model training")
             try:
-                model = self.io_helper.load_model(model_filename)
+                model = self.io_helper.load_torch_model(model_filename)
                 model.eval()
                 return model
             except FileNotFoundError:
@@ -347,7 +351,7 @@ class My_UQ_Comparer(UQ_Comparer):
             X_uq,
             X_train,
             y_train,
-            skip_training=False,
+            skip_training=SKIP_TRAINING,
             io_helper=self.io_helper,
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
