@@ -145,7 +145,7 @@ class IO_Helper:
         :return:
         """
         filepath = self.get_model_savepath(filename)
-        kwargs['weights_only'] = True
+        kwargs['weights_only'] = False
         model = torch.load(filepath, *args, **kwargs)
         model.eval()
         return model

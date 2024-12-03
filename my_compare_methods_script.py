@@ -58,8 +58,8 @@ QUANTILES = [
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
-SKIP_TRAINING = False
-SAVE_TRAINED = True
+SKIP_TRAINING = True
+SAVE_TRAINED = False
 
 PLOTS_PATH = "plots"
 
@@ -340,19 +340,10 @@ class My_UQ_Comparer(UQ_Comparer):
     def posthoc_conformal_prediction(
         self, X_train, y_train, X_uq, quantiles, model, random_state=42
     ):
-        cv = BlockBootstrap(
-            n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state
-        )
+        cv = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state)
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
-            model,
-            cv,
-            alphas,
-            X_uq,
-            X_train,
-            y_train,
-            skip_training=SKIP_TRAINING,
-            io_helper=self.io_helper,
+            model, cv, alphas, X_uq, X_train, y_train, skip_training=SKIP_TRAINING, io_helper=self.io_helper,
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
         if 0.5 in quantiles:

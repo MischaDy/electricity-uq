@@ -258,6 +258,7 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         # `feature_names_in_` but only check that the shape is consistent.
         X = self._validate_data(X, accept_sparse=False, reset=False)
         X = self._arr_to_tensor(X)
+        # self.model_.eval()
         with torch.no_grad():
             res = self.model_(X)
         res = res.reshape(-1, 1) if self.is_y_2d_ else res.ravel()
@@ -268,6 +269,13 @@ class MyEstimator(RegressorMixin, BaseEstimator):
     def _more_tags(self):
         return {'poor_score': True,
                 '_xfail_checks': {'check_methods_sample_order_invariance': '(barely) failing for unknown reason'}}
+
+    @classmethod
+    def load_model(cls):
+        pass
+
+    def eval(self):
+        self.model_.eval()
 
 
 if __name__ == '__main__':
