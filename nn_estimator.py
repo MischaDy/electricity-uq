@@ -261,7 +261,7 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         # self.model_.eval()
         with torch.no_grad():
             res = self.model_(X)
-        res = res.reshape(-1, 1) if self.is_y_2d_ else res.ravel()
+        res = res.reshape(-1, 1) if self.is_y_2d_ else res.squeeze()
         if as_np:
             res = np.array(res, dtype='float32')
         return res
