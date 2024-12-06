@@ -177,7 +177,7 @@ class MyEstimator(RegressorMixin, BaseEstimator):
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
                 train_loss = self._mse_torch(
-                    model(X_train[:val_size]), y_val[:val_size]
+                    model(X_train[:val_size]), y_train[:val_size]
                 )
             scheduler.step(val_loss)
             val_losses.append(val_loss)
