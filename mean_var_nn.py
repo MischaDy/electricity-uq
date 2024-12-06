@@ -13,6 +13,7 @@ from sklearn.utils.validation import check_is_fitted
 
 from more_itertools import collapse
 from tqdm import tqdm
+from uncertainty_toolbox import nll_gaussian
 
 
 class MeanVarNN(nn.Module):
@@ -167,17 +168,14 @@ class MeanVarNN_Estimator(RegressorMixin, BaseEstimator):
             model.train()
             for X, y in train_loader:
                 optimizer.zero_grad()
-                y_pred = model(X)
-                y_pred_mean, y_pred_var = y_pred[:, 0], y_pred[:, 1]
+                y_pred_mean, y_pred_var = model(X)
                 loss = criterion(y_pred_mean, y, y_pred_var)
                 loss.backward()
                 optimizer.step()
             model.eval()
             with torch.no_grad():
-                val_loss = self._mse_torch(model(X_val), y_val)
-                train_loss = self._mse_torch(
-                    model(X_train[:val_size]), y_val[:val_size]
-                )
+                val_loss = self._nll_loss(model(X_val), y_val)
+                train_loss = self._nll_loss(model(X_train[:val_size]), y_train[:val_size])
             scheduler.step(val_loss)
             val_losses.append(val_loss)
             train_losses.append(train_loss)
@@ -216,8 +214,9 @@ class MeanVarNN_Estimator(RegressorMixin, BaseEstimator):
         plt.show()
 
     @staticmethod
-    def _mse_torch(y_pred, y_test):
-        return torch.mean((y_pred - y_test) ** 2)
+    def _nll_loss(y_pred, y_test):
+        y_pred_mean, y_pred_var = y_pred
+        return nll_gaussian(y_pred_mean, y_test, np.sqrt(y_pred_var))
 
     def predict(self, X, as_np=True):
         """A reference implementation of a predicting function.
