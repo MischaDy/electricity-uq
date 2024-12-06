@@ -2,18 +2,15 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils.data import TensorDataset, DataLoader
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-from sklearn.base import RegressorMixin, BaseEstimator, _fit_context
-from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.validation import check_is_fitted
-
 from more_itertools import collapse
 from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
+
+from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader
 
 
 class MeanVarNN(nn.Module):
@@ -52,54 +49,27 @@ class MeanVarNN(nn.Module):
         return mean, var  # todo: possible?
 
 
-def train(X, y,
-        n_iter=10,
-        batch_size=20,
-        random_state=711,
-        val_frac=0.1,
-        lr=0.1,
-        lr_patience=5,
-        lr_reduction_factor=0.5,
-        verbose=True,):
-    # todo: add model_params_choices=None,
-    """A reference implementation of a fitting function.
-
-    Parameters
-    ----------
-    X : {array-like, sparse matrix}, shape (n_samples, n_features)
-        The training input samples.
-
-    y : array-like, shape (n_samples,) or (n_samples, n_outputs)
-        The target values (real numbers).
-
-
-    Returns
-    -------
-    self : object
-        Returns self.
-    """
-    """`_validate_data` is defined in the `BaseEstimator` class.
-    It allows to:
-    - run different checks on the input data;
-    - define some attributes associated to the input data: `n_features_in_` and
-      `feature_names_in_`."""
-    X, y = self._validate_data(X, y, accept_sparse=False)
-
-    ##########
-
-    torch.manual_seed(self.random_state)
-
-    self.is_y_2d_ = len(y.shape) == 2
-    if len(y.shape) < 2:
-        y = y.reshape(-1, 1)
+def train_mean_var_nn(
+    X,
+    y,
+    n_iter=10,
+    batch_size=20,
+    random_state=711,
+    val_frac=0.1,
+    lr=0.1,
+    lr_patience=5,
+    lr_reduction_factor=0.5,
+    verbose=True,
+):
+    torch.manual_seed(random_state)
 
     try:
-        X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X, y))
+        X_train, y_train = map(numpy_to_tensor, (X, y))
     except TypeError:
         raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
     n_samples = X_train.shape[0]
-    val_size = max(1, round(self.val_frac * n_samples))
+    val_size = max(1, round(val_frac * n_samples))
     train_size = max(1, n_samples - val_size)
     X_val, y_val = X_train[-val_size:], y_train[-val_size:]
     X_train, y_train = X_train[:train_size], y_train[:train_size]
@@ -114,16 +84,16 @@ def train(X, y,
         hidden_layer_size=50,
     )
 
-    train_loader = self._get_train_loader(X_train, y_train, self.batch_size)
+    train_loader = get_train_loader(X_train, y_train, batch_size)
 
     criterion = nn.GaussianNLLLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     scheduler = ReduceLROnPlateau(
-        optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor
+        optimizer, patience=lr_patience, factor=lr_reduction_factor
     )
 
     train_losses, val_losses = [], []
-    iterable = tqdm(range(self.n_iter)) if self.verbose else range(self.n_iter)
+    iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
     for _ in iterable:
         model.train()
         for X, y in train_loader:
@@ -134,26 +104,26 @@ def train(X, y,
             optimizer.step()
         model.eval()
         with torch.no_grad():
-            val_loss = self._nll_loss_np(model(X_val), y_val)
-            train_loss = self._nll_loss_np(model(X_train[:val_size]), y_train[:val_size])
+            val_loss = _nll_loss_np(model(X_val), y_val)
+            train_loss = _nll_loss_np(model(X_train[:val_size]), y_train[:val_size])
         scheduler.step(val_loss)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
+    if verbose:
+        loss_skip = 0
+        plot_training_progress(train_losses[loss_skip:], val_losses[loss_skip:])
 
     model.eval()
-    self.model_ = model
+    return model
 
-    if self.verbose:
-        loss_skip = 0
-        self._plot_training_progress(
-            train_losses[loss_skip:], val_losses[loss_skip:]
-        )
 
-    ##########
+def plot_training_progress(train_losses, test_losses):
+    fig, ax = plt.subplots()
+    ax.semilogy(train_losses, label="train")
+    ax.semilogy(test_losses, label="val")
+    ax.legend()
+    plt.show()
 
-    self.is_fitted_ = True
-    # `fit` should always return `self`
-    return self
 
 def _nll_loss_np(y_pred, y_test):
     y_pred_mean, y_pred_var = y_pred
@@ -162,13 +132,13 @@ def _nll_loss_np(y_pred, y_test):
     return nll_gaussian(*arrs)
 
 
-def predict(X, as_np=True):
-    X = _arr_to_tensor(X)
+def predict(model, X, as_np=True):
+    X = numpy_to_tensor(X)
     with torch.no_grad():
-        tensor_pair = model_(X)
-    tensor_pair = map(lambda t: t.reshape(-1, 1) if is_y_2d_ else t.squeeze(), tensor_pair)
+        tensor_pair = model(X)
+    # tensor_pair = map(lambda t: t.reshape(-1, 1) if is_y_2d_ else t.squeeze(), tensor_pair)
     if as_np:
-        return tuple(map(lambda t: t.numpy(force=True).squeeze(), tensor_pair))
+        return tuple(map(lambda t: tensor_to_numpy(t).squeeze(), tensor_pair))
     return tensor_pair
 
 
@@ -184,7 +154,10 @@ def native_mean_var_nn(
         lr_patience=5,
         lr_reduction_factor=0.5,
 ):
-    model = MeanVarNN(
+    X, y = ..., ...
+    mean_var_nn = train_mean_var_nn(
+        X,
+        y,
         n_iter=n_iter,
         batch_size=batch_size,
         random_state=random_state,
@@ -194,11 +167,30 @@ def native_mean_var_nn(
         lr_reduction_factor=lr_reduction_factor,
         verbose=verbose,
     )
-    model.fit(X_train, y_train)
 
-    # if verbose:
-    #     plot_post_training_perf(model, X_train, y_train, do_save_figure=True)
-    return model
+    if verbose:
+        plot_post_training_perf(mean_var_nn, X_train, y_train)
+    return mean_var_nn
+
+
+def plot_post_training_perf(base_model, X_train, y_train):
+    y_preds = base_model.predict(X_train)
+
+    num_train_steps = X_train.shape[0]
+    x_plot_train = np.arange(num_train_steps)
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+    ax.plot(
+        x_plot_train,
+        y_preds,
+        label=f"base model prediction",
+        color="green",
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    plt.show()
 
 
 if __name__ == '__main__':
