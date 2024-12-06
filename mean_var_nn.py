@@ -10,7 +10,17 @@ from more_itertools import collapse
 from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
 
-from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader
+from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader, get_data, standardize, df_to_numpy
+
+QUANTILES = [
+    0.05,
+    0.25,
+    0.75,
+    0.95,
+]
+TO_STANDARDIZE = "xy"
+
+torch.set_default_dtype(torch.float32)
 
 
 class MeanVarNN(nn.Module):
@@ -142,39 +152,18 @@ def predict(model, X, as_np=True):
     return tensor_pair
 
 
-def native_mean_var_nn(
-        X_train,
-        y_train,
-        n_iter=100,
-        batch_size=20,
-        random_state=711,
-        verbose=True,
-        val_frac=0.1,
-        lr=0.1,
-        lr_patience=5,
-        lr_reduction_factor=0.5,
-):
-    X, y = ..., ...
-    mean_var_nn = train_mean_var_nn(
-        X,
-        y,
-        n_iter=n_iter,
-        batch_size=batch_size,
-        random_state=random_state,
-        val_frac=val_frac,
-        lr=lr,
-        lr_patience=lr_patience,
-        lr_reduction_factor=lr_reduction_factor,
-        verbose=verbose,
-    )
-
-    if verbose:
-        plot_post_training_perf(mean_var_nn, X_train, y_train)
-    return mean_var_nn
+def run_mean_var_nn(X_train, y_train, X_test):
+    mean_var_nn = train_mean_var_nn(X_train, y_train)
+    plot_post_training_perf(mean_var_nn, X_train, y_train)
+    y_pred, y_var = mean_var_nn(X_test)
+    y_pred, y_var = map(tensor_to_numpy, (y_pred, y_var))
+    y_std = np.sqrt(y_var)
+    y_quantiles = None
+    return y_pred, y_quantiles, y_std
 
 
 def plot_post_training_perf(base_model, X_train, y_train):
-    y_preds = base_model.predict(X_train)
+    y_pred_mean, y_pred_var = base_model.predict(X_train)
 
     num_train_steps = X_train.shape[0]
     x_plot_train = np.arange(num_train_steps)
@@ -183,7 +172,7 @@ def plot_post_training_perf(base_model, X_train, y_train):
     ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
     ax.plot(
         x_plot_train,
-        y_preds,
+        y_pred_mean,
         label=f"base model prediction",
         color="green",
     )
@@ -193,5 +182,92 @@ def plot_post_training_perf(base_model, X_train, y_train):
     plt.show()
 
 
+def plot_uq_result(
+    X_train,
+    X_test,
+    y_train,
+    y_test,
+    y_preds,
+    y_quantiles,
+    y_std,
+    quantiles,
+):
+    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
+
+    x_plot_train = np.arange(num_train_steps)
+    x_plot_full = np.arange(num_train_steps + num_test_steps)
+    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
+    x_plot_uq = x_plot_full
+
+    drawing_std = y_quantiles is not None
+    if drawing_std:
+        ci_low, ci_high = (
+            y_quantiles[:, 0],
+            y_quantiles[:, -1],
+        )
+        drawn_quantile = round(max(quantiles) - min(quantiles), 2)
+    else:
+        ci_low, ci_high = y_preds - y_std / 2, y_preds + y_std / 2
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+    ax.plot(
+        x_plot_uq,
+        y_preds,
+        label=f"mean/median prediction",  # todo: mean or median?
+        color="green",
+    )
+    # noinspection PyUnboundLocalVariable
+    label = rf"{f'{100*drawn_quantile}% CI' if drawing_std else '1 std'}"
+    ax.fill_between(
+        x_plot_uq.ravel(),
+        ci_low,
+        ci_high,
+        color="green",
+        alpha=0.2,
+        label=label,
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    plt.show()
+
+
+def get_clean_data(_n_points_per_group=100):
+    X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True)
+    X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
+    y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
+    return X_train, X_test, y_train, y_test, X, y
+
+
+def _standardize_or_to_array(variable, *dfs):
+    if variable in TO_STANDARDIZE:
+        return standardize(False, *dfs)
+    return map(df_to_numpy, dfs)
+
+
+def main():
+    print("loading data...")
+    X_train, X_test, y_train, y_test, X, y = get_clean_data()
+    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+
+    print("running method...")
+    X_uq = np.row_stack((X_train, X_test))
+
+    y_pred, y_quantiles, y_std = run_mean_var_nn(X_train, y_train, X_uq, QUANTILES)
+
+    plot_uq_result(
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        y_pred,
+        y_quantiles,
+        y_std,
+        QUANTILES
+    )
+
+
 if __name__ == '__main__':
-    ...
+    main()
