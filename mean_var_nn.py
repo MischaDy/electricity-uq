@@ -1,19 +1,58 @@
-import numpy as np
 import torch
+from torch import nn
+import torch.nn.functional as F
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.data import TensorDataset, DataLoader
+
+import numpy as np
 from matplotlib import pyplot as plt
-from more_itertools import collapse
+
 from sklearn.base import RegressorMixin, BaseEstimator, _fit_context
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.validation import check_is_fitted
-from torch import nn
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils.data import TensorDataset, DataLoader
+
+from more_itertools import collapse
 from tqdm import tqdm
-from uncertainty_toolbox import nll_gaussian
+
+
+class MeanVarNN(nn.Module):
+    def __init__(
+        self,
+        dim_in,
+        num_hidden_layers=2,
+        hidden_layer_size=50,
+        activation=torch.nn.LeakyReLU,
+    ):
+        super().__init__()
+        layers = collapse([
+            torch.nn.Linear(dim_in, hidden_layer_size),
+            activation(),
+            [[torch.nn.Linear(hidden_layer_size, hidden_layer_size),
+              activation()]
+             for _ in range(num_hidden_layers)],
+            torch.nn.Linear(hidden_layer_size, 2),
+        ])
+        self.first_layer_stack = torch.nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.first_layer_stack(x)
+        x = self.output_activation(x)
+        return x
+
+    @staticmethod
+    def output_activation(x) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+
+        :param x: tensor of shape (n_samples, 2), where the dimension 1 are means and dimension 2 are variances
+        :return:
+        """
+        mean, var = x[:, 0], x[:, 1]
+        var = F.relu(var)
+        return mean, var  # todo: possible?
 
 
 # noinspection PyAttributeOutsideInit
-class MeanVarNN(RegressorMixin, BaseEstimator):
+class MeanVarNN_Estimator(RegressorMixin, BaseEstimator):
     # This is a dictionary allowing to define the type of parameters.
     # It's used to validate parameter within the `_fit_context` decorator.
     _parameter_constraints = {
@@ -31,15 +70,15 @@ class MeanVarNN(RegressorMixin, BaseEstimator):
     }
 
     def __init__(
-        self,
-        n_iter=10,
-        batch_size=20,
-        random_state=711,
-        val_frac=0.1,
-        lr=0.1,
-        lr_patience=5,
-        lr_reduction_factor=0.5,
-        verbose=True,
+            self,
+            n_iter=10,
+            batch_size=20,
+            random_state=711,
+            val_frac=0.1,
+            lr=0.1,
+            lr_patience=5,
+            lr_reduction_factor=0.5,
+            verbose=True,
     ):
         """
         :param n_iter:
@@ -100,7 +139,7 @@ class MeanVarNN(RegressorMixin, BaseEstimator):
 
         n_samples = X_train.shape[0]
         val_size = max(1, round(self.val_frac * n_samples))
-        train_size = max(1, n_samples-val_size)
+        train_size = max(1, n_samples - val_size)
         X_val, y_val = X_train[-val_size:], y_train[-val_size:]
         X_train, y_train = X_train[:train_size], y_train[:train_size]
 
@@ -108,7 +147,7 @@ class MeanVarNN(RegressorMixin, BaseEstimator):
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
-        model = self._nn_builder(
+        model = MeanVarNN(
             dim_in,
             num_hidden_layers=2,
             hidden_layer_size=50,
@@ -116,7 +155,7 @@ class MeanVarNN(RegressorMixin, BaseEstimator):
 
         train_loader = self._get_train_loader(X_train, y_train, self.batch_size)
 
-        criterion = self.nll_loss
+        criterion = nn.GaussianNLLLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
         scheduler = ReduceLROnPlateau(
             optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor
@@ -128,7 +167,9 @@ class MeanVarNN(RegressorMixin, BaseEstimator):
             model.train()
             for X, y in train_loader:
                 optimizer.zero_grad()
-                loss = criterion(model(X), y)
+                y_pred = model(X)
+                y_pred_mean, y_pred_var = y_pred[:, 0], y_pred[:, 1]
+                loss = criterion(y_pred_mean, y, y_pred_var)
                 loss.backward()
                 optimizer.step()
             model.eval()
@@ -155,24 +196,6 @@ class MeanVarNN(RegressorMixin, BaseEstimator):
         self.is_fitted_ = True
         # `fit` should always return `self`
         return self
-
-    @staticmethod
-    def _nn_builder(
-        dim_in,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
-        activation=torch.nn.LeakyReLU,
-    ):
-        layers = collapse([
-            torch.nn.Linear(dim_in, hidden_layer_size),
-            activation(),
-            [[torch.nn.Linear(hidden_layer_size, hidden_layer_size),
-              activation()]
-             for _ in range(num_hidden_layers)],
-            torch.nn.Linear(hidden_layer_size, 2),
-        ])
-        model = torch.nn.Sequential(*layers)
-        return model.float()
 
     @classmethod
     def _get_train_loader(cls, X_train: torch.Tensor, y_train: torch.Tensor, batch_size):
@@ -231,26 +254,20 @@ class MeanVarNN(RegressorMixin, BaseEstimator):
     def eval(self):
         self.model_.eval()
 
-    @staticmethod
-    def nll_loss(y_out, y_true):
-        y_mean, y_std = y_out
-        loss = nll_gaussian(y_mean, y_std, y_true)
-        return torch.Tensor(loss)
-
 
 def native_mean_var_nn(
-    X_train,
-    y_train,
-    n_iter=100,
-    batch_size=20,
-    random_state=711,
-    verbose=True,
-    val_frac=0.1,
-    lr=0.1,
-    lr_patience=5,
-    lr_reduction_factor=0.5,
+        X_train,
+        y_train,
+        n_iter=100,
+        batch_size=20,
+        random_state=711,
+        verbose=True,
+        val_frac=0.1,
+        lr=0.1,
+        lr_patience=5,
+        lr_reduction_factor=0.5,
 ):
-    model = MeanVarNN(
+    model = MeanVarNN_Estimator(
         n_iter=n_iter,
         batch_size=batch_size,
         random_state=random_state,
@@ -268,5 +285,5 @@ def native_mean_var_nn(
 
 
 if __name__ == '__main__':
-    estimator = MeanVarNN(verbose=False)
+    estimator = MeanVarNN_Estimator(verbose=False)
     check_estimator(estimator)
