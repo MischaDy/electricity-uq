@@ -4,7 +4,6 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
-import pandas as pd
 from mapie.subsample import BlockBootstrap
 from matplotlib import pyplot as plt
 from pmdarima.metrics import smape
@@ -13,17 +12,16 @@ from scipy.stats import randint, norm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
-from sklearn.metrics import mean_pinball_loss
 from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
 from statsmodels.tools.eval_measures import rmse
-from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
 
 # from properscoring import crps_ensemble
 
 from compare_methods import UQ_Comparer
-from helpers import get_data, IO_Helper, standardize
+from helpers import get_data, IO_Helper, standardize, numpy_to_tensor, df_to_numpy, get_train_loader, \
+    averaged_mean_pinball_loss, tensor_to_numpy
 
 from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
@@ -32,7 +30,8 @@ import torch
 
 from laplace import Laplace
 
-from temp_sklearn_estimator import MyEstimator
+from nn_estimator import NN_Estimator
+
 
 METHOD_WHITELIST = [
     "posthoc_conformal_prediction",
@@ -40,7 +39,6 @@ METHOD_WHITELIST = [
     # "native_quantile_regression",
     # "native_gp",
 ]
-TO_STANDARDIZE = "xy"
 QUANTILES = [
     0.05,
     0.25,
@@ -62,19 +60,9 @@ BASE_MODEL_PARAMS = {
     # 'n_jobs': -1,
     # 'model_params_choices': None,
 }
+TO_STANDARDIZE = "xy"
 
 torch.set_default_dtype(torch.float32)
-
-
-def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
-    print()
-    for uq_type, method_metrics in uq_metrics.items():
-        print(f"{uq_type} metrics:")
-        for method, metrics in method_metrics.items():
-            print(f"\t{method}:")
-            for metric, value in metrics.items():
-                print(f"\t\t{metric}: {value}")
-        print()
 
 
 # noinspection PyPep8Naming
@@ -106,7 +94,7 @@ class My_UQ_Comparer(UQ_Comparer):
     def _standardize_or_to_array(self, variable, *dfs):
         if variable in self.to_standardize:
             return standardize(False, *dfs)
-        return map(lambda df: df.to_numpy(dtype=float), dfs)
+        return map(df_to_numpy, dfs)
 
     # todo: type hints!
     def compute_metrics(
@@ -136,27 +124,12 @@ class My_UQ_Comparer(UQ_Comparer):
                 nll_gaussian(y_pred, y_std, y_true) if y_std is not None else None
             ),
             "mean_pinball": (
-                self._mean_pinball_loss(y_pred, y_quantiles, quantiles)
+                averaged_mean_pinball_loss(y_pred, y_quantiles, quantiles)
                 if y_quantiles is not None
                 else None
             ),
         }
         return metrics
-
-    @staticmethod
-    def _mean_pinball_loss(y_true, y_quantiles, quantiles):
-        """
-
-        :param y_true:
-        :param y_quantiles: array of shape (n_samples, n_quantiles)
-        :param quantiles:
-        :return:
-        """
-        # fmt: off
-        return np.mean([
-            mean_pinball_loss(y_true, y_quantiles[:, ind], alpha=quantile)
-            for ind, quantile in enumerate(quantiles)
-        ])
 
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
@@ -273,7 +246,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 # fmt: off
                 print("error. model not found, so training cannot be skipped. training from scratch")
 
-        model = MyEstimator(
+        model = NN_Estimator(
             n_iter=n_iter,
             batch_size=batch_size,
             random_state=random_state,
@@ -295,14 +268,6 @@ class My_UQ_Comparer(UQ_Comparer):
         # noinspection PyTypeChecker
         model.set_params(verbose=False)
         return model
-
-    @staticmethod
-    def _plot_training_progress(train_losses, test_losses):
-        fig, ax = plt.subplots()
-        ax.semilogy(train_losses, label="train")
-        ax.semilogy(test_losses, label="val")
-        ax.legend()
-        plt.show()
 
     def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
         y_preds = base_model.predict(X_train)
@@ -360,8 +325,8 @@ class My_UQ_Comparer(UQ_Comparer):
     ):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
-        X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X_train, y_train))
-        train_loader = self._get_train_loader(X_train, y_train, batch_size)
+        X_train, y_train = map(numpy_to_tensor, (X_train, y_train))
+        train_loader = get_train_loader(X_train, y_train, batch_size)
 
         la = Laplace(model, "regression")
         la.fit(train_loader)
@@ -385,11 +350,11 @@ class My_UQ_Comparer(UQ_Comparer):
         # # Load serialized, fitted quantities
         # la.load_state_dict(torch.load("state_dict.bin"))
 
-        X_uq = self._arr_to_tensor(X_uq)
+        X_uq = numpy_to_tensor(X_uq)
         f_mu, f_var = la(X_uq)
 
-        f_mu = f_mu.squeeze().detach().cpu().numpy()
-        f_sigma = f_var.squeeze().detach().sqrt().cpu().numpy()
+        f_mu = tensor_to_numpy(f_mu.squeeze())
+        f_sigma = tensor_to_numpy(f_var.squeeze().sqrt())
         pred_std = np.sqrt(f_sigma**2 + la.sigma_noise.item() ** 2)
 
         y_pred, y_std = f_mu, pred_std
@@ -403,8 +368,6 @@ class My_UQ_Comparer(UQ_Comparer):
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
-    # noinspection PyMethodMayBeStatic
-    # todo: make static?
     def native_gp(self, X_train, y_train, X_uq, quantiles, verbose=True):
         if verbose:
             print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
@@ -426,35 +389,26 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
-    @classmethod
-    def _df_to_tensor(cls, df: pd.DataFrame, dtype=float) -> torch.Tensor:
-        return cls._arr_to_tensor(df.to_numpy(dtype=dtype))
-
     @staticmethod
-    def _arr_to_tensor(arr) -> torch.Tensor:
-        return torch.Tensor(arr).float()
-
-    @classmethod
-    def _get_train_loader(
-        cls, X_train: torch.Tensor, y_train: torch.Tensor, batch_size
-    ):
-        train_dataset = TensorDataset(X_train, y_train)
-        train_loader = DataLoader(train_dataset, batch_size=batch_size)
-        return train_loader
+    def _get_kernel():
+        return RBF() + WhiteKernel()
 
     @staticmethod
     def quantiles_gaussian(quantiles, y_pred, y_std):
         # todo: does this work for multi-dim outputs?
-        return np.array(
-            [
-                norm.ppf(quantiles, loc=mean, scale=std)
-                for mean, std in zip(y_pred, y_std)
-            ]
-        )
+        return np.array([norm.ppf(quantiles, loc=mean, scale=std)
+                         for mean, std in zip(y_pred, y_std)])
 
-    @staticmethod
-    def _get_kernel():
-        return RBF() + WhiteKernel()
+
+def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
+    print()
+    for uq_type, method_metrics in uq_metrics.items():
+        print(f"{uq_type} metrics:")
+        for method, metrics in method_metrics.items():
+            print(f"\t{method}:")
+            for metric, value in metrics.items():
+                print(f"\t\t{metric}: {value}")
+        print()
 
 
 def main():

@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 
 # noinspection PyAttributeOutsideInit
-class MyEstimator(RegressorMixin, BaseEstimator):
+class NN_Estimator(RegressorMixin, BaseEstimator):
     """A template estimator to be used as a reference implementation.
 
     For more information regarding how to build your own estimator, read more
@@ -275,5 +275,5 @@ class MyEstimator(RegressorMixin, BaseEstimator):
 
 
 if __name__ == '__main__':
-    estimator = MyEstimator(verbose=False)
+    estimator = NN_Estimator(verbose=False)
     check_estimator(estimator)
