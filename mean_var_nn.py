@@ -25,9 +25,12 @@ TO_STANDARDIZE = "xy"
 PLOT_DATA = False
 
 N_POINTS_PER_GROUP = 800
+
 N_ITER = 500
 LR = 1e-2
 LR_PATIENCE = 30
+REGULARIZATION = 0  # 1e-2
+USE_SCHEDULER = False
 
 torch.set_default_dtype(torch.float32)
 
@@ -81,6 +84,7 @@ def train_mean_var_nn(
     lr=0.1,
     lr_patience=5,
     lr_reduction_factor=0.5,
+    weight_decay=0,
     verbose=True,
 ):
     torch.manual_seed(random_state)
@@ -109,7 +113,7 @@ def train_mean_var_nn(
     train_loader = get_train_loader(X_train, y_train, batch_size)
 
     criterion = nn.GaussianNLLLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(
         optimizer, patience=lr_patience, factor=lr_reduction_factor
     )
@@ -128,7 +132,8 @@ def train_mean_var_nn(
         with torch.no_grad():
             val_loss = _nll_loss_np(model(X_val), y_val)
             train_loss = _nll_loss_np(model(X_train[:val_size]), y_train[:val_size])
-        scheduler.step(val_loss)
+        if USE_SCHEDULER:
+            scheduler.step(val_loss)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
     if verbose:
@@ -166,7 +171,7 @@ def _nll_loss_np(y_pred, y_test):
 
 def run_mean_var_nn(X_train, y_train, X_test, quantiles):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
-    mean_var_nn = train_mean_var_nn(X_train, y_train, n_iter=N_ITER, lr=LR)
+    mean_var_nn = train_mean_var_nn(X_train, y_train, n_iter=N_ITER, lr=LR, weight_decay=REGULARIZATION)
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
     with torch.no_grad():
         y_pred, y_var = mean_var_nn(X_test)
