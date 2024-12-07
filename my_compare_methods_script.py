@@ -24,6 +24,7 @@ from helpers import get_data, IO_Helper, standardize, numpy_to_tensor, df_to_num
     averaged_mean_pinball_loss, tensor_to_numpy
 
 from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
+from mean_var_nn import run_mean_var_nn
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 
 import torch
@@ -34,10 +35,11 @@ from nn_estimator import NN_Estimator
 
 
 METHOD_WHITELIST = [
-    "posthoc_conformal_prediction",
+    # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gp",
+    "native_mvnn",
 ]
 QUANTILES = [
     0.05,
@@ -49,7 +51,7 @@ QUANTILES = [
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
-SKIP_TRAINING = True
+SKIP_TRAINING = False
 SAVE_TRAINED = True
 VERBOSE = False
 
@@ -109,7 +111,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param quantiles:
         :return:
         """
-        y_true = y_true.squeeze()
+        y_pred, y_true = y_pred.squeeze(), y_true.squeeze()
         # todo: sharpness? calibration? PIT? coverage?
         # todo: skill score (but what to use as benchmark)?
 
@@ -368,6 +370,10 @@ class My_UQ_Comparer(UQ_Comparer):
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
+    @staticmethod
+    def native_mvnn(X_train, y_train, X_uq, quantiles):
+        return run_mean_var_nn(X_train, y_train, X_uq, quantiles)
+
     def native_gp(self, X_train, y_train, X_uq, quantiles, verbose=True):
         if verbose:
             print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
@@ -450,5 +456,5 @@ def temp_test():
 
 
 if __name__ == "__main__":
-    temp_test()
-    # main()
+    # temp_test()
+    main()
