@@ -20,15 +20,16 @@ QUANTILES = [
     0.75,
     0.95,
 ]
+
 TO_STANDARDIZE = "xy"
-PLOT_DATA = True
+PLOT_DATA = False
 
 N_POINTS_PER_GROUP = 800
 
-N_ITER = 300
+N_ITER = 500
 LR = 1e-2
 LR_PATIENCE = 30
-REGULARIZATION = 1e-2
+REGULARIZATION = 0  # 1e-2
 USE_SCHEDULER = True
 WARMUP_PERIOD = 100
 FROZEN_VAR_VALUE = 0.2
@@ -83,6 +84,7 @@ class MeanVarNN(nn.Module):
 def train_mean_var_nn(
     X,
     y,
+    model: MeanVarNN = None,
     n_iter=200,
     batch_size=20,
     random_state=711,
@@ -91,7 +93,7 @@ def train_mean_var_nn(
     lr_patience=5,
     lr_reduction_factor=0.5,
     weight_decay=0.0,
-    warmup_period=0,
+    train_var=True,
     plot_skip_losses=10,
     verbose=True,
     frozen_var_value=0.5
@@ -113,29 +115,30 @@ def train_mean_var_nn(
 
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
-    model = MeanVarNN(
-        dim_in,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
-    )
+    if model is None:
+        model = MeanVarNN(
+            dim_in,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+        )
 
     train_loader = get_train_loader(X_train, y_train, batch_size)
 
     criterion = nn.GaussianNLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-    scheduler = ReduceLROnPlateau(
-        optimizer, patience=lr_patience, factor=lr_reduction_factor
-    )
+    scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
+
+    if train_var:
+        model.freeze_variance(frozen_var_value)
+    else:
+        model.unfreeze_variance()
 
     train_losses, val_losses = [], []
     iterable = np.arange(n_iter) + 1
     if verbose:
         iterable = tqdm(iterable)
-    model.freeze_variance(frozen_var_value)
-    for epoch in iterable:
+    for _ in iterable:
         model.train()
-        if epoch == warmup_period:
-            model.unfreeze_variance()
         for X, y in train_loader:
             optimizer.zero_grad()
             y_pred_mean, y_pred_var = model(X)
@@ -174,9 +177,21 @@ def _nll_loss_np(y_pred, y_test):
 
 def run_mean_var_nn(X_train, y_train, X_test, quantiles):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
+    common_params = {
+        "lr": LR,
+        "lr_patience": LR_PATIENCE,
+        "weight_decay": REGULARIZATION,
+    }
+    mean_var_nn = None
+    if WARMUP_PERIOD > 0:
+        print('running warmup...')
+        mean_var_nn = train_mean_var_nn(
+            X_train, y_train, n_iter=WARMUP_PERIOD, train_var=False, frozen_var_value=FROZEN_VAR_VALUE,
+            **common_params
+        )
     mean_var_nn = train_mean_var_nn(
-        X_train, y_train, n_iter=N_ITER, lr=LR, weight_decay=REGULARIZATION, warmup_period=WARMUP_PERIOD,
-        frozen_var_value=FROZEN_VAR_VALUE,
+        X_train, y_train, model=mean_var_nn, n_iter=N_ITER, train_var=True,
+        **common_params
     )
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
     with torch.no_grad():
@@ -250,7 +265,7 @@ def make_2d(arr):
 
 
 # todo
-def get_clean_data2(_n_points_per_group=100):
+def get_clean_data(_n_points_per_group=100):
     X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True)
     X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
     y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
@@ -261,7 +276,7 @@ def get_clean_data2(_n_points_per_group=100):
     return X_train, X_test, y_train, y_test, X, y
 
 
-def get_clean_data(_n_points_per_group=100):
+def get_clean_data2(_n_points_per_group=100):
     n_points = 2 * _n_points_per_group
     X_base = np.arange(n_points) + 1
 
