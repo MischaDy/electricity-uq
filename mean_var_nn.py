@@ -22,8 +22,10 @@ QUANTILES = [
     0.95,
 ]
 TO_STANDARDIZE = "xy"
+
 N_POINTS_PER_GROUP = 200
-N_ITER = 200
+N_ITER = 1000
+LR = 1e-4
 
 torch.set_default_dtype(torch.float32)
 
@@ -106,9 +108,9 @@ def train_mean_var_nn(
 
     criterion = nn.GaussianNLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    scheduler = ReduceLROnPlateau(
-        optimizer, patience=lr_patience, factor=lr_reduction_factor
-    )
+    # scheduler = ReduceLROnPlateau(
+    #     optimizer, patience=lr_patience, factor=lr_reduction_factor
+    # )
 
     train_losses, val_losses = [], []
     # iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
@@ -125,7 +127,7 @@ def train_mean_var_nn(
         with torch.no_grad():
             val_loss = _nll_loss_np(model(X_val), y_val)
             train_loss = _nll_loss_np(model(X_train[:val_size]), y_train[:val_size])
-        scheduler.step(val_loss)
+        # scheduler.step(val_loss)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
     if verbose:
@@ -163,7 +165,7 @@ def _nll_loss_np(y_pred, y_test):
 
 def run_mean_var_nn(X_train, y_train, X_test, quantiles):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
-    mean_var_nn = train_mean_var_nn(X_train, y_train, n_iter=N_ITER)
+    mean_var_nn = train_mean_var_nn(X_train, y_train, n_iter=N_ITER, lr=LR)
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
     with torch.no_grad():
         y_pred, y_var = mean_var_nn(X_test)
@@ -265,8 +267,16 @@ def get_clean_data2(_n_points_per_group=100):
 
 def get_clean_data(_n_points_per_group=100):
     n_points = 2 * _n_points_per_group
-    X = np.arange(n_points) + 1
-    y = 20 + 10 * np.sin(10 * X * 2*np.pi/n_points) + np.random.randn(n_points)
+    X_base = np.arange(n_points) + 1
+
+    num_cycles = 10
+    period = num_cycles * 2*np.pi/n_points
+
+    X = 20 + 10 * np.sin(period * X_base) + np.random.randn(n_points)
+
+    shift = n_points // num_cycles  # round(10 * period)
+    y = X[shift:]
+    X = X[:len(y)]
 
     X, y = map(make_2d, (X, y))
 
@@ -275,7 +285,13 @@ def get_clean_data(_n_points_per_group=100):
     )
     X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
 
-    plot_data(X_train, X_test, y_train, y_test)
+    x_plot = np.arange(X.shape[0])
+    plt.plot(x_plot, X, label='X')
+    plt.plot(x_plot, y, label='y')
+    plt.legend()
+    plt.show()
+
+    # plot_data(X_train, X_test, y_train, y_test)
 
     X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
     y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
