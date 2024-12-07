@@ -2,7 +2,7 @@ import torch
 from scipy.stats import norm
 from sklearn.model_selection import train_test_split
 from torch import nn
-import torch.nn.functional as F
+#import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
@@ -13,7 +13,7 @@ from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
 
 from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader, get_data, standardize, df_to_numpy, \
-    set_dtype_float, plot_data
+    set_dtype_float# , plot_data
 
 QUANTILES = [
     0.05,
@@ -31,6 +31,8 @@ LR = 1e-2
 LR_PATIENCE = 30
 REGULARIZATION = 0  # 1e-2
 USE_SCHEDULER = False
+WARM_UP_PERIOD = 100
+FROZEN_VAR_VALUE = 0.5
 
 torch.set_default_dtype(torch.float32)
 
@@ -45,33 +47,38 @@ class MeanVarNN(nn.Module):
     ):
         super().__init__()
         layers = collapse([
-            torch.nn.Linear(dim_in, hidden_layer_size),
+            nn.Linear(dim_in, hidden_layer_size),
             activation(),
-            [[torch.nn.Linear(hidden_layer_size, hidden_layer_size),
+            [[nn.Linear(hidden_layer_size, hidden_layer_size),
               activation()]
              for _ in range(num_hidden_layers)],
-            torch.nn.Linear(hidden_layer_size, 2),
         ])
-        self.first_layer_stack = torch.nn.Sequential(*layers)
+        self.first_layer_stack = nn.Sequential(*layers)
+        self.last_layer_mean = nn.Linear(hidden_layer_size, 1)
+        self.last_layer_var = nn.Linear(hidden_layer_size, 1)
+        self._frozen_var = None
 
     def forward(self, x):
-        # todo: make tensor if isnt
+        # todo: make tensor if isn't?
         x = self.first_layer_stack(x)
-        x = self.output_activation(x)
-        return x
+        mean = self.last_layer_mean(x)
+        var = torch.exp(self.last_layer_var(x)) if self._frozen_var is None else self._frozen_var
+        return mean, var
 
     @staticmethod
-    def output_activation(x, eps=0.01) -> tuple[torch.Tensor, torch.Tensor]:
-        """
-
-        :param eps:
-        :param x: tensor of shape (n_samples, 2), where the dimension 1 are means and dimension 2 are variances
-        :return:
-        """
+    def output_activation(x) -> tuple[torch.Tensor, torch.Tensor]:
         mean, var = x[:, 0], x[:, 1]
         var = torch.exp(var)
-        # var = torch.clamp_min(var, min=eps)
         return mean, var
+
+    def freeze_variance(self, value: float):
+        assert value > 0
+        self.last_layer_var.requires_grad_(False)
+        self._frozen_var = value
+
+    def unfreeze_variance(self):
+        self.last_layer_var.requires_grad_(True)
+        self._frozen_var = None
 
 
 def train_mean_var_nn(
@@ -85,7 +92,10 @@ def train_mean_var_nn(
     lr_patience=5,
     lr_reduction_factor=0.5,
     weight_decay=0,
+    warmup_period=0,
+    plot_skip_losses=10,
     verbose=True,
+    frozen_var_value=0.5
 ):
     torch.manual_seed(random_state)
 
@@ -119,9 +129,14 @@ def train_mean_var_nn(
     )
 
     train_losses, val_losses = [], []
-    iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
-    for _ in iterable:
+    iterable = np.arange(n_iter) + 1
+    if verbose:
+        iterable = tqdm(iterable)
+    model.freeze_variance(frozen_var_value)
+    for epoch in iterable:
         model.train()
+        if epoch == warmup_period:
+            model.unfreeze_variance()
         for X, y in train_loader:
             optimizer.zero_grad()
             y_pred_mean, y_pred_var = model(X)
@@ -137,8 +152,7 @@ def train_mean_var_nn(
         val_losses.append(val_loss)
         train_losses.append(train_loss)
     if verbose:
-        loss_skip = 0
-        plot_training_progress(train_losses[loss_skip:], val_losses[loss_skip:])
+        plot_training_progress(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
 
     model.eval()
     return model
@@ -171,7 +185,10 @@ def _nll_loss_np(y_pred, y_test):
 
 def run_mean_var_nn(X_train, y_train, X_test, quantiles):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
-    mean_var_nn = train_mean_var_nn(X_train, y_train, n_iter=N_ITER, lr=LR, weight_decay=REGULARIZATION)
+    mean_var_nn = train_mean_var_nn(
+        X_train, y_train, n_iter=N_ITER, lr=LR, weight_decay=REGULARIZATION, warmup_period=WARM_UP_PERIOD,
+        frozen_var_value=FROZEN_VAR_VALUE,
+    )
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
     with torch.no_grad():
         y_pred, y_var = mean_var_nn(X_test)
@@ -244,7 +261,7 @@ def plot_uq_result(
         color="green",
     )
     # noinspection PyUnboundLocalVariable
-    label = rf"{f'{100*drawn_quantile}% CI' if drawing_std else '1 std'}"
+    label = rf"{f'{100 * drawn_quantile}% CI' if drawing_std else '1 std'}"
     ax.fill_between(
         x_plot_uq.ravel(),
         ci_low,
@@ -276,7 +293,7 @@ def get_clean_data(_n_points_per_group=100):
     X_base = np.arange(n_points) + 1
 
     num_cycles = 10
-    period = num_cycles * 2*np.pi/n_points
+    period = num_cycles * 2 * np.pi / n_points
 
     X = 20 + 10 * np.sin(period * X_base) + np.random.randn(n_points)
 
