@@ -1,5 +1,6 @@
 import torch
 from scipy.stats import norm
+from sklearn.model_selection import train_test_split
 from torch import nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -11,7 +12,8 @@ from more_itertools import collapse
 from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
 
-from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader, get_data, standardize, df_to_numpy
+from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader, get_data, standardize, df_to_numpy, \
+    set_dtype_float, plot_data
 
 QUANTILES = [
     0.05,
@@ -20,6 +22,8 @@ QUANTILES = [
     0.95,
 ]
 TO_STANDARDIZE = "xy"
+N_POINTS_PER_GROUP = 200
+N_ITER = 200
 
 torch.set_default_dtype(torch.float32)
 
@@ -50,21 +54,23 @@ class MeanVarNN(nn.Module):
         return x
 
     @staticmethod
-    def output_activation(x) -> tuple[torch.Tensor, torch.Tensor]:
+    def output_activation(x, eps=0.01) -> tuple[torch.Tensor, torch.Tensor]:
         """
 
+        :param eps:
         :param x: tensor of shape (n_samples, 2), where the dimension 1 are means and dimension 2 are variances
         :return:
         """
         mean, var = x[:, 0], x[:, 1]
         var = F.relu(var)
-        return mean, var  # todo: possible?
+        var = torch.clamp_min(var, min=eps)
+        return mean, var
 
 
 def train_mean_var_nn(
     X,
     y,
-    n_iter=10,
+    n_iter=200,
     batch_size=20,
     random_state=711,
     val_frac=0.1,
@@ -105,7 +111,8 @@ def train_mean_var_nn(
     )
 
     train_losses, val_losses = [], []
-    iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
+    # iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
+    iterable = range(n_iter)
     for _ in iterable:
         model.train()
         for X, y in train_loader:
@@ -139,24 +146,24 @@ def plot_training_progress(train_losses, test_losses):
 
 def _nll_loss_np(y_pred, y_test):
     y_pred_mean, y_pred_var = y_pred
-    tensors = y_pred_mean, y_test, np.sqrt(y_pred_var)
+    tensors = y_pred_mean, np.sqrt(y_pred_var), y_test
     arrs = map(lambda t: t.numpy(force=True).squeeze(), tensors)
     return nll_gaussian(*arrs)
 
 
-def predict(model, X, as_np=True):
-    X = numpy_to_tensor(X)
-    with torch.no_grad():
-        tensor_pair = model(X)
-    # tensor_pair = map(lambda t: t.reshape(-1, 1) if is_y_2d_ else t.squeeze(), tensor_pair)
-    if as_np:
-        return tuple(map(lambda t: tensor_to_numpy(t).squeeze(), tensor_pair))
-    return tensor_pair
+# def predict(model, X, as_np=True):
+#     X = numpy_to_tensor(X)
+#     with torch.no_grad():
+#         tensor_pair = model(X)
+#     # tensor_pair = map(lambda t: t.reshape(-1, 1) if is_y_2d_ else t.squeeze(), tensor_pair)
+#     if as_np:
+#         return tuple(map(lambda t: tensor_to_numpy(t).squeeze(), tensor_pair))
+#     return tensor_pair
 
 
 def run_mean_var_nn(X_train, y_train, X_test, quantiles):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
-    mean_var_nn = train_mean_var_nn(X_train, y_train)
+    mean_var_nn = train_mean_var_nn(X_train, y_train, n_iter=N_ITER)
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
     with torch.no_grad():
         y_pred, y_var = mean_var_nn(X_test)
@@ -244,8 +251,32 @@ def plot_uq_result(
     plt.show()
 
 
-def get_clean_data(_n_points_per_group=100):
+def make_2d(arr):
+    return arr.reshape(-1, 1)
+
+
+# todo
+def get_clean_data2(_n_points_per_group=100):
     X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True)
+    X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
+    y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
+    return X_train, X_test, y_train, y_test, X, y
+
+
+def get_clean_data(_n_points_per_group=100):
+    n_points = 2 * _n_points_per_group
+    X = np.arange(n_points) + 1
+    y = 20 + 10 * np.sin(10 * X * 2*np.pi/n_points) + np.random.randn(n_points)
+
+    X, y = map(make_2d, (X, y))
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.5, shuffle=False
+    )
+    X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
+
+    plot_data(X_train, X_test, y_train, y_test)
+
     X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
     y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
     return X_train, X_test, y_train, y_test, X, y
@@ -259,7 +290,7 @@ def _standardize_or_to_array(variable, *dfs):
 
 def main():
     print("loading data...")
-    X_train, X_test, y_train, y_test, X, y = get_clean_data()
+    X_train, X_test, y_train, y_test, X, y = get_clean_data(N_POINTS_PER_GROUP)
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
     print("running method...")

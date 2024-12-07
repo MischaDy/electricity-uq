@@ -68,7 +68,7 @@ def set_dtype_float(*arrs):
     return map(lambda arr: arr.astype('float32'), arrs)
 
 
-def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper", filename="data", do_save_figure=False):
+def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper" = None, filename="data", do_save_figure=False):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
