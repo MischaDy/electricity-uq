@@ -255,17 +255,19 @@ class UQ_Comparer(ABC):
         """
         assert uq_type in ["posthoc", "native"]
         is_posthoc = uq_type == "posthoc"
+        uq_methods = self._get_uq_methods_by_type(uq_type)
+        if self.method_whitelist is not None:
+            uq_methods = list(starfilter(lambda name, _: name in self.method_whitelist, uq_methods))
+        if not uq_methods:
+            print(f'No {uq_type} methods found and/or whitelisted. Skipping...')
+            return dict()
+
+        print(f"running {uq_type} methods...")
         if is_posthoc:
             print("training base model...")
             if base_model_params is None:
                 base_model_params = {}
             base_model = self.train_base_model(X_train, y_train, **base_model_params)
-        print(f"running {uq_type} methods...")
-        uq_methods = self._get_uq_methods_by_type(uq_type)
-        if self.method_whitelist is not None:
-            uq_methods = starfilter(
-                lambda name, _: name in self.method_whitelist, uq_methods
-            )
 
         uq_results = {}
         for method_name, method in uq_methods:
