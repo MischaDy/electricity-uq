@@ -21,7 +21,7 @@ QUANTILES = [
     0.95,
 ]
 TO_STANDARDIZE = "xy"
-PLOT_DATA = False
+PLOT_DATA = True
 
 N_POINTS_PER_GROUP = 800
 
@@ -30,7 +30,7 @@ LR = 1e-2
 LR_PATIENCE = 30
 REGULARIZATION = 1e-2
 USE_SCHEDULER = True
-WARM_UP_PERIOD = 100
+WARMUP_PERIOD = 100
 FROZEN_VAR_VALUE = 0.2
 
 
@@ -175,7 +175,7 @@ def _nll_loss_np(y_pred, y_test):
 def run_mean_var_nn(X_train, y_train, X_test, quantiles):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
     mean_var_nn = train_mean_var_nn(
-        X_train, y_train, n_iter=N_ITER, lr=LR, weight_decay=REGULARIZATION, warmup_period=WARM_UP_PERIOD,
+        X_train, y_train, n_iter=N_ITER, lr=LR, weight_decay=REGULARIZATION, warmup_period=WARMUP_PERIOD,
         frozen_var_value=FROZEN_VAR_VALUE,
     )
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
@@ -254,6 +254,10 @@ def get_clean_data2(_n_points_per_group=100):
     X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True)
     X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
     y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
+
+    if PLOT_DATA:
+        my_plot_data(X, y)
+
     return X_train, X_test, y_train, y_test, X, y
 
 
@@ -278,17 +282,22 @@ def get_clean_data(_n_points_per_group=100):
     X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
 
     if PLOT_DATA:
-        x_plot = np.arange(X.shape[0])
-        plt.plot(x_plot, X, label='X')
-        plt.plot(x_plot, y, label='y')
-        plt.legend()
-        plt.show()
+        my_plot_data(X, y)
 
     # plot_data(X_train, X_test, y_train, y_test)
 
     X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
     y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
     return X_train, X_test, y_train, y_test, X, y
+
+
+def my_plot_data(X, y):
+    x_plot = np.arange(X.shape[0])
+    if X.shape[-1] == 1:
+        plt.plot(x_plot, X, label='X')
+    plt.plot(x_plot, y, label='y')
+    plt.legend()
+    plt.show()
 
 
 def _standardize_or_to_array(variable, *dfs):
