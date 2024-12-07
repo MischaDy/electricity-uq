@@ -2,7 +2,6 @@ import torch
 from scipy.stats import norm
 from sklearn.model_selection import train_test_split
 from torch import nn
-#import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
@@ -13,7 +12,7 @@ from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
 
 from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader, get_data, standardize, df_to_numpy, \
-    set_dtype_float# , plot_data
+    set_dtype_float
 
 QUANTILES = [
     0.05,
@@ -33,8 +32,6 @@ REGULARIZATION = 1e-2
 USE_SCHEDULER = True
 WARM_UP_PERIOD = 100
 FROZEN_VAR_VALUE = 0.2
-
-torch.set_default_dtype(torch.float32)
 
 
 class MeanVarNN(nn.Module):
@@ -93,7 +90,7 @@ def train_mean_var_nn(
     lr=0.1,
     lr_patience=5,
     lr_reduction_factor=0.5,
-    weight_decay=0,
+    weight_decay=0.0,
     warmup_period=0,
     plot_skip_losses=10,
     verbose=True,
@@ -175,16 +172,6 @@ def _nll_loss_np(y_pred, y_test):
     return nll_gaussian(*arrs)
 
 
-# def predict(model, X, as_np=True):
-#     X = numpy_to_tensor(X)
-#     with torch.no_grad():
-#         tensor_pair = model(X)
-#     # tensor_pair = map(lambda t: t.reshape(-1, 1) if is_y_2d_ else t.squeeze(), tensor_pair)
-#     if as_np:
-#         return tuple(map(lambda t: tensor_to_numpy(t).squeeze(), tensor_pair))
-#     return tensor_pair
-
-
 def run_mean_var_nn(X_train, y_train, X_test, quantiles):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
     mean_var_nn = train_mean_var_nn(
@@ -204,26 +191,6 @@ def quantiles_gaussian(quantiles, y_pred, y_std):
     # todo: does this work for multi-dim outputs?
     return np.array([norm.ppf(quantiles, loc=mean, scale=std)
                      for mean, std in zip(y_pred, y_std)])
-
-
-# def plot_post_training_perf(base_model, X_train, y_train):
-#     y_pred_mean, y_pred_var = base_model.predict(X_train)
-#
-#     num_train_steps = X_train.shape[0]
-#     x_plot_train = np.arange(num_train_steps)
-#
-#     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-#     ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-#     ax.plot(
-#         x_plot_train,
-#         y_pred_mean,
-#         label=f"base model prediction",
-#         color="green",
-#     )
-#     ax.legend()
-#     ax.set_xlabel("data")
-#     ax.set_ylabel("target")
-#     plt.show()
 
 
 def plot_uq_result(
@@ -331,6 +298,7 @@ def _standardize_or_to_array(variable, *dfs):
 
 
 def main():
+    torch.set_default_dtype(torch.float32)
     print("loading data...")
     X_train, X_test, y_train, y_test, X, y = get_clean_data(N_POINTS_PER_GROUP)
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
