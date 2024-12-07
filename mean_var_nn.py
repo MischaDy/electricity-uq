@@ -66,8 +66,8 @@ class MeanVarNN(nn.Module):
         :return:
         """
         mean, var = x[:, 0], x[:, 1]
-        var = F.relu(var)
-        var = torch.clamp_min(var, min=eps)
+        var = torch.exp(var)
+        # var = torch.clamp_min(var, min=eps)
         return mean, var
 
 
