@@ -1,4 +1,5 @@
 import torch
+from scipy.stats import norm
 from torch import nn
 import torch.nn.functional as F
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -43,6 +44,7 @@ class MeanVarNN(nn.Module):
         self.first_layer_stack = torch.nn.Sequential(*layers)
 
     def forward(self, x):
+        # todo: make tensor if isnt
         x = self.first_layer_stack(x)
         x = self.output_activation(x)
         return x
@@ -152,34 +154,42 @@ def predict(model, X, as_np=True):
     return tensor_pair
 
 
-def run_mean_var_nn(X_train, y_train, X_test):
+def run_mean_var_nn(X_train, y_train, X_test, quantiles):
+    X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
     mean_var_nn = train_mean_var_nn(X_train, y_train)
-    plot_post_training_perf(mean_var_nn, X_train, y_train)
-    y_pred, y_var = mean_var_nn(X_test)
+    # plot_post_training_perf(mean_var_nn, X_train, y_train)
+    with torch.no_grad():
+        y_pred, y_var = mean_var_nn(X_test)
     y_pred, y_var = map(tensor_to_numpy, (y_pred, y_var))
     y_std = np.sqrt(y_var)
-    y_quantiles = None
+    y_quantiles = quantiles_gaussian(quantiles, y_pred, y_std)
     return y_pred, y_quantiles, y_std
 
 
-def plot_post_training_perf(base_model, X_train, y_train):
-    y_pred_mean, y_pred_var = base_model.predict(X_train)
+def quantiles_gaussian(quantiles, y_pred, y_std):
+    # todo: does this work for multi-dim outputs?
+    return np.array([norm.ppf(quantiles, loc=mean, scale=std)
+                     for mean, std in zip(y_pred, y_std)])
 
-    num_train_steps = X_train.shape[0]
-    x_plot_train = np.arange(num_train_steps)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-    ax.plot(
-        x_plot_train,
-        y_pred_mean,
-        label=f"base model prediction",
-        color="green",
-    )
-    ax.legend()
-    ax.set_xlabel("data")
-    ax.set_ylabel("target")
-    plt.show()
+# def plot_post_training_perf(base_model, X_train, y_train):
+#     y_pred_mean, y_pred_var = base_model.predict(X_train)
+#
+#     num_train_steps = X_train.shape[0]
+#     x_plot_train = np.arange(num_train_steps)
+#
+#     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+#     ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+#     ax.plot(
+#         x_plot_train,
+#         y_pred_mean,
+#         label=f"base model prediction",
+#         color="green",
+#     )
+#     ax.legend()
+#     ax.set_xlabel("data")
+#     ax.set_ylabel("target")
+#     plt.show()
 
 
 def plot_uq_result(
