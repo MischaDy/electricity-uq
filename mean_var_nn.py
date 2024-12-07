@@ -22,10 +22,12 @@ QUANTILES = [
     0.95,
 ]
 TO_STANDARDIZE = "xy"
+PLOT_DATA = False
 
-N_POINTS_PER_GROUP = 200
-N_ITER = 1000
-LR = 1e-4
+N_POINTS_PER_GROUP = 800
+N_ITER = 500
+LR = 1e-2
+LR_PATIENCE = 30
 
 torch.set_default_dtype(torch.float32)
 
@@ -108,13 +110,12 @@ def train_mean_var_nn(
 
     criterion = nn.GaussianNLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    # scheduler = ReduceLROnPlateau(
-    #     optimizer, patience=lr_patience, factor=lr_reduction_factor
-    # )
+    scheduler = ReduceLROnPlateau(
+        optimizer, patience=lr_patience, factor=lr_reduction_factor
+    )
 
     train_losses, val_losses = [], []
-    # iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
-    iterable = range(n_iter)
+    iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
     for _ in iterable:
         model.train()
         for X, y in train_loader:
@@ -127,7 +128,7 @@ def train_mean_var_nn(
         with torch.no_grad():
             val_loss = _nll_loss_np(model(X_val), y_val)
             train_loss = _nll_loss_np(model(X_train[:val_size]), y_train[:val_size])
-        # scheduler.step(val_loss)
+        scheduler.step(val_loss)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
     if verbose:
@@ -285,11 +286,12 @@ def get_clean_data(_n_points_per_group=100):
     )
     X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
 
-    x_plot = np.arange(X.shape[0])
-    plt.plot(x_plot, X, label='X')
-    plt.plot(x_plot, y, label='y')
-    plt.legend()
-    plt.show()
+    if PLOT_DATA:
+        x_plot = np.arange(X.shape[0])
+        plt.plot(x_plot, X, label='X')
+        plt.plot(x_plot, y, label='y')
+        plt.legend()
+        plt.show()
 
     # plot_data(X_train, X_test, y_train, y_test)
 
