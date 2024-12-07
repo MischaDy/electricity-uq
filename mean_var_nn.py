@@ -26,13 +26,13 @@ PLOT_DATA = False
 
 N_POINTS_PER_GROUP = 800
 
-N_ITER = 500
+N_ITER = 300
 LR = 1e-2
 LR_PATIENCE = 30
-REGULARIZATION = 0  # 1e-2
-USE_SCHEDULER = False
+REGULARIZATION = 1e-2
+USE_SCHEDULER = True
 WARM_UP_PERIOD = 100
-FROZEN_VAR_VALUE = 0.5
+FROZEN_VAR_VALUE = 0.2
 
 torch.set_default_dtype(torch.float32)
 
@@ -62,7 +62,9 @@ class MeanVarNN(nn.Module):
         # todo: make tensor if isn't?
         x = self.first_layer_stack(x)
         mean = self.last_layer_mean(x)
-        var = torch.exp(self.last_layer_var(x)) if self._frozen_var is None else self._frozen_var
+        var = torch.exp(self.last_layer_var(x))
+        if self._frozen_var is not None:
+            var = torch.full(var.shape, self._frozen_var)
         return mean, var
 
     @staticmethod
