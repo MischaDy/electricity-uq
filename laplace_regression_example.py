@@ -7,7 +7,7 @@ from laplace import Laplace, marglik_training
 from laplace.curvature.backpack import BackPackGGN
 
 n_epochs = 1000
-torch.manual_seed(711)
+torch.manual_seed(42)
 
 # create toy regression data
 X_train, y_train, train_loader, X_test = get_sinusoid_example(sigma_noise=0.3)
@@ -15,7 +15,7 @@ X_train, y_train, train_loader, X_test = get_sinusoid_example(sigma_noise=0.3)
 
 # construct single layer neural network
 def get_model():
-    torch.manual_seed(711)
+    torch.manual_seed(42)
     return torch.nn.Sequential(
         torch.nn.Linear(1, 50), torch.nn.Tanh(), torch.nn.Linear(50, 1)
     )

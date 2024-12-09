@@ -37,9 +37,9 @@ from nn_estimator import NN_Estimator
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
-    # "native_quantile_regression",
+    "native_quantile_regression",
     # "native_gp",
-    "native_mvnn",
+    # "native_mvnn",
 ]
 QUANTILES = [
     0.05,
@@ -176,18 +176,18 @@ class My_UQ_Comparer(UQ_Comparer):
                 "max_depth": randint(2, 30),
                 "n_estimators": randint(10, 100),
             }
-        random_state = 59
+        random_seed = 42
         if model_init_params is None:
             model_init_params = {}
-        elif "random_state" not in model_init_params:
-            model_init_params["random_state"] = random_state
+        elif "random_seed" not in model_init_params:
+            model_init_params["random_seed"] = random_seed
 
         model_class = RandomForestRegressor
         filename_base_model = f"base_{model_class.__name__}.model"
 
         if skip_training:
             # Model previously optimized with a cross-validation:
-            # RandomForestRegressor(max_depth=13, n_estimators=89, random_state=59)
+            # RandomForestRegressor(max_depth=13, n_estimators=89, random_seed=42)
             try:
                 print('skipping base model training')
                 model = self.io_helper.load_model(filename_base_model)
@@ -203,14 +203,14 @@ class My_UQ_Comparer(UQ_Comparer):
         # CV parameter search
         n_splits = 5
         tscv = TimeSeriesSplit(n_splits=n_splits)
-        model = model_class(random_state=random_state, **model_init_params)
+        model = model_class(random_seed=random_seed, **model_init_params)
         cv_obj = RandomizedSearchCV(
             model,
             param_distributions=model_params_choices,
             n_iter=cv_n_iter,
             cv=tscv,
             scoring="neg_root_mean_squared_error",
-            random_state=random_state,
+            random_seed=random_seed,
             verbose=1,
             n_jobs=n_jobs,
         )
@@ -228,7 +228,7 @@ class My_UQ_Comparer(UQ_Comparer):
         model_params_choices=None,
         n_iter=500,
         batch_size=20,
-        random_state=711,
+        random_seed=42,
         verbose=True,
         skip_training=True,
         save_trained=True,
@@ -253,7 +253,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param model_params_choices:
         :param n_iter:
         :param batch_size:
-        :param random_state:
+        :param random_seed:
         :return:
         """
         if model_filename is None:
@@ -272,7 +272,7 @@ class My_UQ_Comparer(UQ_Comparer):
         model = NN_Estimator(
             n_iter=n_iter,
             batch_size=batch_size,
-            random_state=random_state,
+            random_seed=random_seed,
             val_frac=val_frac,
             lr=lr,
             lr_patience=lr_patience,
@@ -318,9 +318,9 @@ class My_UQ_Comparer(UQ_Comparer):
         return torch.mean((y_pred - y_test) ** 2)
 
     def posthoc_conformal_prediction(
-        self, X_train, y_train, X_uq, quantiles, model, random_state=42
+        self, X_train, y_train, X_uq, quantiles, model, random_seed=42
     ):
-        cv = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_state)
+        cv = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_seed=random_seed)
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
             model, cv, alphas, X_uq, X_train, y_train, skip_training=SKIP_TRAINING, io_helper=self.io_helper,
@@ -343,7 +343,7 @@ class My_UQ_Comparer(UQ_Comparer):
         model,
         n_iter=100,
         batch_size=20,
-        random_state=711,
+        random_seed=42,
         verbose=True,
     ):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
@@ -406,7 +406,7 @@ class My_UQ_Comparer(UQ_Comparer):
             print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
         kernel = self._get_kernel()
         gaussian_process = GaussianProcessRegressor(
-            kernel=kernel, random_state=0, normalize_y=False, n_restarts_optimizer=10
+            kernel=kernel, random_seed=42, normalize_y=False, n_restarts_optimizer=10
         )
         gaussian_process.fit(X_train, y_train)
         if verbose:

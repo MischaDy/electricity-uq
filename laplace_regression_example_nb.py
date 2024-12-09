@@ -22,7 +22,7 @@ IO_HELPER = IO_Helper("laplace_storage")
 
 n_epochs = 100
 batch_size = 1
-torch.manual_seed(711)
+torch.manual_seed(42)
 
 torch.set_default_dtype(torch.float64)
 

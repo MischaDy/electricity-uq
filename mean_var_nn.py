@@ -87,7 +87,7 @@ def train_mean_var_nn(
     model: MeanVarNN = None,
     n_iter=200,
     batch_size=20,
-    random_state=711,
+    random_seed=42,
     val_frac=0.1,
     lr=0.1,
     lr_patience=5,
@@ -99,7 +99,7 @@ def train_mean_var_nn(
     do_plot_losses=True,
     plot_skip_losses=10,
 ):
-    torch.manual_seed(random_state)
+    torch.manual_seed(random_seed)
 
     try:
         X_train, y_train = map(numpy_to_tensor, (X, y))

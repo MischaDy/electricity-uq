@@ -119,17 +119,17 @@ def train_base_model(
     :class:`~RandomizedSearchCV` with a temporal cross-validation strategy.
     For the sake of computational time, the best parameters are already tuned.
     """
-    random_state = 59
+    random_seed = 42
     if model_init_params is None:
         model_init_params = {}
-    elif "random_state" not in model_init_params:
-        model_init_params["random_state"] = random_state
+    elif "random_seed" not in model_init_params:
+        model_init_params["random_seed"] = random_seed
 
     filename_base_model = f"base_{model_class.__name__}_{N_POINTS_TEMP}.model"
 
     if skip_training:
         # Model previously optimized with a cross-validation:
-        # RandomForestRegressor(max_depth=13, n_estimators=89, random_state=59)
+        # RandomForestRegressor(max_depth=13, n_estimators=89, random_seed=42)
         try:
             model = io_helper.load_model(filename_base_model)
             return model
@@ -142,14 +142,14 @@ def train_base_model(
     # CV parameter search
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
-    model = model_class(random_state=random_state, **model_init_params)
+    model = model_class(random_seed=random_seed, **model_init_params)
     cv_obj = RandomizedSearchCV(
         model,
         param_distributions=model_params_choices,
         n_iter=cv_n_iter,
         cv=tscv,
         scoring="neg_root_mean_squared_error",
-        random_state=random_state,
+        random_state=random_seed,
         verbose=1,
         n_jobs=n_jobs,
     )
