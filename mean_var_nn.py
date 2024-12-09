@@ -175,8 +175,9 @@ def train_mean_var_nn(
 
 def plot_losses(train_losses, val_losses):
     fig, ax = plt.subplots()
-    ax.semilogy(train_losses, label="train")
-    ax.semilogy(val_losses, label="val")
+    ax.set_yscale('symlog')
+    ax.semilogy(train_losses, label="train loss")
+    ax.semilogy(val_losses, label="validation loss")
     ax.legend()
     plt.show()
 
