@@ -57,7 +57,19 @@ VERBOSE = False
 
 PLOTS_PATH = "plots"
 
-BASE_MODEL_PARAMS = {
+METHODS_KWARGS = {
+    "mean_var_nn": {
+        "n_iter": 100,
+        "lr": 1e-4,
+        "lr_patience": 30,
+        "regularization": 0,  # 1e-2,
+        "warmup_period": 50,
+        "frozen_var_value": 0.1,
+    },
+}
+
+
+BASE_MODEL_KWARGS = {
     "skip_training": SKIP_TRAINING,
     # 'n_jobs': -1,
     # 'model_params_choices': None,
@@ -69,15 +81,20 @@ torch.set_default_dtype(torch.float32)
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
-    def __init__(self, storage_path="comparison_storage", to_standardize="X", *args, **kwargs):
+    def __init__(self, storage_path="comparison_storage", to_standardize="X",
+                 methods_kwargs: dict[str, dict[str, Any]] = None,
+                 *args, **kwargs):
         """
 
+        :param methods_kwargs: dict of (method_name, method_kwargs_dict) pairs
         :param storage_path:
         :param to_standardize: iterable of variables to standardize. Can contain 'x' and/or 'y', or neither.
         :param args: passed to super.__init__
         :param kwargs: passed to super.__init__
         """
         super().__init__(*args, **kwargs)
+        if methods_kwargs is not None:
+            self.methods_kwargs.update(methods_kwargs)
         self.io_helper = IO_Helper(storage_path)
         self.to_standardize = to_standardize
 
@@ -371,8 +388,14 @@ class My_UQ_Comparer(UQ_Comparer):
         return y_pred, y_quantiles, y_std
 
     @staticmethod
-    def native_mvnn(X_train, y_train, X_uq, quantiles):
-        return run_mean_var_nn(X_train, y_train, X_uq, quantiles)
+    def native_mvnn(X_train, y_train, X_uq, quantiles, **kwargs):
+        return run_mean_var_nn(
+            X_train,
+            y_train,
+            X_uq,
+            quantiles,
+            **kwargs
+        )
 
     def native_gp(self, X_train, y_train, X_uq, quantiles, verbose=True):
         if verbose:
@@ -419,7 +442,7 @@ def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
 
 def main():
     uq_comparer = My_UQ_Comparer(
-        method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE
+        methods_kwargs=METHODS_KWARGS, method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE
     )
     uq_metrics = uq_comparer.compare_methods(
         QUANTILES,
@@ -427,7 +450,7 @@ def main():
         should_plot_results=PLOT_RESULTS,
         should_save_plots=SAVE_PLOTS,
         plots_path=PLOTS_PATH,
-        base_model_params=BASE_MODEL_PARAMS,
+        base_model_params=BASE_MODEL_KWARGS,
         output_uq_on_train=True,
         return_results=False,
     )

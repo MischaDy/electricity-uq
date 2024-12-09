@@ -188,23 +188,24 @@ def _nll_loss_np(y_pred, y_test):
     return nll_gaussian(*arrs)
 
 
-def run_mean_var_nn(X_train, y_train, X_test, quantiles):
+def run_mean_var_nn(X_train, y_train, X_test, quantiles, n_iter=100, lr=1e-4, lr_patience=5, regularization=0,
+                    warmup_period=10, frozen_var_value=0.1):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
     common_params = {
-        "lr": LR,
-        "lr_patience": LR_PATIENCE,
-        "weight_decay": REGULARIZATION,
+        "lr": lr,
+        "lr_patience": lr_patience,
+        "weight_decay": regularization,
     }
     mean_var_nn = None
-    if WARMUP_PERIOD > 0:
+    if warmup_period > 0:
         print('running warmup...')
         mean_var_nn = train_mean_var_nn(
-            X_train, y_train, n_iter=WARMUP_PERIOD, train_var=False, frozen_var_value=FROZEN_VAR_VALUE,
+            X_train, y_train, n_iter=warmup_period, train_var=False, frozen_var_value=frozen_var_value,
             do_plot_losses=False,
             **common_params
         )
     mean_var_nn = train_mean_var_nn(
-        X_train, y_train, model=mean_var_nn, n_iter=N_ITER, train_var=True,
+        X_train, y_train, model=mean_var_nn, n_iter=n_iter, train_var=True,
         **common_params
     )
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
@@ -344,7 +345,18 @@ def main():
     print("running method...")
     X_uq = np.row_stack((X_train, X_test))
 
-    y_pred, y_quantiles, y_std = run_mean_var_nn(X_train, y_train, X_uq, QUANTILES)
+    y_pred, y_quantiles, y_std = run_mean_var_nn(
+        X_train,
+        y_train,
+        X_uq,
+        QUANTILES,
+        n_iter=N_ITER,
+        lr=LR,
+        lr_patience=LR_PATIENCE,
+        regularization=REGULARIZATION,
+        warmup_period=WARMUP_PERIOD,
+        frozen_var_value=FROZEN_VAR_VALUE,
+    )
 
     plot_uq_result(
         X_train,

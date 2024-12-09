@@ -1,6 +1,7 @@
 import copy
 import os
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from typing import Optional, Any
 
 import numpy as np
@@ -29,6 +30,7 @@ class UQ_Comparer(ABC):
 
     def __init__(self, method_whitelist=None):
         # todo: store train and test data once loaded
+        self.methods_kwargs = defaultdict(dict)
         self.method_whitelist = method_whitelist
 
     def compare_methods(
@@ -271,16 +273,17 @@ class UQ_Comparer(ABC):
 
         uq_results = {}
         for method_name, method in uq_methods:
+            method_kwargs = self.methods_kwargs[method_name]
             if is_posthoc:
                 # noinspection PyUnboundLocalVariable
                 base_model_copy = (
                     copy.deepcopy(base_model) if not skip_deepcopy else base_model
                 )
                 y_pred, y_quantiles, y_std = method(
-                    X_train, y_train, X_uq, quantiles, base_model_copy
+                    X_train, y_train, X_uq, quantiles, base_model_copy, **method_kwargs
                 )
             else:
-                y_pred, y_quantiles, y_std = method(X_train, y_train, X_uq, quantiles)
+                y_pred, y_quantiles, y_std = method(X_train, y_train, X_uq, quantiles, **method_kwargs)
             uq_results[method_name] = y_pred, y_quantiles, y_std
         return uq_results
 
