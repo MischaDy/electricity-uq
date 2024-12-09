@@ -126,12 +126,12 @@ def train_mean_var_nn(
     train_loader = get_train_loader(X_train, y_train, batch_size)
 
     if train_var:
+        model.unfreeze_variance()
+        criterion = nn.GaussianNLLLoss()
+    else:
         model.freeze_variance(frozen_var_value)
         _mse_loss = nn.MSELoss()
         criterion = lambda input_, target, var: _mse_loss(input_, target)
-    else:
-        model.unfreeze_variance()
-        criterion = nn.GaussianNLLLoss()
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
