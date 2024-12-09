@@ -1,6 +1,7 @@
 import copy
 import os
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from typing import Optional, Any
 
 import numpy as np
@@ -29,6 +30,7 @@ class UQ_Comparer(ABC):
 
     def __init__(self, method_whitelist=None):
         # todo: store train and test data once loaded
+        self.methods_kwargs = defaultdict(dict)
         self.method_whitelist = method_whitelist
 
     def compare_methods(
@@ -255,30 +257,33 @@ class UQ_Comparer(ABC):
         """
         assert uq_type in ["posthoc", "native"]
         is_posthoc = uq_type == "posthoc"
+        uq_methods = self._get_uq_methods_by_type(uq_type)
+        if self.method_whitelist is not None:
+            uq_methods = list(starfilter(lambda name, _: name in self.method_whitelist, uq_methods))
+        if not uq_methods:
+            print(f'No {uq_type} methods found and/or whitelisted. Skipping...')
+            return dict()
+
+        print(f"running {uq_type} methods...")
         if is_posthoc:
             print("training base model...")
             if base_model_params is None:
                 base_model_params = {}
             base_model = self.train_base_model(X_train, y_train, **base_model_params)
-        print(f"running {uq_type} methods...")
-        uq_methods = self._get_uq_methods_by_type(uq_type)
-        if self.method_whitelist is not None:
-            uq_methods = starfilter(
-                lambda name, _: name in self.method_whitelist, uq_methods
-            )
 
         uq_results = {}
         for method_name, method in uq_methods:
+            method_kwargs = self.methods_kwargs[method_name]
             if is_posthoc:
                 # noinspection PyUnboundLocalVariable
                 base_model_copy = (
                     copy.deepcopy(base_model) if not skip_deepcopy else base_model
                 )
                 y_pred, y_quantiles, y_std = method(
-                    X_train, y_train, X_uq, quantiles, base_model_copy
+                    X_train, y_train, X_uq, quantiles, base_model_copy, **method_kwargs
                 )
             else:
-                y_pred, y_quantiles, y_std = method(X_train, y_train, X_uq, quantiles)
+                y_pred, y_quantiles, y_std = method(X_train, y_train, X_uq, quantiles, **method_kwargs)
             uq_results[method_name] = y_pred, y_quantiles, y_std
         return uq_results
 

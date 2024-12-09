@@ -5,10 +5,12 @@ import numpy as np
 import pandas as pd
 import torch
 from matplotlib import pyplot as plt
-from more_itertools import flatten, collapse
+from more_itertools import collapse
+from sklearn.metrics import mean_pinball_loss
 from sklearn.model_selection import train_test_split
 
 from sklearn.preprocessing import StandardScaler
+from torch.utils.data import TensorDataset, DataLoader
 
 
 def get_data(
@@ -66,7 +68,7 @@ def set_dtype_float(*arrs):
     return map(lambda arr: arr.astype('float32'), arrs)
 
 
-def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper", filename="data", do_save_figure=False):
+def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper" = None, filename="data", do_save_figure=False):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -208,3 +210,40 @@ def standardize(return_scaler, train_data, *arrays_to_standardize):
     scaler.fit(train_data)
     standardized_data = map(scaler.transform, [train_data, *arrays_to_standardize])
     return standardized_data if not return_scaler else (scaler, standardized_data)
+
+
+def df_to_numpy(df: pd.DataFrame) -> np.ndarray:
+    return df.to_numpy(dtype=float)
+
+
+def df_to_tensor(df: pd.DataFrame) -> torch.Tensor:
+    return numpy_to_tensor(df_to_numpy(df))
+
+
+def numpy_to_tensor(arr: np.ndarray) -> torch.Tensor:
+    return torch.Tensor(arr).float()
+
+
+def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
+    return tensor.numpy(force=True)
+
+
+def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: int):
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size)
+    return train_loader
+
+
+def averaged_mean_pinball_loss(y_true, y_quantiles, quantiles):
+    """
+
+    :param y_true:
+    :param y_quantiles: array of shape (n_samples, n_quantiles)
+    :param quantiles:
+    :return:
+    """
+    # fmt: off
+    return np.mean([
+        mean_pinball_loss(y_true, y_quantiles[:, ind], alpha=quantile)
+        for ind, quantile in enumerate(quantiles)
+    ])

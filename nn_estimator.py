@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 
 # noinspection PyAttributeOutsideInit
-class MyEstimator(RegressorMixin, BaseEstimator):
+class NN_Estimator(RegressorMixin, BaseEstimator):
     """A template estimator to be used as a reference implementation.
 
     For more information regarding how to build your own estimator, read more
@@ -176,9 +176,7 @@ class MyEstimator(RegressorMixin, BaseEstimator):
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
-                train_loss = self._mse_torch(
-                    model(X_train[:val_size]), y_val[:val_size]
-                )
+                train_loss = self._mse_torch(model(X_train[:val_size]), y_train[:val_size])
             scheduler.step(val_loss)
             val_losses.append(val_loss)
             train_losses.append(train_loss)
@@ -261,7 +259,7 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         # self.model_.eval()
         with torch.no_grad():
             res = self.model_(X)
-        res = res.reshape(-1, 1) if self.is_y_2d_ else res.ravel()
+        res = res.reshape(-1, 1) if self.is_y_2d_ else res.squeeze()
         if as_np:
             res = np.array(res, dtype='float32')
         return res
@@ -270,14 +268,10 @@ class MyEstimator(RegressorMixin, BaseEstimator):
         return {'poor_score': True,
                 '_xfail_checks': {'check_methods_sample_order_invariance': '(barely) failing for unknown reason'}}
 
-    @classmethod
-    def load_model(cls):
-        pass
-
     def eval(self):
         self.model_.eval()
 
 
 if __name__ == '__main__':
-    estimator = MyEstimator(verbose=False)
+    estimator = NN_Estimator(verbose=False)
     check_estimator(estimator)
