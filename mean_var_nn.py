@@ -137,6 +137,7 @@ def train_mean_var_nn(
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     train_losses, val_losses = [], []
+    temp_vars = []
     iterable = np.arange(n_iter) + 1
     if show_progress:
         iterable = tqdm(iterable)
@@ -152,12 +153,21 @@ def train_mean_var_nn(
         with torch.no_grad():
             val_loss = _nll_loss_np(model(X_val), y_val)
             train_loss = _nll_loss_np(model(X_train[:val_size]), y_train[:val_size])
+            temp_vars.append(model(X_train)[1].mean())
         val_losses.append(val_loss)
         train_losses.append(train_loss)
         if USE_SCHEDULER:
             scheduler.step(val_loss)
     if do_plot_losses:
         plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
+
+        def plot_temp_vars(var):
+            fig, ax = plt.subplots()
+            ax.plot(var, label="var")
+            ax.legend()
+            plt.show()
+
+        plot_temp_vars(temp_vars)
 
     model.eval()
     return model
