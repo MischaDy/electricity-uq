@@ -117,7 +117,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
     # todo: type hints!
     def compute_metrics(
-        self, y_pred, y_quantiles, y_std, y_true: npt.NDArray[float], quantiles=None
+        self, y_pred, y_quantiles, y_std, y_true, quantiles=None
     ):
         """
 
@@ -128,9 +128,13 @@ class My_UQ_Comparer(UQ_Comparer):
         :param quantiles:
         :return:
         """
-        y_pred, y_true = y_pred.squeeze(), y_true.squeeze()
         # todo: sharpness? calibration? PIT? coverage?
         # todo: skill score (but what to use as benchmark)?
+
+        def clean_y(y):
+            return np.array(y).squeeze()
+
+        y_pred, y_quantiles, y_std, y_true = map(clean_y, (y_pred, y_quantiles, y_std, y_true))
 
         metrics = {  # todo: improve
             "rmse": rmse(y_true, y_pred),
