@@ -26,13 +26,13 @@ PLOT_DATA = False
 
 N_POINTS_PER_GROUP = 800
 
-N_ITER = 500
-LR = 1e-2
-LR_PATIENCE = 30
+N_ITER = 100
+LR = 1e-4
 REGULARIZATION = 0  # 1e-2
-USE_SCHEDULER = True
-WARMUP_PERIOD = 100
-FROZEN_VAR_VALUE = 0.2
+WARMUP_PERIOD = 50
+FROZEN_VAR_VALUE = 0.1
+USE_SCHEDULER = False
+LR_PATIENCE = 30
 
 
 class MeanVarNN(nn.Module):
@@ -73,11 +73,11 @@ class MeanVarNN(nn.Module):
 
     def freeze_variance(self, value: float):
         assert value > 0
-        self.last_layer_var.requires_grad_(False)
+        # self.last_layer_var.requires_grad_(False)
         self._frozen_var = value
 
     def unfreeze_variance(self):
-        self.last_layer_var.requires_grad_(True)
+        # self.last_layer_var.requires_grad_(True)
         self._frozen_var = None
 
 
@@ -94,9 +94,10 @@ def train_mean_var_nn(
     lr_reduction_factor=0.5,
     weight_decay=0.0,
     train_var=True,
+    frozen_var_value=0.5,
+    show_progress=True,
+    do_plot_losses=True,
     plot_skip_losses=10,
-    verbose=True,
-    frozen_var_value=0.5
 ):
     torch.manual_seed(random_state)
 
@@ -124,18 +125,20 @@ def train_mean_var_nn(
 
     train_loader = get_train_loader(X_train, y_train, batch_size)
 
-    criterion = nn.GaussianNLLLoss()
+    if train_var:
+        model.freeze_variance(frozen_var_value)
+        _mse_loss = nn.MSELoss()
+        criterion = lambda input_, target, var: _mse_loss(input_, target)
+    else:
+        model.unfreeze_variance()
+        criterion = nn.GaussianNLLLoss()
+
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
-    if train_var:
-        model.freeze_variance(frozen_var_value)
-    else:
-        model.unfreeze_variance()
-
     train_losses, val_losses = [], []
     iterable = np.arange(n_iter) + 1
-    if verbose:
+    if show_progress:
         iterable = tqdm(iterable)
     for _ in iterable:
         model.train()
@@ -149,21 +152,21 @@ def train_mean_var_nn(
         with torch.no_grad():
             val_loss = _nll_loss_np(model(X_val), y_val)
             train_loss = _nll_loss_np(model(X_train[:val_size]), y_train[:val_size])
-        if USE_SCHEDULER:
-            scheduler.step(val_loss)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
-    if verbose:
-        plot_training_progress(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
+        if USE_SCHEDULER:
+            scheduler.step(val_loss)
+    if do_plot_losses:
+        plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
 
     model.eval()
     return model
 
 
-def plot_training_progress(train_losses, test_losses):
+def plot_losses(train_losses, val_losses):
     fig, ax = plt.subplots()
     ax.semilogy(train_losses, label="train")
-    ax.semilogy(test_losses, label="val")
+    ax.semilogy(val_losses, label="val")
     ax.legend()
     plt.show()
 
@@ -187,6 +190,7 @@ def run_mean_var_nn(X_train, y_train, X_test, quantiles):
         print('running warmup...')
         mean_var_nn = train_mean_var_nn(
             X_train, y_train, n_iter=WARMUP_PERIOD, train_var=False, frozen_var_value=FROZEN_VAR_VALUE,
+            do_plot_losses=False,
             **common_params
         )
     mean_var_nn = train_mean_var_nn(
