@@ -129,7 +129,7 @@ def train_base_model(
 
     if skip_training:
         # Model previously optimized with a cross-validation:
-        # RandomForestRegressor(max_depth=13, n_estimators=89, random_seed=42)
+        # RandomForestRegressor(max_depth=13, n_estimators=89, random_state=42)
         try:
             model = io_helper.load_model(filename_base_model)
             return model
@@ -142,7 +142,7 @@ def train_base_model(
     # CV parameter search
     n_splits = 5
     tscv = TimeSeriesSplit(n_splits=n_splits)
-    model = model_class(random_seed=random_seed, **model_init_params)
+    model = model_class(random_state=random_seed, **model_init_params)
     cv_obj = RandomizedSearchCV(
         model,
         param_distributions=model_params_choices,
@@ -201,9 +201,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
     skip_base_training = True
     skip_adaptation = True
 
-    cv_mapie_ts = BlockBootstrap(
-        n_resamplings=10, n_blocks=10, overlapping=False, random_state=59
-    )
+    cv_mapie_ts = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_state=42)
 
     print("\n===== estimating PIs no_pfit_enbpi")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = estimate_pred_interals_no_pfit_enbpi(
@@ -300,9 +298,7 @@ def estimate_prediction_intervals_enbpi_nopfit_all_quantiles(
     alpha = np.linspace(0.01, 0.99, num=99, endpoint=True)
     skip_base_training = True
 
-    cv_mapie_ts = BlockBootstrap(
-        n_resamplings=10, n_blocks=10, overlapping=False, random_state=59
-    )
+    cv_mapie_ts = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_state=42)
 
     print("\n===== estimating PIs no_pfit_enbpi")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = estimate_pred_interals_no_pfit_enbpi(

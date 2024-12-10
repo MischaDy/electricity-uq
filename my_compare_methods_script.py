@@ -44,14 +44,14 @@ PLOT_RESULTS = True
 SAVE_PLOTS = True
 SKIP_TRAINING = False
 SAVE_TRAINED = True
-VERBOSE = False
+VERBOSE = True
 
-TEMP_TEST_ALL = True
+TEMP_TEST_ALL = False
 
 PLOTS_PATH = "plots"
 
 METHODS_KWARGS = {
-    "mean_var_nn": {
+    "native_mvnn": {
         "n_iter": 100,
         "lr": 1e-4,
         "lr_patience": 30,
@@ -99,7 +99,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :return: X_train, X_test, y_train, y_test, X, y
         """
         X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True,
-                                                          file_path=DATA_FILEPATH)
+                                                          filepath=DATA_FILEPATH)
         X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
         y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
         return X_train, X_test, y_train, y_test, X, y
@@ -171,7 +171,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
         if skip_training:
             # Model previously optimized with a cross-validation:
-            # RandomForestRegressor(max_depth=13, n_estimators=89, random_seed=42)
+            # RandomForestRegressor(max_depth=13, n_estimators=89, random_state=42)
             try:
                 print('skipping base model training')
                 model = self.io_helper.load_model(filename_base_model)
@@ -187,14 +187,14 @@ class My_UQ_Comparer(UQ_Comparer):
         # CV parameter search
         n_splits = 5
         tscv = TimeSeriesSplit(n_splits=n_splits)
-        model = model_class(random_seed=random_seed, **model_init_params)
+        model = model_class(random_state=random_seed, **model_init_params)
         cv_obj = RandomizedSearchCV(
             model,
             param_distributions=model_params_choices,
             n_iter=cv_n_iter,
             cv=tscv,
             scoring="neg_root_mean_squared_error",
-            random_seed=random_seed,
+            random_state=random_seed,
             verbose=1,
             n_jobs=n_jobs,
         )
@@ -280,10 +280,8 @@ class My_UQ_Comparer(UQ_Comparer):
         model.set_params(verbose=False)
         return model
 
-    def posthoc_conformal_prediction(
-        self, X_train, y_train, X_uq, quantiles, model, random_seed=42
-    ):
-        cv = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_seed=random_seed)
+    def posthoc_conformal_prediction(self, X_train, y_train, X_uq, quantiles, model, random_seed=42):
+        cv = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_seed)
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
             model, cv, alphas, X_uq, X_train, y_train, skip_training=SKIP_TRAINING, io_helper=self.io_helper,
@@ -371,7 +369,10 @@ class My_UQ_Comparer(UQ_Comparer):
             print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
         kernel = self._get_kernel()
         gaussian_process = GaussianProcessRegressor(
-            kernel=kernel, random_seed=42, normalize_y=False, n_restarts_optimizer=10
+            kernel=kernel,
+            normalize_y=False,
+            n_restarts_optimizer=10,
+            random_state=42,
         )
         gaussian_process.fit(X_train, y_train)
         if verbose:
@@ -443,7 +444,7 @@ def main():
         should_plot_results=PLOT_RESULTS,
         should_save_plots=SAVE_PLOTS,
         plots_path=PLOTS_PATH,
-        base_model_params=BASE_MODEL_KWARGS,
+        base_model_kwargs=BASE_MODEL_KWARGS,
         output_uq_on_train=True,
         return_results=False,
     )

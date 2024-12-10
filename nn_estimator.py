@@ -55,7 +55,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self,
         n_iter=10,
         batch_size=20,
-        random_state=711,
+        random_seed=42,
         val_frac=0.1,
         lr=0.1,
         lr_patience=5,
@@ -65,7 +65,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         """
         :param n_iter: 
         :param batch_size:
-        :param random_state:
+        :param random_seed:
         :param lr: 
         :param lr_patience: 
         :param lr_reduction_factor: 
@@ -73,7 +73,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         """
         self.n_iter = n_iter
         self.batch_size = batch_size
-        self.random_state = random_state
+        self.random_seed = random_seed
         self.val_frac = val_frac
         self.lr = lr
         self.lr_patience = lr_patience
@@ -108,7 +108,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         ##########
 
-        torch.manual_seed(self.random_state)
+        torch.manual_seed(self.random_seed)
 
         self.is_y_2d_ = len(y.shape) == 2
         if len(y.shape) < 2:
