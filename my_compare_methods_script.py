@@ -56,6 +56,8 @@ SKIP_TRAINING = False
 SAVE_TRAINED = True
 VERBOSE = False
 
+TEMP_TEST_ALL = True
+
 PLOTS_PATH = "plots"
 
 METHODS_KWARGS = {
@@ -158,8 +160,12 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
-        # model = self.my_train_base_model_rf(*args, **kwargs)
-        model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, verbose=VERBOSE, **kwargs)
+        if TEMP_TEST_ALL:
+            model = self.my_train_base_model_rf(*args, **kwargs)
+            model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, verbose=VERBOSE, **kwargs)
+        else:
+            # model = self.my_train_base_model_rf(*args, **kwargs)
+            model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, verbose=VERBOSE, **kwargs)
         return model
 
     def my_train_base_model_rf(
