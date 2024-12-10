@@ -1,10 +1,5 @@
-import time
-from typing import Any
-
+import torch
 import numpy as np
-import numpy.typing as npt
-
-from mapie.subsample import BlockBootstrap
 from matplotlib import pyplot as plt
 
 from scipy.stats import randint, norm
@@ -12,23 +7,21 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-from tqdm import tqdm
-
-# from properscoring import crps_ensemble
-
-from compare_methods import UQ_Comparer
-from helpers import get_data, IO_Helper, standardize, numpy_to_tensor, df_to_numpy, get_train_loader, tensor_to_numpy, tensor_to_device
-
-from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
-from mean_var_nn import run_mean_var_nn
-from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
-from quantile_regression import estimate_quantiles as estimate_quantiles_qr
-
-import torch
-
+from mapie.subsample import BlockBootstrap
 from laplace import Laplace
 
+import time
+from tqdm import tqdm
+from typing import Any
+
+from compare_methods import UQ_Comparer
+from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
+from mean_var_nn import run_mean_var_nn
+from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 from nn_estimator import NN_Estimator
+
+from helpers import get_data, IO_Helper, standardize, numpy_to_tensor, df_to_numpy, get_train_loader, tensor_to_numpy, tensor_to_device
+from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
 
 
 METHOD_WHITELIST = [
@@ -110,11 +103,6 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
         y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
         return X_train, X_test, y_train, y_test, X, y
-
-    def _standardize_or_to_array(self, variable, *dfs):
-        if variable in self.to_standardize:
-            return standardize(False, *dfs)
-        return map(df_to_numpy, dfs)
 
     # todo: type hints!
     def compute_metrics(
@@ -292,31 +280,6 @@ class My_UQ_Comparer(UQ_Comparer):
         model.set_params(verbose=False)
         return model
 
-    def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
-        y_preds = base_model.predict(X_train)
-
-        num_train_steps = X_train.shape[0]
-        x_plot_train = np.arange(num_train_steps)
-
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-        ax.plot(
-            x_plot_train,
-            y_preds,
-            label=f"base model prediction",
-            color="green",
-        )
-        ax.legend()
-        ax.set_xlabel("data")
-        ax.set_ylabel("target")
-        if do_save_figure:
-            self.io_helper.save_plot(f"{filename}.png")
-        plt.show()
-
-    @staticmethod
-    def _mse_torch(y_pred, y_test):
-        return torch.mean((y_pred - y_test) ** 2)
-
     def posthoc_conformal_prediction(
         self, X_train, y_train, X_uq, quantiles, model, random_seed=42
     ):
@@ -431,6 +394,32 @@ class My_UQ_Comparer(UQ_Comparer):
         # todo: does this work for multi-dim outputs?
         return np.array([norm.ppf(quantiles, loc=mean, scale=std)
                          for mean, std in zip(y_pred, y_std)])
+
+    def _standardize_or_to_array(self, variable, *dfs):
+        if variable in self.to_standardize:
+            return standardize(False, *dfs)
+        return map(df_to_numpy, dfs)
+
+    def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
+        y_preds = base_model.predict(X_train)
+
+        num_train_steps = X_train.shape[0]
+        x_plot_train = np.arange(num_train_steps)
+
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+        ax.plot(
+            x_plot_train,
+            y_preds,
+            label=f"base model prediction",
+            color="green",
+        )
+        ax.legend()
+        ax.set_xlabel("data")
+        ax.set_ylabel("target")
+        if do_save_figure:
+            self.io_helper.save_plot(f"{filename}.png")
+        plt.show()
 
 
 def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
