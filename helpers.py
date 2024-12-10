@@ -228,6 +228,18 @@ def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
     return tensor.numpy(force=True)
 
 
+def tensor_to_device(tensor: torch.Tensor) -> torch.Tensor:
+    cuda_available = torch.cuda.is_available()
+    if not cuda_available:
+        return tensor
+    device = torch.cuda.current_device()
+    return tensor.to(device)
+
+
+def make_arr_2d(arr):
+    return arr.reshape(-1, 1)
+
+
 def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: int):
     train_dataset = TensorDataset(X_train, y_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size)

@@ -21,7 +21,7 @@ from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
 
 from compare_methods import UQ_Comparer
 from helpers import get_data, IO_Helper, standardize, numpy_to_tensor, df_to_numpy, get_train_loader, \
-    averaged_mean_pinball_loss, tensor_to_numpy
+    averaged_mean_pinball_loss, tensor_to_numpy, tensor_to_device
 
 from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
 from mean_var_nn import run_mean_var_nn
@@ -162,8 +162,8 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def my_train_base_model_rf(
         self,
-        X_train: npt.NDArray[float],
-        y_train: npt.NDArray[float],
+        X_train: np.ndarray,
+        y_train: np.ndarray,
         model_params_choices=None,
         model_init_params=None,
         skip_training=True,
@@ -223,8 +223,8 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def my_train_base_model_nn(
         self,
-        X_train: npt.NDArray[float],
-        y_train: npt.NDArray[float],
+        X_train: np.ndarray,
+        y_train: np.ndarray,
         model_params_choices=None,
         n_iter=500,
         batch_size=20,
@@ -256,6 +256,10 @@ class My_UQ_Comparer(UQ_Comparer):
         :param random_seed:
         :return:
         """
+
+        X_train, y_train = map(numpy_to_tensor, (X_train, y_train))
+        X_train, y_train = map(tensor_to_device, (X_train, y_train))
+
         if model_filename is None:
             n_training_points = X_train.shape[0]
             model_filename = f"base_nn_{n_training_points}.pth"
@@ -336,9 +340,9 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def posthoc_laplace(
         self,
-        X_train: npt.NDArray[float],
-        y_train: npt.NDArray[float],
-        X_uq: npt.NDArray[float],
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_uq: np.ndarray,
         quantiles,
         model,
         n_iter=100,
@@ -348,7 +352,10 @@ class My_UQ_Comparer(UQ_Comparer):
     ):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
-        X_train, y_train = map(numpy_to_tensor, (X_train, y_train))
+        torch.manual_seed(random_seed)
+        X_uq, X_train, y_train = map(numpy_to_tensor, (X_uq, X_train, y_train))
+        X_uq, X_train, y_train = map(tensor_to_device, (X_uq, X_train, y_train))
+
         train_loader = get_train_loader(X_train, y_train, batch_size)
 
         la = Laplace(model, "regression")
@@ -373,7 +380,6 @@ class My_UQ_Comparer(UQ_Comparer):
         # # Load serialized, fitted quantities
         # la.load_state_dict(torch.load("state_dict.bin"))
 
-        X_uq = numpy_to_tensor(X_uq)
         f_mu, f_var = la(X_uq)
 
         f_mu = tensor_to_numpy(f_mu.squeeze())
@@ -384,7 +390,7 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
-    def native_quantile_regression(self, X_train, y_train, X_uq, quantiles):
+    def native_quantile_regression(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles):
         y_pred, y_quantiles = estimate_quantiles_qr(
             X_train, y_train, X_uq, alpha=quantiles
         )
@@ -392,7 +398,7 @@ class My_UQ_Comparer(UQ_Comparer):
         return y_pred, y_quantiles, y_std
 
     @staticmethod
-    def native_mvnn(X_train, y_train, X_uq, quantiles, **kwargs):
+    def native_mvnn(X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles, **kwargs):
         return run_mean_var_nn(
             X_train,
             y_train,
@@ -401,7 +407,7 @@ class My_UQ_Comparer(UQ_Comparer):
             **kwargs
         )
 
-    def native_gp(self, X_train, y_train, X_uq, quantiles, verbose=True):
+    def native_gp(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles, verbose=True):
         if verbose:
             print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
         kernel = self._get_kernel()
@@ -413,9 +419,7 @@ class My_UQ_Comparer(UQ_Comparer):
             print(f"done. [{time.strftime('%H:%M:%S')}]")
             print("kernel:", gaussian_process.kernel_)
             print("GP predicting...")
-        mean_prediction, std_prediction = gaussian_process.predict(
-            X_uq, return_std=True
-        )
+        mean_prediction, std_prediction = gaussian_process.predict(X_uq, return_std=True)
         if verbose:
             print("done.")
         y_pred, y_std = mean_prediction, std_prediction

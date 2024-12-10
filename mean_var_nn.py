@@ -12,7 +12,7 @@ from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
 
 from helpers import numpy_to_tensor, tensor_to_numpy, get_train_loader, get_data, standardize, df_to_numpy, \
-    set_dtype_float
+    set_dtype_float, tensor_to_device, make_arr_2d
 
 QUANTILES = [
     0.05,
@@ -189,9 +189,10 @@ def _nll_loss_np(y_pred, y_test):
     return nll_gaussian(*arrs)
 
 
-def run_mean_var_nn(X_train, y_train, X_test, quantiles, n_iter=100, lr=1e-4, lr_patience=5, regularization=0,
-                    warmup_period=10, frozen_var_value=0.1):
+def run_mean_var_nn(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray, quantiles,
+                    n_iter=100, lr=1e-4, lr_patience=5, regularization=0, warmup_period=10, frozen_var_value=0.1):
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
+    X_train, y_train, X_test = map(tensor_to_device, (X_train, y_train, X_test))
     common_params = {
         "lr": lr,
         "lr_patience": lr_patience,
@@ -276,19 +277,13 @@ def plot_uq_result(
     plt.show()
 
 
-def make_2d(arr):
-    return arr.reshape(-1, 1)
-
-
 # todo
 def get_clean_data(_n_points_per_group=100):
     X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True)
     X_train, X_test, X = _standardize_or_to_array("x", X_train, X_test, X)
     y_train, y_test, y = _standardize_or_to_array("y", y_train, y_test, y)
-
     if PLOT_DATA:
         my_plot_data(X, y)
-
     return X_train, X_test, y_train, y_test, X, y
 
 
@@ -305,7 +300,7 @@ def get_clean_data2(_n_points_per_group=100):
     y = X[shift:]
     X = X[:len(y)]
 
-    X, y = map(make_2d, (X, y))
+    X, y = map(make_arr_2d, (X, y))
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.5, shuffle=False
