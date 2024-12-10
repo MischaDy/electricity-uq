@@ -42,12 +42,10 @@ class UQ_Comparer(ABC):
         plots_path=".",
         return_results=False,
         skip_deepcopy=False,
-        base_model_kwargs=None,
         output_uq_on_train=True,
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
         # todo: improve, e.g. tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
-        :param base_model_kwargs:
         :param skip_deepcopy:
         :param plots_path:
         :param should_save_plots:
@@ -81,7 +79,6 @@ class UQ_Comparer(ABC):
             X_uq,
             quantiles=quantiles,
             skip_deepcopy=skip_deepcopy,
-            base_model_kwargs=base_model_kwargs,
         )
 
         if should_plot_results:
@@ -206,7 +203,6 @@ class UQ_Comparer(ABC):
         X_uq,
         quantiles,
         skip_deepcopy=False,
-        base_model_kwargs=None,
     ):
         """
 
@@ -215,7 +211,6 @@ class UQ_Comparer(ABC):
         :param X_uq:
         :param quantiles:
         :param skip_deepcopy:
-        :param base_model_kwargs:
         :return: dict of results: {'posthoc': posthoc_results, 'native': native_results\
         """
         uq_results = {}
@@ -227,7 +222,6 @@ class UQ_Comparer(ABC):
                 quantiles=quantiles,
                 uq_type=uq_type,
                 skip_deepcopy=skip_deepcopy,
-                base_model_kwargs=base_model_kwargs,
             )
             uq_results[uq_type] = uq_result
         return uq_results
@@ -241,12 +235,10 @@ class UQ_Comparer(ABC):
         *,
         uq_type,
         skip_deepcopy=False,
-        base_model_kwargs: dict = None,
         output_uq_on_train=True,
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 
-        :param base_model_kwargs:
         :param skip_deepcopy: whether to skip making a deepcopy of the base model. speed up execution, but can lead to
          bugs if posthoc method affects the base model object. ignored for native methods
         :param X_train:
@@ -267,8 +259,7 @@ class UQ_Comparer(ABC):
         print(f"running {uq_type} methods...")
         if is_posthoc:
             print("training base model...")
-            if base_model_kwargs is None:
-                base_model_kwargs = {}
+            base_model_kwargs = self.methods_kwargs['base_model']
             base_model = self.train_base_model(X_train, y_train, **base_model_kwargs)
 
         uq_results = {}

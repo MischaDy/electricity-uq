@@ -59,14 +59,14 @@ METHODS_KWARGS = {
         "warmup_period": 50,
         "frozen_var_value": 0.1,
     },
+    "base_model": {
+        "n_iter": 100,
+        "skip_training": SKIP_TRAINING,
+        # 'n_jobs': -1,
+        # 'model_params_choices': None,
+    },
 }
 
-
-BASE_MODEL_KWARGS = {
-    "skip_training": SKIP_TRAINING,
-    # 'n_jobs': -1,
-    # 'model_params_choices': None,
-}
 TO_STANDARDIZE = "xy"
 
 torch.set_default_dtype(torch.float32)
@@ -444,7 +444,6 @@ def main():
         should_plot_results=PLOT_RESULTS,
         should_save_plots=SAVE_PLOTS,
         plots_path=PLOTS_PATH,
-        base_model_kwargs=BASE_MODEL_KWARGS,
         output_uq_on_train=True,
         return_results=False,
     )
