@@ -372,11 +372,11 @@ def estimate_pred_interals_no_pfit_enbpi(
             skip_training = False
 
     if not skip_training:
-        print("training...")
+        print("training enbpi_no_pfit...")
         mapie_enbpi = mapie_enbpi.fit(X_train, y_train)
         io_helper.save_model(mapie_enbpi, filename_enbpi_no_pfit)
 
-    print("predicting...")
+    print("predicting enbpi_no_pfit...")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = mapie_enbpi.predict(
         X_test, alpha=alpha, ensemble=False, optimize_beta=False, allow_infinite_bounds=True,
     )
@@ -544,7 +544,7 @@ def _estimate_prediction_intervals_worker(
             skip_base_training = False
 
     if not skip_base_training:
-        print("training...")
+        print("training mapie_ts_regressor...")
         mapie_ts_regressor = mapie_ts_regressor.fit(X_train, y_train)
         io_helper.save_model(mapie_ts_regressor, filename_model_base)
 

@@ -182,7 +182,7 @@ class My_UQ_Comparer(UQ_Comparer):
         assert all(
             item is not None for item in [X_train, y_train, model_params_choices]
         )
-        print("training")
+        print("training random forest...")
 
         # CV parameter search
         n_splits = 5
