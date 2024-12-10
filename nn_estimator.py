@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 from more_itertools import collapse
+# noinspection PyProtectedMember
 from sklearn.base import RegressorMixin, BaseEstimator, _fit_context
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils.validation import check_is_fitted
@@ -20,8 +21,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     Parameters
     ----------
-    demo_param : str, default='demo_param'
-        A parameter used for demonstration of how to pass and store parameters.
 
     Attributes
     ----------
@@ -34,24 +33,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     feature_names_in_ : ndarray of shape (`n_features_in_`,)
         Names of features seen during :term:`fit`. Defined only when `X`
         has feature names that are all strings.
-
-    Examples
-    --------
-    >>> class MyEstimator(RegressorMixin, BaseEstimator):
-    ...     def __init__(self, *, param=1):
-    ...         self.param = param
-    ...     def fit(self, X, y=None):
-    ...         self.is_fitted_ = True
-    ...         return self
-    ...     def predict(self, X):
-    ...         return np.full(shape=X.shape[0], fill_value=self.param)
-    >>> estimator = MyEstimator(param=0)
-    >>> X = np.array([[1, 2], [2, 3], [3, 4]])
-    >>> y = np.array([-1, 0, 1])
-    >>> estimator.fit(X, y).predict(X)
-    array([0, 0, 0])
-    >>> estimator.score(X, y)
-    0.0
     """
 
     # This is a dictionary allowing to define the type of parameters.
