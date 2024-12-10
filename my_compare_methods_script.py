@@ -48,6 +48,7 @@ QUANTILES = [
     0.95,
 ]  # todo: how to handle 0.5? ==> just use mean if needed
 
+DATA_FILEPATH = './data.pkl'
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
@@ -105,7 +106,8 @@ class My_UQ_Comparer(UQ_Comparer):
         :param _n_points_per_group:
         :return: X_train, X_test, y_train, y_test, X, y
         """
-        X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True)
+        X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True,
+                                                          file_path=DATA_FILEPATH)
         X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
         y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
         return X_train, X_test, y_train, y_test, X, y
