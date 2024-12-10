@@ -49,15 +49,17 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         "save_trained": [bool],
         "to_standardize": [str],
         "val_frac": [float],
+        "use_scheduler": [bool],
     }
 
     def __init__(
         self,
-        n_iter=10,
+        n_iter=100,
         batch_size=20,
         random_seed=42,
         val_frac=0.1,
-        lr=0.1,
+        use_scheduler=True,
+        lr=None,
         lr_patience=5,
         lr_reduction_factor=0.5,
         verbose=True,
@@ -71,6 +73,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         :param lr_reduction_factor: 
         :param verbose:
         """
+        self.use_scheduler = use_scheduler
         self.n_iter = n_iter
         self.batch_size = batch_size
         self.random_seed = random_seed
@@ -139,15 +142,16 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         train_loader = self._get_train_loader(X_train, y_train, self.batch_size)
 
-        criterion = nn.MSELoss()
+        if self.lr is None:
+            self.lr = 1e-2 if self.use_scheduler else 1e-4
+
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
-        scheduler = ReduceLROnPlateau(
-            optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor
-        )
+        scheduler = ReduceLROnPlateau(optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor)
+        criterion = nn.MSELoss()
 
         train_losses, val_losses = [], []
-        iterable = tqdm(range(self.n_iter)) if self.verbose else range(self.n_iter)
-        for _ in iterable:
+        epochs = tqdm(range(self.n_iter)) if self.verbose else range(self.n_iter)
+        for _ in epochs:
             model.train()
             for X, y in train_loader:
                 optimizer.zero_grad()
@@ -158,7 +162,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
                 train_loss = self._mse_torch(model(X_train[:val_size]), y_train[:val_size])
-            scheduler.step(val_loss)
+            if self.use_scheduler:
+                scheduler.step(val_loss)
             val_losses.append(val_loss)
             train_losses.append(train_loss)
 
