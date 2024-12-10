@@ -159,6 +159,8 @@ def train_mean_var_nn(
         if USE_SCHEDULER:
             scheduler.step(val_loss)
     if do_plot_losses:
+        for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
+            print(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
         plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
 
         def plot_temp_vars(var):
