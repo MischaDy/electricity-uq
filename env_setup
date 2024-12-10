@@ -1,4 +1,10 @@
-conda create -y -n myenv
+conda create -y -n masterarbeit
+conda config --append channels conda-forge
+conda install --file .\requirements.txt
+pip install git+https://git@github.com/wiseodd/asdl@asdfghjkl
+
+-----------
+
 pip install -y -r .\requirements.txt
 
 OR
@@ -7,11 +13,4 @@ mamba install --file .\requirements.txt
 
 pip install holidays laplace_torch MAPIE matplotlib more_itertools numpy pandas pmdarima scikit_learn scipy statsmodels torch tqdm uncertainty_toolbox
 
-
-does not exist:
-- laplace_torch
-- mapie
-- more_itertools
-- scikit_learn
-- torch
-- uncertainty_toolbox
+pip install holidays laplace_torch MAPIE matplotlib more_itertools numpy pandas python scikit_learn scipy scores torch tqdm uncertainty_toolbox xarray
