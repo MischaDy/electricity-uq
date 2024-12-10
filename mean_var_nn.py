@@ -176,10 +176,14 @@ def train_mean_var_nn(
 
 
 def plot_losses(train_losses, val_losses):
+    def has_neg(losses):
+        return any(map(lambda x: x < 0, losses))
+
     fig, ax = plt.subplots()
-    ax.set_yscale('symlog')
-    ax.semilogy(train_losses, label="train loss")
-    ax.semilogy(val_losses, label="validation loss")
+    plt_func = ax.plot if has_neg(train_losses) or has_neg(val_losses) else ax.semilogy
+    # ax.set_yscale('symlog')
+    plt_func(train_losses, label="train loss")
+    plt_func(val_losses, label="validation loss")
     ax.legend()
     plt.show()
 
