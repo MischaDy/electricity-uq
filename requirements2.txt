@@ -1,0 +1,15 @@
+python
+holidays
+laplace_torch
+MAPIE
+matplotlib
+more_itertools
+numpy
+pandas
+pmdarima
+scikit_learn
+scipy
+statsmodels
+torch
+tqdm
+uncertainty_toolbox
