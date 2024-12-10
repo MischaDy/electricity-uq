@@ -6,25 +6,22 @@ import numpy.typing as npt
 
 from mapie.subsample import BlockBootstrap
 from matplotlib import pyplot as plt
-from pmdarima.metrics import smape
 
 from scipy.stats import randint, norm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-from statsmodels.tools.eval_measures import rmse
 from tqdm import tqdm
-from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian
 
 # from properscoring import crps_ensemble
 
 from compare_methods import UQ_Comparer
-from helpers import get_data, IO_Helper, standardize, numpy_to_tensor, df_to_numpy, get_train_loader, \
-    averaged_mean_pinball_loss, tensor_to_numpy, tensor_to_device
+from helpers import get_data, IO_Helper, standardize, numpy_to_tensor, df_to_numpy, get_train_loader, tensor_to_numpy, tensor_to_device
 
 from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
 from mean_var_nn import run_mean_var_nn
+from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 
 import torch
@@ -142,19 +139,10 @@ class My_UQ_Comparer(UQ_Comparer):
 
         metrics = {  # todo: improve
             "rmse": rmse(y_true, y_pred),
-            "smape": smape(y_true, y_pred) / 100,  # scale down to [0, 1]
-            "crps": (
-                # todo: implement
-                None  # crps_ensemble(y_pred, y_std, y_true_np) if y_std is not None else None
-            ),
-            "neg_log_lik": (
-                nll_gaussian(y_pred, y_std, y_true) if y_std is not None else None
-            ),
-            "mean_pinball": (
-                averaged_mean_pinball_loss(y_pred, y_quantiles, quantiles)
-                if y_quantiles is not None
-                else None
-            ),
+            "smape_scaled": smape_scaled(y_true, y_pred),
+            "crps": crps(y_true, y_pred, y_std),
+            "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
+            "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
         }
         return metrics
 

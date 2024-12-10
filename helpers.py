@@ -6,7 +6,6 @@ import pandas as pd
 import torch
 from matplotlib import pyplot as plt
 from more_itertools import collapse
-from sklearn.metrics import mean_pinball_loss
 from sklearn.model_selection import train_test_split
 
 from sklearn.preprocessing import StandardScaler
@@ -244,18 +243,3 @@ def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: i
     train_dataset = TensorDataset(X_train, y_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     return train_loader
-
-
-def averaged_mean_pinball_loss(y_true, y_quantiles, quantiles):
-    """
-
-    :param y_true:
-    :param y_quantiles: array of shape (n_samples, n_quantiles)
-    :param quantiles:
-    :return:
-    """
-    # fmt: off
-    return np.mean([
-        mean_pinball_loss(y_true, y_quantiles[:, ind], alpha=quantile)
-        for ind, quantile in enumerate(quantiles)
-    ])

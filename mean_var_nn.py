@@ -189,6 +189,7 @@ def plot_losses(train_losses, val_losses):
 
 
 def _nll_loss_np(y_pred, y_test):
+    # todo: use nn.NLLLoss instead!
     y_pred_mean, y_pred_var = y_pred
     tensors = y_pred_mean, np.sqrt(y_pred_var), y_test
     arrs = map(lambda t: t.numpy(force=True).squeeze(), tensors)
