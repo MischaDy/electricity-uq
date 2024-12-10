@@ -35,10 +35,10 @@ from nn_estimator import NN_Estimator
 
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
-    # "posthoc_laplace",
-    # "native_quantile_regression",
-    # "native_gp",
+    "posthoc_conformal_prediction",
+    "posthoc_laplace",
+    "native_quantile_regression",
+    "native_gp",
     "native_mvnn",
 ]
 QUANTILES = [
