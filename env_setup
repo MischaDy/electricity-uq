@@ -1,7 +1,14 @@
+conda env create --file .\my_env.yml
+
+
+----------
+alt:
+
 conda create -y -n masterarbeit
 conda config --append channels conda-forge
 conda install --file .\requirements.txt
 pip install git+https://git@github.com/wiseodd/asdl@asdfghjkl
+
 
 -----------
 
