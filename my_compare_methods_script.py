@@ -25,7 +25,7 @@ from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
 
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
+    "posthoc_conformal_prediction",
     "posthoc_laplace",
     "native_quantile_regression",
     "native_gp",
@@ -40,7 +40,7 @@ QUANTILES = [
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 100
+N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
@@ -51,20 +51,30 @@ PLOTS_PATH = "plots"
 
 METHODS_KWARGS = {
     "native_mvnn": {
-        "n_iter": 100,
+        "n_iter": 300,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
     },
+    "native_quantile_regression": {
+        "verbose": True,
+    },
+    "native_gp": {
+        'n_restarts_optimizer': 5,
+        "verbose": True,
+    },
     "posthoc_conformal_prediction": {
-        "n_estimators": 3,
+        "n_estimators": 5,
         "verbose": 1,
         "skip_training": False,
     },
+    "posthoc_laplace": {
+        "n_iter": 300,
+    },
     "base_model": {
-        "n_iter": 100,
+        "n_iter": 200,
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,
@@ -394,7 +404,7 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
-    def native_quantile_regression(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles):
+    def native_quantile_regression(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles, verbose=True):
         y_pred, y_quantiles = estimate_quantiles_qr(
             X_train, y_train, X_uq, alpha=quantiles
         )
@@ -411,14 +421,22 @@ class My_UQ_Comparer(UQ_Comparer):
             **kwargs
         )
 
-    def native_gp(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles, verbose=True):
+    def native_gp(
+        self,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_uq: np.ndarray,
+        quantiles,
+        verbose=True,
+        n_restarts_optimizer=10,
+    ):
         if verbose:
             print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
         kernel = self._get_kernel()
         gaussian_process = GaussianProcessRegressor(
             kernel=kernel,
             normalize_y=False,
-            n_restarts_optimizer=10,
+            n_restarts_optimizer=n_restarts_optimizer,
             random_state=42,
         )
         gaussian_process.fit(X_train, y_train)

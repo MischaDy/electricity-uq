@@ -163,13 +163,13 @@ def train_mean_var_nn(
             print(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
         plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
 
-        def plot_temp_vars(var):
-            fig, ax = plt.subplots()
-            ax.plot(var, label="var")
-            ax.legend()
-            plt.show()
-
-        plot_temp_vars(temp_vars)
+        # def plot_temp_vars(var):
+        #     fig, ax = plt.subplots()
+        #     ax.plot(var, label="var")
+        #     ax.legend()
+        #     plt.show()
+        #
+        # plot_temp_vars(temp_vars)
 
     model.eval()
     return model
@@ -196,8 +196,20 @@ def _nll_loss_np(y_pred, y_test):
     return nll_gaussian(*arrs)
 
 
-def run_mean_var_nn(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray, quantiles,
-                    n_iter=100, lr=1e-4, lr_patience=5, regularization=0, warmup_period=10, frozen_var_value=0.1):
+def run_mean_var_nn(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_test: np.ndarray,
+    quantiles,
+    n_iter=100,
+    lr=1e-4,
+    lr_patience=5,
+    regularization=0,
+    warmup_period=10,
+    frozen_var_value=0.1,
+    do_plot_losses=False,
+):
+
     X_train, y_train, X_test = map(numpy_to_tensor, (X_train, y_train, X_test))
     X_train, y_train, X_test = map(tensor_to_device, (X_train, y_train, X_test))
     common_params = {
@@ -214,7 +226,7 @@ def run_mean_var_nn(X_train: np.ndarray, y_train: np.ndarray, X_test: np.ndarray
             **common_params
         )
     mean_var_nn = train_mean_var_nn(
-        X_train, y_train, model=mean_var_nn, n_iter=n_iter, train_var=True,
+        X_train, y_train, model=mean_var_nn, n_iter=n_iter, train_var=True, do_plot_losses=do_plot_losses,
         **common_params
     )
     # plot_post_training_perf(mean_var_nn, X_train, y_train)
