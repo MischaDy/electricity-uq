@@ -43,6 +43,7 @@ DATA_FILEPATH = './data.pkl'
 N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
 PLOT_RESULTS = True
+SHOW_PLOTS = False
 SAVE_PLOTS = True
 
 TEMP_TEST_ALL = False
@@ -510,6 +511,7 @@ def main():
         QUANTILES,
         should_plot_data=PLOT_DATA,
         should_plot_results=PLOT_RESULTS,
+        should_show_plots=SHOW_PLOTS,
         should_save_plots=SAVE_PLOTS,
         plots_path=PLOTS_PATH,
         output_uq_on_train=True,

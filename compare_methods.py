@@ -38,6 +38,7 @@ class UQ_Comparer(ABC):
         quantiles,
         should_plot_data=True,
         should_plot_results=True,
+        should_show_plots=True,
         should_save_plots=True,
         plots_path=".",
         return_results=False,
@@ -46,6 +47,7 @@ class UQ_Comparer(ABC):
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
         # todo: improve, e.g. tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
+        :param should_show_plots:
         :param skip_deepcopy:
         :param plots_path:
         :param should_save_plots:
@@ -67,6 +69,7 @@ class UQ_Comparer(ABC):
                 X_test,
                 y_train,
                 y_test,
+                show_plot=should_show_plots,
                 save_plot=should_save_plots,
                 plots_path=plots_path,
             )
@@ -91,6 +94,7 @@ class UQ_Comparer(ABC):
                 uq_results,
                 quantiles,
                 output_uq_on_train,
+                show_plots=should_show_plots,
                 save_plots=should_save_plots,
                 plots_path=plots_path,
             )
@@ -323,6 +327,7 @@ def plot_data(
     y_test,
     figsize=(16, 5),
     ylabel="energy data",  # todo: details!
+    show_plot=True,
     save_plot=True,
     filename="data.png",
     plots_path=".",
@@ -334,15 +339,18 @@ def plot_data(
     x_plot_train = np.arange(num_train_steps)
     x_plot_test = x_plot_train + num_test_steps
 
-    plt.figure(figsize=figsize)
-    plt.plot(x_plot_train, y_train)
-    plt.plot(x_plot_test, y_test)
-    plt.ylabel(ylabel)
-    plt.legend(["Training data", "Test data"])
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.plot(x_plot_train, y_train)
+    ax.plot(x_plot_test, y_test)
+    ax.set_ylabel(ylabel)
+    ax.legend(["Training data", "Test data"])
     if save_plot:
         filepath = os.path.join(plots_path, filename)
         plt.savefig(filepath)
-    plt.show()
+    if show_plot:
+        plt.show()
+    else:
+        plt.close(fig)
 
 
 def plot_uq_results_all(
@@ -353,6 +361,7 @@ def plot_uq_results_all(
     uq_results,
     quantiles,
     output_uq_on_train: bool,
+    show_plots=True,
     save_plots=True,
     plots_path=".",
 ):
@@ -379,6 +388,7 @@ def plot_uq_results_all(
                 output_uq_on_train,
                 plot_name=" ".join(method_name_parts),
                 uq_type=uq_type,
+                show_plots=show_plots,
                 save_plot=save_plots,
                 plots_path=plots_path,
             )
@@ -396,6 +406,7 @@ def plot_uq_result(
     output_uq_on_train,
     plot_name,
     uq_type,
+    show_plots=True,
     save_plot=True,
     plots_path=".",
 ):
@@ -452,4 +463,7 @@ def plot_uq_result(
         filename = f"{plot_name}_{uq_type}.png"
         filepath = os.path.join(plots_path, filename)
         plt.savefig(filepath)
-    plt.show()
+    if show_plots:
+        plt.show()
+    else:
+        plt.close(fig)
