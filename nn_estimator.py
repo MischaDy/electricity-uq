@@ -44,7 +44,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         "lr": [float],
         "lr_patience": [int],
         "lr_reduction_factor": [float],
-        "verbose": [bool],
+        "verbose": [int],
         "skip_training": [bool],
         "save_trained": [bool],
         "to_standardize": [str],
@@ -62,7 +62,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         lr=None,
         lr_patience=5,
         lr_reduction_factor=0.5,
-        verbose=True,
+        verbose: int = 1,
     ):
         """
         :param n_iter: 
@@ -109,8 +109,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
           `feature_names_in_`."""
         X, y = self._validate_data(X, y, accept_sparse=False)
 
-        ##########
-
         torch.manual_seed(self.random_seed)
 
         self.is_y_2d_ = len(y.shape) == 2
@@ -150,7 +148,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         criterion = nn.MSELoss()
 
         train_losses, val_losses = [], []
-        epochs = tqdm(range(self.n_iter)) if self.verbose else range(self.n_iter)
+        epochs = tqdm(range(self.n_iter)) if self.verbose > 0 else range(self.n_iter)
         for _ in epochs:
             model.train()
             for X, y in train_loader:
@@ -170,16 +168,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         model.eval()
         self.model_ = model
 
-        if self.verbose:
+        if self.verbose > 1:
             loss_skip = 0
-            self._plot_training_progress(
-                train_losses[loss_skip:], val_losses[loss_skip:]
-            )
-
-        ##########
+            self._plot_training_progress(train_losses[loss_skip:], val_losses[loss_skip:])
 
         self.is_fitted_ = True
-        # `fit` should always return `self`
         return self
 
     @staticmethod
@@ -259,5 +252,5 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
 
 if __name__ == '__main__':
-    estimator = NN_Estimator(verbose=False)
+    estimator = NN_Estimator(verbose=0)
     check_estimator(estimator)

@@ -329,10 +329,12 @@ def estimate_pred_interals_no_pfit_enbpi(
     skip_training=False,
     io_helper: IO_Helper = None,
     agg_function: str = 'mean',
+    verbose=1,
 ) -> tuple[npt.NDArray, npt.NDArray]:
     """
     Estimate prediction intervals without partial fit using EnbPI.
 
+    :param verbose:
     :param agg_function:
     :param io_helper:
     :param model:
@@ -353,7 +355,7 @@ def estimate_pred_interals_no_pfit_enbpi(
         pass
 
     mapie_enbpi = MapieTimeSeriesRegressor(
-        model, method="enbpi", cv=cv_mapie_ts, agg_function=agg_function, n_jobs=-1
+        model, method="enbpi", cv=cv_mapie_ts, agg_function=agg_function, n_jobs=-1, verbose=verbose,
     )
 
     n_training_points = X_train.shape[0]

@@ -39,12 +39,11 @@ QUANTILES = [
 ]  # todo: how to handle 0.5? ==> just use mean if needed
 
 DATA_FILEPATH = './data.pkl'
+
+N_POINTS_PER_GROUP = 100
 PLOT_DATA = False
 PLOT_RESULTS = True
 SAVE_PLOTS = True
-SKIP_TRAINING = False
-SAVE_TRAINED = True
-VERBOSE = True
 
 TEMP_TEST_ALL = False
 
@@ -59,11 +58,16 @@ METHODS_KWARGS = {
         "warmup_period": 50,
         "frozen_var_value": 0.1,
     },
+    "posthoc_conformal_prediction": {
+        "n_estimators": 3,
+        "verbose": 1,
+        "skip_training": False,
+    },
     "base_model": {
         "n_iter": 100,
-        "skip_training": SKIP_TRAINING,
-        # 'n_jobs': -1,
-        # 'model_params_choices': None,
+        "skip_training": False,
+        "save_trained": True,
+        "verbose": 1,
     },
 }
 
@@ -74,9 +78,15 @@ torch.set_default_dtype(torch.float32)
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
-    def __init__(self, storage_path="comparison_storage", to_standardize="X",
-                 methods_kwargs: dict[str, dict[str, Any]] = None,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        storage_path="comparison_storage",
+        to_standardize="X",
+        methods_kwargs: dict[str, dict[str, Any]] = None,
+        n_points_per_group=800,
+        *args,
+        **kwargs
+    ):
         """
 
         :param methods_kwargs: dict of (method_name, method_kwargs_dict) pairs
@@ -84,22 +94,27 @@ class My_UQ_Comparer(UQ_Comparer):
         :param to_standardize: iterable of variables to standardize. Can contain 'x' and/or 'y', or neither.
         :param args: passed to super.__init__
         :param kwargs: passed to super.__init__
+        :param n_points_per_group: both training size and test size
         """
         super().__init__(*args, **kwargs)
         if methods_kwargs is not None:
             self.methods_kwargs.update(methods_kwargs)
         self.io_helper = IO_Helper(storage_path)
         self.to_standardize = to_standardize
+        self.n_points_per_group = n_points_per_group
 
     # todo: remove param?
-    def get_data(self, _n_points_per_group=800):
+    def get_data(self):
         """
 
         :param _n_points_per_group:
         :return: X_train, X_test, y_train, y_test, X, y
         """
-        X_train, X_test, y_train, y_test, X, y = get_data(_n_points_per_group, return_full_data=True,
-                                                          filepath=DATA_FILEPATH)
+        X_train, X_test, y_train, y_test, X, y = get_data(
+            self.n_points_per_group,
+            return_full_data=True,
+            filepath=DATA_FILEPATH
+        )
         X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
         y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
         return X_train, X_test, y_train, y_test, X, y
@@ -138,10 +153,10 @@ class My_UQ_Comparer(UQ_Comparer):
         # todo: more flexibility in choosing (multiple) base models
         if TEMP_TEST_ALL:
             model = self.my_train_base_model_rf(*args, **kwargs)
-            model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, verbose=VERBOSE, **kwargs)
+            model = self.my_train_base_model_nn(*args, **kwargs)
         else:
             # model = self.my_train_base_model_rf(*args, **kwargs)
-            model = self.my_train_base_model_nn(*args, save_trained=SAVE_TRAINED, verbose=VERBOSE, **kwargs)
+            model = self.my_train_base_model_nn(*args, **kwargs)
         return model
 
     def my_train_base_model_rf(
@@ -153,6 +168,8 @@ class My_UQ_Comparer(UQ_Comparer):
         skip_training=True,
         n_jobs=-1,
         cv_n_iter=10,
+        save_trained=True,
+        verbose=True,
     ):
         # todo: more flexibility in choosing (multiple) base models
         if model_params_choices is None:
@@ -213,7 +230,7 @@ class My_UQ_Comparer(UQ_Comparer):
         n_iter=500,
         batch_size=20,
         random_seed=42,
-        verbose=True,
+        verbose: int = 1,
         skip_training=True,
         save_trained=True,
         model_filename=None,
@@ -269,9 +286,6 @@ class My_UQ_Comparer(UQ_Comparer):
         )
         model.fit(X_train, y_train)
 
-        # if verbose:
-        #     self.plot_post_training_perf(model, X_train, y_train, do_save_figure=True)
-
         if save_trained:
             model_savepath = self.io_helper.get_model_savepath(model_filename)
             torch.save(model, model_savepath)
@@ -280,12 +294,45 @@ class My_UQ_Comparer(UQ_Comparer):
         model.set_params(verbose=False)
         return model
 
-    def posthoc_conformal_prediction(self, X_train, y_train, X_uq, quantiles, model, random_seed=42):
-        cv = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_state=random_seed)
+    def posthoc_conformal_prediction(
+        self,
+        X_train,
+        y_train,
+        X_uq,
+        quantiles,
+        model,
+        random_seed=42,
+        n_estimators=10,
+        bootstrap_n_blocks=10,
+        bootstrap_overlapping_blocks=False,
+        verbose=1,
+        skip_training=False,
+    ):
+        """
+        
+        :param skip_training:
+        :param verbose:
+        :param X_train:
+        :param y_train: 
+        :param X_uq: 
+        :param quantiles: 
+        :param model: 
+        :param random_seed: 
+        :param n_estimators: number of model clones to train for ensemble
+        :param bootstrap_n_blocks: 
+        :param bootstrap_overlapping_blocks: 
+        :return: 
+        """
+        cv = BlockBootstrap(
+            n_resamplings=n_estimators,
+            n_blocks=bootstrap_n_blocks,
+            overlapping=bootstrap_overlapping_blocks,
+            random_state=random_seed
+        )
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
-            model, cv, alphas, X_uq, X_train, y_train, skip_training=SKIP_TRAINING, io_helper=self.io_helper,
-            agg_function='mean'
+            model, cv, alphas, X_uq, X_train, y_train, skip_training=skip_training, io_helper=self.io_helper,
+            agg_function='mean', verbose=verbose,
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
         if 0.5 in quantiles:
@@ -436,7 +483,10 @@ def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
 
 def main():
     uq_comparer = My_UQ_Comparer(
-        methods_kwargs=METHODS_KWARGS, method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE
+        methods_kwargs=METHODS_KWARGS,
+        method_whitelist=METHOD_WHITELIST,
+        to_standardize=TO_STANDARDIZE,
+        n_points_per_group=N_POINTS_PER_GROUP,
     )
     uq_metrics = uq_comparer.compare_methods(
         QUANTILES,
