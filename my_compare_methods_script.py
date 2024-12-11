@@ -25,11 +25,11 @@ from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
 
 
 METHOD_WHITELIST = [
-    "posthoc_conformal_prediction",
-    "posthoc_laplace",
-    "native_quantile_regression",
-    "native_gp",
-    "native_mvnn",
+#    "posthoc_conformal_prediction",
+#    "posthoc_laplace",
+#    "native_quantile_regression",
+#    "native_gp",
+#    "native_mvnn",
 ]
 QUANTILES = [
     0.05,
@@ -40,8 +40,8 @@ QUANTILES = [
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 800
-PLOT_DATA = False
+N_POINTS_PER_GROUP = 100  # 800
+PLOT_DATA = True
 PLOT_RESULTS = True
 SHOW_PLOTS = False
 SAVE_PLOTS = True
@@ -52,7 +52,7 @@ PLOTS_PATH = "plots"
 
 METHODS_KWARGS = {
     "native_mvnn": {
-        "n_iter": 300,
+        "n_iter": 100,  # 300,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
@@ -72,10 +72,10 @@ METHODS_KWARGS = {
         "skip_training": False,
     },
     "posthoc_laplace": {
-        "n_iter": 300,
+        "n_iter": 100,  #300,
     },
     "base_model": {
-        "n_iter": 200,
+        "n_iter": 100,  # 200,
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,
@@ -542,5 +542,4 @@ def temp_test():
 
 
 if __name__ == "__main__":
-    # temp_test()
     main()
