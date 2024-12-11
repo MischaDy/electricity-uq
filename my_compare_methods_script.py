@@ -25,7 +25,7 @@ from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
 
 
 METHOD_WHITELIST = [
-    "posthoc_conformal_prediction",
+    # "posthoc_conformal_prediction",
     "posthoc_laplace",
     "native_quantile_regression",
     "native_gp",

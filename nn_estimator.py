@@ -82,6 +82,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.lr_patience = lr_patience
         self.lr_reduction_factor = lr_reduction_factor
         self.verbose = verbose
+        self.is_fitted_ = False
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
@@ -224,10 +225,13 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
             The training input samples.
 
+        as_np : ...
+
         Returns
         -------
         y : ndarray, shape (n_samples,)
             Returns an array of ones.
+
         """
         # Check if fit had been called
         check_is_fitted(self)
@@ -249,6 +253,24 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def eval(self):
         self.model_.eval()
+
+    def train(self):
+        self.model_.train()
+
+    def __getattr__(self, item):
+        """
+        get missing attribute from underlying model
+        :param item:
+        :return:
+        """
+        if self.is_fitted_:
+            return self.model_.__getattribute__(item)
+        raise AttributeError(f'NN_Estimator has no attribute "{item}", or only has it is after fitting')
+
+    def __call__(self, *args, **kwargs):
+        if self.is_fitted_:
+            return self.model_(*args, **kwargs)
+        raise TypeError('NN_Estimator is only callable after fitting')
 
 
 if __name__ == '__main__':
