@@ -1,6 +1,6 @@
 import numpy as np
 
-from compare_methods import UQ_Comparer
+from compare_methods import UQ_Comparer, print_metrics
 
 from helpers import get_data, standardize, df_to_numpy
 from io_helper import IO_Helper
@@ -111,7 +111,7 @@ class My_UQ_Comparer(UQ_Comparer):
     # todo: type hints!
     def compute_metrics(
         self, y_pred, y_quantiles, y_std, y_true, quantiles=None
-    ):
+    ) -> dict[str, float]:
         """
 
         :param y_pred: predicted y-values
@@ -132,15 +132,16 @@ class My_UQ_Comparer(UQ_Comparer):
             return np.array(y).squeeze()
 
         y_pred, y_quantiles, y_std, y_true = map(clean_y, (y_pred, y_quantiles, y_std, y_true))
-        #import ipdb
-        #ipdb.set_trace()
-
-        metrics = {  # todo: improve
+        metrics = {
             "rmse": rmse(y_true, y_pred),
             "smape_scaled": smape_scaled(y_true, y_pred),
             "crps": crps(y_true, y_pred, y_std),
             "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
             "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
+        }
+        metrics = {
+            key: (float(value) if value is not None else value)
+            for key, value in metrics.items()
         }
         return metrics
 
@@ -522,17 +523,6 @@ class My_UQ_Comparer(UQ_Comparer):
         if do_save_figure:
             self.io_helper.save_plot(f"{filename}.png")
         plt.show()
-
-
-def print_metrics(uq_metrics):  #  dict[str, dict[str, dict[str, Any]]]):
-    print()
-    for uq_type, method_metrics in uq_metrics.items():
-        print(f"{uq_type} metrics:")
-        for method, metrics in method_metrics.items():
-            print(f"\t{method}:")
-            for metric, value in metrics.items():
-                print(f"\t\t{metric}: {value}")
-        print()
 
 
 def main():

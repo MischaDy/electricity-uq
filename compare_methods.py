@@ -1,4 +1,6 @@
 import copy
+import datetime
+import json
 import os
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -28,10 +30,11 @@ class UQ_Comparer(ABC):
     4. Call compare_methods from the child class
     """
 
-    def __init__(self, method_whitelist=None):
+    def __init__(self, method_whitelist=None, metrics_path='metrics'):
         # todo: store train and test data once loaded
         self.methods_kwargs = defaultdict(dict)
         self.method_whitelist = method_whitelist
+        self.metrics_path = metrics_path
 
     def compare_methods(
         self,
@@ -105,6 +108,7 @@ class UQ_Comparer(ABC):
             uq_type: self.compute_all_metrics(methods_results, y_uq, quantiles=quantiles)
             for uq_type, methods_results in uq_results.items()
         }
+        self.save_metrics(uq_metrics)
         if return_results:
             return uq_metrics, uq_results
         return uq_metrics
@@ -136,7 +140,7 @@ class UQ_Comparer(ABC):
         y_std: Optional[npt.NDArray],
         y_true,
         quantiles,
-    ):
+    ) -> dict[str, dict[str, float]]:
         """
         Evaluate a UQ method by compute all desired metrics.
 
@@ -162,7 +166,7 @@ class UQ_Comparer(ABC):
         ],
         y_true,
         quantiles=None,
-    ):
+    ) -> dict[str, dict[str, float]]:
         """
 
         :param quantiles: quantiles
@@ -171,9 +175,7 @@ class UQ_Comparer(ABC):
         :return:
         """
         return {
-            method_name: self.compute_metrics(
-                y_pred, y_quantiles, y_std, y_true, quantiles=quantiles
-            )
+            method_name: self.compute_metrics(y_pred, y_quantiles, y_std, y_true, quantiles=quantiles)
             for method_name, (y_pred, y_quantiles, y_std) in uq_results.items()
         }
 
@@ -314,6 +316,29 @@ class UQ_Comparer(ABC):
             assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
         y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
         return y_quantiles
+
+    def save_metrics(self, uq_metrics: dict[str, dict[str, dict[str, float]]]):
+        """
+        input looks like:
+        {
+            uq_type: {
+                method_name: {
+                    metric_name: metric_value, ...
+                }, ...
+            }, ...
+        }
+        :param uq_metrics: dict of items:
+        :return:
+        """
+        os.makedirs(self.metrics_path, exist_ok=True)
+
+        timestamp = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
+        filename = f'metrics_{timestamp}.json'
+        filepath = os.path.join(self.metrics_path, filename)
+
+        metrics_str = json.dumps(uq_metrics, indent=4)
+        with open(filepath, 'w') as file:
+            file.write(metrics_str)
 
 
 # PLOTTING
@@ -468,3 +493,14 @@ def plot_uq_result(
         plt.show()
     else:
         plt.close(fig)
+
+
+def print_metrics(uq_metrics):  #  dict[str, dict[str, dict[str, Any]]]):
+    print()
+    for uq_type, method_metrics in uq_metrics.items():
+        print(f"{uq_type} metrics:")
+        for method, metrics in method_metrics.items():
+            print(f"\t{method}:")
+            for metric, value in metrics.items():
+                print(f"\t\t{metric}: {value}")
+        print()
