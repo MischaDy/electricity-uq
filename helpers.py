@@ -152,17 +152,25 @@ class IO_Helper:
         return model
 
     def save_array(self, array, filename):
-        np.save(self.get_array_savepath(filename), array)
+        path = self.get_array_savepath(filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        np.save(path, array)
 
     def save_model(self, model, filename):
-        with open(self.get_model_savepath(filename), "wb") as file:
+        path = self.get_model_savepath(filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "wb") as file:
             pickle.dump(model, file)
 
     def save_torch_model(self, model, filename):
-        torch.save(model.state_dict(), self.get_model_savepath(filename))
+        path = self.get_model_savepath(filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        torch.save(model.state_dict(), path)
 
     def save_plot(self, filename):
-        plt.savefig(self.get_plot_savepath(filename))
+        path = self.get_plot_savepath(filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        plt.savefig(path)
 
 
 def check_is_ordered(pred, pis):

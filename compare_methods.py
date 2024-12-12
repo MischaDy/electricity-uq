@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib import pyplot as plt
 
-from helpers import starfilter, is_ascending
+from helpers import starfilter, is_ascending, IO_Helper
 
 
 # todo: add type hints
@@ -346,6 +346,7 @@ def plot_data(
     ax.legend(["Training data", "Test data"])
     if save_plot:
         filepath = os.path.join(plots_path, filename)
+        os.makedirs(plots_path, exist_ok=True)
         plt.savefig(filepath)
     if show_plot:
         plt.show()
@@ -462,6 +463,7 @@ def plot_uq_result(
     if save_plot:
         filename = f"{plot_name}_{uq_type}.png"
         filepath = os.path.join(plots_path, filename)
+        os.makedirs(plots_path, exist_ok=True)
         plt.savefig(filepath)
     if show_plots:
         plt.show()

@@ -298,8 +298,7 @@ class My_UQ_Comparer(UQ_Comparer):
         model.fit(X_train, y_train)
 
         if save_trained:
-            model_savepath = self.io_helper.get_model_savepath(model_filename)
-            torch.save(model, model_savepath)
+            self.io_helper.save_torch_model(model, model_filename)
 
         # noinspection PyTypeChecker
         model.set_params(verbose=False)
