@@ -17,7 +17,7 @@
 #echo -e "---------------------------------\n"
 
 # Due to a potential bug, we need to manually load our bash configurations first
-source $HOME/.bashrc
+source "$HOME"/.bashrc
 
 # Next activate the conda environment 
 conda activate masterarbeit

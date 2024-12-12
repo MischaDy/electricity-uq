@@ -61,7 +61,8 @@ from mapie.metrics import (
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
 
-from helpers import get_data, IO_Helper
+from helpers import get_data
+from io_helper import IO_Helper
 
 warnings.simplefilter("ignore")
 
@@ -287,7 +288,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
         y_pred_aci_pfit,
         y_pis_aci_no_pfit,
         y_pis_aci_pfit,
-        io_helper = io_helper
+        io_helper=io_helper,
     )
 
 
@@ -565,26 +566,26 @@ def _estimate_prediction_intervals_worker(
             print("step", step)
         if with_partial_fit:
             mapie_ts_regressor.partial_fit(
-                X_test.iloc[(step - gap) : step, :],
-                y_test.iloc[(step - gap) : step],
+                X_test.iloc[(step - gap): step, :],
+                y_test.iloc[(step - gap): step],
             )
         if method == "aci":
             mapie_ts_regressor.adapt_conformal_inference(
-                X_test.iloc[(step - gap) : step, :].to_numpy(),
-                y_test.iloc[(step - gap) : step].to_numpy(),
+                X_test.iloc[(step - gap): step, :].to_numpy(),
+                y_test.iloc[(step - gap): step].to_numpy(),
                 gamma=0.05,
             )
         (
-            y_pred[step : step + gap],
-            y_pis[step : step + gap, :, :],
+            y_pred[step: step + gap],
+            y_pis[step: step + gap, :, :],
         ) = mapie_ts_regressor.predict(
-            X_test.iloc[step : (step + gap), :],
+            X_test.iloc[step: (step + gap), :],
             alpha=alpha,
             ensemble=True,
             optimize_beta=True,
             allow_infinite_bounds=True,
         )
-        arr = y_pis[step : step + gap, :, :]
+        arr = y_pis[step: step + gap, :, :]
         arr[np.isinf(arr)] = eps
 
     io_helper.save_array(filename_arr_y_pred, y_pred)
@@ -677,7 +678,7 @@ def plot_prediction_intervals(
     )
     for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
         ax.set_ylabel("Hourly demand (GW)")
-        ax.plot(y_train[int(-len(y_test) / 2) :], lw=2, label="Training data", c="C0")
+        ax.plot(y_train[int(-len(y_test) / 2):], lw=2, label="Training data", c="C0")
         ax.plot(y_test, lw=2, label="Test data", c="C1")
 
         ax.plot(y_test.index, y_enbpi_preds[i], lw=2, c="C2", label="Predictions")
@@ -704,7 +705,7 @@ def plot_prediction_intervals(
     )
     for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
         ax.set_ylabel("Hourly demand (GW)")
-        ax.plot(y_train[int(-len(y_test) / 2) :], lw=2, label="Training data", c="C0")
+        ax.plot(y_train[int(-len(y_test) / 2):], lw=2, label="Training data", c="C0")
         ax.plot(y_test, lw=2, label="Test data", c="C1")
 
         ax.plot(y_test.index, y_aci_preds[i], lw=2, c="C2", label="Predictions")
@@ -735,7 +736,7 @@ def plot_prediction_intervals_all_quantiles(
     )
     for i, (ax, w) in enumerate(zip(axs, ["without", "with"])):
         ax.set_ylabel("Hourly demand (GW)")
-        ax.plot(y_train[int(-len(y_test) / 2) :], lw=2, label="Training data", c="C0")
+        ax.plot(y_train[int(-len(y_test) / 2):], lw=2, label="Training data", c="C0")
         ax.plot(y_test, lw=2, label="Test data", c="C1")
 
         ax.plot(y_test.index, y_pred, lw=2, c="C2", label="Predictions")
@@ -777,31 +778,31 @@ def compare_coverages(
     for i in range(window, len(y_test), 1):
         rolling_coverage_aci_no_pfit.append(
             regression_coverage_score(
-                y_test[i - window : i],
-                y_pis_aci_no_pfit[i - window : i, 0, 0],
-                y_pis_aci_no_pfit[i - window : i, 1, 0],
+                y_test[i - window: i],
+                y_pis_aci_no_pfit[i - window: i, 0, 0],
+                y_pis_aci_no_pfit[i - window: i, 1, 0],
             )
         )
         rolling_coverage_aci_pfit.append(
             regression_coverage_score(
-                y_test[i - window : i],
-                y_pis_aci_pfit[i - window : i, 0, 0],
-                y_pis_aci_pfit[i - window : i, 1, 0],
+                y_test[i - window: i],
+                y_pis_aci_pfit[i - window: i, 0, 0],
+                y_pis_aci_pfit[i - window: i, 1, 0],
             )
         )
 
         rolling_coverage_enbpi_no_pfit.append(
             regression_coverage_score(
-                y_test[i - window : i],
-                y_pis_enbpi_no_pfit[i - window : i, 0, 0],
-                y_pis_enbpi_no_pfit[i - window : i, 1, 0],
+                y_test[i - window: i],
+                y_pis_enbpi_no_pfit[i - window: i, 0, 0],
+                y_pis_enbpi_no_pfit[i - window: i, 1, 0],
             )
         )
         rolling_coverage_enbpi_pfit.append(
             regression_coverage_score(
-                y_test[i - window : i],
-                y_pis_enbpi_pfit[i - window : i, 0, 0],
-                y_pis_enbpi_pfit[i - window : i, 1, 0],
+                y_test[i - window: i],
+                y_pis_enbpi_pfit[i - window: i, 0, 0],
+                y_pis_enbpi_pfit[i - window: i, 1, 0],
             )
         )
 

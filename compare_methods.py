@@ -239,7 +239,6 @@ class UQ_Comparer(ABC):
         *,
         uq_type,
         skip_deepcopy=False,
-        output_uq_on_train=True,
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 

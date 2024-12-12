@@ -48,9 +48,10 @@ def main():
 #     return y_preds, y_pis
 
 
-def estimate_quantiles(X_train, y_train, x_pred, alpha=None, mirror=False, verbose=True, as_dict=False):
+def estimate_quantiles(X_train, y_train, x_pred, alpha=None, verbose=True, as_dict=False):
     """
 
+    :param as_dict:
     :param verbose:
     :param X_train:
     :param y_train:
@@ -70,6 +71,7 @@ def estimate_quantiles(X_train, y_train, x_pred, alpha=None, mirror=False, verbo
     for alpha in alpha:
         qr = QuantileRegressor(quantile=alpha, alpha=0.0)
         qr_fit = qr.fit(X_train, y_train)
+        # noinspection PyUnresolvedReferences
         y_pred = qr_fit.predict(x_pred)
         predictions[alpha] = y_pred
     y_preds = predictions[0.5]  # median prediction

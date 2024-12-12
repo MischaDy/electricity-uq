@@ -16,6 +16,7 @@ from typing import Any
 
 from compare_methods import UQ_Comparer
 from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
+from io_helper import IO_Helper
 from mean_var_nn import run_mean_var_nn
 from quantile_regression import estimate_quantiles as estimate_quantiles_qr
 from nn_estimator import NN_Estimator
@@ -114,11 +115,8 @@ class My_UQ_Comparer(UQ_Comparer):
         self.to_standardize = to_standardize
         self.n_points_per_group = n_points_per_group
 
-    # todo: remove param?
     def get_data(self):
         """
-
-        :param _n_points_per_group:
         :return: X_train, X_test, y_train, y_test, X, y
         """
         X_train, X_test, y_train, y_test, X, y = get_data(
@@ -230,7 +228,8 @@ class My_UQ_Comparer(UQ_Comparer):
         cv_obj.fit(X_train, y_train.ravel())
         model = cv_obj.best_estimator_
         print("done")
-        self.io_helper.save_model(model, filename_base_model)
+        if save_trained:
+            self.io_helper.save_model(model, filename_base_model)
         return model
 
     def my_train_base_model_nn(
