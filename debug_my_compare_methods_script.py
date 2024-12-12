@@ -129,6 +129,8 @@ class My_UQ_Comparer(UQ_Comparer):
             return np.array(y).squeeze()
 
         y_pred, y_quantiles, y_std, y_true = map(clean_y, (y_pred, y_quantiles, y_std, y_true))
+        import ipdb
+        ipdb.set_trace()
 
         metrics = {  # todo: improve
             "rmse": rmse(y_true, y_pred),
