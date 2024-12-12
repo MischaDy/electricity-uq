@@ -383,8 +383,6 @@ class My_UQ_Comparer(UQ_Comparer):
 
         la = Laplace(model, "regression")
 
-        # import ipdb
-        # ipdb.set_trace()
         la.fit(train_loader)
 
         log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
