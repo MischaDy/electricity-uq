@@ -127,6 +127,8 @@ class My_UQ_Comparer(UQ_Comparer):
         # todo: skill score (but what to use as benchmark)?
 
         def clean_y(y):
+            if y is None:
+                return y
             return np.array(y).squeeze()
 
         y_pred, y_quantiles, y_std, y_true = map(clean_y, (y_pred, y_quantiles, y_std, y_true))
