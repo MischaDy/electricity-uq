@@ -165,7 +165,22 @@ class My_UQ_Comparer(UQ_Comparer):
         cv_n_iter=10,
         save_trained=True,
         verbose=True,
+        **kwargs,
     ):
+        """
+
+        :param X_train:
+        :param y_train:
+        :param model_params_choices:
+        :param model_init_params:
+        :param skip_training:
+        :param n_jobs:
+        :param cv_n_iter:
+        :param save_trained:
+        :param verbose:
+        :param kwargs: unused kwargs (for other base model)
+        :return:
+        """
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
         from scipy.stats import randint
@@ -238,6 +253,7 @@ class My_UQ_Comparer(UQ_Comparer):
         lr=0.1,
         lr_patience=5,
         lr_reduction_factor=0.5,
+        **kwargs,
     ):
         """
 
@@ -255,6 +271,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param n_iter:
         :param batch_size:
         :param random_seed:
+        :param kwargs: unused kwargs (for other base model)
         :return:
         """
         from nn_estimator import NN_Estimator
