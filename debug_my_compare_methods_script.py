@@ -21,7 +21,7 @@ QUANTILES = [
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 100  # 800
+N_POINTS_PER_GROUP = 100 # 800
 PLOT_DATA = False
 PLOT_RESULTS = True
 SHOW_PLOTS = False
@@ -58,7 +58,7 @@ METHODS_KWARGS = {
     },
     "base_model": {
         "n_iter": 100,  # 200,
-        "skip_training": True,
+        "skip_training": False,
         "save_trained": True,
         "verbose": 1,
     },
@@ -150,8 +150,8 @@ class My_UQ_Comparer(UQ_Comparer):
             model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         else:
-            # model = self.my_train_base_model_rf(*args, **kwargs)
-            model = self.my_train_base_model_nn(*args, **kwargs)
+            model = self.my_train_base_model_rf(*args, **kwargs)
+            #model = self.my_train_base_model_nn(*args, **kwargs)
         return model
 
     def my_train_base_model_rf(
