@@ -2,8 +2,8 @@ import numpy as np
 
 from compare_methods import UQ_Comparer
 
-from helpers import IO_Helper, get_data, standardize, df_to_numpy
-
+from helpers import get_data, standardize, df_to_numpy
+from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
 #    "posthoc_conformal_prediction",

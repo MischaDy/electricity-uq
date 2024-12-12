@@ -1,15 +1,5 @@
-import os
-import pickle
-
 import numpy as np
-import pandas as pd
 import torch
-from matplotlib import pyplot as plt
-from more_itertools import collapse
-from sklearn.model_selection import train_test_split
-
-from sklearn.preprocessing import StandardScaler
-from torch.utils.data import TensorDataset, DataLoader
 
 
 def get_data(
@@ -18,8 +8,9 @@ def get_data(
     input_cols=None,
     output_cols=None,
     return_full_data=False,
-) -> (tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
-      | tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]):  # fmt: skip
+):
+    # -> (tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
+    #   | tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]):  # fmt: skip
     """
     load and prepare data
 
@@ -30,6 +21,9 @@ def get_data(
     :param return_full_data:
     :return: tuple (X_train, X_test, y_train, y_test), or (..., X, y) if return_full_data is True
     """
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+
     df = pd.read_pickle(filepath)
     if output_cols is None:
         output_cols = ["load_to_pred"]
@@ -69,6 +63,8 @@ def set_dtype_float(*arrs):
 
 def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper" = None, filename="data", do_save_figure=False):
     """visualize training and test sets"""
+    from matplotlib import pyplot as plt
+
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
 
@@ -87,90 +83,6 @@ def plot_data(X_train, X_test, y_train, y_test, io_helper: "IO_Helper" = None, f
 
 def unzip(iterable):
     return np.array(list(zip(*iterable)))
-
-
-# noinspection PyPep8Naming
-class IO_Helper:
-    def __init__(
-        self,
-        base_folder,
-        arrays_folder="arrays",
-        models_folder="models",
-        plots_folder="plots",
-    ):
-        self.arrays_folder = os.path.join(base_folder, arrays_folder)
-        self.models_folder = os.path.join(base_folder, models_folder)
-        self.plots_folder = os.path.join(base_folder, plots_folder)
-        self.folders = [self.arrays_folder, self.models_folder, self.plots_folder]
-        for folder in self.folders:
-            os.makedirs(folder, exist_ok=True)
-
-    def get_array_savepath(self, filename):
-        return os.path.join(self.arrays_folder, filename)
-
-    def get_model_savepath(self, filename):
-        return os.path.join(self.models_folder, filename)
-
-    def get_plot_savepath(self, filename):
-        return os.path.join(self.plots_folder, filename)
-
-    def load_array(self, filename):
-        return np.load(self.get_array_savepath(filename))
-
-    def load_model(self, filename):
-        with open(self.get_model_savepath(filename), "rb") as file:
-            model = pickle.load(file)
-        return model
-
-    def load_torch_model(self, model_class, filename, *args, **kwargs):
-        """
-
-        :param model_class:
-        :param filename:
-        :param args: args for model_class constructor
-        :param kwargs: kwargs for model_class constructor
-        :return:
-        """
-        model = model_class(*args, **kwargs)
-        filepath = self.get_model_savepath(filename)
-        model.load_state_dict(torch.load(filepath, weights_only=True))
-        model.eval()
-        return model
-
-    def load_torch_model2(self, filename, *args, **kwargs):
-        """
-
-        :param filename:
-        :param args: args for torch.load
-        :param kwargs: kwargs for torch.load
-        :return:
-        """
-        filepath = self.get_model_savepath(filename)
-        kwargs['weights_only'] = False
-        model = torch.load(filepath, *args, **kwargs)
-        model.eval()
-        return model
-
-    def save_array(self, array, filename):
-        path = self.get_array_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        np.save(path, array)
-
-    def save_model(self, model, filename):
-        path = self.get_model_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "wb") as file:
-            pickle.dump(model, file)
-
-    def save_torch_model(self, model, filename):
-        path = self.get_model_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        torch.save(model.state_dict(), path)
-
-    def save_plot(self, filename):
-        path = self.get_plot_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        plt.savefig(path)
 
 
 def check_is_ordered(pred, pis):
@@ -207,11 +119,14 @@ def is_ascending(*arrays):
     :return: whether the (fully!) flattened concat of the arrays is ascending
     """
     # todo: generalize to is_ordered
+    from more_itertools import collapse
     arr = list(collapse(arrays))
     return all(a <= b for a, b in zip(arr, arr[1:]))
 
 
 def standardize(return_scaler, train_data, *arrays_to_standardize):
+    from sklearn.preprocessing import StandardScaler
+
     # todo: bugfix - only standardize continuous columns!
     scaler = StandardScaler()
     scaler.fit(train_data)
@@ -219,11 +134,11 @@ def standardize(return_scaler, train_data, *arrays_to_standardize):
     return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
-def df_to_numpy(df: pd.DataFrame) -> np.ndarray:
+def df_to_numpy(df): #: pd.DataFrame) -> np.ndarray:
     return df.to_numpy(dtype=float)
 
 
-def df_to_tensor(df: pd.DataFrame) -> torch.Tensor:
+def df_to_tensor(df): # pd.DataFrame) -> torch.Tensor:
     return numpy_to_tensor(df_to_numpy(df))
 
 
@@ -248,6 +163,8 @@ def make_arr_2d(arr):
 
 
 def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: int):
+    from torch.utils.data import TensorDataset, DataLoader
+
     train_dataset = TensorDataset(X_train, y_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     return train_loader

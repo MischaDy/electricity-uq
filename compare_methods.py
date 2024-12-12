@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib import pyplot as plt
 
-from helpers import starfilter, is_ascending, IO_Helper
+from helpers import starfilter, is_ascending
 
 
 # todo: add type hints
