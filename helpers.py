@@ -152,6 +152,7 @@ def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
 
 def tensor_to_device(tensor: torch.Tensor) -> torch.Tensor:
     cuda_available = torch.cuda.is_available()
+    cuda_available = False  # todo: remove
     if not cuda_available:
         return tensor
     device = torch.cuda.current_device()
