@@ -6,8 +6,8 @@ from helpers import get_data, standardize, df_to_numpy
 from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
-#    "posthoc_conformal_prediction",
-    "posthoc_laplace",
+    "posthoc_conformal_prediction",
+#    "posthoc_laplace",
 #    "native_quantile_regression",
 #    "native_gp",
 #    "native_mvnn",
