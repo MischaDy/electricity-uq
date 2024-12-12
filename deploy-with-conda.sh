@@ -24,7 +24,7 @@ conda activate masterarbeit
 
 # Run our code
 echo "-------- PYTHON OUTPUT ----------"
-python3 src/multiply.py --timer_repetitions 10000 --use-gpu
+python3 my_compare_methods_script.py
 echo "---------------------------------"
 
 # Deactivate environment again
