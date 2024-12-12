@@ -7,10 +7,10 @@ from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
     "posthoc_conformal_prediction",
-#    "posthoc_laplace",
-#    "native_quantile_regression",
-#    "native_gp",
-#    "native_mvnn",
+    "posthoc_laplace",
+    "native_quantile_regression",
+    "native_gp",
+    "native_mvnn",
 ]
 QUANTILES = [
     0.05,
@@ -21,19 +21,19 @@ QUANTILES = [
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 100 # 800
+N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
 PLOT_RESULTS = True
 SHOW_PLOTS = False
 SAVE_PLOTS = True
 
-TEMP_TEST_ALL = False
+TEMP_TEST_ALL = True
 
 PLOTS_PATH = "plots"
 
 METHODS_KWARGS = {
     "native_mvnn": {
-        "n_iter": 100,  # 300,
+        "n_iter": 300,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
@@ -44,20 +44,20 @@ METHODS_KWARGS = {
         "verbose": True,
     },
     "native_gp": {
-        'n_restarts_optimizer': 5,
+        'n_restarts_optimizer': 10,
         "verbose": True,
     },
     "posthoc_conformal_prediction": {
-        "n_estimators": 5,
+        "n_estimators": 10,
         "verbose": 1,
-        "skip_training": True,
+        "skip_training": False,
         "save_trained": True,
     },
     "posthoc_laplace": {
-        "n_iter": 100,  #300,
+        "n_iter": 300,
     },
     "base_model": {
-        "n_iter": 100,  # 200,
+        "n_iter": 200,
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,
@@ -150,8 +150,8 @@ class My_UQ_Comparer(UQ_Comparer):
             model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         else:
-            model = self.my_train_base_model_rf(*args, **kwargs)
-            #model = self.my_train_base_model_nn(*args, **kwargs)
+            #model = self.my_train_base_model_rf(*args, **kwargs)
+            model = self.my_train_base_model_nn(*args, **kwargs)
         return model
 
     def my_train_base_model_rf(
