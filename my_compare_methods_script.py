@@ -278,7 +278,7 @@ class My_UQ_Comparer(UQ_Comparer):
         if skip_training:
             print("skipping base model training")
             try:
-                model = self.io_helper.load_torch_model(model_filename)
+                model = self.io_helper.load_torch_model(model_class, model_filename)
                 model.eval()
                 return model
             except FileNotFoundError:

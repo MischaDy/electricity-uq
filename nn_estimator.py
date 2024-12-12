@@ -251,11 +251,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         return {'poor_score': True,
                 '_xfail_checks': {'check_methods_sample_order_invariance': '(barely) failing for unknown reason'}}
 
-    def eval(self):
-        self.model_.eval()
-
-    def train(self):
-        self.model_.train()
+    def load_state_dict(self, state_dict):
+        self.model_ = nn.Module()
+        self.model_.load_state_dict(state_dict)
 
     def __getattr__(self, item):
         """
