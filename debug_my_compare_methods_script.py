@@ -50,7 +50,8 @@ METHODS_KWARGS = {
     "posthoc_conformal_prediction": {
         "n_estimators": 5,
         "verbose": 1,
-        "skip_training": False,
+        "skip_training": True,
+        "save_trained": True,
     },
     "posthoc_laplace": {
         "n_iter": 100,  #300,
@@ -304,10 +305,12 @@ class My_UQ_Comparer(UQ_Comparer):
         bootstrap_n_blocks=10,
         bootstrap_overlapping_blocks=False,
         verbose=1,
-        skip_training=False,
+        skip_training=True,
+        save_trained=True,
     ):
         """
         
+        :param save_trained:
         :param skip_training:
         :param verbose:
         :param X_train:
@@ -328,12 +331,21 @@ class My_UQ_Comparer(UQ_Comparer):
             n_resamplings=n_estimators,
             n_blocks=bootstrap_n_blocks,
             overlapping=bootstrap_overlapping_blocks,
-            random_state=random_seed
+            random_state=random_seed,
         )
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
-            model, cv, alphas, X_uq, X_train, y_train, skip_training=skip_training, io_helper=self.io_helper,
-            agg_function='mean', verbose=verbose,
+            model,
+            cv,
+            alphas,
+            X_uq,
+            X_train,
+            y_train,
+            skip_training=skip_training,
+            save_trained=save_trained,
+            io_helper=self.io_helper,
+            agg_function='mean',
+            verbose=verbose,
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
         if 0.5 in quantiles:
