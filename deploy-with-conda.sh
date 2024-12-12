@@ -5,16 +5,16 @@
 #SBATCH --time=0-00:05            # Runtime in D-HH:MM
 #SBATCH --partition=2080-galvani  # Partition to submit to
 #SBATCH --gres=gpu:1              # optionally type and number of gpus
-#SBATCH --mem=50G                 # Memory pool for all cores (see also --mem-per-cpu)
+#SBATCH --mem=2G                 # Memory pool for all cores (see also --mem-per-cpu)
 #SBATCH --output=logs/job_%j.out  # File to which STDOUT will be written
 #SBATCH --error=logs/job_%j.err   # File to which STDERR will be written
 #SBATCH --mail-type=END,FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
 #SBATCH --mail-user=mikhail.dubovoy@student.uni-tuebingen.de  # Email to which notifications will be sent
 
 # print info about current job
-echo "---------- JOB INFOS ------------"
-scontrol show job $SLURM_JOB_ID
-echo -e "---------------------------------\n"
+#echo "---------- JOB INFOS ------------"
+#scontrol show job $SLURM_JOB_ID
+#echo -e "---------------------------------\n"
 
 # Due to a potential bug, we need to manually load our bash configurations first
 source $HOME/.bashrc
@@ -24,7 +24,7 @@ conda activate masterarbeit
 
 # Run our code
 echo "-------- PYTHON OUTPUT ----------"
-python3 my_compare_methods_script.py
+python3 debug_my_compare_methods_script.py
 echo "---------------------------------"
 
 # Deactivate environment again
