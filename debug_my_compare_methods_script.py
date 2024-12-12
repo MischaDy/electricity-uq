@@ -57,7 +57,7 @@ METHODS_KWARGS = {
     },
     "base_model": {
         "n_iter": 100,  # 200,
-        "skip_training": True,
+        "skip_training": False,
         "save_trained": True,
         "verbose": 1,
     },
@@ -264,7 +264,7 @@ class My_UQ_Comparer(UQ_Comparer):
         if skip_training:
             print("skipping base model training")
             try:
-                model = self.io_helper.load_torch_model(NN_Estimator, model_filename)
+                model = self.io_helper.load_torch_model(model_filename)
                 model.eval()
                 return model
             except FileNotFoundError:

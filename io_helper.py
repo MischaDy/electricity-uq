@@ -38,7 +38,7 @@ class IO_Helper:
             model = pickle.load(file)
         return model
 
-    def load_torch_model(self, model_class, filename, *args, **kwargs):
+    def load_torch_model2(self, model_class, filename, *args, **kwargs):
         """
 
         :param model_class:
@@ -53,7 +53,7 @@ class IO_Helper:
         model.eval()
         return model
 
-    def load_torch_model2(self, filename, *args, **kwargs):
+    def load_torch_model(self, filename, *args, **kwargs):
         """
 
         :param filename:
@@ -79,10 +79,15 @@ class IO_Helper:
         with open(path, "wb") as file:
             pickle.dump(model, file)
 
-    def save_torch_model(self, model, filename):
+    def save_torch_model2(self, model, filename):
         path = self.get_model_savepath(filename)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model.state_dict(), path)
+
+    def save_torch_model(self, model, filename):
+        path = self.get_model_savepath(filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        torch.save(model, path)
 
     def save_plot(self, filename):
         from matplotlib import pyplot as plt

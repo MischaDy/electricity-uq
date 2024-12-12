@@ -253,6 +253,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def load_state_dict(self, state_dict):
         self.model_ = nn.Module()
+        self.model_ = self._nn_builder(..., ...)
         self.model_.load_state_dict(state_dict)
 
     def __getattr__(self, item):
