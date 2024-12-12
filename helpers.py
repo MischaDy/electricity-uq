@@ -122,7 +122,7 @@ class IO_Helper:
             model = pickle.load(file)
         return model
 
-    def load_torch_model2(self, model_class, filename, *args, **kwargs):
+    def load_torch_model(self, model_class, filename, *args, **kwargs):
         """
 
         :param model_class:
@@ -137,7 +137,7 @@ class IO_Helper:
         model.eval()
         return model
 
-    def load_torch_model(self, filename, *args, **kwargs):
+    def load_torch_model2(self, filename, *args, **kwargs):
         """
 
         :param filename:
