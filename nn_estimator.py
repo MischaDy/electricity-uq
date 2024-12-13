@@ -174,7 +174,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         model.eval()
         self.model_ = model
 
-        if self.verbose > 1:
+        if self.save_losses_plot:
             loss_skip = 0
             self._plot_losses(train_losses[loss_skip:], val_losses[loss_skip:])
 
