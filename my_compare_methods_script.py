@@ -243,7 +243,6 @@ class My_UQ_Comparer(UQ_Comparer):
         self,
         X_train: np.ndarray,
         y_train: np.ndarray,
-        model_params_choices=None,
         n_iter=500,
         batch_size=20,
         random_seed=42,
@@ -255,10 +254,14 @@ class My_UQ_Comparer(UQ_Comparer):
         lr=0.1,
         lr_patience=5,
         lr_reduction_factor=0.5,
+        show_progress_bar=True,
+        save_losses_plot=True,
         **kwargs,
     ):
         """
 
+        :param save_losses_plot:
+        :param show_progress_bar:
         :param val_frac:
         :param lr_reduction_factor:
         :param lr:
@@ -269,7 +272,6 @@ class My_UQ_Comparer(UQ_Comparer):
         :param verbose:
         :param X_train: shape (n_samples, n_dims)
         :param y_train: shape (n_samples, n_dims)
-        :param model_params_choices:
         :param n_iter:
         :param batch_size:
         :param random_seed:
@@ -304,6 +306,8 @@ class My_UQ_Comparer(UQ_Comparer):
             lr_patience=lr_patience,
             lr_reduction_factor=lr_reduction_factor,
             verbose=verbose,
+            show_progress_bar=show_progress_bar,
+            save_losses_plot=save_losses_plot,
         )
         model.fit(X_train, y_train)
 
