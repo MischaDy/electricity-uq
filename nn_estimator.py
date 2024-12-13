@@ -216,7 +216,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         ax.semilogy(test_losses, label="val")
         ax.legend()
         if self.save_losses_plot:
-            self.io_helper.save_plot(f"{filename}.png")
+            import os
+            plots_path = 'plots'
+            file_path = os.path.join(plots_path, f'{filename}.png')
+            os.makedirs(plots_path, exist_ok=True)
+            plt.savefig(file_path)
         plt.show()
 
     @staticmethod
