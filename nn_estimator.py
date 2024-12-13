@@ -112,7 +112,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         - run different checks on the input data;
         - define some attributes associated to the input data: `n_features_in_` and
           `feature_names_in_`."""
-        X, y = self._validate_data(X, y, accept_sparse=False)
+        X, y = self._validate_data(X, y, accept_sparse=False)  # todo: remove "y is 2d" warning
 
         torch.manual_seed(self.random_seed)
 
