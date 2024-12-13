@@ -63,6 +63,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         lr_patience=5,
         lr_reduction_factor=0.5,
         verbose: int = 1,
+        show_progress_bar=True,
+        save_losses_plot=True,
     ):
         """
         :param n_iter: 
@@ -82,6 +84,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.lr_patience = lr_patience
         self.lr_reduction_factor = lr_reduction_factor
         self.verbose = verbose
+        self.show_progress_bar = show_progress_bar
+        self.save_losses_plot = save_losses_plot
         self.is_fitted_ = False
 
     @_fit_context(prefer_skip_nested_validation=True)
@@ -123,7 +127,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         n_samples = X_train.shape[0]
         val_size = max(1, round(self.val_frac * n_samples))
-        val_size = 20  # todo: temp
+        # val_size = 20  # todo: temp
         train_size = max(1, n_samples-val_size)
         X_val, y_val = X_train[-val_size:], y_train[-val_size:]
         X_train, y_train = X_train[:train_size], y_train[:train_size]
@@ -150,7 +154,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         criterion = nn.MSELoss()
 
         train_losses, val_losses = [], []
-        epochs = tqdm(range(self.n_iter)) if self.verbose > 0 else range(self.n_iter)
+        epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
         for _ in epochs:
             model.train()
             for X, y in train_loader:
@@ -172,7 +176,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         if self.verbose > 1:
             loss_skip = 0
-            self._plot_training_progress(train_losses[loss_skip:], val_losses[loss_skip:])
+            self._plot_losses(train_losses[loss_skip:], val_losses[loss_skip:])
 
         self.is_fitted_ = True
         return self
@@ -206,12 +210,13 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     def _arr_to_tensor(arr) -> torch.Tensor:
         return torch.Tensor(arr).float()
 
-    @staticmethod
-    def _plot_training_progress(train_losses, test_losses):
+    def _plot_losses(self, train_losses, test_losses, filename='losses'):
         fig, ax = plt.subplots()
         ax.semilogy(train_losses, label="train")
         ax.semilogy(test_losses, label="val")
         ax.legend()
+        if self.save_losses_plot:
+            self.io_helper.save_plot(f"{filename}.png")
         plt.show()
 
     @staticmethod
