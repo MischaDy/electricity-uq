@@ -567,12 +567,16 @@ def plot_base_model_test_result(
 
 
 def test_base_model(uq_comparer):
+    print('running base model test')
+    print('loading data...')
     X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
     X_uq = np.row_stack((X_train, X_test))
     print("training base model...")
     base_model_kwargs = uq_comparer.methods_kwargs['base_model']
     base_model = uq_comparer.train_base_model(X_train, y_train, **base_model_kwargs)
+    print('predicting...')
     y_preds = base_model.predict(X_uq)
+    print('plotting...')
     plot_base_model_test_result(
         X_train,
         X_test,
@@ -580,10 +584,11 @@ def test_base_model(uq_comparer):
         y_test,
         y_preds,
         plot_name='laplace_debug_test',
-        show_plots=True,
+        show_plots=False,
         save_plot=True,
         plot_path='plots',
     )
+    print('done')
 
 
 def main():
