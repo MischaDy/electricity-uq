@@ -1,0 +1,12 @@
+{
+    "posthoc": {
+        "posthoc_laplace": {
+            "rmse": 0.2572041451931,
+            "smape_scaled": 0.4068351984024048,
+            "crps": null,
+            "nll_gaussian": 0.07303019010955177,
+            "mean_pinball": 0.027299764897260645
+        }
+    },
+    "native": {}
+}
