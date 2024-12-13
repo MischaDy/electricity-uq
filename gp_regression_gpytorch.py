@@ -20,6 +20,7 @@ PRECOND_SIZE = 0
 
 SHOW_PROGRESS = True
 PLOT_LOSSES = True
+PLOT_DATA = False
 
 
 def main():
@@ -42,8 +43,9 @@ def main():
         y_train, y_test, y = map(df_to_tensor, (y_train, y_test, y))
 
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
-    print('plotting data...')
-    my_plot(X_train, X_test, y_train, y_test)
+    if PLOT_DATA:
+        print('plotting data...')
+        my_plot(X_train, X_test, y_train, y_test)
 
     # make continguous and map to device
     X_train, y_train = X_train.contiguous(), y_train.contiguous()
