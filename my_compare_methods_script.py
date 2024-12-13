@@ -1,36 +1,16 @@
-import torch
 import numpy as np
-from matplotlib import pyplot as plt
 
-from scipy.stats import randint, norm
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, WhiteKernel
-from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-from mapie.subsample import BlockBootstrap
-from laplace import Laplace
+from compare_methods import UQ_Comparer, print_metrics
 
-import time
-from tqdm import tqdm
-from typing import Any
-
-from compare_methods import UQ_Comparer
-from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
+from helpers import get_data, standardize, df_to_numpy
 from io_helper import IO_Helper
-from mean_var_nn import run_mean_var_nn
-from quantile_regression import estimate_quantiles as estimate_quantiles_qr
-from nn_estimator import NN_Estimator
-
-from helpers import get_data, standardize, numpy_to_tensor, df_to_numpy, get_train_loader, tensor_to_numpy, tensor_to_device
-from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
-
 
 METHOD_WHITELIST = [
-#    "posthoc_conformal_prediction",
+    "posthoc_conformal_prediction",
     "posthoc_laplace",
-#    "native_quantile_regression",
-#    "native_gp",
-#    "native_mvnn",
+    "native_quantile_regression",
+    "native_gp",
+    "native_mvnn",
 ]
 QUANTILES = [
     0.05,
@@ -41,19 +21,19 @@ QUANTILES = [
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 100  # 800
+N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
 PLOT_RESULTS = True
 SHOW_PLOTS = False
 SAVE_PLOTS = True
 
-TEMP_TEST_ALL = False
+TEMP_TEST_ALL = True
 
 PLOTS_PATH = "plots"
 
 METHODS_KWARGS = {
     "native_mvnn": {
-        "n_iter": 100,  # 300,
+        "n_iter": 300,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
@@ -64,19 +44,20 @@ METHODS_KWARGS = {
         "verbose": True,
     },
     "native_gp": {
-        'n_restarts_optimizer': 5,
+        'n_restarts_optimizer': 10,
         "verbose": True,
     },
     "posthoc_conformal_prediction": {
-        "n_estimators": 5,
+        "n_estimators": 10,
         "verbose": 1,
         "skip_training": False,
+        "save_trained": True,
     },
     "posthoc_laplace": {
-        "n_iter": 100,  #300,
+        "n_iter": 300,
     },
     "base_model": {
-        "n_iter": 100,  # 200,
+        "n_iter": 200,
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,
@@ -85,8 +66,6 @@ METHODS_KWARGS = {
 
 TO_STANDARDIZE = "xy"
 
-torch.set_default_dtype(torch.float32)
-
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
@@ -94,7 +73,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self,
         storage_path="comparison_storage",
         to_standardize="X",
-        methods_kwargs: dict[str, dict[str, Any]] = None,
+        methods_kwargs=None,  # : dict[str, dict[str, Any]] = None,
         n_points_per_group=800,
         *args,
         **kwargs
@@ -115,6 +94,7 @@ class My_UQ_Comparer(UQ_Comparer):
         self.to_standardize = to_standardize
         self.n_points_per_group = n_points_per_group
 
+    # todo: remove param?
     def get_data(self):
         """
         :return: X_train, X_test, y_train, y_test, X, y
@@ -131,7 +111,7 @@ class My_UQ_Comparer(UQ_Comparer):
     # todo: type hints!
     def compute_metrics(
         self, y_pred, y_quantiles, y_std, y_true, quantiles=None
-    ):
+    ) -> dict[str, float]:
         """
 
         :param y_pred: predicted y-values
@@ -141,20 +121,27 @@ class My_UQ_Comparer(UQ_Comparer):
         :param quantiles:
         :return:
         """
+        from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
+
         # todo: sharpness? calibration? PIT? coverage?
         # todo: skill score (but what to use as benchmark)?
 
         def clean_y(y):
+            if y is None:
+                return y
             return np.array(y).squeeze()
 
         y_pred, y_quantiles, y_std, y_true = map(clean_y, (y_pred, y_quantiles, y_std, y_true))
-
-        metrics = {  # todo: improve
+        metrics = {
             "rmse": rmse(y_true, y_pred),
             "smape_scaled": smape_scaled(y_true, y_pred),
             "crps": crps(y_true, y_pred, y_std),
             "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
             "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
+        }
+        metrics = {
+            key: (float(value) if value is not None else value)
+            for key, value in metrics.items()
         }
         return metrics
 
@@ -164,7 +151,7 @@ class My_UQ_Comparer(UQ_Comparer):
             model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         else:
-            # model = self.my_train_base_model_rf(*args, **kwargs)
+            #model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         return model
 
@@ -179,7 +166,26 @@ class My_UQ_Comparer(UQ_Comparer):
         cv_n_iter=10,
         save_trained=True,
         verbose=True,
+        **kwargs,
     ):
+        """
+
+        :param X_train:
+        :param y_train:
+        :param model_params_choices:
+        :param model_init_params:
+        :param skip_training:
+        :param n_jobs:
+        :param cv_n_iter:
+        :param save_trained:
+        :param verbose:
+        :param kwargs: unused kwargs (for other base model)
+        :return:
+        """
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
+        from scipy.stats import randint
+
         # todo: more flexibility in choosing (multiple) base models
         if model_params_choices is None:
             model_params_choices = {
@@ -248,6 +254,7 @@ class My_UQ_Comparer(UQ_Comparer):
         lr=0.1,
         lr_patience=5,
         lr_reduction_factor=0.5,
+        **kwargs,
     ):
         """
 
@@ -265,8 +272,11 @@ class My_UQ_Comparer(UQ_Comparer):
         :param n_iter:
         :param batch_size:
         :param random_seed:
+        :param kwargs: unused kwargs (for other base model)
         :return:
         """
+        from nn_estimator import NN_Estimator
+        from helpers import numpy_to_tensor, tensor_to_device
 
         X_train, y_train = map(numpy_to_tensor, (X_train, y_train))
         X_train, y_train = map(tensor_to_device, (X_train, y_train))
@@ -315,10 +325,12 @@ class My_UQ_Comparer(UQ_Comparer):
         bootstrap_n_blocks=10,
         bootstrap_overlapping_blocks=False,
         verbose=1,
-        skip_training=False,
+        skip_training=True,
+        save_trained=True,
     ):
         """
         
+        :param save_trained:
         :param skip_training:
         :param verbose:
         :param X_train:
@@ -332,16 +344,28 @@ class My_UQ_Comparer(UQ_Comparer):
         :param bootstrap_overlapping_blocks: 
         :return: 
         """
+        from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
+        from mapie.subsample import BlockBootstrap
+
         cv = BlockBootstrap(
             n_resamplings=n_estimators,
             n_blocks=bootstrap_n_blocks,
             overlapping=bootstrap_overlapping_blocks,
-            random_state=random_seed
+            random_state=random_seed,
         )
         alphas = self.pis_from_quantiles(quantiles)
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
-            model, cv, alphas, X_uq, X_train, y_train, skip_training=skip_training, io_helper=self.io_helper,
-            agg_function='mean', verbose=verbose,
+            model,
+            cv,
+            alphas,
+            X_uq,
+            X_train,
+            y_train,
+            skip_training=skip_training,
+            save_trained=save_trained,
+            io_helper=self.io_helper,
+            agg_function='mean',
+            verbose=verbose,
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
         if 0.5 in quantiles:
@@ -363,6 +387,12 @@ class My_UQ_Comparer(UQ_Comparer):
         random_seed=42,
         verbose=True,
     ):
+        from laplace import Laplace
+        from tqdm import tqdm
+        from helpers import get_train_loader, numpy_to_tensor, tensor_to_numpy, tensor_to_device
+        import torch
+        torch.set_default_dtype(torch.float32)
+
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
         torch.manual_seed(random_seed)
@@ -372,11 +402,10 @@ class My_UQ_Comparer(UQ_Comparer):
         train_loader = get_train_loader(X_train, y_train, batch_size)
 
         la = Laplace(model, "regression")
+
         la.fit(train_loader)
-        log_prior, log_sigma = (
-            torch.ones(1, requires_grad=True),
-            torch.ones(1, requires_grad=True),
-        )
+
+        log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
         hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
         iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
         for _ in iterable:
@@ -394,7 +423,6 @@ class My_UQ_Comparer(UQ_Comparer):
         # la.load_state_dict(torch.load("state_dict.bin"))
 
         f_mu, f_var = la(X_uq)
-
         f_mu = tensor_to_numpy(f_mu.squeeze())
         f_sigma = tensor_to_numpy(f_var.squeeze().sqrt())
         pred_std = np.sqrt(f_sigma**2 + la.sigma_noise.item() ** 2)
@@ -403,7 +431,9 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
-    def native_quantile_regression(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles, verbose=True):
+    def native_quantile_regression(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles,
+                                   verbose=True):
+        from quantile_regression import estimate_quantiles as estimate_quantiles_qr
         y_pred, y_quantiles = estimate_quantiles_qr(
             X_train, y_train, X_uq, alpha=quantiles
         )
@@ -412,6 +442,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
     @staticmethod
     def native_mvnn(X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles, **kwargs):
+        from mean_var_nn import run_mean_var_nn
         return run_mean_var_nn(
             X_train,
             y_train,
@@ -429,8 +460,10 @@ class My_UQ_Comparer(UQ_Comparer):
         verbose=True,
         n_restarts_optimizer=10,
     ):
+        from sklearn.gaussian_process import GaussianProcessRegressor
+
         if verbose:
-            print(f"fitting GP kernel... [{time.strftime('%H:%M:%S')}]")
+            print(f"fitting GP kernel...")
         kernel = self._get_kernel()
         gaussian_process = GaussianProcessRegressor(
             kernel=kernel,
@@ -440,7 +473,7 @@ class My_UQ_Comparer(UQ_Comparer):
         )
         gaussian_process.fit(X_train, y_train)
         if verbose:
-            print(f"done. [{time.strftime('%H:%M:%S')}]")
+            print(f"done.")
             print("kernel:", gaussian_process.kernel_)
             print("GP predicting...")
         mean_prediction, std_prediction = gaussian_process.predict(X_uq, return_std=True)
@@ -452,10 +485,13 @@ class My_UQ_Comparer(UQ_Comparer):
 
     @staticmethod
     def _get_kernel():
+        from sklearn.gaussian_process.kernels import RBF, WhiteKernel
+
         return RBF() + WhiteKernel()
 
     @staticmethod
     def quantiles_gaussian(quantiles, y_pred, y_std):
+        from scipy.stats import norm
         # todo: does this work for multi-dim outputs?
         return np.array([norm.ppf(quantiles, loc=mean, scale=std)
                          for mean, std in zip(y_pred, y_std)])
@@ -466,6 +502,8 @@ class My_UQ_Comparer(UQ_Comparer):
         return map(df_to_numpy, dfs)
 
     def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
+        from matplotlib import pyplot as plt
+
         y_preds = base_model.predict(X_train)
 
         num_train_steps = X_train.shape[0]
@@ -487,18 +525,10 @@ class My_UQ_Comparer(UQ_Comparer):
         plt.show()
 
 
-def print_metrics(uq_metrics: dict[str, dict[str, dict[str, Any]]]):
-    print()
-    for uq_type, method_metrics in uq_metrics.items():
-        print(f"{uq_type} metrics:")
-        for method, metrics in method_metrics.items():
-            print(f"\t{method}:")
-            for metric, value in metrics.items():
-                print(f"\t\t{metric}: {value}")
-        print()
-
-
 def main():
+    import torch
+    torch.set_default_dtype(torch.float32)
+
     uq_comparer = My_UQ_Comparer(
         methods_kwargs=METHODS_KWARGS,
         method_whitelist=METHOD_WHITELIST,
@@ -519,6 +549,8 @@ def main():
 
 
 def temp_test():
+    from matplotlib import pyplot as plt
+
     uq_comparer = My_UQ_Comparer(
         method_whitelist=METHOD_WHITELIST, to_standardize=TO_STANDARDIZE
     )
