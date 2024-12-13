@@ -58,7 +58,7 @@ METHODS_KWARGS = {
         "save_trained": True,
         "verbose": 0,
         "random_state": 711,
-        "lr_reduction_factor": 0.1,
+        "lr_reduction_factor": 0.5,
     },
 }
 
