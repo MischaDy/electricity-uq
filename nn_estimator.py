@@ -12,7 +12,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 
 
-# noinspection PyAttributeOutsideInit
+# noinspection PyAttributeOutsideInit,PyPep8Naming
 class NN_Estimator(RegressorMixin, BaseEstimator):
     """A template estimator to be used as a reference implementation.
 
@@ -175,7 +175,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.model_ = model
 
         if self.save_losses_plot:
-            loss_skip = 0
+            loss_skip = min(100, self.n_iter // 10)
             self._plot_losses(train_losses[loss_skip:], val_losses[loss_skip:])
 
         self.is_fitted_ = True
