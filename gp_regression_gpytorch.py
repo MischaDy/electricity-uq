@@ -166,7 +166,7 @@ def train(
         do_plot_losses=True,
 ):
     likelihood = gpytorch.likelihoods.GaussianLikelihood().to(output_device)
-    model = ExactGPModel(X_train, y_train, likelihood, n_devices).to(output_device)
+    model = ExactGPModel(X_train, y_train, likelihood, n_devices, output_device).to(output_device)
 
     model.train()
     likelihood.train()
