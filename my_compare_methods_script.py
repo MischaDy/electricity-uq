@@ -56,7 +56,7 @@ METHODS_KWARGS = {
         "n_iter": 1000,
         "skip_training": False,
         "save_trained": True,
-        "verbose": 1,
+        "verbose": 0,
         "random_state": 711,
         "lr_reduction_factor": 0.1,
     },
