@@ -596,9 +596,9 @@ def test_base_model():
         y_test,
         y_preds,
         plot_name='laplace_debug_test',
-        show_plots=False,
-        save_plot=True,
-        plot_path='plots',
+        show_plots=SHOW_PLOTS,
+        save_plot=SAVE_PLOTS,
+        plot_path=PLOTS_PATH,
     )
     print('done.')
 
