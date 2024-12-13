@@ -566,16 +566,28 @@ def plot_base_model_test_result(
         plt.close(fig)
 
 
-def test_base_model(uq_comparer):
+def test_base_model():
     print('running base model test')
+    import torch
+    torch.set_default_dtype(torch.float32)
+
     print('loading data...')
+    uq_comparer = My_UQ_Comparer(
+        methods_kwargs=METHODS_KWARGS,
+        method_whitelist=METHOD_WHITELIST,
+        to_standardize=TO_STANDARDIZE,
+        n_points_per_group=N_POINTS_PER_GROUP,
+    )
     X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
     X_uq = np.row_stack((X_train, X_test))
+
     print("training base model...")
     base_model_kwargs = uq_comparer.methods_kwargs['base_model']
     base_model = uq_comparer.train_base_model(X_train, y_train, **base_model_kwargs)
+
     print('predicting...')
     y_preds = base_model.predict(X_uq)
+
     print('plotting...')
     plot_base_model_test_result(
         X_train,
@@ -588,7 +600,7 @@ def test_base_model(uq_comparer):
         save_plot=True,
         plot_path='plots',
     )
-    print('done')
+    print('done.')
 
 
 def main():
@@ -601,21 +613,21 @@ def main():
         to_standardize=TO_STANDARDIZE,
         n_points_per_group=N_POINTS_PER_GROUP,
     )
-    if TEST_BASE_MODEL_ONLY:
-        test_base_model(uq_comparer)
-    else:
-        uq_metrics = uq_comparer.compare_methods(
-            QUANTILES,
-            should_plot_data=PLOT_DATA,
-            should_plot_results=PLOT_RESULTS,
-            should_show_plots=SHOW_PLOTS,
-            should_save_plots=SAVE_PLOTS,
-            plots_path=PLOTS_PATH,
-            output_uq_on_train=True,
-            return_results=False,
-        )
-        print_metrics(uq_metrics)
+    uq_metrics = uq_comparer.compare_methods(
+        QUANTILES,
+        should_plot_data=PLOT_DATA,
+        should_plot_results=PLOT_RESULTS,
+        should_show_plots=SHOW_PLOTS,
+        should_save_plots=SAVE_PLOTS,
+        plots_path=PLOTS_PATH,
+        output_uq_on_train=True,
+        return_results=False,
+    )
+    print_metrics(uq_metrics)
 
 
 if __name__ == "__main__":
-    main()
+    if TEST_BASE_MODEL_ONLY:
+        test_base_model()
+    else:
+        main()
