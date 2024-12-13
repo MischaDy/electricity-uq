@@ -22,7 +22,7 @@ PLOT_RESULTS = True
 SHOW_PLOTS = False
 SAVE_PLOTS = True
 
-TEST_BASE_MODEL_ONLY = True
+TEST_BASE_MODEL_ONLY = False
 TEST_RUN_ALL_BASE_MODELS = False
 
 PLOTS_PATH = "plots"
@@ -59,7 +59,7 @@ METHODS_KWARGS = {
         "verbose": 1,
         "show_progress_bar": False,
         "save_losses_plot": True,
-        "random_state": 711,
+        "random_state": 42,
         "lr_reduction_factor": 0.5,
         "lr_patience": 30,
     },
