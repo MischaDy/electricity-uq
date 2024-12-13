@@ -53,7 +53,7 @@ METHODS_KWARGS = {
         "n_iter": 300,
     },
     "base_model": {
-        "n_iter": 100,
+        "n_iter": 1000,
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,

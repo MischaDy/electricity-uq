@@ -2,9 +2,9 @@
 #SBATCH --ntasks=1                # Number of tasks (see below)
 #SBATCH --cpus-per-task=1         # Number of CPU cores per task
 #SBATCH --nodes=1                 # Ensure that all cores are on one machine
-#SBATCH --time=0-00:15            # Runtime in D-HH:MM
+#SBATCH --time=0-00:10            # Runtime in D-HH:MM
 #SBATCH --partition=2080-galvani  # Partition to submit to
-#SBATCH --gres=gpu:2              # optionally type and number of gpus
+#SBATCH --gres=gpu:1              # optionally type and number of gpus
 #SBATCH --mem=3G                 # Memory pool for all cores (see also --mem-per-cpu)
 #SBATCH --output=logs/job_%j.out  # File to which STDOUT will be written
 #SBATCH --error=logs/job_%j.err   # File to which STDERR will be written
@@ -24,7 +24,7 @@ conda activate masterarbeit
 
 # Run our code
 echo "-------- PYTHON OUTPUT ----------"
-python3 debug_my_compare_methods_script.py
+python3 my_compare_methods_script.py
 echo "---------------------------------"
 
 # Deactivate environment again
