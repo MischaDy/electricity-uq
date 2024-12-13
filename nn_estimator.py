@@ -123,6 +123,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         n_samples = X_train.shape[0]
         val_size = max(1, round(self.val_frac * n_samples))
+        val_size = 20  # todo: temp
         train_size = max(1, n_samples-val_size)
         X_val, y_val = X_train[-val_size:], y_train[-val_size:]
         X_train, y_train = X_train[:train_size], y_train[:train_size]

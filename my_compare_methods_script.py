@@ -6,18 +6,13 @@ from helpers import get_data, standardize, df_to_numpy
 from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
-    "posthoc_conformal_prediction",
+    # "posthoc_conformal_prediction",
     "posthoc_laplace",
-    "native_quantile_regression",
-    "native_gp",
-    "native_mvnn",
+    # "native_quantile_regression",
+    # "native_gp",
+    # "native_mvnn",
 ]
-QUANTILES = [
-    0.05,
-    0.25,
-    0.75,
-    0.95,
-]  # todo: how to handle 0.5? ==> just use mean if needed
+QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
 DATA_FILEPATH = './data.pkl'
 
@@ -27,7 +22,8 @@ PLOT_RESULTS = True
 SHOW_PLOTS = False
 SAVE_PLOTS = True
 
-TEMP_TEST_ALL = True
+TEST_BASE_MODEL_ONLY = True
+TEST_RUN_ALL_BASE_MODELS = False
 
 PLOTS_PATH = "plots"
 
@@ -57,10 +53,12 @@ METHODS_KWARGS = {
         "n_iter": 300,
     },
     "base_model": {
-        "n_iter": 200,
+        "n_iter": 100,
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,
+        "random_state": 711,
+        "lr_reduction_factor": 0.1,
     },
 }
 
@@ -147,7 +145,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
-        if TEMP_TEST_ALL:
+        if TEST_RUN_ALL_BASE_MODELS:
             model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         else:
@@ -486,7 +484,6 @@ class My_UQ_Comparer(UQ_Comparer):
     @staticmethod
     def _get_kernel():
         from sklearn.gaussian_process.kernels import RBF, WhiteKernel
-
         return RBF() + WhiteKernel()
 
     @staticmethod
@@ -525,6 +522,70 @@ class My_UQ_Comparer(UQ_Comparer):
         plt.show()
 
 
+def plot_base_model_test_result(
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        y_preds,
+        plot_name='base_model',
+        show_plots=True,
+        save_plot=True,
+        plot_path='plots',
+):
+    from matplotlib import pyplot as plt
+    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
+
+    x_plot_train = np.arange(num_train_steps)
+    x_plot_full = np.arange(num_train_steps + num_test_steps)
+    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
+    x_plot_uq = x_plot_full
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+    ax.plot(
+        x_plot_uq,
+        y_preds,
+        label=f"base model prediction {plot_name}",
+        color="green",
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    ax.set_title(plot_name)
+    if save_plot:
+        import os
+        filename = f"{plot_name}.png"
+        filepath = os.path.join(plot_path, filename)
+        os.makedirs(plot_path, exist_ok=True)
+        plt.savefig(filepath)
+    if show_plots:
+        plt.show()
+    else:
+        plt.close(fig)
+
+
+def test_base_model(uq_comparer):
+    X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
+    X_uq = np.row_stack((X_train, X_test))
+    print("training base model...")
+    base_model_kwargs = uq_comparer.methods_kwargs['base_model']
+    base_model = uq_comparer.train_base_model(X_train, y_train, **base_model_kwargs)
+    y_preds = base_model.predict(X_uq)
+    plot_base_model_test_result(
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        y_preds,
+        plot_name='laplace_debug_test',
+        show_plots=True,
+        save_plot=True,
+        plot_path='plots',
+    )
+
+
 def main():
     import torch
     torch.set_default_dtype(torch.float32)
@@ -535,17 +596,20 @@ def main():
         to_standardize=TO_STANDARDIZE,
         n_points_per_group=N_POINTS_PER_GROUP,
     )
-    uq_metrics = uq_comparer.compare_methods(
-        QUANTILES,
-        should_plot_data=PLOT_DATA,
-        should_plot_results=PLOT_RESULTS,
-        should_show_plots=SHOW_PLOTS,
-        should_save_plots=SAVE_PLOTS,
-        plots_path=PLOTS_PATH,
-        output_uq_on_train=True,
-        return_results=False,
-    )
-    print_metrics(uq_metrics)
+    if TEST_BASE_MODEL_ONLY:
+        test_base_model(uq_comparer)
+    else:
+        uq_metrics = uq_comparer.compare_methods(
+            QUANTILES,
+            should_plot_data=PLOT_DATA,
+            should_plot_results=PLOT_RESULTS,
+            should_show_plots=SHOW_PLOTS,
+            should_save_plots=SAVE_PLOTS,
+            plots_path=PLOTS_PATH,
+            output_uq_on_train=True,
+            return_results=False,
+        )
+        print_metrics(uq_metrics)
 
 
 def temp_test():
