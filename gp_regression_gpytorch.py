@@ -98,11 +98,10 @@ def train(X_train, y_train):
     for epoch in epochs:
         optimizer.zero_grad()
         output = model(X_train)
-        loss = -mll(output, y_train)
-        mean_loss = loss.mean().item()
-        losses.append(mean_loss)
+        loss = -mll(output, y_train).sum()
+        losses.append(loss.item())
         print_values = dict(
-            loss=mean_loss,
+            loss=loss.item(),
             ls=model.covar_module.base_kernel.lengthscale.norm().item(),
             os=model.covar_module.outputscale.item(),
             noise=model.likelihood.noise.item(),
