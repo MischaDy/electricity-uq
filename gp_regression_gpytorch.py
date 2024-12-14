@@ -83,7 +83,7 @@ def main():
         optimizer.zero_grad()
         output = model(X_train)
         loss = -mll(output, y_train)
-        losses.append(loss.item())
+        losses.append(loss.mean().item())
         print_values = dict(
             loss=loss.item(),
             ls=model.covar_module.base_kernel.lengthscale.norm().item(),
