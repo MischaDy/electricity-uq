@@ -125,8 +125,11 @@ def train_gpytorch(
     n_devices = torch.cuda.device_count()
     print('Planning to run on {} GPUs.'.format(n_devices))
 
-    likelihood = gpytorch.likelihoods.GaussianLikelihood().cuda()
-    model = ExactGPModel(X_train, y_train, likelihood).cuda()
+    likelihood = gpytorch.likelihoods.GaussianLikelihood()
+    model = ExactGPModel(X_train, y_train, likelihood)
+    if torch.cuda.is_available():
+        likelihood = likelihood.cuda()
+        model = model.cuda()
 
     model.train()
     likelihood.train()
