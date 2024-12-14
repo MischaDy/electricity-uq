@@ -242,9 +242,12 @@ def main():
     likelihood.eval()
 
     if SAVE_MODEL:
-        print('saving...')
-        IO_HELPER.save_torch_model(model, f'{MODEL_NAME}.pth')
-        IO_HELPER.save_torch_model(likelihood, f'{MODEL_NAME}_likelihood.pth')
+        if skip_training:
+            print('skipped training, so not saving models.')
+        else:
+            print('saving...')
+            IO_HELPER.save_torch_model(model, f'{MODEL_NAME}.pth')
+            IO_HELPER.save_torch_model(likelihood, f'{MODEL_NAME}_likelihood.pth')
 
     print('evaluating...')
     # noinspection PyUnboundLocalVariable
