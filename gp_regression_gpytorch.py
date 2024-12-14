@@ -137,7 +137,7 @@ def main():
     X_train, y_train, X_test, y_test = prepare_data()
 
     print('training...')
-    model, likelihood = train()
+    model, likelihood = train(X_train, y_train)
 
     print('evaluating...')
     evaluate(model, likelihood, X_test, y_test)
