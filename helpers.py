@@ -138,7 +138,7 @@ def standardize(train_data, *arrays_to_standardize, return_scaler=False):
             else:
                 yield scaler.transform(arr)
 
-    standardized_data = map(transform, [train_data, *arrays_to_standardize])
+    standardized_data = list(map(transform, [train_data, *arrays_to_standardize]))
     return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
