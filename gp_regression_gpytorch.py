@@ -145,7 +145,7 @@ def train_gpytorch(
     losses = []
     epochs = np.arange(N_EPOCHS) + 1
     if SHOW_PROGRESS:
-        epochs = tqdm(list(epochs))
+        epochs = tqdm(epochs)
     for epoch in epochs:
         model.train()
         likelihood.train()
@@ -153,14 +153,15 @@ def train_gpytorch(
         y_pred = model(X_train)
         loss = -mll(y_pred, y_train).sum()
         losses.append(loss.item())
-        print_values = dict(
-            loss=loss.item(),
-            ls=model.covar_module.base_kernel.lengthscale.norm().item(),
-            os=model.covar_module.outputscale.item(),
-            noise=model.likelihood.noise.item(),
-            mu=model.mean_module.constant.item(),
-        )
-        epochs.set_postfix(**print_values)
+        # if SHOW_PROGRESS:
+        #     print_values = dict(
+        #         loss=loss.item(),
+        #         ls=model.covar_module.base_kernel.lengthscale.norm().item(),
+        #         os=model.covar_module.outputscale.item(),
+        #         noise=model.likelihood.noise.item(),
+        #         mu=model.mean_module.constant.item(),
+        #     )
+        #     epochs.set_postfix(**print_values)
         loss.backward()
         optimizer.step()
 
