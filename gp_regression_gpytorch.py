@@ -5,24 +5,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-
-import pandas as pd
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from tqdm import tqdm
 
-from helpers import tensor_to_numpy
+from helpers import tensor_to_numpy, standardize, numpy_to_tensor, df_to_tensor, get_data
 from io_helper import IO_Helper
 
-N_EPOCHS = 100
-LR = 1e-3
+N_EPOCHS = 1000
+LR = 1e-1  # 1e-3
 
 N_DATAPOINTS = 800
 STANDARDIZE_X = True
 STANDARDIZE_Y = True
-PRECOND_SIZE = 0
+PRECOND_SIZE = 10
 
-SKIP_TRAINING = True
+USE_SCHEDULER = True
+
+SKIP_TRAINING = False
 
 SHOW_PROGRESS = True
 PLOT_LOSSES = True
@@ -32,6 +31,8 @@ SHOW_UQ_PLOT = False
 SAVE_UQ_PLOT = True
 SAVE_MODEL = True
 MODEL_NAME = 'gpytorch_model'
+
+VALIDATION_FRAC = 0.1
 
 IO_HELPER = IO_Helper('.')
 
@@ -59,50 +60,70 @@ def measure_runtime(func):
 
 
 @measure_runtime
-def prepare_data():
+def prepare_data(val_frac=0):
     X_train, X_test, y_train, y_test, X, y = get_data(
         N_DATAPOINTS,
         output_cols=['load_to_pred'],
         return_full_data=True
     )
 
-    if STANDARDIZE_X:
-        X_scaler, (X_train, X_test, X) = standardize(X_train, X_test, X)
-        X_train, X_test, X = map(arr_to_tensor, (X_train, X_test, X))
+    # split into train and val
+    if val_frac > 0:
+        n_samples = X_train.shape[0]
+        val_size = max(1, round(val_frac * n_samples))
+        train_size = max(1, n_samples - val_size)
+        X_val, y_val = X_train[-val_size:], y_train[-val_size:]
+        X_train, y_train = X_train[:train_size], y_train[:train_size]
+        assert X_train.shape[0] > 0 and X_val.shape[0] > 0
     else:
-        X_train, X_test, X = map(df_to_tensor, (X_train, X_test, X))
+        X_val, y_val = None, None
+
+    if STANDARDIZE_X:
+        X_scaler, (X_train, X_val, X_test, X) = standardize(X_train, X_val, X_test, X)
+        X_train, X_val, X_test, X = map(numpy_to_tensor, (X_train, X_val, X_test, X))
+    else:
+        X_train, X_val, X_test, X = map(df_to_tensor, (X_train, X_val, X_test, X))
 
     if STANDARDIZE_Y:
-        y_scaler, (y_train, y_test, y) = standardize(y_train, y_test, y)
-        y_train, y_test, y = map(arr_to_tensor, (y_train, y_test, y))
+        y_scaler, (y_train, y_val, y_test, y) = standardize(y_train, y_val, y_test, y)
+        y_train, y_val, y_test, y = map(numpy_to_tensor, (y_train, y_val, y_test, y))
     else:
-        y_train, y_test, y = map(df_to_tensor, (y_train, y_test, y))
+        y_train, y_val, y_test, y = map(df_to_tensor, (y_train, y_val, y_test, y))
 
-    y_train, y_test = map(lambda y: y.squeeze(), (y_train, y_test))
-    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    y_train, y_val, y_test, y = map(lambda y: y.squeeze(), (y_train, y_val, y_test, y))
+
+    shapes = map(lambda arr: arr.shape if arr is not None else None,
+                 (X_train, y_train, X_val, y_val, X_test, y_test))
+    print("data shapes:", ' - '.join(map(str, shapes)))
 
     if PLOT_DATA:
         print('plotting data...')
-        my_plot(X_train, X_test, y_train, y_test)
+        plot_data(X_train, y_train, X_val, y_val, X_test, y_test)
 
     # make continguous and map to device
     print('making data contiguous and mapping to device...')
-    X_train, y_train = X_train.contiguous(), y_train.contiguous()
-    X_test, y_test = X_test.contiguous(), y_test.contiguous()
-
+    X_train, y_train, X_val, y_val, X_test, y_test = map(lambda tensor: tensor.contiguous() if tensor is not None else None,
+                                                         (X_train, y_train, X_val, y_val, X_test, y_test))
     if torch.cuda.is_available():
         output_device = torch.device('cuda:0')
     else:
         print('warning: cuda unavailable!')
         output_device = torch.device('cpu')
-    X_train, y_train = X_train.to(output_device), y_train.to(output_device)
-    X_test, y_test = X_test.to(output_device), y_test.to(output_device)
-
-    return X_train, y_train, X_test, y_test
+    X_train, y_train, X_val, y_val, X_test, y_test = map(lambda tensor: tensor.to(output_device)() if tensor is not None else None,
+                                                         (X_train, y_train, X_val, y_val, X_test, y_test))
+    return X_train, y_train, X_val, y_val, X_test, y_test
 
 
 @measure_runtime
-def train(X_train, y_train):
+def train_gpytorch(
+        X_train,
+        y_train,
+        X_val=None,
+        y_val=None,
+        lr_patience=30,
+        lr_reduction_factor=0.5,
+        val_frac=0.1,
+):
     n_devices = torch.cuda.device_count()
     print('Planning to run on {} GPUs.'.format(n_devices))
 
@@ -113,6 +134,9 @@ def train(X_train, y_train):
     likelihood.train()
 
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+    scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
+    use_scheduler = False if X_val is None else USE_SCHEDULER
+
     # "Loss" for GPs - the marginal log likelihood
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
@@ -123,9 +147,11 @@ def train(X_train, y_train):
     if SHOW_PROGRESS:
         epochs = tqdm(epochs)
     for epoch in epochs:
+        model.train()
+        likelihood.train()
         optimizer.zero_grad()
-        output = model(X_train)
-        loss = -mll(output, y_train).sum()
+        y_pred = model(X_train)
+        loss = -mll(y_pred, y_train).sum()
         losses.append(loss.item())
         print_values = dict(
             loss=loss.item(),
@@ -138,6 +164,14 @@ def train(X_train, y_train):
         loss.backward()
         optimizer.step()
 
+        if use_scheduler:
+            model.eval()
+            likelihood.eval()
+            with torch.no_grad(), gpytorch.settings.fast_pred_var():
+                y_pred = model.likelihood(model(X_val))
+                val_loss = -mll(y_pred, y_val).sum()
+            scheduler.step(val_loss)
+
     if PLOT_LOSSES:
         plot_skip_losses = 0
         plot_losses(losses[plot_skip_losses:])
@@ -149,7 +183,7 @@ def train(X_train, y_train):
 @measure_runtime
 def evaluate(model, likelihood, X_test, y_test):
     model.eval()
-    # likelihood.eval()
+    likelihood.eval()
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         y_pred = model.likelihood(model(X_test))
@@ -161,18 +195,22 @@ def evaluate(model, likelihood, X_test, y_test):
 
 
 def plot_uq_result(
-    X_train,
-    X_test,
-    y_train,
-    y_test,
-    y_preds,
-    y_std,
-    plot_name='gpytorch',
-    show_plot=True,
-    save_plot=True,
-    plots_path='plots',
+        X_train,
+        y_train,
+        X_val,
+        y_val,
+        X_test,
+        y_test,
+        y_preds,
+        y_std,
+        plot_name='gpytorch',
+        show_plot=True,
+        save_plot=True,
+        plots_path='plots',
 ):
-    X_train, X_test, y_train, y_test, y_preds, y_std = map(tensor_to_numpy, (X_train, X_test, y_train, y_test, y_preds, y_std))
+    X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = map(tensor_to_numpy, (X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std))
+    X_train = np.row_stack((X_train, X_val))
+    y_train = np.row_stack((y_train, y_val))
     num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
     x_plot_train = np.arange(num_train_steps)
@@ -219,7 +257,7 @@ def plot_uq_result(
 
 def main():
     print('preparing data...')
-    X_train, y_train, X_test, y_test = prepare_data()
+    X_train, y_train, X_val, y_val, X_test, y_test = prepare_data(val_frac=VALIDATION_FRAC)
 
     skip_training = SKIP_TRAINING
     if skip_training:
@@ -234,7 +272,7 @@ def main():
 
     if not skip_training:
         print('training...')
-        model, likelihood = train(X_train, y_train)
+        model, likelihood = train_gpytorch(X_train, y_train, X_val, y_val)
 
     # noinspection PyUnboundLocalVariable
     model.eval()
@@ -255,7 +293,7 @@ def main():
 
     print('plotting...')
     with torch.no_grad():
-        X_uq = torch.row_stack((X_train, X_test))
+        X_uq = torch.row_stack((X_train, X_val, X_test) if X_val is not None else (X_train, X_test))
         f_preds = model(X_uq)
     f_mean = f_preds.mean
     y_preds = f_mean
@@ -267,9 +305,11 @@ def main():
     # return mean.sub(std2), mean.add(std2)
     plot_uq_result(
         X_train,
-        X_test,
         y_train,
-        y_test,
+        X_val,
+        y_val,
+        X_test,
+        y_test.
         y_preds,
         y_std,
         plot_name='gpytorch',
@@ -279,46 +319,36 @@ def main():
     )
 
 
-def df_to_tensor(df: pd.DataFrame, dtype=float) -> torch.Tensor:
-    return torch.Tensor(df.to_numpy(dtype=dtype))
+# def get_data(_n_points_per_group=None, filepath="data.pkl", input_cols=None, output_cols=None,
+#              return_full_data=False, ):
+#     df = pd.read_pickle(filepath)
+#     if output_cols is None:
+#         output_cols = ['load_to_pred']
+#     if input_cols is None:
+#         input_cols = [col for col in df.columns
+#                       if col not in output_cols and not col.startswith('ts')]
+#     lim = 2 * _n_points_per_group if _n_points_per_group is not None else -1
+#     X = df[input_cols].iloc[:lim]
+#     y = df[output_cols].iloc[:lim]
+#
+#     X_train, X_test, y_train, y_test = train_test_split(
+#         X, y, test_size=0.5, shuffle=False
+#     )
+#     if return_full_data:
+#         return X_train, X_test, y_train, y_test, X, y
+#     return X_train, X_test, y_train, y_test
 
 
-def arr_to_tensor(arr):
-    return torch.Tensor(arr).float()
+def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
+    if X_val is not None:
+        X_train = np.row_stack((X_train, X_val))
+        y_train = np.row_stack((y_train, y_val))
 
-
-def get_data(_n_points_per_group=None, filepath="data.pkl", input_cols=None, output_cols=None,
-             return_full_data=False, ):
-    df = pd.read_pickle(filepath)
-    if output_cols is None:
-        output_cols = ['load_to_pred']
-    if input_cols is None:
-        input_cols = [col for col in df.columns
-                      if col not in output_cols and not col.startswith('ts')]
-    lim = 2 * _n_points_per_group if _n_points_per_group is not None else -1
-    X = df[input_cols].iloc[:lim]
-    y = df[output_cols].iloc[:lim]
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.5, shuffle=False
-    )
-    if return_full_data:
-        return X_train, X_test, y_train, y_test, X, y
-    return X_train, X_test, y_train, y_test
-
-
-def standardize(train_data, *arrays_to_standardize):
-    scaler = StandardScaler()
-    scaler.fit(train_data)
-    return scaler, map(scaler.transform, [train_data, *arrays_to_standardize])
-
-
-def my_plot(X_train, X_test, y_train, y_test):
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
 
     x_plot_train = np.arange(num_train_steps)
-    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
+    x_plot_test = np.arange(num_test_steps) + num_train_steps
     plt.figure(figsize=(14, 6))
     plt.plot(x_plot_train, y_train, label='y_train')
     plt.plot(x_plot_test, y_test, label='y_test')
