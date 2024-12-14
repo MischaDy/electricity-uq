@@ -11,6 +11,8 @@ from sklearn.preprocessing import StandardScaler
 import pandas as pd
 from tqdm import tqdm
 
+from io_helper import IO_Helper
+
 N_EPOCHS = 100
 LR = 1e-3
 
@@ -19,9 +21,18 @@ STANDARDIZE_X = True
 STANDARDIZE_Y = True
 PRECOND_SIZE = 0
 
+SKIP_TRAINING = True
+
 SHOW_PROGRESS = True
 PLOT_LOSSES = True
 PLOT_DATA = False
+
+SHOW_UQ_PLOT = False
+SAVE_UQ_PLOT = True
+SAVE_MODEL = True
+MODEL_NAME = 'gpytorch_model'
+
+IO_HELPER = IO_Helper()
 
 
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -145,18 +156,117 @@ def evaluate(model, likelihood, X_test, y_test):
     print('computing loss...')
     rmse = (y_pred.mean - y_test).square().mean().sqrt().item()
     print(f"RMSE: {rmse:.3f}")
+    return y_pred
+
+
+def plot_uq_result(
+    X_train,
+    X_test,
+    y_train,
+    y_test,
+    y_preds,
+    y_std,
+    plot_name='gpytorch',
+    show_plot=True,
+    save_plot=True,
+    plots_path='plots',
+):
+    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
+
+    x_plot_train = np.arange(num_train_steps)
+    x_plot_full = np.arange(num_train_steps + num_test_steps)
+    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
+    x_plot_uq = x_plot_full
+
+    ci_low, ci_high = y_preds - y_std / 2, y_preds + y_std / 2
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+    ax.plot(
+        x_plot_uq,
+        y_preds,
+        label=f"mean/median prediction {plot_name}",  # todo: mean or median?
+        color="green",
+    )
+    # noinspection PyUnboundLocalVariable
+    label = '1 std'
+    ax.fill_between(
+        x_plot_uq.ravel(),
+        ci_low,
+        ci_high,
+        color="green",
+        alpha=0.2,
+        label=label,
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    ax.set_title(plot_name)
+    if save_plot:
+        filename = f"{plot_name}.png"
+        import os
+        filepath = os.path.join(plots_path, filename)
+        os.makedirs(plots_path, exist_ok=True)
+        plt.savefig(filepath)
+    if show_plot:
+        plt.show()
+    else:
+        plt.close(fig)
 
 
 def main():
     print('preparing data...')
     X_train, y_train, X_test, y_test = prepare_data()
 
-    print('training...')
-    model, likelihood = train(X_train, y_train)
+    skip_training = SKIP_TRAINING
+    if skip_training:
+        print('skipping training...')
+        model_name, model_likelihood_name = f'{MODEL_NAME}.pth', f'{MODEL_NAME}_likelihood.pth'
+        try:
+            model = IO_HELPER.load_torch_model(model_name)
+            likelihood = IO_HELPER.load_torch_model(model_likelihood_name)
+        except FileNotFoundError:
+            print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
+            skip_training = False
+
+    if not skip_training:
+        print('training...')
+        model, likelihood = train(X_train, y_train)
 
     print('evaluating...')
+    # noinspection PyUnboundLocalVariable
     evaluate(model, likelihood, X_test, y_test)
-    return model, likelihood
+
+    print('plotting...')
+
+    print('plotting...')
+    f_preds = model(X_test)
+    f_mean = f_preds.mean
+    y_preds = f_mean
+    f_std = f_preds.stddev
+    y_std = f_std
+
+    # std2 = f_preds.stddev.mul_(2)
+    # mean = self.mean
+    # return mean.sub(std2), mean.add(std2)
+    plot_uq_result(
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        y_preds,
+        y_std,
+        plot_name='gpytorch',
+        show_plot=SHOW_UQ_PLOT,
+        save_plot=SAVE_UQ_PLOT,
+        plots_path='plots',
+    )
+
+    if SAVE_MODEL:
+        print('saving...')
+        IO_HELPER.save_torch_model(model, f'{MODEL_NAME}.pth')
+        IO_HELPER.save_torch_model(likelihood, f'{MODEL_NAME}_likelihood.pth')
 
 
 def df_to_tensor(df: pd.DataFrame, dtype=float) -> torch.Tensor:
