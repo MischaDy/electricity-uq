@@ -1,3 +1,5 @@
+from timeit import default_timer
+
 import gpytorch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,6 +24,17 @@ PLOT_LOSSES = True
 PLOT_DATA = False
 
 
+def measure_runtime(func):
+    def wrapper(*args, **kwargs):
+        t1 = default_timer()
+        result = func(*args, **kwargs)
+        t2 = default_timer()
+        print(f'done. [took {t2 - t1}s]')
+        return result
+    return wrapper(func)
+
+
+@measure_runtime
 def prepare_data():
     X_train, X_test, y_train, y_test, X, y = get_data(
         N_DATAPOINTS,
@@ -61,6 +74,7 @@ def prepare_data():
     return X_train, y_train, X_test, y_test
 
 
+@measure_runtime
 def train(X_train, y_train):
     n_devices = torch.cuda.device_count()
     print('Planning to run on {} GPUs.'.format(n_devices))
@@ -105,6 +119,7 @@ def train(X_train, y_train):
     return model, likelihood
 
 
+@measure_runtime
 def evaluate(model, likelihood, X_test, y_test):
     model.eval()
     # likelihood.eval()
@@ -118,6 +133,7 @@ def evaluate(model, likelihood, X_test, y_test):
 
 
 def main():
+    print('preparing data...')
     X_train, y_train, X_test, y_test = prepare_data()
 
     print('training...')
