@@ -32,7 +32,7 @@ SAVE_UQ_PLOT = True
 SAVE_MODEL = True
 MODEL_NAME = 'gpytorch_model'
 
-IO_HELPER = IO_Helper()
+IO_HELPER = IO_Helper('.')
 
 
 class ExactGPModel(gpytorch.models.ExactGP):
