@@ -31,15 +31,15 @@ IO_HELPER = IO_Helper('.')
 
 
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
-        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
+    def __init__(self, X_train, y_train, likelihood):
+        super(ExactGPModel, self).__init__(X_train, y_train, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.keops.RBFKernel())
 
-    def forward(self, x):
-        mean_x = self.mean_module(x)
-        covar_x = self.covar_module(x)
-        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+    def forward(self, X):
+        X_mean = self.mean_module(X)
+        X_covar = self.covar_module(X)
+        return gpytorch.distributions.MultivariateNormal(X_mean, X_covar)
 
 
 def measure_runtime(func):
