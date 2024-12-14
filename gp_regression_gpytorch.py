@@ -214,7 +214,7 @@ def plot_uq_result(
 
     X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = map(tensor_to_numpy, (X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std))
     X_train = np.row_stack((X_train, X_val))
-    y_train = np.row_stack((y_train, y_val))
+    y_train = np.hstack((y_train, y_val))
     num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
     x_plot_train = np.arange(num_train_steps)
@@ -350,7 +350,7 @@ def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
 
     if X_val is not None:
         X_train = np.row_stack((X_train, X_val))
-        y_train = np.row_stack((y_train, y_val))
+        y_train = np.hstack((y_train, y_val))
 
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
