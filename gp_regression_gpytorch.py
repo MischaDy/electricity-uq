@@ -145,7 +145,7 @@ def train_gpytorch(
     losses = []
     epochs = np.arange(N_EPOCHS) + 1
     if SHOW_PROGRESS:
-        epochs = tqdm(epochs)
+        epochs = tqdm(list(epochs))
     for epoch in epochs:
         model.train()
         likelihood.train()
