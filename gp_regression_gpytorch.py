@@ -261,8 +261,8 @@ def main():
     X_train, y_train, X_val, y_val, X_test, y_test = prepare_data(val_frac=VALIDATION_FRAC)
 
     skip_training = SKIP_TRAINING
-    common_prefix = f'{MODEL_NAME}_{N_DATAPOINTS}_{N_EPOCHS}'
-    model_name, model_likelihood_name = f'{common_prefix}.pth', f'{common_prefix}_likelihood.pth'
+    common_prefix, common_postfix = f'{MODEL_NAME}', f'{N_DATAPOINTS}_{N_EPOCHS}'
+    model_name, model_likelihood_name = f'{common_prefix}_{common_postfix}.pth', f'{common_prefix}_likelihood_{common_postfix}.pth'
     if skip_training:
         print('skipping training...')
         try:
