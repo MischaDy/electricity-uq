@@ -90,7 +90,7 @@ def train_mean_var_nn(
     random_seed=42,
     val_frac=0.1,
     lr=0.1,
-    lr_patience=5,
+    lr_patience=30,
     lr_reduction_factor=0.5,
     weight_decay=0.0,
     train_var=True,
