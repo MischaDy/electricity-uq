@@ -1,12 +1,5 @@
-from timeit import default_timer
-
 import gpytorch
-import numpy as np
-import matplotlib.pyplot as plt
 import torch
-
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-from tqdm import tqdm
 
 from helpers import tensor_to_numpy, standardize, numpy_to_tensor, df_to_tensor, get_data
 from io_helper import IO_Helper
@@ -50,6 +43,8 @@ class ExactGPModel(gpytorch.models.ExactGP):
 
 
 def measure_runtime(func):
+    from timeit import default_timer
+
     def wrapper(*args, **kwargs):
         t1 = default_timer()
         result = func(*args, **kwargs)
@@ -122,8 +117,11 @@ def train_gpytorch(
         y_val=None,
         lr_patience=30,
         lr_reduction_factor=0.5,
-        val_frac=0.1,
 ):
+    from torch.optim.lr_scheduler import ReduceLROnPlateau
+    import numpy as np
+    from tqdm import tqdm
+
     n_devices = torch.cuda.device_count()
     print('Planning to run on {} GPUs.'.format(n_devices))
 
@@ -208,6 +206,9 @@ def plot_uq_result(
         save_plot=True,
         plots_path='plots',
 ):
+    import matplotlib.pyplot as plt
+    import numpy as np
+
     X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = map(tensor_to_numpy, (X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std))
     X_train = np.row_stack((X_train, X_val))
     y_train = np.row_stack((y_train, y_val))
@@ -340,6 +341,9 @@ def main():
 
 
 def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
+    import matplotlib.pyplot as plt
+    import numpy as np
+
     if X_val is not None:
         X_train = np.row_stack((X_train, X_val))
         y_train = np.row_stack((y_train, y_val))
@@ -357,6 +361,8 @@ def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
 
 
 def plot_losses(losses):
+    import matplotlib.pyplot as plt
+
     def has_neg(losses):
         return any(map(lambda x: x < 0, losses))
 
