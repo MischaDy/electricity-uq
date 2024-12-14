@@ -203,6 +203,7 @@ def plot_uq_result(
         y_test,
         y_preds,
         y_std,
+        n_stds=2,
         plot_name='gpytorch',
         plots_path='plots',
 ):
@@ -219,7 +220,7 @@ def plot_uq_result(
     x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
     x_plot_uq = x_plot_full
 
-    ci_low, ci_high = y_preds - y_std / 2, y_preds + y_std / 2
+    ci_low, ci_high = y_preds - n_stds * y_std, y_preds + n_stds * y_std
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
     ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
@@ -231,14 +232,13 @@ def plot_uq_result(
         color="green",
     )
     # noinspection PyUnboundLocalVariable
-    label = '1 std'
     ax.fill_between(
         x_plot_uq.ravel(),
         ci_low,
         ci_high,
         color="green",
         alpha=0.2,
-        label=label,
+        label=f'+/- {n_stds} std',
     )
     ax.legend()
     ax.set_xlabel("data")
