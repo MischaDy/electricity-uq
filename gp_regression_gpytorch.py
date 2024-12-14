@@ -251,8 +251,9 @@ def main():
     evaluate(model, likelihood, X_test, y_test)
 
     print('plotting...')
-    X_uq = np.row_stack((X_train, X_test))
-    f_preds = model(X_uq)
+    with torch.no_grad():
+        X_uq = torch.row_stack((X_train, X_test))
+        f_preds = model(X_uq)
     f_mean = f_preds.mean
     y_preds = f_mean
     f_std = f_preds.stddev
