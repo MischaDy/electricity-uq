@@ -234,6 +234,16 @@ def main():
         print('training...')
         model, likelihood = train(X_train, y_train)
 
+    # noinspection PyUnboundLocalVariable
+    model.eval()
+    # noinspection PyUnboundLocalVariable
+    likelihood.eval()
+
+    if SAVE_MODEL:
+        print('saving...')
+        IO_HELPER.save_torch_model(model, f'{MODEL_NAME}.pth')
+        IO_HELPER.save_torch_model(likelihood, f'{MODEL_NAME}_likelihood.pth')
+
     print('evaluating...')
     # noinspection PyUnboundLocalVariable
     evaluate(model, likelihood, X_test, y_test)
@@ -262,11 +272,6 @@ def main():
         save_plot=SAVE_UQ_PLOT,
         plots_path='plots',
     )
-
-    if SAVE_MODEL:
-        print('saving...')
-        IO_HELPER.save_torch_model(model, f'{MODEL_NAME}.pth')
-        IO_HELPER.save_torch_model(likelihood, f'{MODEL_NAME}_likelihood.pth')
 
 
 def df_to_tensor(df: pd.DataFrame, dtype=float) -> torch.Tensor:
