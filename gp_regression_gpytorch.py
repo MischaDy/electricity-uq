@@ -79,13 +79,13 @@ def prepare_data(val_frac=0):
         X_val, y_val = None, None
 
     if STANDARDIZE_X:
-        X_scaler, (X_train, X_val, X_test, X) = standardize(X_train, X_val, X_test, X)
+        X_scaler, (X_train, X_val, X_test, X) = standardize(X_train, X_val, X_test, X, return_scaler=True)
         X_train, X_val, X_test, X = map(numpy_to_tensor, (X_train, X_val, X_test, X))
     else:
         X_train, X_val, X_test, X = map(df_to_tensor, (X_train, X_val, X_test, X))
 
     if STANDARDIZE_Y:
-        y_scaler, (y_train, y_val, y_test, y) = standardize(y_train, y_val, y_test, y)
+        y_scaler, (y_train, y_val, y_test, y) = standardize(y_train, y_val, y_test, y, return_scaler=True)
         y_train, y_val, y_test, y = map(numpy_to_tensor, (y_train, y_val, y_test, y))
     else:
         y_train, y_val, y_test, y = map(df_to_tensor, (y_train, y_val, y_test, y))

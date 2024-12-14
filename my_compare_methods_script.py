@@ -502,7 +502,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def _standardize_or_to_array(self, variable, *dfs):
         if variable in self.to_standardize:
-            return standardize(False, *dfs)
+            return standardize(*dfs, return_scaler=False)
         return map(df_to_numpy, dfs)
 
     def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):

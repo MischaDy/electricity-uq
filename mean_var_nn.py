@@ -347,7 +347,7 @@ def my_plot_data(X, y):
 
 def _standardize_or_to_array(variable, *dfs):
     if variable in TO_STANDARDIZE:
-        return standardize(False, *dfs)
+        return standardize(*dfs, return_scaler=False)
     return map(df_to_numpy, dfs)
 
 

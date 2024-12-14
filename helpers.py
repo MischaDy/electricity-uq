@@ -124,7 +124,7 @@ def is_ascending(*arrays):
     return all(a <= b for a, b in zip(arr, arr[1:]))
 
 
-def standardize(return_scaler, train_data, *arrays_to_standardize):
+def standardize(train_data, *arrays_to_standardize, return_scaler=False):
     from sklearn.preprocessing import StandardScaler
 
     # todo: bugfix - only standardize continuous columns!
