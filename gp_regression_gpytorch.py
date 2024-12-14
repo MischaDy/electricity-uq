@@ -1,5 +1,3 @@
-from timeit import default_timer
-
 import gpytorch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,6 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 
 N_EPOCHS = 100
+LR = 1e-3
 
 N_DATAPOINTS = 800
 STANDARDIZE_X = True
@@ -42,7 +41,6 @@ def main():
     else:
         y_train, y_test, y = map(df_to_tensor, (y_train, y_test, y))
 
-    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
     if PLOT_DATA:
         print('plotting data...')
         my_plot(X_train, X_test, y_train, y_test)
@@ -51,44 +49,71 @@ def main():
     X_train, y_train = X_train.contiguous(), y_train.contiguous()
     X_test, y_test = X_test.contiguous(), y_test.contiguous()
 
-    output_device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+    if torch.cuda.is_available():
+        output_device = torch.device('cuda:0')
+    else:
+        print('warning: cuda unavailable!')
+        output_device = torch.device('cpu')
     X_train, y_train = X_train.to(output_device), y_train.to(output_device)
     X_test, y_test = X_test.to(output_device), y_test.to(output_device)
+
+    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
     n_devices = torch.cuda.device_count()
     print('Planning to run on {} GPUs.'.format(n_devices))
 
     print('training...')
-    model, likelihood = train(
-        X_train,
-        y_train,
-        n_devices=n_devices,
-        output_device=output_device,
-        preconditioner_size=PRECOND_SIZE,
-        n_epochs=N_EPOCHS,
-        show_progress=SHOW_PROGRESS,
-        do_plot_losses=PLOT_LOSSES,
-    )
+    likelihood = gpytorch.likelihoods.GaussianLikelihood().cuda()
+    model = ExactGPModel(X_train, y_train, likelihood).cuda()
+
+    model.train()
+    likelihood.train()
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+    # "Loss" for GPs - the marginal log likelihood
+    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+
+    # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
+
+    losses = []
+    epochs = np.arange(N_EPOCHS) + 1
+    if SHOW_PROGRESS:
+        epochs = tqdm(epochs)
+    for epoch in epochs:
+        optimizer.zero_grad()
+        output = model(X_train)
+        loss = -mll(output, y_train)
+        losses.append(loss.item())
+        print_values = dict(
+            loss=loss.item(),
+            ls=model.covar_module.base_kernel.lengthscale.norm().item(),
+            os=model.covar_module.outputscale.item(),
+            noise=model.likelihood.noise.item(),
+            mu=model.mean_module.constant.item(),
+        )
+        epochs.set_postfix(**print_values)
+        loss.backward()
+        optimizer.step()
+
+    if PLOT_LOSSES:
+        plot_skip_losses = 0
+        plot_losses(losses[plot_skip_losses:])
+
+    print(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
+    model.eval()
 
     # Get into evaluation (predictive posterior) mode
     print('evaluating...')
     model.eval()
-    likelihood.eval()
+    # likelihood.eval()
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        # Make predictions on a small number of test points to get the test time caches computed
-        _ = model(X_test[:2, :])
-        del _  # We don't care about these predictions, we really just want the caches.
-
-    with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        t1 = default_timer()
-        latent_pred = model(X_test)
-        t2 = default_timer()
-        print(f'cache stuff time: {t2 - t1}')
+        y_pred = model.likelihood(model(X_test))
 
     print('computing loss...')
-    test_rmse = torch.sqrt(torch.mean(torch.pow(latent_pred.mean - y_test, 2)))
-    print(f"Test RMSE: {test_rmse.item()}")
+    rmse = (y_pred.mean - y_test).square().mean().sqrt().item()
+    print(f"RMSE: {rmse:.3f}")
+    return model, likelihood
 
 
 def df_to_tensor(df: pd.DataFrame, dtype=float) -> torch.Tensor:
@@ -139,73 +164,15 @@ def my_plot(X_train, X_test, y_train, y_test):
 
 
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, X_train, y_train, likelihood, n_devices, output_device):
-        super(ExactGPModel, self).__init__(X_train, y_train, likelihood)
+    def __init__(self, train_x, train_y, likelihood):
+        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
-        base_covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
-        self.covar_module = gpytorch.kernels.MultiDeviceKernel(
-            base_covar_module,
-            device_ids=range(n_devices),
-            output_device=output_device,
-        )
+        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.keops.RBFKernel())
 
     def forward(self, x):
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
-
-
-def train(
-        X_train,
-        y_train,
-        n_devices,
-        output_device,
-        preconditioner_size=15,
-        n_epochs=100,
-        show_progress=True,
-        do_plot_losses=True,
-):
-    likelihood = gpytorch.likelihoods.GaussianLikelihood().to(output_device)
-    model = ExactGPModel(X_train, y_train, likelihood, n_devices, output_device).to(output_device)
-
-    model.train()
-    likelihood.train()
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    # "Loss" for GPs - the marginal log likelihood
-    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-
-    with gpytorch.settings.max_preconditioner_size(preconditioner_size):
-        def closure():
-            optimizer.zero_grad()
-            output = model(X_train)
-            loss = -mll(output, y_train)
-            return loss
-
-        loss = closure()
-        loss.backward()
-
-        losses = []
-        epochs = np.arange(n_epochs) + 1
-        if show_progress:
-            epochs = tqdm(epochs)
-        for epoch in epochs:
-            loss = optimizer.step(closure=closure)
-            losses.append(loss)
-
-            print('Iter %d/%d - Loss: %.3f   lengthscale: %.3f   noise: %.3f' % (
-                epoch, n_epochs, loss,
-                model.covar_module.module.base_kernel.lengthscale.item(),
-                model.likelihood.noise.item()
-            ))
-
-        if do_plot_losses:
-            plot_skip_losses = 0
-            plot_losses(losses[plot_skip_losses:])
-
-    print(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
-    model.eval()
-    return model, likelihood
 
 
 def plot_losses(losses):
