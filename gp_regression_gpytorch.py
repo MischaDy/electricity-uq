@@ -261,12 +261,13 @@ def main():
     X_train, y_train, X_val, y_val, X_test, y_test = prepare_data(val_frac=VALIDATION_FRAC)
 
     skip_training = SKIP_TRAINING
+    model_name, model_likelihood_name = f'{MODEL_NAME}.pth', f'{MODEL_NAME}_likelihood.pth'
     if skip_training:
         print('skipping training...')
-        model_name, model_likelihood_name = f'{MODEL_NAME}.pth', f'{MODEL_NAME}_likelihood.pth'
         try:
-            model = IO_HELPER.load_torch_model(model_name)
-            likelihood = IO_HELPER.load_torch_model(model_likelihood_name)
+            likelihood = IO_HELPER.load_gpytorch_model(gpytorch.likelihoods.GaussianLikelihood, model_likelihood_name)
+            model = IO_HELPER.load_gpytorch_model(ExactGPModel, model_name,
+                                                  X_train=X_train, y_train=y_train, likelihood=likelihood)
         except FileNotFoundError:
             print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
             skip_training = False
@@ -285,8 +286,8 @@ def main():
             print('skipped training, so not saving models.')
         else:
             print('saving...')
-            IO_HELPER.save_torch_model(model, f'{MODEL_NAME}.pth')
-            IO_HELPER.save_torch_model(likelihood, f'{MODEL_NAME}_likelihood.pth')
+            IO_HELPER.save_gpytorch_model(model, model_name)
+            IO_HELPER.save_gpytorch_model(likelihood, model_likelihood_name)
 
     print('evaluating...')
     # noinspection PyUnboundLocalVariable

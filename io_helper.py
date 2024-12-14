@@ -89,6 +89,18 @@ class IO_Helper:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model, path)
 
+    def save_gpytorch_model(self, model, filename):
+        path = self.get_model_savepath(filename)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        torch.save(model.state_dict(), path)
+
+    def load_gpytorch_model(self, model_class, filename, **kwargs):
+        path = self.get_model_savepath(filename)
+        state_dict = torch.load(path)
+        model = model_class(**kwargs)
+        model.load_state_dict(state_dict)
+        return model
+
     def save_plot(self, filename):
         from matplotlib import pyplot as plt
 
