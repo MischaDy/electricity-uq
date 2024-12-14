@@ -314,7 +314,7 @@ def main():
         X_val,
         y_val,
         X_test,
-        y_test.
+        y_test,
         y_preds,
         y_std,
         plot_name='gpytorch',
