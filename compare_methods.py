@@ -442,8 +442,8 @@ def plot_uq_result(
     x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
     x_plot_uq = x_plot_full if output_uq_on_train else x_plot_test
 
-    drawing_std = y_quantiles is not None
-    if drawing_std:
+    drawing_quantiles = y_quantiles is not None
+    if drawing_quantiles:
         ci_low, ci_high = (
             y_quantiles[:, 0],
             y_quantiles[:, -1],
@@ -471,7 +471,7 @@ def plot_uq_result(
         color="green",
     )
     # noinspection PyUnboundLocalVariable
-    label = rf"{plot_name} {f'{100*drawn_quantile}% CI' if drawing_std else '1 std'}"
+    label = rf"{plot_name} {f'{100*drawn_quantile}% CI' if drawing_quantiles else '1 std'}"
     ax.fill_between(
         x_plot_uq.ravel(),
         ci_low,
