@@ -24,6 +24,18 @@ PLOT_LOSSES = True
 PLOT_DATA = False
 
 
+class ExactGPModel(gpytorch.models.ExactGP):
+    def __init__(self, train_x, train_y, likelihood):
+        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
+        self.mean_module = gpytorch.means.ConstantMean()
+        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.keops.RBFKernel())
+
+    def forward(self, x):
+        mean_x = self.mean_module(x)
+        covar_x = self.covar_module(x)
+        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+
+
 def measure_runtime(func):
     def wrapper(*args, **kwargs):
         t1 = default_timer()
@@ -54,11 +66,15 @@ def prepare_data():
     else:
         y_train, y_test, y = map(df_to_tensor, (y_train, y_test, y))
 
+    y_train, y_test = map(lambda y: y.squeeze(), (y_train, y_test))
+    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+
     if PLOT_DATA:
         print('plotting data...')
         my_plot(X_train, X_test, y_train, y_test)
 
     # make continguous and map to device
+    print('making data contiguous and mapping to device...')
     X_train, y_train = X_train.contiguous(), y_train.contiguous()
     X_test, y_test = X_test.contiguous(), y_test.contiguous()
 
@@ -70,7 +86,6 @@ def prepare_data():
     X_train, y_train = X_train.to(output_device), y_train.to(output_device)
     X_test, y_test = X_test.to(output_device), y_test.to(output_device)
 
-    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
     return X_train, y_train, X_test, y_test
 
 
@@ -189,18 +204,6 @@ def my_plot(X_train, X_test, y_train, y_test):
     plt.plot(x_plot_test, y_test, label='y_test')
     plt.legend()
     plt.show()
-
-
-class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
-        super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
-        self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.keops.RBFKernel())
-
-    def forward(self, x):
-        mean_x = self.mean_module(x)
-        covar_x = self.covar_module(x)
-        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
 
 def plot_losses(losses):
