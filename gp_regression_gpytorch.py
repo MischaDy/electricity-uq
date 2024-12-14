@@ -17,10 +17,9 @@ USE_SCHEDULER = True
 SKIP_TRAINING = False
 
 SHOW_PROGRESS = True
+SHOW_PLOTS = False
 PLOT_LOSSES = True
 PLOT_DATA = False
-
-SHOW_UQ_PLOT = False
 SAVE_UQ_PLOT = True
 SAVE_MODEL = True
 MODEL_NAME = 'gpytorch_model'
@@ -205,8 +204,6 @@ def plot_uq_result(
         y_preds,
         y_std,
         plot_name='gpytorch',
-        show_plot=True,
-        save_plot=True,
         plots_path='plots',
 ):
     import matplotlib.pyplot as plt
@@ -247,13 +244,13 @@ def plot_uq_result(
     ax.set_xlabel("data")
     ax.set_ylabel("target")
     ax.set_title(plot_name)
-    if save_plot:
+    if SAVE_UQ_PLOT:
         filename = f"{plot_name}.png"
         import os
         filepath = os.path.join(plots_path, filename)
         os.makedirs(plots_path, exist_ok=True)
         plt.savefig(filepath)
-    if show_plot:
+    if SHOW_PLOTS:
         plt.show()
     else:
         plt.close(fig)
@@ -319,8 +316,6 @@ def main():
         y_preds,
         y_std,
         plot_name='gpytorch',
-        show_plot=SHOW_UQ_PLOT,
-        save_plot=SAVE_UQ_PLOT,
         plots_path='plots',
     )
 
@@ -362,10 +357,13 @@ def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
     plt.plot(x_plot_train, y_train, label='y_train')
     plt.plot(x_plot_test, y_test, label='y_test')
     plt.legend()
-    plt.show()
+    if SHOW_PLOTS:
+        plt.show()
+    else:
+        plt.close()
 
 
-def plot_losses(losses):
+def plot_losses(losses, ):
     import matplotlib.pyplot as plt
 
     def has_neg(losses):
@@ -375,7 +373,10 @@ def plot_losses(losses):
     plt_func = ax.plot if has_neg(losses) else ax.semilogy
     plt_func(losses, label="loss")
     ax.legend()
-    plt.show()
+    if SHOW_PLOTS:
+        plt.show()
+    else:
+        plt.close(fig)
 
 
 if __name__ == '__main__':
