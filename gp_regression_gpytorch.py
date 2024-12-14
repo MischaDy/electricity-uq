@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 import pandas as pd
 from tqdm import tqdm
 
+from helpers import tensor_to_numpy
 from io_helper import IO_Helper
 
 N_EPOCHS = 100
@@ -171,6 +172,7 @@ def plot_uq_result(
     save_plot=True,
     plots_path='plots',
 ):
+    X_train, X_test, y_train, y_test, y_preds, y_std = map(tensor_to_numpy, (X_train, X_test, y_train, y_test, y_preds, y_std))
     num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
     x_plot_train = np.arange(num_train_steps)
@@ -247,8 +249,6 @@ def main():
     print('evaluating...')
     # noinspection PyUnboundLocalVariable
     evaluate(model, likelihood, X_test, y_test)
-
-    print('plotting...')
 
     print('plotting...')
     f_preds = model(X_test)
