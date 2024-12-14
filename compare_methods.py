@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib import pyplot as plt
 
-from helpers import starfilter, is_ascending
+from helpers import starfilter, is_ascending, timestamped_filename
 
 
 # todo: add type hints
@@ -331,9 +331,7 @@ class UQ_Comparer(ABC):
         :return:
         """
         os.makedirs(self.metrics_path, exist_ok=True)
-
-        timestamp = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
-        filename = f'metrics_{timestamp}.json'
+        filename = timestamped_filename('metrics', 'json')
         filepath = os.path.join(self.metrics_path, filename)
 
         metrics_str = json.dumps(uq_metrics, indent=4)

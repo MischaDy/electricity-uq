@@ -187,3 +187,10 @@ def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: i
     train_dataset = TensorDataset(X_train, y_train)
     train_loader = DataLoader(train_dataset, batch_size=batch_size)
     return train_loader
+
+
+def timestamped_filename(prefix, ext):
+    from datetime import datetime
+    timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
+    filename = f'{prefix}_{timestamp}.{ext}'
+    return filename
