@@ -1,0 +1,30 @@
+conda env create --file .\conda_env_cuda.yml
+
+conda create -y -n masterarbeit
+conda activate masterarbeit
+conda config --append channels conda-forge
+conda install -y --file .\requirements.txt
+pip install git+https://git@github.com/wiseodd/asdl@asdfghjkl
+xpip install git+https://github.com/cornellius-gp/gpytorch.git@fe4619b546f0bc41f801b9b5ac57c424c25bd3fe
+
+
+----------
+alt:
+
+conda create -y -n masterarbeit
+conda config --append channels conda-forge
+conda install --file .\requirements.txt
+pip install git+https://git@github.com/wiseodd/asdl@asdfghjkl
+
+
+-----------
+
+pip install -y -r .\requirements.txt
+
+OR
+mamba install --file .\requirements.txt
+
+
+pip install holidays laplace_torch MAPIE matplotlib more_itertools numpy pandas pmdarima scikit_learn scipy statsmodels torch tqdm uncertainty_toolbox
+
+pip install holidays laplace_torch MAPIE matplotlib more_itertools numpy pandas python scikit_learn scipy scores torch tqdm uncertainty_toolbox xarray
