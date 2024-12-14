@@ -31,7 +31,7 @@ def measure_runtime(func):
         t2 = default_timer()
         print(f'done. [took {t2 - t1}s]')
         return result
-    return wrapper(func)
+    return wrapper
 
 
 @measure_runtime
