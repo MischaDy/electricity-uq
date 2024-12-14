@@ -22,7 +22,7 @@ PLOT_LOSSES = True
 PLOT_DATA = False
 
 
-def main():
+def prepare_data():
     X_train, X_test, y_train, y_test, X, y = get_data(
         N_DATAPOINTS,
         output_cols=['load_to_pred'],
@@ -58,11 +58,13 @@ def main():
     X_test, y_test = X_test.to(output_device), y_test.to(output_device)
 
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    return X_train, y_train, X_test, y_test
 
+
+def train(X_train, y_train):
     n_devices = torch.cuda.device_count()
     print('Planning to run on {} GPUs.'.format(n_devices))
 
-    print('training...')
     likelihood = gpytorch.likelihoods.GaussianLikelihood().cuda()
     model = ExactGPModel(X_train, y_train, likelihood).cuda()
 
@@ -100,10 +102,10 @@ def main():
         plot_losses(losses[plot_skip_losses:])
 
     print(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
-    model.eval()
+    return model, likelihood
 
-    # Get into evaluation (predictive posterior) mode
-    print('evaluating...')
+
+def evaluate(model, likelihood, X_test, y_test):
     model.eval()
     # likelihood.eval()
 
@@ -113,6 +115,16 @@ def main():
     print('computing loss...')
     rmse = (y_pred.mean - y_test).square().mean().sqrt().item()
     print(f"RMSE: {rmse:.3f}")
+
+
+def main():
+    X_train, y_train, X_test, y_test = prepare_data()
+
+    print('training...')
+    model, likelihood = train()
+
+    print('evaluating...')
+    evaluate(model, likelihood, X_test, y_test)
     return model, likelihood
 
 
