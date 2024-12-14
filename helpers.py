@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import torch
 
@@ -132,23 +130,43 @@ def standardize(return_scaler, train_data, *arrays_to_standardize):
     # todo: bugfix - only standardize continuous columns!
     scaler = StandardScaler()
     scaler.fit(train_data)
-    standardized_data = map(scaler.transform, [train_data, *arrays_to_standardize])
+
+    def transform(data):
+        for arr in data:
+            if arr is None:
+                yield None
+            else:
+                yield scaler.transform(arr)
+
+    standardized_data = map(transform, [train_data, *arrays_to_standardize])
     return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
-def df_to_numpy(df): #: pd.DataFrame) -> np.ndarray:
+def allow_none(func):
+    def wrapper(arg, **kwargs):
+        if arg is None:
+            return
+        return func(arg, **kwargs)
+    return wrapper
+
+
+@allow_none
+def df_to_numpy(df):  #: pd.DataFrame) -> np.ndarray:
     return df.to_numpy(dtype=float)
 
 
-def df_to_tensor(df): # pd.DataFrame) -> torch.Tensor:
+@allow_none
+def df_to_tensor(df):  # pd.DataFrame) -> torch.Tensor:
     return numpy_to_tensor(df_to_numpy(df))
 
 
-def numpy_to_tensor(arr: np.ndarray) -> torch.Tensor:
+@allow_none
+def numpy_to_tensor(arr: np.ndarray):  # -> torch.Tensor:
     return torch.Tensor(arr).float()
 
 
-def tensor_to_numpy(tensor: torch.Tensor) -> np.ndarray:
+@allow_none
+def tensor_to_numpy(tensor: torch.Tensor):  # -> np.ndarray:
     return tensor.numpy(force=True)
 
 
