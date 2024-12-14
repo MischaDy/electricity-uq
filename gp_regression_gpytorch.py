@@ -104,7 +104,7 @@ def prepare_data(val_frac=0):
     else:
         print('warning: cuda unavailable!')
         output_device = torch.device('cpu')
-    X_train, y_train, X_val, y_val, X_test, y_test = map(lambda tensor: tensor.to(output_device)() if tensor is not None else None,
+    X_train, y_train, X_val, y_val, X_test, y_test = map(lambda tensor: tensor.to(output_device) if tensor is not None else None,
                                                          (X_train, y_train, X_val, y_val, X_test, y_test))
     return X_train, y_train, X_val, y_val, X_test, y_test
 

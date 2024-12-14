@@ -131,14 +131,12 @@ def standardize(train_data, *arrays_to_standardize, return_scaler=False):
     scaler = StandardScaler()
     scaler.fit(train_data)
 
-    def transform(data):
-        for arr in data:
-            if arr is None:
-                yield None
-            else:
-                yield scaler.transform(arr)
+    def transform(arr):
+        if arr is None:
+            return
+        return scaler.transform(arr)
 
-    standardized_data = list(map(transform, [train_data, *arrays_to_standardize]))
+    standardized_data = map(transform, [train_data, *arrays_to_standardize])
     return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
