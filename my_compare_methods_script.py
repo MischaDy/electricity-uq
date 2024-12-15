@@ -8,7 +8,7 @@ from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-    "posthoc_laplace",
+    # "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_mvnn",
@@ -25,7 +25,7 @@ SAVE_PLOTS = True
 
 TEST_BASE_MODEL_ONLY = False
 TEST_RUN_ALL_BASE_MODELS = False
-BASE_MODEL = 'NN'
+BASE_MODEL = 'NN'  # 'RF'
 
 PLOTS_PATH = "comparison_storage/plots"
 
@@ -487,21 +487,38 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
-    def native_quantile_regression(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles,
-                                   verbose=True,
+    def native_quantile_regression(
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            X_uq: np.ndarray,
+            quantiles,
+            verbose=True,
             skip_training=True,
-            save_model=True,):
+            save_model=True,
+    ):
         from quantile_regression import estimate_quantiles as estimate_quantiles_qr
         y_pred, y_quantiles = estimate_quantiles_qr(
-            X_train, y_train, X_uq, alpha=quantiles
+            X_train,
+            y_train,
+            X_uq,
+            alpha=quantiles,
+            skip_training=skip_training,
+            save_model=save_model,
+            verbose=verbose,
         )
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
     @staticmethod
-    def native_mvnn(X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles,
+    def native_mvnn(
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            X_uq: np.ndarray,
+            quantiles,
             skip_training=True,
-            save_model=True,):
+            save_model=True,
+    ):
         from mean_var_nn import run_mean_var_nn
         return run_mean_var_nn(
             X_train,
@@ -550,7 +567,8 @@ class My_UQ_Comparer(UQ_Comparer):
                 likelihood = self.io_helper.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood,
                                                                        model_likelihood_name)
                 model = self.io_helper.load_torch_model_statedict(ExactGPModel, model_name,
-                                                                  X_train=X_train, y_train=y_train, likelihood=likelihood)
+                                                                  X_train=X_train, y_train=y_train,
+                                                                  likelihood=likelihood)
             except FileNotFoundError:
                 print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
                 skip_training = False

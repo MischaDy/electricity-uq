@@ -30,9 +30,9 @@ def estimate_quantiles(
         x_pred,
         alpha=None,
         as_dict=False,
-        verbose=True,
         skip_training=True,
         save_model=True,
+        verbose=True,
 ):
     """
 
