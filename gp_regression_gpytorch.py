@@ -54,13 +54,7 @@ def measure_runtime(func):
 
 
 @measure_runtime
-def prepare_data(val_frac=0):
-    X_train, X_test, y_train, y_test, X, y = get_data(
-        N_DATAPOINTS,
-        output_cols=['load_to_pred'],
-        return_full_data=True
-    )
-
+def preprocess_data(X_train, X_test, y_train, y_test, val_frac=0):
     # split into train and val
     if val_frac > 0:
         n_samples = X_train.shape[0]
@@ -73,18 +67,18 @@ def prepare_data(val_frac=0):
         X_val, y_val = None, None
 
     if STANDARDIZE_X:
-        X_scaler, (X_train, X_val, X_test, X) = standardize(X_train, X_val, X_test, X, return_scaler=True)
-        X_train, X_val, X_test, X = map(numpy_to_tensor, (X_train, X_val, X_test, X))
+        X_scaler, (X_train, X_val, X_test) = standardize(X_train, X_val, X_test, return_scaler=True)
+        X_train, X_val, X_test = map(numpy_to_tensor, (X_train, X_val, X_test))
     else:
-        X_train, X_val, X_test, X = map(df_to_tensor, (X_train, X_val, X_test, X))
+        X_train, X_val, X_test = map(df_to_tensor, (X_train, X_val, X_test))
 
     if STANDARDIZE_Y:
-        y_scaler, (y_train, y_val, y_test, y) = standardize(y_train, y_val, y_test, y, return_scaler=True)
-        y_train, y_val, y_test, y = map(numpy_to_tensor, (y_train, y_val, y_test, y))
+        y_scaler, (y_train, y_val, y_test) = standardize(y_train, y_val, y_test, return_scaler=True)
+        y_train, y_val, y_test = map(numpy_to_tensor, (y_train, y_val, y_test))
     else:
-        y_train, y_val, y_test, y = map(df_to_tensor, (y_train, y_val, y_test, y))
+        y_train, y_val, y_test = map(df_to_tensor, (y_train, y_val, y_test))
 
-    y_train, y_val, y_test, y = map(lambda y: y.squeeze(), (y_train, y_val, y_test, y))
+    y_train, y_val, y_test = map(lambda y: y.squeeze(), (y_train, y_val, y_test))
 
     shapes = map(lambda arr: arr.shape if arr is not None else None,
                  (X_train, y_train, X_val, y_val, X_test, y_test))
@@ -259,7 +253,12 @@ def plot_uq_result(
 
 def main():
     print('preparing data...')
-    X_train, y_train, X_val, y_val, X_test, y_test = prepare_data(val_frac=VALIDATION_FRAC)
+    X_train, X_test, y_train, y_test = get_data(
+        N_DATAPOINTS,
+        output_cols=['load_to_pred'],
+        return_full_data=False,
+    )
+    X_train, y_train, X_val, y_val, X_test, y_test = preprocess_data(X_train, X_test, y_train, y_test, val_frac=VALIDATION_FRAC)
 
     skip_training = SKIP_TRAINING
     common_prefix, common_postfix = f'{MODEL_NAME}', f'{N_DATAPOINTS}_{N_EPOCHS}'
@@ -319,26 +318,6 @@ def main():
         plot_name='gpytorch',
         plots_path='plots',
     )
-
-
-# def get_data(_n_points_per_group=None, filepath="data.pkl", input_cols=None, output_cols=None,
-#              return_full_data=False, ):
-#     df = pd.read_pickle(filepath)
-#     if output_cols is None:
-#         output_cols = ['load_to_pred']
-#     if input_cols is None:
-#         input_cols = [col for col in df.columns
-#                       if col not in output_cols and not col.startswith('ts')]
-#     lim = 2 * _n_points_per_group if _n_points_per_group is not None else -1
-#     X = df[input_cols].iloc[:lim]
-#     y = df[output_cols].iloc[:lim]
-#
-#     X_train, X_test, y_train, y_test = train_test_split(
-#         X, y, test_size=0.5, shuffle=False
-#     )
-#     if return_full_data:
-#         return X_train, X_test, y_train, y_test, X, y
-#     return X_train, X_test, y_train, y_test
 
 
 def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):

@@ -7,8 +7,9 @@ from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-    "posthoc_laplace",
+    # "posthoc_laplace",
     # "native_quantile_regression",
+    "native_gpytorch",
     # "native_gp",
     # "native_mvnn",
 ]
@@ -455,6 +456,73 @@ class My_UQ_Comparer(UQ_Comparer):
             quantiles,
             **kwargs
         )
+
+    def native_gpytorch(
+        self,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_uq: np.ndarray,
+        quantiles,
+        val_frac=0.1,
+        verbose=True,
+        skip_training=True,
+        model_name='gpytorch_model',
+    ):
+        import torch
+        from gp_regression_gpytorch import preprocess_data
+
+        print('preparing data...')
+        X_train, y_train, X_val, y_val, X_test, y_test = preprocess_data(X_train, X_test, y_train, y_test, val_frac=val_frac)
+
+        common_prefix, common_postfix = f'{model_name}', f'{N_DATAPOINTS}_{N_EPOCHS}'
+        model_name, model_likelihood_name = f'{common_prefix}_{common_postfix}.pth', f'{common_prefix}_likelihood_{common_postfix}.pth'
+        if skip_training:
+            print('skipping training...')
+            try:
+                likelihood = IO_HELPER.load_gpytorch_model(gpytorch.likelihoods.GaussianLikelihood,
+                                                           model_likelihood_name)
+                model = IO_HELPER.load_gpytorch_model(ExactGPModel, model_name,
+                                                      X_train=X_train, y_train=y_train, likelihood=likelihood)
+            except FileNotFoundError:
+                print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
+                skip_training = False
+
+        if not skip_training:
+            print('training...')
+            model, likelihood = train_gpytorch(X_train, y_train, X_val, y_val)
+
+        # noinspection PyUnboundLocalVariable
+        model.eval()
+        # noinspection PyUnboundLocalVariable
+        likelihood.eval()
+
+        if SAVE_MODEL:
+            if skip_training:
+                print('skipped training, so not saving models.')
+            else:
+                print('saving...')
+                IO_HELPER.save_gpytorch_model(model, model_name)
+                IO_HELPER.save_gpytorch_model(likelihood, model_likelihood_name)
+
+        print('evaluating...')
+        # noinspection PyUnboundLocalVariable
+        evaluate(model, likelihood, X_test, y_test)
+
+        print('plotting...')
+        with torch.no_grad():
+            X_uq = torch.row_stack((X_train, X_val, X_test) if X_val is not None else (X_train, X_test))
+            f_preds = model(X_uq)
+        f_mean = f_preds.mean
+        y_preds = f_mean
+        f_std = f_preds.stddev
+        y_std = f_std
+
+        # std2 = f_preds.stddev.mul_(2)
+        # mean = self.mean
+        # return mean.sub(std2), mean.add(std2)
+        y_pred, y_std = ..., ...
+        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
+        return y_pred, y_quantiles, y_std
 
     def native_gp(
         self,
