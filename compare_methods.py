@@ -551,7 +551,7 @@ def plot_uq_result(
         color="green",
     )
     # noinspection PyUnboundLocalVariable
-    label = rf"{plot_name} {f'{100*drawn_quantile}% CI' if drawing_quantiles else '1 std'}"
+    label = rf"{plot_name} {f'{100*drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'}"
     ax.fill_between(
         x_plot_uq.ravel(),
         ci_low,
