@@ -22,7 +22,7 @@ SHOW_PLOTS = False
 PLOT_LOSSES = True
 PLOT_DATA = False
 SAVE_UQ_PLOT = True
-SAVE_MODEL = True
+SAVE_TRAINED = True
 MODEL_NAME = 'gpytorch_model'
 
 VALIDATION_FRAC = 0.1
@@ -280,7 +280,7 @@ def main():
     # noinspection PyUnboundLocalVariable
     likelihood.eval()
 
-    if SAVE_MODEL:
+    if SAVE_TRAINED:
         if skip_training:
             print('skipped training, so not saving models.')
         else:
