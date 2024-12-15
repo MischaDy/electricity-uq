@@ -140,45 +140,73 @@ def standardize(train_data, *arrays_to_standardize, return_scaler=False):
     return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
-def allow_none(func):
-    def wrapper(arg, **kwargs):
-        if arg is None:
-            return
-        return func(arg, **kwargs)
-    return wrapper
-
-
-@allow_none
-def df_to_numpy(df):  #: pd.DataFrame) -> np.ndarray:
+def df_to_np_array(df):  #: pd.DataFrame) -> np.ndarray:
     return df.to_numpy(dtype=float)
 
 
-@allow_none
+def dfs_to_np_arrays(*dfs):
+    return map(df_to_np_array, dfs)
+
+
 def df_to_tensor(df):  # pd.DataFrame) -> torch.Tensor:
-    return numpy_to_tensor(df_to_numpy(df))
+    return np_array_to_tensor(df_to_np_array(df))
 
 
-@allow_none
-def numpy_to_tensor(arr: np.ndarray):  # -> torch.Tensor:
+def dfs_to_tensors(*dfs):
+    return map(df_to_tensor, dfs)
+
+
+def np_array_to_tensor(arr: np.ndarray):  # -> torch.Tensor:
     return torch.Tensor(arr).float()
 
 
-@allow_none
-def tensor_to_numpy(tensor: torch.Tensor):  # -> np.ndarray:
+def np_arrays_to_tensors(*arrays):  # -> torch.Tensor:
+    return map(np_array_to_tensor, arrays)
+
+
+def tensor_to_np_array(tensor: torch.Tensor):  # -> np.ndarray:
     return tensor.numpy(force=True)
 
 
+def tensors_to_np_arrays(*tensors):
+    return map(tensor_to_np_array, tensors)
+
+
 def tensor_to_device(tensor: torch.Tensor) -> torch.Tensor:
+    return next(tensors_to_device(tensor))
+
+
+def tensors_to_device(*tensors):
     cuda_available = torch.cuda.is_available()
     if not cuda_available:
         print('warning: cuda not available!')
-        return tensor
+        return tensors
     device = torch.cuda.current_device()
-    return tensor.to(device)
+    return map(lambda tensor: tensor.to(device), tensors)
 
 
 def make_arr_2d(arr):
     return arr.reshape(-1, 1)
+
+
+def make_arrs_2d(*arrs):
+    return map(make_arr_2d, arrs)
+
+
+def make_ys_1d(*ys):
+    return map(make_y_1d, ys)
+
+
+def make_y_1d(y):
+    return y.squeeze()
+
+
+def make_tensor_contiguous(tensor: torch.Tensor):
+    return tensor.contiguous()
+
+
+def make_tensors_contiguous(*tensors):
+    return map(make_tensor_contiguous, tensors)
 
 
 def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: int):
@@ -194,3 +222,14 @@ def timestamped_filename(prefix, ext):
     timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
     filename = f'{prefix}_{timestamp}.{ext}'
     return filename
+
+
+def train_val_split(X_train, y_train, val_frac: float):
+    assert 0 < val_frac <= 1
+    n_samples = X_train.shape[0]
+    val_size = max(1, round(val_frac * n_samples))
+    train_size = max(1, n_samples - val_size)
+    X_val, y_val = X_train[-val_size:], y_train[-val_size:]
+    X_train, y_train = X_train[:train_size], y_train[:train_size]
+    assert X_train.shape[0] > 0 and X_val.shape[0] > 0
+    return X_train, y_train, X_val, y_val
