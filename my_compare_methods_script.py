@@ -25,7 +25,8 @@ SHOW_PLOTS = True
 SAVE_PLOTS = True
 
 TEST_BASE_MODEL_ONLY = True
-TEST_RUN_ALL_BASE_MODELS = True
+TEST_RUN_ALL_BASE_MODELS = False
+BASE_MODEL = 'RF'
 
 PLOTS_PATH = "comparison_storage/plots"
 
@@ -72,6 +73,7 @@ METHODS_KWARGS = {
         "random_state": 42,
         "lr_reduction_factor": 0.5,
         "lr_patience": 30,
+        "cv_n_iter":5,
     },
 }
 
@@ -162,8 +164,12 @@ class My_UQ_Comparer(UQ_Comparer):
             model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         else:
-            # model = self.my_train_base_model_rf(*args, **kwargs)
-            model = self.my_train_base_model_nn(*args, **kwargs)
+            if BASE_MODEL == 'RF':
+                model = self.my_train_base_model_rf(*args, **kwargs)
+            elif BASE_MODEL == 'NN':
+                model = self.my_train_base_model_nn(*args, **kwargs)
+            else:
+                raise ValueError(f'Unknown base model type: {BASE_MODEL}')
         return model
 
     def my_train_base_model_rf(
