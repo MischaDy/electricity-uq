@@ -53,6 +53,10 @@ METHODS_KWARGS = {
         'skip_training': False,
         'save_model': True,
         'model_name': 'gpytorch_model',
+        'lr': 1e-2,
+        'show_progress': True,
+        'show_plots': True,
+        'do_plot_losses': True,
     },
     "posthoc_conformal_prediction": {
         "n_estimators": 5,
@@ -493,6 +497,10 @@ class My_UQ_Comparer(UQ_Comparer):
             skip_training=True,
             save_model=True,
             model_name='gpytorch_model',
+            lr=1e-2,
+            show_progress=True,
+            show_plots=True,
+            do_plot_losses=True,
     ):
         import torch
         import gpytorch
@@ -522,7 +530,17 @@ class My_UQ_Comparer(UQ_Comparer):
 
         if not skip_training:
             print('training...')
-            model, likelihood = train_gpytorch(X_train, y_train, X_val, y_val)
+            model, likelihood = train_gpytorch(
+                X_train,
+                y_train,
+                X_val,
+                y_val,
+                n_epochs,
+                lr=lr,
+                show_progress=True,
+                show_plots=True,
+                do_plot_losses=True,
+            )
 
         # noinspection PyUnboundLocalVariable
         model.eval()
