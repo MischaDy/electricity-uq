@@ -412,7 +412,7 @@ class My_UQ_Comparer(UQ_Comparer):
             y_train: np.ndarray,
             X_uq: np.ndarray,
             quantiles,
-            base_model,
+            base_model: "NN_Estimator",
             n_iter=100,
             batch_size=20,
             random_seed=42,
@@ -455,7 +455,7 @@ class My_UQ_Comparer(UQ_Comparer):
             X_uq, X_train, y_train = np_arrays_to_tensors(X_uq, X_train, y_train)
             X_uq, X_train, y_train = tensors_to_device(X_uq, X_train, y_train)
             train_loader = get_train_loader(X_train, y_train, batch_size)
-            la = la_instantiator(base_model)
+            la = la_instantiator(base_model.get_nn())
             la.fit(train_loader)
 
             log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)

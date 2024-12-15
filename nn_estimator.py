@@ -248,29 +248,29 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             res = np.array(res, dtype='float32')
         return res
 
+    def get_nn(self) -> nn.Module:
+        return self.model_
+
     def _more_tags(self):
         return {'poor_score': True,
                 '_xfail_checks': {'check_methods_sample_order_invariance': '(barely) failing for unknown reason'}}
 
-    def load_state_dict(self, state_dict):
-        self.model_ = nn.Module()
-        self.model_ = self._nn_builder(..., ...)
-        self.model_.load_state_dict(state_dict)
-
     def __getattr__(self, item):
-        """
-        get missing attribute from underlying model
-        :param item:
-        :return:
-        """
-        if self.is_fitted_:
-            return self.model_.__getattribute__(item)
-        raise AttributeError(f'NN_Estimator has no attribute "{item}", or only has it is after fitting')
+        try:
+            return getattr(self.__getattribute__('model_'), item)
+        except AttributeError:
+            msg = f'NN_Estimator has no attribute "{item}"'
+            if not self.__getattribute__('is_fitted_'):
+                msg += ', or only has it is after fitting'
+            raise AttributeError(msg)
 
     def __call__(self, *args, **kwargs):
-        if self.is_fitted_:
+        if self.__getattribute__('is_fitted_'):
             return self.model_(*args, **kwargs)
         raise TypeError('NN_Estimator is only callable after fitting')
+
+    def __setattr__(self, key, value):
+        self.__dict__[key] = value
 
 
 if __name__ == '__main__':
