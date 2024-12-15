@@ -159,7 +159,7 @@ def train_base_model(
     # todo: ravel?
     cv_obj.fit(X_train, y_train.values.ravel())
     model = cv_obj.best_estimator_
-    print("done")
+    print("done.")
     io_helper.save_model(model, filename_base_model)
     return model
 
@@ -399,7 +399,11 @@ def estimate_pred_interals_no_pfit_enbpi(
         mapie_enbpi = mapie_enbpi.fit(X_train, y_train)
 
     if save_trained:
-        io_helper.save_model(mapie_enbpi, filename_enbpi_no_pfit)
+        if skip_training:
+            print('skipped training, so not saving model.')
+        else:
+            print('saving model...')
+            io_helper.save_model(mapie_enbpi, filename_enbpi_no_pfit)
 
     print("predicting enbpi_no_pfit...")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = mapie_enbpi.predict(
