@@ -11,7 +11,6 @@ METHOD_WHITELIST = [
     # "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gpytorch",
-    "native_gp",
     # "native_mvnn",
 ]
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
@@ -40,10 +39,6 @@ METHODS_KWARGS = {
         "frozen_var_value": 0.1,
     },
     "native_quantile_regression": {
-        "verbose": True,
-    },
-    "native_gp": {
-        'n_restarts_optimizer': 10,
         "verbose": True,
     },
     "native_gpytorch": {
@@ -562,42 +557,6 @@ class My_UQ_Comparer(UQ_Comparer):
         y_quantiles = self.quantiles_gaussian(quantiles, y_preds, y_std)
         return y_preds, y_quantiles, y_std
 
-    def native_gp(
-            self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_uq: np.ndarray,
-            quantiles,
-            verbose=True,
-            n_restarts_optimizer=10,
-    ):
-        from sklearn.gaussian_process import GaussianProcessRegressor
-
-        if verbose:
-            print(f"fitting GP kernel...")
-        kernel = self._get_kernel()
-        gaussian_process = GaussianProcessRegressor(
-            kernel=kernel,
-            normalize_y=False,
-            n_restarts_optimizer=n_restarts_optimizer,
-            random_state=42,
-        )
-        gaussian_process.fit(X_train, y_train)
-        if verbose:
-            print(f"done.")
-            print("kernel:", gaussian_process.kernel_)
-            print("GP predicting...")
-        mean_prediction, std_prediction = gaussian_process.predict(X_uq, return_std=True)
-        if verbose:
-            print("done.")
-        y_pred, y_std = mean_prediction, std_prediction
-        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
-        return y_pred, y_quantiles, y_std
-
-    @staticmethod
-    def _get_kernel():
-        from sklearn.gaussian_process.kernels import RBF, WhiteKernel
-        return RBF() + WhiteKernel()
 
     @staticmethod
     def quantiles_gaussian(quantiles, y_pred, y_std):
