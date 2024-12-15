@@ -1,7 +1,10 @@
 import os
+from typing import Callable
 
 import numpy as np
 import torch
+from laplace import ParametricLaplace
+from torch import nn
 
 
 # noinspection PyPep8Naming
@@ -61,6 +64,21 @@ class IO_Helper:
         model.load_state_dict(state_dict)
         return model
 
+    def load_laplace_model_statedict(
+            self,
+            model_instantiator: Callable[[], nn.Module],
+            la_instantiator: Callable[[nn.Module], ParametricLaplace],
+            base_model_filename="model_state_dict.bin",
+            laplace_model_filename="la_state_dict.bin",
+    ):
+        base_model_filepath, laplace_model_filepath = map(self.get_model_savepath,
+                                                          (base_model_filename, laplace_model_filename))
+        base_model = model_instantiator()
+        base_model.load_state_dict(torch.load(base_model_filepath))
+        la = la_instantiator(base_model)
+        la.load_state_dict(torch.load(laplace_model_filepath))  # todo: only works in new versions!
+        return la
+
     ### SAVERS ###
     def save_array(self, array, filename):
         path = self.get_array_savepath(filename)
@@ -84,6 +102,12 @@ class IO_Helper:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model.state_dict(), path)
 
+    def save_laplace_model_statedict(self, base_model, laplace_model, base_model_filename="model_state_dict.bin",
+                                     laplace_model_filename="la_state_dict.bin"):
+        base_model_filepath, laplace_model_filepath = map(self.get_model_savepath,
+                                                          (base_model_filename, laplace_model_filename))
+        torch.save(base_model.state_dict(), base_model_filepath)
+        torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
     def save_plot(self, filename):
         from matplotlib import pyplot as plt

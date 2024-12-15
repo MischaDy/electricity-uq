@@ -430,31 +430,46 @@ class My_UQ_Comparer(UQ_Comparer):
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
         torch.manual_seed(random_seed)
-        X_uq, X_train, y_train = np_arrays_to_tensors(X_uq, X_train, y_train)
-        X_uq, X_train, y_train = tensors_to_device(X_uq, X_train, y_train)
 
-        train_loader = get_train_loader(X_train, y_train, batch_size)
+        if model_filename is None:
+            n_training_points = X_train.shape[0]
+            model_filename = f"laplace_{n_training_points}_{n_iter}.pth"
+        if skip_training:
+            print("skipping base model training...")
+            try:
+                la = self.io_helper.load_laplace_model_statedict(model_filename)
+            except FileNotFoundError:
+                print(f"error. model {model_filename} not found, so training cannot be skipped. training from scratch.")
+                skip_training = False
 
-        la = Laplace(model, "regression")
+        if not skip_training:
+            X_uq, X_train, y_train = np_arrays_to_tensors(X_uq, X_train, y_train)
+            X_uq, X_train, y_train = tensors_to_device(X_uq, X_train, y_train)
+            train_loader = get_train_loader(X_train, y_train, batch_size)
+            la = Laplace(base_model, "regression")
+            la.fit(train_loader)
 
-        la.fit(train_loader)
+            log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
+            hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
+            iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
+            for _ in iterable:
+                hyper_optimizer.zero_grad()
+                neg_marglik = -la.log_marginal_likelihood(log_prior.exp(), log_sigma.exp())
+                neg_marglik.backward()
+                hyper_optimizer.step()
 
-        log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
-        hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
-        iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
-        for _ in iterable:
-            hyper_optimizer.zero_grad()
-            neg_marglik = -la.log_marginal_likelihood(log_prior.exp(), log_sigma.exp())
-            neg_marglik.backward()
-            hyper_optimizer.step()
-
-        # # Serialization for fitted quantities
-        # state_dict = la.state_dict()
-        # torch.save(state_dict, "state_dict.bin")
-        #
-        # la = Laplace(model, "regression", subset_of_weights="all", hessian_structure="full")
-        # # Load serialized, fitted quantities
-        # la.load_state_dict(torch.load("state_dict.bin"))
+        if save_model:
+            if skip_training:
+                print('skipped training, so not saving model.')
+            else:
+                print('saving model...')
+                # noinspection PyUnboundLocalVariable
+                self.io_helper.save_laplace_model_statedict(
+                    base_model,
+                    la,
+                    base_model_filename="model_state_dict.bin",
+                    laplace_model_filename="la_state_dict.bin"
+                )
 
         f_mu, f_var = la(X_uq)
         f_mu = tensor_to_np_array(f_mu.squeeze())
