@@ -73,7 +73,7 @@ METHODS_KWARGS = {
         "random_state": 42,
         "lr_reduction_factor": 0.5,
         "lr_patience": 30,
-        "cv_n_iter":5,
+        "cv_n_iter": 5,
     },
 }
 
