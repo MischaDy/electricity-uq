@@ -1,5 +1,4 @@
 import copy
-import datetime
 import json
 import os
 from abc import ABC, abstractmethod
@@ -451,17 +450,8 @@ def plot_uq_result(
         ci_low, ci_high = y_preds - y_std / 2, y_preds + y_std / 2
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    # ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
     ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
     ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-    # ax.scatter(
-    #     x_plot_train,
-    #     y_train,
-    #     color="black",
-    #     marker="o",
-    #     alpha=0.8,
-    #     label="training points",
-    # )
     ax.plot(
         x_plot_uq,
         y_preds,
@@ -493,7 +483,7 @@ def plot_uq_result(
         plt.close(fig)
 
 
-def print_metrics(uq_metrics):  #  dict[str, dict[str, dict[str, Any]]]):
+def print_metrics(uq_metrics):
     print()
     for uq_type, method_metrics in uq_metrics.items():
         print(f"{uq_type} metrics:")
