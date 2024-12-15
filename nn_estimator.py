@@ -130,7 +130,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, self.val_frac)
-        assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
@@ -156,8 +155,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         for _ in epochs:
             model.train()
             for X, y in train_loader:
-                optimizer.zero_grad()
-                loss = criterion(model(X), y)
+                optimizer.zero_grad()  # todo: introduce y_pred
+                y_pred = model(X)
+                loss = criterion(y_pred, y)
                 loss.backward()
                 optimizer.step()
             model.eval()

@@ -18,7 +18,7 @@ QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use me
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 100
+N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
 PLOT_RESULTS = True
 SHOW_PLOTS = True
@@ -26,7 +26,7 @@ SAVE_PLOTS = True
 
 TEST_BASE_MODEL_ONLY = True
 TEST_RUN_ALL_BASE_MODELS = False
-BASE_MODEL = 'RF'
+BASE_MODEL = 'NN'
 
 PLOTS_PATH = "comparison_storage/plots"
 
@@ -68,10 +68,11 @@ METHODS_KWARGS = {
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,
-        "show_progress_bar": False,
+        "show_progress_bar": True,
         "show_losses_plot": False,
         "save_losses_plot": True,
         "random_state": 42,
+        "lr": 1e-2,
         "lr_reduction_factor": 0.5,
         "lr_patience": 30,
         "cv_n_iter": 5,
@@ -270,7 +271,7 @@ class My_UQ_Comparer(UQ_Comparer):
             model_filename=None,
             val_frac=0.1,
             lr=0.1,
-            lr_patience=5,
+            lr_patience=30,
             lr_reduction_factor=0.5,
             show_progress_bar=True,
             show_losses_plot=True,
