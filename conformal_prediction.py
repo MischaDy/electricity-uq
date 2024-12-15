@@ -43,7 +43,7 @@ You can use a gamma coefficient to adjust the strength of the correction.
 """
 
 import warnings
-from typing import Iterable
+from typing import Iterable, Any
 
 import numpy as np
 import numpy.typing as npt
@@ -66,19 +66,19 @@ from io_helper import IO_Helper
 
 warnings.simplefilter("ignore")
 
-# todo: remove
-N_POINTS_TEMP = 100  # per group
+N_POINTS_PER_GROUP = 100
 
-IO_HELPER = IO_Helper("mapie_storage")
+STORAGE_PATH = "mapie_storage"
 
 
-def main(io_helper):
+def main(storage_path):
+    io_helper = IO_Helper(storage_path)
     print("loading data")
-    X_train, X_test, y_train, y_test = get_data(N_POINTS_TEMP)
+    X_train, X_test, y_train, y_test = get_data(N_POINTS_PER_GROUP)
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
     print("plotting data")
-    plot_data(X_train, X_test, y_train, y_test, io_helper=io_helper)
+    plot_data(X_train, X_test, y_train, y_test, io_helper=io_helper, filename_postfix=N_POINTS_PER_GROUP)
 
     print("training base model")
     model_params_choices = {
@@ -92,6 +92,7 @@ def main(io_helper):
         y_train=y_train,
         skip_training=True,
         io_helper=io_helper,
+        filename_postfix=N_POINTS_PER_GROUP,
     )
 
     # print('estimating prediction intervals')
@@ -103,15 +104,16 @@ def main(io_helper):
 
 
 def train_base_model(
-    model_class,
-    model_params_choices=None,
-    model_init_params=None,
-    X_train=None,
-    y_train=None,
-    skip_training=True,
-    cv_n_iter=100,
-    n_jobs=-1,
-    io_helper: IO_Helper = None,
+        model_class,
+        model_params_choices=None,
+        model_init_params=None,
+        X_train=None,
+        y_train=None,
+        skip_training=True,
+        cv_n_iter=100,
+        n_jobs=-1,
+        io_helper: IO_Helper = None,
+        filename_postfix: Any = '',
 ):
     """Optimize the base estimator
 
@@ -126,7 +128,7 @@ def train_base_model(
     elif "random_seed" not in model_init_params:
         model_init_params["random_seed"] = random_seed
 
-    filename_base_model = f"base_{model_class.__name__}_{N_POINTS_TEMP}.model"
+    filename_base_model = f"base_{model_class.__name__}_{filename_postfix}.model"
 
     if skip_training:
         # Model previously optimized with a cross-validation:
@@ -166,7 +168,15 @@ def train_base_model(
 
 
 # noinspection PyPep8Naming
-def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, io_helper: IO_Helper = None):
+def estimate_prediction_intervals_all(
+        model,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        io_helper: IO_Helper = None,
+        filename_postfix='',
+):
     """
     Estimate prediction intervals on test set
 
@@ -216,6 +226,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
         skip_training=skip_base_training,
         save_trained=save_trained,
         io_helper=io_helper,
+        filename_postfix=filename_postfix,
     )
     y_pis_enbpi_no_pfit = y_pis_enbpi_no_pfit.squeeze()
 
@@ -234,6 +245,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
         io_helper=io_helper,
+        filename_postfix=filename_postfix,
     )
     y_pis_aci_no_pfit = y_pis_aci_no_pfit.squeeze()
 
@@ -251,7 +263,8 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
         y_test,
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
-        io_helper=io_helper
+        io_helper=io_helper,
+        filename_postfix=filename_postfix,
     )
     y_pis_enbpi_pfit = y_pis_enbpi_pfit.squeeze()
 
@@ -269,13 +282,15 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
         y_test,
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
-        io_helper=io_helper
+        io_helper=io_helper,
+        filename_postfix=filename_postfix,
     )
     y_pis_aci_pfit = y_pis_aci_pfit.squeeze()
 
     print("\n===== comparing coverages")
     compare_coverages(
-        y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit, io_helper=io_helper
+        y_test, y_pis_aci_no_pfit, y_pis_aci_pfit, y_pis_enbpi_no_pfit, y_pis_enbpi_pfit, io_helper=io_helper,
+        filename_postfix=N_POINTS_PER_GROUP
     )
 
     print("\n===== plotting prediction intervals")
@@ -296,7 +311,7 @@ def estimate_prediction_intervals_all(model, X_train, y_train, X_test, y_test, i
 
 # noinspection PyPep8Naming
 def estimate_prediction_intervals_enbpi_nopfit_all_quantiles(
-    model, X_train, y_train, X_test, y_test, io_helper: IO_Helper = None,
+        model, X_train, y_train, X_test, y_test, io_helper: IO_Helper = None,
 ):
     alpha = np.linspace(0.01, 0.99, num=99, endpoint=True)
     skip_base_training = True
@@ -317,27 +332,30 @@ def estimate_prediction_intervals_enbpi_nopfit_all_quantiles(
 
     print("\n===== plotting prediction intervals")
     plot_prediction_intervals_all_quantiles(
-        y_train, y_test, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, io_helper=io_helper
+        y_train, y_test, y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit, io_helper=io_helper,
+        filename_postfix=N_POINTS_PER_GROUP
     )
 
 
 # noinspection PyPep8Naming
 def estimate_pred_interals_no_pfit_enbpi(
-    model,
-    cv_mapie_ts,
-    alpha: float | Iterable[float],
-    X_test,
-    X_train=None,
-    y_train=None,
-    skip_training=True,
-    save_trained=True,
-    io_helper: IO_Helper = None,
-    agg_function: str = 'mean',
-    verbose=1,
+        model,
+        cv_mapie_ts,
+        alpha: float | Iterable[float],
+        X_test,
+        X_train=None,
+        y_train=None,
+        skip_training=True,
+        save_trained=True,
+        io_helper: IO_Helper = None,
+        agg_function: str = 'mean',
+        verbose=1,
+        filename_postfix: Any = '',
 ) -> tuple[npt.NDArray, npt.NDArray]:
     """
     Estimate prediction intervals without partial fit using EnbPI.
 
+    :param filename_postfix:
     :param save_trained:
     :param verbose:
     :param agg_function:
@@ -363,9 +381,7 @@ def estimate_pred_interals_no_pfit_enbpi(
         model, method="enbpi", cv=cv_mapie_ts, agg_function=agg_function, n_jobs=-1, verbose=verbose,
     )
 
-    n_training_points = X_train.shape[0]
-    n_test_points = X_test.shape[0]
-    filename_enbpi_no_pfit = f"mapie_enbpi_no_pfit_{n_training_points}_{n_test_points}.model"
+    filename_enbpi_no_pfit = f"mapie_enbpi_no_pfit_{filename_postfix}.model"
 
     # import ipdb
     # ipdb.set_trace()
@@ -394,19 +410,20 @@ def estimate_pred_interals_no_pfit_enbpi(
 
 # noinspection PyPep8Naming
 def estimate_pred_interals_no_pfit_aci(
-    model,
-    cv_mapie_ts,
-    y_pred_enbpi_no_pfit,
-    y_pis_enbpi_no_pfit,
-    alpha,
-    gap,
-    X_test,
-    y_test,
-    X_train=None,
-    y_train=None,
-    skip_base_training=True,
-    skip_adaptation=True,
-    io_helper: IO_Helper = None,
+        model,
+        cv_mapie_ts,
+        y_pred_enbpi_no_pfit,
+        y_pis_enbpi_no_pfit,
+        alpha,
+        gap,
+        X_test,
+        y_test,
+        X_train=None,
+        y_train=None,
+        skip_base_training=True,
+        skip_adaptation=True,
+        io_helper: IO_Helper = None,
+        filename_postfix='',
 ):
     """estimate prediction intervals without partial fit, ACI."""
     return _estimate_prediction_intervals_worker(
@@ -425,24 +442,26 @@ def estimate_pred_interals_no_pfit_aci(
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
         io_helper=io_helper,
+        filename_postfix=filename_postfix,
     )
 
 
 # noinspection PyPep8Naming
 def estimate_pred_interals_pfit_enbpi(
-    model,
-    cv_mapie_ts,
-    y_pred_enbpi_no_pfit,
-    y_pis_enbpi_no_pfit,
-    alpha,
-    gap,
-    X_train,
-    y_train,
-    X_test,
-    y_test,
-    skip_base_training=True,
-    skip_adaptation=True,
-    io_helper: IO_Helper = None,
+        model,
+        cv_mapie_ts,
+        y_pred_enbpi_no_pfit,
+        y_pis_enbpi_no_pfit,
+        alpha,
+        gap,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        skip_base_training=True,
+        skip_adaptation=True,
+        io_helper: IO_Helper = None,
+        filename_postfix='',
 ):
     """
     estimate prediction intervals with partial fit.
@@ -464,24 +483,26 @@ def estimate_pred_interals_pfit_enbpi(
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
         io_helper=io_helper,
+        filename_postfix=filename_postfix,
     )
 
 
 # noinspection PyPep8Naming
 def estimate_pred_interals_pfit_aci(
-    model,
-    cv_mapie_ts,
-    y_pred_aci_no_pfit,
-    y_pis_aci_no_pfit,
-    alpha,
-    gap,
-    X_train,
-    y_train,
-    X_test,
-    y_test,
-    skip_base_training=True,
-    skip_adaptation=True,
-    io_helper: IO_Helper = None,
+        model,
+        cv_mapie_ts,
+        y_pred_aci_no_pfit,
+        y_pis_aci_no_pfit,
+        alpha,
+        gap,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+        skip_base_training=True,
+        skip_adaptation=True,
+        io_helper: IO_Helper = None,
+        filename_postfix='',
 ):
     """
     estimate prediction intervals with adapt_conformal_inference.
@@ -504,33 +525,35 @@ def estimate_pred_interals_pfit_aci(
         skip_base_training=skip_base_training,
         skip_adaptation=skip_adaptation,
         io_helper=io_helper,
+        filename_postfix=filename_postfix,
     )
 
 
 # noinspection PyPep8Naming
 def _estimate_prediction_intervals_worker(
-    model,
-    cv_mapie_ts,
-    y_pred_shape,
-    y_pis_shape,
-    alpha,
-    gap,
-    X_test,
-    y_test,
-    method,
-    with_partial_fit,
-    X_train=None,
-    y_train=None,
-    skip_base_training=True,
-    skip_adaptation=True,
-    io_helper: IO_Helper = None,
+        model,
+        cv_mapie_ts,
+        y_pred_shape,
+        y_pis_shape,
+        alpha,
+        gap,
+        X_test,
+        y_test,
+        method,
+        with_partial_fit,
+        X_train=None,
+        y_train=None,
+        skip_base_training=True,
+        skip_adaptation=True,
+        io_helper: IO_Helper = None,
+        filename_postfix='',
 ):
     """overarching function for estimating prediction intervals"""
     pfit_str = "pfit" if with_partial_fit else "no_pfit"
-    filename_model_base = f"mapie_{method}_{N_POINTS_TEMP}.model"
-    filename_model_adapted = f"model_{method}_{pfit_str}_{N_POINTS_TEMP}.model"
-    filename_arr_y_pred = f"y_pred_{method}_{pfit_str}_{N_POINTS_TEMP}.npy"
-    filename_arr_y_pis = f"y_pis_{method}_{pfit_str}_{N_POINTS_TEMP}.npy"
+    filename_model_base = f"mapie_{method}_{filename_postfix}.model"
+    filename_model_adapted = f"model_{method}_{pfit_str}_{filename_postfix}.model"
+    filename_arr_y_pred = f"y_pred_{method}_{pfit_str}_{filename_postfix}.npy"
+    filename_arr_y_pis = f"y_pis_{method}_{pfit_str}_{filename_postfix}.npy"
 
     if skip_adaptation:
         try:
@@ -622,7 +645,8 @@ def compute_scores(y_pis, y_test, eta):
 
 
 # noinspection PyPep8Naming
-def plot_data(X_train, X_test, y_train, y_test, filename="data", do_save_figure=True, io_helper: IO_Helper = None,):
+def plot_data(X_train, X_test, y_train, y_test, filename="data", do_save_figure=True, io_helper: IO_Helper = None,
+              filename_postfix: Any = '', ):
     """visualize training and test sets"""
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -636,23 +660,24 @@ def plot_data(X_train, X_test, y_train, y_test, filename="data", do_save_figure=
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
     if do_save_figure:
-        io_helper.save_plot(f"{filename}_{N_POINTS_TEMP}.png")
+        io_helper.save_plot(f"{filename}_{filename_postfix}.png")
     plt.show()
 
 
 def plot_prediction_intervals(
-    y_train,
-    y_test,
-    y_pred_enbpi_no_pfit,
-    y_pred_enbpi_pfit,
-    y_pis_enbpi_no_pfit,
-    y_pis_enbpi_pfit,
-    y_pred_aci_no_pfit,
-    y_pred_aci_pfit,
-    y_pis_aci_no_pfit,
-    y_pis_aci_pfit,
-    filename="prediction_intervals",
-    io_helper: IO_Helper = None,
+        y_train,
+        y_test,
+        y_pred_enbpi_no_pfit,
+        y_pred_enbpi_pfit,
+        y_pis_enbpi_no_pfit,
+        y_pis_enbpi_pfit,
+        y_pred_aci_no_pfit,
+        y_pred_aci_pfit,
+        y_pis_aci_no_pfit,
+        y_pis_aci_pfit,
+        filename="prediction_intervals",
+        filename_postfix='',
+        io_helper: IO_Helper = None,
 ):
     """
     Plot estimated prediction intervals on one-step ahead forecast
@@ -707,7 +732,7 @@ def plot_prediction_intervals(
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
-    io_helper.save_plot(f"{filename}1_{N_POINTS_TEMP}.png")
+    io_helper.save_plot(f"{filename}1_{filename_postfix}.png")
     plt.show()
 
     fig, axs = plt.subplots(
@@ -732,12 +757,13 @@ def plot_prediction_intervals(
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
-    io_helper.save_plot(f"{filename}2_{N_POINTS_TEMP}.png")
+    io_helper.save_plot(f"{filename}2_{filename_postfix}.png")
     plt.show()
 
 
 def plot_prediction_intervals_all_quantiles(
-    y_train, y_test, y_pred, y_pis, filename="prediction_intervals_all_quantiles", io_helper: IO_Helper = None,
+        y_train, y_test, y_pred, y_pis, filename="prediction_intervals_all_quantiles", io_helper: IO_Helper = None,
+        filename_postfix: Any = '',
 ):
     coverage, width, cwc = compute_scores(y_pis, y_test, eta=10)
 
@@ -763,18 +789,19 @@ def plot_prediction_intervals_all_quantiles(
         ax.set_title(title)
         ax.legend()
     fig.tight_layout()
-    io_helper.save_plot(f"{filename}1_{N_POINTS_TEMP}.png")
+    io_helper.save_plot(f"{filename}1_{filename_postfix}.png")
     plt.show()
 
 
 def compare_coverages(
-    y_test,
-    y_pis_aci_no_pfit,
-    y_pis_aci_pfit,
-    y_pis_enbpi_no_pfit,
-    y_pis_enbpi_pfit,
-    filename="coverages",
-    io_helper: IO_Helper = None,
+        y_test,
+        y_pis_aci_no_pfit,
+        y_pis_aci_pfit,
+        y_pis_enbpi_no_pfit,
+        y_pis_enbpi_pfit,
+        filename="coverages",
+        io_helper: IO_Helper = None,
+        filename_postfix: Any = '',
 ):
     """
     compare coverages obtained by MAPIE with and without update of the residuals on a 24-hour rolling
@@ -854,9 +881,9 @@ def compare_coverages(
     )
 
     plt.legend()
-    io_helper.save_plot(f"{filename}_{N_POINTS_TEMP}.png")
+    io_helper.save_plot(f"{filename}_{filename_postfix}.png")
     plt.show()
 
 
 if __name__ == "__main__":
-    main(IO_HELPER)
+    main(STORAGE_PATH)
