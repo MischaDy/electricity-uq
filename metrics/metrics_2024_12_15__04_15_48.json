@@ -1,0 +1,12 @@
+{
+    "posthoc": {},
+    "native": {
+        "native_gp": {
+            "rmse": 0.2183086957280436,
+            "smape_scaled": 0.27581886766660274,
+            "crps": null,
+            "nll_gaussian": 0.7794468629422946,
+            "mean_pinball": 0.018134804726874378
+        }
+    }
+}

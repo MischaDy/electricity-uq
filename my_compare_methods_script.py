@@ -10,8 +10,8 @@ METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    "native_gpytorch",
-    # "native_gp",
+    # "native_gpytorch",
+    "native_gp",
     # "native_mvnn",
 ]
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
