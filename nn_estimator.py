@@ -48,7 +48,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         "lr_reduction_factor": [float],
         "verbose": [int],
         "skip_training": [bool],
-        "save_trained": [bool],
+        "save_model": [bool],
         "to_standardize": [str],
         "val_frac": [float],
         "use_scheduler": [bool],

@@ -210,7 +210,7 @@ def estimate_prediction_intervals_all(
     alpha = 0.05
     gap = 1
     skip_base_training = True
-    save_trained = True
+    save_model = True
     skip_adaptation = True
 
     cv_mapie_ts = BlockBootstrap(n_resamplings=10, n_blocks=10, overlapping=False, random_state=42)
@@ -224,7 +224,7 @@ def estimate_prediction_intervals_all(
         X_train,
         y_train,
         skip_training=skip_base_training,
-        save_trained=save_trained,
+        save_model=save_model,
         io_helper=io_helper,
         filename_postfix=filename_postfix,
     )
@@ -346,7 +346,7 @@ def estimate_pred_interals_no_pfit_enbpi(
         X_train=None,
         y_train=None,
         skip_training=True,
-        save_trained=True,
+        save_model=True,
         io_helper: IO_Helper = None,
         agg_function: str = 'mean',
         verbose=1,
@@ -356,7 +356,7 @@ def estimate_pred_interals_no_pfit_enbpi(
     Estimate prediction intervals without partial fit using EnbPI.
 
     :param filename_postfix:
-    :param save_trained:
+    :param save_model:
     :param verbose:
     :param agg_function:
     :param io_helper:
@@ -398,7 +398,7 @@ def estimate_pred_interals_no_pfit_enbpi(
         print("training enbpi_no_pfit...")
         mapie_enbpi = mapie_enbpi.fit(X_train, y_train)
 
-    if save_trained:
+    if save_model:
         if skip_training:
             print('skipped training, so not saving model.')
         else:

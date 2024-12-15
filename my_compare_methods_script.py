@@ -37,37 +37,41 @@ METHODS_KWARGS = {
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
+        'skip_training': False,
+        'save_model': True,
     },
     "native_quantile_regression": {
+        'skip_training': False,
+        'save_model': True,
         "verbose": True,
     },
     "native_gpytorch": {
         'n_epochs': 100,
         'val_frac': 0.1,
-        'verbose': True,
-        'skip_training': False,
-        'save_model': True,
-        'model_name': 'gpytorch_model',
         'lr': 1e-2,
         'show_progress': True,
         'show_plots': True,
         'do_plot_losses': True,
+        'skip_training': True,
+        'save_model': True,
+        'model_name': 'gpytorch_model',
+        'verbose': True,
     },
     "posthoc_conformal_prediction": {
         "n_estimators": 5,
         "verbose": 1,
-        "skip_training": False,
-        "save_trained": True,
+        "skip_training": True,
+        "save_model": True,
     },
     "posthoc_laplace": {
         "n_iter": 300,
         'skip_training': True,  # todo: implement!
-        'save_trained': True,  # todo: implement!
+        'save_model': True,  # todo: implement!
     },
-    "base_model": {
+    "base_model": {  # todo: split
         "n_iter": 100,
         "skip_training": True,
-        "save_trained": True,
+        "save_model": True,
         "verbose": 1,
         "show_progress_bar": True,
         "show_losses_plot": False,
@@ -184,7 +188,7 @@ class My_UQ_Comparer(UQ_Comparer):
             skip_training=True,
             n_jobs=-1,
             cv_n_iter=10,
-            save_trained=True,
+            save_model=True,
             verbose=True,
             **kwargs,
     ):
@@ -197,7 +201,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param skip_training:
         :param n_jobs:
         :param cv_n_iter:
-        :param save_trained:
+        :param save_model:
         :param verbose:
         :param kwargs: unused kwargs (for other base model)
         :return:
@@ -254,7 +258,7 @@ class My_UQ_Comparer(UQ_Comparer):
         cv_obj.fit(X_train, y_train.ravel())
         model = cv_obj.best_estimator_
         print("done.")
-        if save_trained:
+        if save_model:
             print('saving model...')
             self.io_helper.save_model(model, filename_base_model)
         return model
@@ -268,7 +272,7 @@ class My_UQ_Comparer(UQ_Comparer):
             random_seed=42,
             verbose: int = 1,
             skip_training=True,
-            save_trained=True,
+            save_model=True,
             model_filename=None,
             val_frac=0.1,
             lr=0.1,
@@ -288,7 +292,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param lr:
         :param lr_patience:
         :param model_filename:
-        :param save_trained:
+        :param save_model:
         :param skip_training:
         :param verbose:
         :param X_train: shape (n_samples, n_dims)
@@ -332,7 +336,7 @@ class My_UQ_Comparer(UQ_Comparer):
         )
         model.fit(X_train, y_train)
 
-        if save_trained:
+        if save_model:
             print('saving model...')
             self.io_helper.save_torch_model(model, model_filename)
 
@@ -353,11 +357,11 @@ class My_UQ_Comparer(UQ_Comparer):
             bootstrap_overlapping_blocks=False,
             verbose=1,
             skip_training=True,
-            save_trained=True,
+            save_model=True,
     ):
         """
         
-        :param save_trained:
+        :param save_model:
         :param skip_training:
         :param verbose:
         :param X_train:
@@ -389,7 +393,7 @@ class My_UQ_Comparer(UQ_Comparer):
             X_train,
             y_train,
             skip_training=skip_training,
-            save_trained=save_trained,
+            save_model=save_model,
             io_helper=self.io_helper,
             agg_function='mean',
             verbose=verbose,
@@ -414,7 +418,7 @@ class My_UQ_Comparer(UQ_Comparer):
             random_seed=42,
             verbose=True,
             skip_training=True,
-            save_trained=True,
+            save_model=True,
     ):
         from laplace import Laplace
         from tqdm import tqdm
