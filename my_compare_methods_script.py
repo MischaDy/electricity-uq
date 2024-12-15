@@ -10,7 +10,7 @@ METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    "native_gpytorch",
+    # "native_gpytorch",
     # "native_gp",
     # "native_mvnn",
 ]
@@ -63,7 +63,7 @@ METHODS_KWARGS = {
         "n_iter": 300,
     },
     "base_model": {
-        "n_iter": 1000,
+        "n_iter": 100,
         "skip_training": False,
         "save_trained": True,
         "verbose": 1,
@@ -244,8 +244,9 @@ class My_UQ_Comparer(UQ_Comparer):
         # todo: ravel?
         cv_obj.fit(X_train, y_train.ravel())
         model = cv_obj.best_estimator_
-        print("done")
+        print("done.")
         if save_trained:
+            print('saving model...')
             self.io_helper.save_model(model, filename_base_model)
         return model
 
@@ -321,6 +322,7 @@ class My_UQ_Comparer(UQ_Comparer):
         model.fit(X_train, y_train)
 
         if save_trained:
+            print('saving model...')
             self.io_helper.save_torch_model(model, model_filename)
 
         # noinspection PyTypeChecker
