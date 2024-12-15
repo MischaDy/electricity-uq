@@ -114,7 +114,6 @@ class My_UQ_Comparer(UQ_Comparer):
         self.to_standardize = to_standardize
         self.n_points_per_group = n_points_per_group
 
-    # todo: remove param?
     def get_data(self):
         """
         :return: X_train, X_test, y_train, y_test, X, y
@@ -128,40 +127,50 @@ class My_UQ_Comparer(UQ_Comparer):
         y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
         return X_train, X_test, y_train, y_test, X, y
 
-    # todo: type hints!
-    def compute_metrics(
-            self, y_pred, y_quantiles, y_std, y_true, quantiles=None
-    ) -> dict[str, float]:
-        """
+    def compute_metrics(self, y_pred, y_quantiles, y_std, y_true, quantiles=None) -> dict[str, float]:
+        metrics = self.compute_metrics_det(y_pred, y_true)
+        metrics_uq = self.compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
+        metrics.update(metrics_uq)
+        return metrics
 
-        :param y_pred: predicted y-values
-        :param y_quantiles:
-        :param y_std:
-        :param y_true:
-        :param quantiles:
-        :return:
-        """
-        from metrics import rmse, smape_scaled, crps, nll_gaussian, mean_pinball_loss
-
+    @classmethod
+    def compute_metrics_det(cls, y_pred, y_true) -> dict[str, float]:
         # todo: sharpness? calibration? PIT? coverage?
-        # todo: skill score (but what to use as benchmark)?
+        from metrics import rmse, smape_scaled
 
-        def clean_y(y):
-            if y is None:
-                return y
-            return np.array(y).squeeze()
-
-        y_pred, y_quantiles, y_std, y_true = map(clean_y, (y_pred, y_quantiles, y_std, y_true))
+        y_pred, y_true = cls._clean_ys_for_metrics(y_pred, y_true)
         metrics = {
             "rmse": rmse(y_true, y_pred),
             "smape_scaled": smape_scaled(y_true, y_pred),
+        }
+        return cls._clean_metrics(metrics)
+
+    @classmethod
+    def compute_metrics_uq(cls, y_pred, y_quantiles, y_std, y_true, quantiles=None) -> dict[str, float]:
+        # todo: sharpness? calibration? PIT? coverage?
+        from metrics import crps, nll_gaussian, mean_pinball_loss
+
+        y_pred, y_quantiles, y_std, y_true = cls._clean_ys_for_metrics(y_pred, y_quantiles, y_std, y_true)
+        metrics = {
             "crps": crps(y_true, y_pred, y_std),
             "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
             "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
         }
+        return cls._clean_metrics(metrics)
+
+    @staticmethod
+    def _clean_ys_for_metrics(*ys):
+        for y in ys:
+            if y is None:
+                yield y
+            else:
+                yield np.array(y).squeeze()
+
+    @staticmethod
+    def _clean_metrics(metrics):
         metrics = {
-            key: (float(value) if value is not None else value)
-            for key, value in metrics.items()
+            metric_name: (None if value is None else float(value))
+            for metric_name, value in metrics.items()
         }
         return metrics
 
