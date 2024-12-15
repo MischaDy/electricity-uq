@@ -8,8 +8,8 @@ from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-    # "posthoc_laplace",
-    "native_quantile_regression",
+    "posthoc_laplace",
+    # "native_quantile_regression",
     # "native_gpytorch",
     # "native_gp",
     # "native_mvnn",
@@ -62,6 +62,8 @@ METHODS_KWARGS = {
     },
     "posthoc_laplace": {
         "n_iter": 300,
+        'skip_training': True,  # todo: implement!
+        'save_trained': True,  # todo: implement!
     },
     "base_model": {
         "n_iter": 100,
@@ -412,6 +414,8 @@ class My_UQ_Comparer(UQ_Comparer):
             batch_size=20,
             random_seed=42,
             verbose=True,
+            skip_training=True,
+            save_trained=True,
     ):
         from laplace import Laplace
         from tqdm import tqdm
