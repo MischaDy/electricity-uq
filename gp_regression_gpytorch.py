@@ -1,13 +1,14 @@
 import gpytorch
 import torch
 
-from helpers import tensor_to_numpy, standardize, numpy_to_tensor, df_to_tensor, get_data
+from helpers import standardize, get_data, train_val_split, make_tensors_contiguous, \
+    tensors_to_device, tensors_to_np_arrays, dfs_to_tensors, np_arrays_to_tensors, make_ys_1d
 from io_helper import IO_Helper
 
-N_EPOCHS = 1000
+N_EPOCHS = 100
 LR = 1e-1  # 1e-3
 
-N_DATAPOINTS = 800
+N_DATAPOINTS = 100
 STANDARDIZE_X = True
 STANDARDIZE_Y = True
 PRECOND_SIZE = 10
@@ -26,7 +27,7 @@ MODEL_NAME = 'gpytorch_model'
 
 VALIDATION_FRAC = 0.1
 
-IO_HELPER = IO_Helper('.')
+IO_HELPER = IO_Helper('gpytorch_storage')
 
 
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -54,51 +55,33 @@ def measure_runtime(func):
 
 
 @measure_runtime
-def preprocess_data(X_train, X_test, y_train, y_test, val_frac=0):
-    # split into train and val
-    if val_frac > 0:
-        n_samples = X_train.shape[0]
-        val_size = max(1, round(val_frac * n_samples))
-        train_size = max(1, n_samples - val_size)
-        X_val, y_val = X_train[-val_size:], y_train[-val_size:]
-        X_train, y_train = X_train[:train_size], y_train[:train_size]
-        assert X_train.shape[0] > 0 and X_val.shape[0] > 0
-    else:
-        X_val, y_val = None, None
+def preprocess_data(X_train, X_test, y_train, y_test, val_frac, standardize_x, standardize_y):
+    X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac=val_frac)
 
-    if STANDARDIZE_X:
+    if standardize_x:
         X_scaler, (X_train, X_val, X_test) = standardize(X_train, X_val, X_test, return_scaler=True)
-        X_train, X_val, X_test = map(numpy_to_tensor, (X_train, X_val, X_test))
+        X_train, X_val, X_test = np_arrays_to_tensors(X_train, X_val, X_test)
     else:
-        X_train, X_val, X_test = map(df_to_tensor, (X_train, X_val, X_test))
+        X_train, X_val, X_test = dfs_to_tensors(X_train, X_val, X_test)
 
-    if STANDARDIZE_Y:
+    if standardize_y:
         y_scaler, (y_train, y_val, y_test) = standardize(y_train, y_val, y_test, return_scaler=True)
-        y_train, y_val, y_test = map(numpy_to_tensor, (y_train, y_val, y_test))
+        y_train, y_val, y_test = np_arrays_to_tensors(y_train, y_val, y_test)
     else:
-        y_train, y_val, y_test = map(df_to_tensor, (y_train, y_val, y_test))
+        y_train, y_val, y_test = dfs_to_tensors(y_train, y_val, y_test)
 
-    y_train, y_val, y_test = map(lambda y: y.squeeze(), (y_train, y_val, y_test))
+    y_train, y_val, y_test = make_ys_1d(y_train, y_val, y_test)
 
-    shapes = map(lambda arr: arr.shape if arr is not None else None,
-                 (X_train, y_train, X_val, y_val, X_test, y_test))
+    shapes = map(lambda arr: arr.shape, (X_train, y_train, X_val, y_val, X_test, y_test))
     print("data shapes:", ' - '.join(map(str, shapes)))
 
     if PLOT_DATA:
         print('plotting data...')
         plot_data(X_train, y_train, X_val, y_val, X_test, y_test)
 
-    # make continguous and map to device
     print('making data contiguous and mapping to device...')
-    X_train, y_train, X_val, y_val, X_test, y_test = map(lambda tensor: tensor.contiguous() if tensor is not None else None,
-                                                         (X_train, y_train, X_val, y_val, X_test, y_test))
-    if torch.cuda.is_available():
-        output_device = torch.device('cuda:0')
-    else:
-        print('warning: cuda unavailable!')
-        output_device = torch.device('cpu')
-    X_train, y_train, X_val, y_val, X_test, y_test = map(lambda tensor: tensor.to(output_device) if tensor is not None else None,
-                                                         (X_train, y_train, X_val, y_val, X_test, y_test))
+    X_train, y_train, X_val, y_val, X_test, y_test = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_test, y_test)
+    X_train, y_train, X_val, y_val, X_test, y_test = tensors_to_device(X_train, y_train, X_val, y_val, X_test, y_test)
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
@@ -106,10 +89,15 @@ def preprocess_data(X_train, X_test, y_train, y_test, val_frac=0):
 def train_gpytorch(
         X_train,
         y_train,
-        X_val=None,
-        y_val=None,
+        X_val,
+        y_val,
+        n_epochs,
+        use_scheduler=True,
         lr_patience=30,
         lr_reduction_factor=0.5,
+        show_progress=True,
+        show_plots=True,
+        do_plot_losses=True,
 ):
     from torch.optim.lr_scheduler import ReduceLROnPlateau
     import numpy as np
@@ -129,7 +117,6 @@ def train_gpytorch(
 
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
-    use_scheduler = False if X_val is None else USE_SCHEDULER
 
     # "Loss" for GPs - the marginal log likelihood
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
@@ -137,8 +124,8 @@ def train_gpytorch(
     # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
 
     losses = []
-    epochs = np.arange(N_EPOCHS) + 1
-    if SHOW_PROGRESS:
+    epochs = np.arange(n_epochs) + 1
+    if show_progress:
         epochs = tqdm(epochs)
     for epoch in epochs:
         model.train()
@@ -147,15 +134,6 @@ def train_gpytorch(
         y_pred = model(X_train)
         loss = -mll(y_pred, y_train).sum()
         losses.append(loss.item())
-        # if SHOW_PROGRESS:
-        #     print_values = dict(
-        #         loss=loss.item(),
-        #         ls=model.covar_module.base_kernel.lengthscale.norm().item(),
-        #         os=model.covar_module.outputscale.item(),
-        #         noise=model.likelihood.noise.item(),
-        #         mu=model.mean_module.constant.item(),
-        #     )
-        #     epochs.set_postfix(**print_values)
         loss.backward()
         optimizer.step()
 
@@ -167,9 +145,9 @@ def train_gpytorch(
                 val_loss = -mll(y_pred, y_val).sum()
             scheduler.step(val_loss)
 
-    if PLOT_LOSSES:
+    if do_plot_losses:
         plot_skip_losses = 0
-        plot_losses(losses[plot_skip_losses:])
+        plot_losses(losses[plot_skip_losses:], show_plots=show_plots)
 
     print(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
     return model, likelihood
@@ -199,13 +177,15 @@ def plot_uq_result(
         y_preds,
         y_std,
         n_stds=2,
+        save_plot=True,
+        show_plot=True,
         plot_name='gpytorch',
         plots_path='plots',
 ):
     import matplotlib.pyplot as plt
     import numpy as np
 
-    X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = map(tensor_to_numpy, (X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std))
+    X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = tensors_to_np_arrays(X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std)
     X_train = np.row_stack((X_train, X_val))
     y_train = np.hstack((y_train, y_val))
     num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
@@ -239,13 +219,13 @@ def plot_uq_result(
     ax.set_xlabel("data")
     ax.set_ylabel("target")
     ax.set_title(plot_name)
-    if SAVE_UQ_PLOT:
+    if save_plot:
         filename = f"{plot_name}.png"
         import os
         filepath = os.path.join(plots_path, filename)
         os.makedirs(plots_path, exist_ok=True)
         plt.savefig(filepath)
-    if SHOW_PLOTS:
+    if show_plot:
         plt.show()
     else:
         plt.close(fig)
@@ -258,7 +238,15 @@ def main():
         output_cols=['load_to_pred'],
         return_full_data=False,
     )
-    X_train, y_train, X_val, y_val, X_test, y_test = preprocess_data(X_train, X_test, y_train, y_test, val_frac=VALIDATION_FRAC)
+    X_train, y_train, X_val, y_val, X_test, y_test = preprocess_data(
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        val_frac=VALIDATION_FRAC,
+        standardize_x=STANDARDIZE_X,
+        standardize_y=STANDARDIZE_Y,
+    )
 
     skip_training = SKIP_TRAINING
     common_prefix, common_postfix = f'{MODEL_NAME}', f'{N_DATAPOINTS}_{N_EPOCHS}'
@@ -275,7 +263,17 @@ def main():
 
     if not skip_training:
         print('training...')
-        model, likelihood = train_gpytorch(X_train, y_train, X_val, y_val)
+        model, likelihood = train_gpytorch(
+            X_train,
+            y_train,
+            X_val,
+            y_val,
+            use_scheduler=USE_SCHEDULER,
+            n_epochs=N_EPOCHS,
+            show_progress=SHOW_PROGRESS,
+            show_plots=SHOW_PLOTS,
+            do_plot_losses=PLOT_LOSSES,
+        )
 
     # noinspection PyUnboundLocalVariable
     model.eval()
@@ -296,16 +294,11 @@ def main():
 
     print('plotting...')
     with torch.no_grad():
-        X_uq = torch.row_stack((X_train, X_val, X_test) if X_val is not None else (X_train, X_test))
+        X_uq = torch.row_stack((X_train, X_val, X_test))
         f_preds = model(X_uq)
-    f_mean = f_preds.mean
-    y_preds = f_mean
-    f_std = f_preds.stddev
-    y_std = f_std
+    y_preds = f_preds.mean
+    y_std = f_preds.stddev
 
-    # std2 = f_preds.stddev.mul_(2)
-    # mean = self.mean
-    # return mean.sub(std2), mean.add(std2)
     plot_uq_result(
         X_train,
         y_train,
@@ -315,6 +308,8 @@ def main():
         y_test,
         y_preds,
         y_std,
+        save_plot=SAVE_UQ_PLOT,
+        show_plot=SHOW_PLOTS,
         plot_name='gpytorch',
         plots_path='plots',
     )
@@ -324,9 +319,8 @@ def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
     import matplotlib.pyplot as plt
     import numpy as np
 
-    if X_val is not None:
-        X_train = np.row_stack((X_train, X_val))
-        y_train = np.hstack((y_train, y_val))
+    X_train = np.row_stack((X_train, X_val))
+    y_train = np.hstack((y_train, y_val))
 
     num_train_steps = X_train.shape[0]
     num_test_steps = X_test.shape[0]
@@ -343,7 +337,7 @@ def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
         plt.close()
 
 
-def plot_losses(losses, ):
+def plot_losses(losses, show_plots=True):
     import matplotlib.pyplot as plt
 
     def has_neg(losses):
@@ -353,7 +347,7 @@ def plot_losses(losses, ):
     plt_func = ax.plot if has_neg(losses) else ax.semilogy
     plt_func(losses, label="loss")
     ax.legend()
-    if SHOW_PLOTS:
+    if show_plots:
         plt.show()
     else:
         plt.close(fig)

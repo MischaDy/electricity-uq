@@ -2,7 +2,8 @@ import numpy as np
 
 from compare_methods import UQ_Comparer, print_metrics
 
-from helpers import get_data, standardize, df_to_numpy
+from helpers import get_data, standardize, train_val_split, make_ys_1d, \
+    np_arrays_to_tensors, make_tensors_contiguous, tensors_to_device, dfs_to_np_arrays
 from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
@@ -26,7 +27,7 @@ SAVE_PLOTS = True
 TEST_BASE_MODEL_ONLY = False
 TEST_RUN_ALL_BASE_MODELS = False
 
-PLOTS_PATH = "plots"
+PLOTS_PATH = "comparison_storage/plots"
 
 METHODS_KWARGS = {
     "native_mvnn": {
@@ -72,13 +73,13 @@ TO_STANDARDIZE = "xy"
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
     def __init__(
-        self,
-        storage_path="comparison_storage",
-        to_standardize="X",
-        methods_kwargs=None,  # : dict[str, dict[str, Any]] = None,
-        n_points_per_group=800,
-        *args,
-        **kwargs
+            self,
+            storage_path="comparison_storage",
+            to_standardize="X",
+            methods_kwargs=None,  # : dict[str, dict[str, Any]] = None,
+            n_points_per_group=800,
+            *args,
+            **kwargs
     ):
         """
 
@@ -112,7 +113,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
     # todo: type hints!
     def compute_metrics(
-        self, y_pred, y_quantiles, y_std, y_true, quantiles=None
+            self, y_pred, y_quantiles, y_std, y_true, quantiles=None
     ) -> dict[str, float]:
         """
 
@@ -153,22 +154,22 @@ class My_UQ_Comparer(UQ_Comparer):
             model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         else:
-            #model = self.my_train_base_model_rf(*args, **kwargs)
+            # model = self.my_train_base_model_rf(*args, **kwargs)
             model = self.my_train_base_model_nn(*args, **kwargs)
         return model
 
     def my_train_base_model_rf(
-        self,
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        model_params_choices=None,
-        model_init_params=None,
-        skip_training=True,
-        n_jobs=-1,
-        cv_n_iter=10,
-        save_trained=True,
-        verbose=True,
-        **kwargs,
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            model_params_choices=None,
+            model_init_params=None,
+            skip_training=True,
+            n_jobs=-1,
+            cv_n_iter=10,
+            save_trained=True,
+            verbose=True,
+            **kwargs,
     ):
         """
 
@@ -241,23 +242,23 @@ class My_UQ_Comparer(UQ_Comparer):
         return model
 
     def my_train_base_model_nn(
-        self,
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        n_iter=500,
-        batch_size=20,
-        random_seed=42,
-        verbose: int = 1,
-        skip_training=True,
-        save_trained=True,
-        model_filename=None,
-        val_frac=0.1,
-        lr=0.1,
-        lr_patience=5,
-        lr_reduction_factor=0.5,
-        show_progress_bar=True,
-        save_losses_plot=True,
-        **kwargs,
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            n_iter=500,
+            batch_size=20,
+            random_seed=42,
+            verbose: int = 1,
+            skip_training=True,
+            save_trained=True,
+            model_filename=None,
+            val_frac=0.1,
+            lr=0.1,
+            lr_patience=5,
+            lr_reduction_factor=0.5,
+            show_progress_bar=True,
+            save_losses_plot=True,
+            **kwargs,
     ):
         """
 
@@ -280,10 +281,9 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         from nn_estimator import NN_Estimator
-        from helpers import numpy_to_tensor, tensor_to_device
 
-        X_train, y_train = map(numpy_to_tensor, (X_train, y_train))
-        X_train, y_train = map(tensor_to_device, (X_train, y_train))
+        X_train, y_train = np_arrays_to_tensors(X_train, y_train)
+        X_train, y_train = tensors_to_device(X_train, y_train)
 
         if model_filename is None:
             n_training_points = X_train.shape[0]
@@ -320,19 +320,19 @@ class My_UQ_Comparer(UQ_Comparer):
         return model
 
     def posthoc_conformal_prediction(
-        self,
-        X_train,
-        y_train,
-        X_uq,
-        quantiles,
-        model,
-        random_seed=42,
-        n_estimators=10,
-        bootstrap_n_blocks=10,
-        bootstrap_overlapping_blocks=False,
-        verbose=1,
-        skip_training=True,
-        save_trained=True,
+            self,
+            X_train,
+            y_train,
+            X_uq,
+            quantiles,
+            model,
+            random_seed=42,
+            n_estimators=10,
+            bootstrap_n_blocks=10,
+            bootstrap_overlapping_blocks=False,
+            verbose=1,
+            skip_training=True,
+            save_trained=True,
     ):
         """
         
@@ -382,28 +382,28 @@ class My_UQ_Comparer(UQ_Comparer):
         return y_pred, y_quantiles, y_std
 
     def posthoc_laplace(
-        self,
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        X_uq: np.ndarray,
-        quantiles,
-        model,
-        n_iter=100,
-        batch_size=20,
-        random_seed=42,
-        verbose=True,
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            X_uq: np.ndarray,
+            quantiles,
+            model,
+            n_iter=100,
+            batch_size=20,
+            random_seed=42,
+            verbose=True,
     ):
         from laplace import Laplace
         from tqdm import tqdm
-        from helpers import get_train_loader, numpy_to_tensor, tensor_to_numpy, tensor_to_device
+        from helpers import get_train_loader, tensor_to_np_array
         import torch
         torch.set_default_dtype(torch.float32)
 
         # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
         #  script)?
         torch.manual_seed(random_seed)
-        X_uq, X_train, y_train = map(numpy_to_tensor, (X_uq, X_train, y_train))
-        X_uq, X_train, y_train = map(tensor_to_device, (X_uq, X_train, y_train))
+        X_uq, X_train, y_train = np_arrays_to_tensors(X_uq, X_train, y_train)
+        X_uq, X_train, y_train = tensors_to_device(X_uq, X_train, y_train)
 
         train_loader = get_train_loader(X_train, y_train, batch_size)
 
@@ -429,9 +429,9 @@ class My_UQ_Comparer(UQ_Comparer):
         # la.load_state_dict(torch.load("state_dict.bin"))
 
         f_mu, f_var = la(X_uq)
-        f_mu = tensor_to_numpy(f_mu.squeeze())
-        f_sigma = tensor_to_numpy(f_var.squeeze().sqrt())
-        pred_std = np.sqrt(f_sigma**2 + la.sigma_noise.item() ** 2)
+        f_mu = tensor_to_np_array(f_mu.squeeze())
+        f_sigma = tensor_to_np_array(f_var.squeeze().sqrt())
+        pred_std = np.sqrt(f_sigma ** 2 + la.sigma_noise.item() ** 2)
 
         y_pred, y_std = f_mu, pred_std
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
@@ -458,31 +458,40 @@ class My_UQ_Comparer(UQ_Comparer):
         )
 
     def native_gpytorch(
-        self,
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        X_uq: np.ndarray,
-        quantiles,
-        val_frac=0.1,
-        verbose=True,
-        skip_training=True,
-        model_name='gpytorch_model',
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            X_uq: np.ndarray,
+            quantiles,
+            n_epochs=100,
+            val_frac=0.1,
+            verbose=True,
+            skip_training=True,
+            save_model=True,
+            model_name='gpytorch_model',
     ):
         import torch
-        from gp_regression_gpytorch import preprocess_data
+        import gpytorch
+        from gp_regression_gpytorch import ExactGPModel, train_gpytorch
 
-        print('preparing data...')
-        X_train, y_train, X_val, y_val, X_test, y_test = preprocess_data(X_train, X_test, y_train, y_test, val_frac=val_frac)
+        print('preparing data..')
+        X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
+        X_train, y_train, X_val, y_val, X_uq = np_arrays_to_tensors(X_train, y_train, X_val, y_val, X_uq)
+        y_train, y_val = make_ys_1d(y_train, y_val)
 
-        common_prefix, common_postfix = f'{model_name}', f'{N_DATAPOINTS}_{N_EPOCHS}'
+        print('making data contiguous and mapping to device...')
+        X_train, y_train, X_val, y_val, X_uq = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_uq)
+        X_train, y_train, X_val, y_val, X_uq = tensors_to_device(X_train, y_train, X_val, y_val, X_uq)
+
+        common_prefix, common_postfix = f'{model_name}', f'{self.n_points_per_group}_{n_epochs}'
         model_name, model_likelihood_name = f'{common_prefix}_{common_postfix}.pth', f'{common_prefix}_likelihood_{common_postfix}.pth'
         if skip_training:
             print('skipping training...')
             try:
-                likelihood = IO_HELPER.load_gpytorch_model(gpytorch.likelihoods.GaussianLikelihood,
-                                                           model_likelihood_name)
-                model = IO_HELPER.load_gpytorch_model(ExactGPModel, model_name,
-                                                      X_train=X_train, y_train=y_train, likelihood=likelihood)
+                likelihood = self.io_helper.load_gpytorch_model(gpytorch.likelihoods.GaussianLikelihood,
+                                                                model_likelihood_name)
+                model = self.io_helper.load_gpytorch_model(ExactGPModel, model_name,
+                                                           X_train=X_train, y_train=y_train, likelihood=likelihood)
             except FileNotFoundError:
                 print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
                 skip_training = False
@@ -496,42 +505,29 @@ class My_UQ_Comparer(UQ_Comparer):
         # noinspection PyUnboundLocalVariable
         likelihood.eval()
 
-        if SAVE_MODEL:
+        if save_model:
             if skip_training:
                 print('skipped training, so not saving models.')
             else:
                 print('saving...')
-                IO_HELPER.save_gpytorch_model(model, model_name)
-                IO_HELPER.save_gpytorch_model(likelihood, model_likelihood_name)
+                self.io_helper.save_gpytorch_model(model, model_name)
+                self.io_helper.save_gpytorch_model(likelihood, model_likelihood_name)
 
-        print('evaluating...')
-        # noinspection PyUnboundLocalVariable
-        evaluate(model, likelihood, X_test, y_test)
-
-        print('plotting...')
         with torch.no_grad():
-            X_uq = torch.row_stack((X_train, X_val, X_test) if X_val is not None else (X_train, X_test))
             f_preds = model(X_uq)
-        f_mean = f_preds.mean
-        y_preds = f_mean
-        f_std = f_preds.stddev
-        y_std = f_std
-
-        # std2 = f_preds.stddev.mul_(2)
-        # mean = self.mean
-        # return mean.sub(std2), mean.add(std2)
-        y_pred, y_std = ..., ...
-        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
-        return y_pred, y_quantiles, y_std
+        y_preds = f_preds.mean
+        y_std = f_preds.stddev
+        y_quantiles = self.quantiles_gaussian(quantiles, y_preds, y_std)
+        return y_preds, y_quantiles, y_std
 
     def native_gp(
-        self,
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        X_uq: np.ndarray,
-        quantiles,
-        verbose=True,
-        n_restarts_optimizer=10,
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            X_uq: np.ndarray,
+            quantiles,
+            verbose=True,
+            n_restarts_optimizer=10,
     ):
         from sklearn.gaussian_process import GaussianProcessRegressor
 
@@ -571,7 +567,7 @@ class My_UQ_Comparer(UQ_Comparer):
     def _standardize_or_to_array(self, variable, *dfs):
         if variable in self.to_standardize:
             return standardize(*dfs, return_scaler=False)
-        return map(df_to_numpy, dfs)
+        return dfs_to_np_arrays(dfs)
 
     def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
         from matplotlib import pyplot as plt
@@ -596,49 +592,49 @@ class My_UQ_Comparer(UQ_Comparer):
             self.io_helper.save_plot(f"{filename}.png")
         plt.show()
 
+    def plot_base_model_test_result(
+            self,
+            X_train,
+            X_test,
+            y_train,
+            y_test,
+            y_preds,
+            plot_name='base_model',
+            show_plots=True,
+            save_plot=True,
+            plot_path='plots',
+    ):
+        from matplotlib import pyplot as plt
+        num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
-def plot_base_model_test_result(
-        X_train,
-        X_test,
-        y_train,
-        y_test,
-        y_preds,
-        plot_name='base_model',
-        show_plots=True,
-        save_plot=True,
-        plot_path='plots',
-):
-    from matplotlib import pyplot as plt
-    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
+        x_plot_train = np.arange(num_train_steps)
+        x_plot_full = np.arange(num_train_steps + num_test_steps)
+        x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
+        x_plot_uq = x_plot_full
 
-    x_plot_train = np.arange(num_train_steps)
-    x_plot_full = np.arange(num_train_steps + num_test_steps)
-    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-    x_plot_uq = x_plot_full
-
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-    ax.plot(
-        x_plot_uq,
-        y_preds,
-        label=f"base model prediction {plot_name}",
-        color="green",
-    )
-    ax.legend()
-    ax.set_xlabel("data")
-    ax.set_ylabel("target")
-    ax.set_title(plot_name)
-    if save_plot:
-        import os
-        filename = f"{plot_name}.png"
-        filepath = os.path.join(plot_path, filename)
-        os.makedirs(plot_path, exist_ok=True)
-        plt.savefig(filepath)
-    if show_plots:
-        plt.show()
-    else:
-        plt.close(fig)
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+        ax.plot(
+            x_plot_uq,
+            y_preds,
+            label=f"base model prediction {plot_name}",
+            color="green",
+        )
+        ax.legend()
+        ax.set_xlabel("data")
+        ax.set_ylabel("target")
+        ax.set_title(plot_name)
+        if save_plot:
+            import os
+            filename = f"{plot_name}.png"
+            filepath = os.path.join(plot_path, filename)
+            os.makedirs(plot_path, exist_ok=True)
+            plt.savefig(filepath)
+        if show_plots:
+            plt.show()
+        else:
+            plt.close(fig)
 
 
 def test_base_model():
@@ -664,7 +660,7 @@ def test_base_model():
     y_preds = base_model.predict(X_uq)
 
     print('plotting...')
-    plot_base_model_test_result(
+    uq_comparer.plot_base_model_test_result(
         X_train,
         X_test,
         y_train,
