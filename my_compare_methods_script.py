@@ -1,6 +1,6 @@
 import numpy as np
 
-from compare_methods import UQ_Comparer, print_metrics
+from compare_methods import UQ_Comparer
 
 from helpers import get_data, standardize, train_val_split, make_ys_1d, \
     np_arrays_to_tensors, make_tensors_contiguous, tensors_to_device, dfs_to_np_arrays
@@ -19,7 +19,8 @@ DATA_FILEPATH = './data.pkl'
 
 N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
-PLOT_RESULTS = True
+PLOT_UQ_RESULTS = True
+PLOT_BASE_RESULTS = True
 SHOW_PLOTS = True
 SAVE_PLOTS = True
 
@@ -126,12 +127,6 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
         y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
         return X_train, X_test, y_train, y_test, X, y
-
-    def compute_metrics(self, y_pred, y_quantiles, y_std, y_true, quantiles=None) -> dict[str, float]:
-        metrics = self.compute_metrics_det(y_pred, y_true)
-        metrics_uq = self.compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
-        metrics.update(metrics_uq)
-        return metrics
 
     @classmethod
     def compute_metrics_det(cls, y_pred, y_true) -> dict[str, float]:
@@ -628,29 +623,6 @@ class My_UQ_Comparer(UQ_Comparer):
             return standardize(*dfs, return_scaler=False)
         return dfs_to_np_arrays(dfs)
 
-    def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
-        from matplotlib import pyplot as plt
-
-        y_preds = base_model.predict(X_train)
-
-        num_train_steps = X_train.shape[0]
-        x_plot_train = np.arange(num_train_steps)
-
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-        ax.plot(
-            x_plot_train,
-            y_preds,
-            label=f"base model prediction",
-            color="green",
-        )
-        ax.legend()
-        ax.set_xlabel("data")
-        ax.set_ylabel("target")
-        if do_save_figure:
-            self.io_helper.save_plot(f"{filename}.png")
-        plt.show()
-
     def plot_base_model_test_result(
             self,
             X_train,
@@ -739,17 +711,16 @@ def main():
         to_standardize=TO_STANDARDIZE,
         n_points_per_group=N_POINTS_PER_GROUP,
     )
-    uq_metrics = uq_comparer.compare_methods(
+    uq_comparer.compare_methods(
         QUANTILES,
         should_plot_data=PLOT_DATA,
-        should_plot_results=PLOT_RESULTS,
+        should_plot_uq_results=PLOT_UQ_RESULTS,
+        should_plot_base_results=PLOT_BASE_RESULTS,
         should_show_plots=SHOW_PLOTS,
         should_save_plots=SAVE_PLOTS,
         plots_path=PLOTS_PATH,
         output_uq_on_train=True,
-        return_results=False,
     )
-    print_metrics(uq_metrics)
 
 
 if __name__ == "__main__":

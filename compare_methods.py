@@ -39,23 +39,24 @@ class UQ_Comparer(ABC):
         self,
         quantiles,
         should_plot_data=True,
-        should_plot_results=True,
+        should_plot_uq_results=True,
+        should_plot_base_results=True,
         should_show_plots=True,
         should_save_plots=True,
         plots_path=".",
-        return_results=False,
         skip_deepcopy=False,
         output_uq_on_train=True,
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
         # todo: improve, e.g. tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
+        :param should_plot_base_results:
         :param should_show_plots:
         :param skip_deepcopy:
         :param plots_path:
         :param should_save_plots:
         :param quantiles:
         :param should_plot_data:
-        :param should_plot_results:
+        :param should_plot_uq_results:
         :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
         :param output_uq_on_train: whether to produce results for X_train, too. Output for X_test is always produced.
         :return: UQ metrics and UQ results if return_results is False, else UQ metrics also native and posthoc results
@@ -63,7 +64,6 @@ class UQ_Comparer(ABC):
         print("loading data...")
         X_train, X_test, y_train, y_test, X, y = self.get_data()
         print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
-
         if should_plot_data:
             print("plotting data...")
             plot_data(
@@ -76,8 +76,39 @@ class UQ_Comparer(ABC):
                 plots_path=plots_path,
             )
 
+        print("training base models...")
+        if output_uq_on_train:
+            X_uq, y_uq = X, y
+        else:
+            X_uq, y_uq = X_test, y_test
+
+        base_model_args = self.methods_kwargs['base_models']
+        base_models = self.train_base_models(X_train, y_train, base_model_args)
+        base_models_preds = self.predict_base_models(base_models, X_uq)
+
+        if should_plot_base_results:
+            print("plotting base model results...")
+            plot_base_results(
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                X_uq,
+                base_models_preds,
+                show_plots=should_show_plots,
+                save_plots=should_save_plots,
+                plots_path=plots_path,
+            )
+
+        print("computing base model metrics...")
+        base_models_metrics = {
+            model_name: self.compute_metrics_det(model_preds, y_uq)
+            for model_name, model_preds in base_models_preds.items()
+        }
+        self.save_metrics(base_models_metrics)
+        print_base_models_metrics(base_models_metrics)
+
         print("running UQ methods...")
-        X_uq = np.row_stack((X_train, X_test)) if output_uq_on_train else X_test
         uq_results = self.run_all_methods(
             X_train,
             y_train,
@@ -86,7 +117,7 @@ class UQ_Comparer(ABC):
             skip_deepcopy=skip_deepcopy,
         )
 
-        if should_plot_results:
+        if should_plot_uq_results:
             print("plotting native vs posthoc results...")
             plot_uq_results_all(
                 X_train,
@@ -101,16 +132,17 @@ class UQ_Comparer(ABC):
                 plots_path=plots_path,
             )
 
+        print("computing UQ metrics...")
         y_uq = y if output_uq_on_train else y_test
-        print("computing and comparing metrics...")
         uq_metrics = {
             uq_type: self.compute_all_metrics(methods_results, y_uq, quantiles=quantiles)
             for uq_type, methods_results in uq_results.items()
         }
+        print("saving UQ metrics...")
         self.save_metrics(uq_metrics)
-        if return_results:
-            return uq_metrics, uq_results
-        return uq_metrics
+
+        print_uq_metrics(uq_metrics)
+        return base_models_metrics, uq_metrics
 
     # todo: make classmethod?
     @abstractmethod
@@ -130,18 +162,55 @@ class UQ_Comparer(ABC):
         """
         raise NotImplementedError
 
-    # todo: make classmethod?
-    @abstractmethod
     def compute_metrics(
+            self,
+            y_pred,
+            y_quantiles: Optional[npt.NDArray],
+            y_std: Optional[npt.NDArray],
+            y_true,
+            quantiles=None,
+    ) -> dict[str, float]:
+        """
+        Evaluate a UQ method by computing all desired metrics.
+
+        :param y_pred:
+        :param y_quantiles: array of shape (n_samples, n_quantiles) containing the predicted quantiles of y_true
+        :param y_std: 1D array-like of predicted standard deviations around y_true
+        :param y_true:
+        :param quantiles: list of quantiles with which test to measure performance. They are expected to be symmetric
+        :return:
+        """
+        metrics = self.compute_metrics_det(y_pred, y_true)
+        metrics_uq = self.compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
+        metrics.update(metrics_uq)
+        return metrics
+
+    @abstractmethod
+    def compute_metrics_det(
+        self,
+        y_pred,
+        y_true,
+    ) -> dict[str, float]:
+        """
+        Evaluate a UQ method by computing all desired deterministic metrics.
+
+        :param y_pred:
+        :param y_true:
+        :return:
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def compute_metrics_uq(
         self,
         y_pred,
         y_quantiles: Optional[npt.NDArray],
         y_std: Optional[npt.NDArray],
         y_true,
         quantiles,
-    ) -> dict[str, dict[str, float]]:
+    ) -> dict[str, float]:
         """
-        Evaluate a UQ method by compute all desired metrics.
+        Evaluate a UQ method by computing all desired uncertainty metrics.
 
         :param y_pred:
         :param y_quantiles: array of shape (n_samples, n_quantiles) containing the predicted quantiles of y_true
@@ -152,7 +221,6 @@ class UQ_Comparer(ABC):
         """
         raise NotImplementedError
 
-    # todo: make classmethod?
     def compute_all_metrics(
         self,
         uq_results: dict[
@@ -167,38 +235,61 @@ class UQ_Comparer(ABC):
         quantiles=None,
     ) -> dict[str, dict[str, float]]:
         """
+        Evaluate all UQ methods by computing all desired metrics.
 
         :param quantiles: quantiles
         :param uq_results: dict of (method_name, (y_pred, y_quantiles, y_std))
         :param y_true:
-        :return:
+        :return: dict of { method_name: {metric_name: value,  ...}, ... }
         """
         return {
             method_name: self.compute_metrics(y_pred, y_quantiles, y_std, y_true, quantiles=quantiles)
             for method_name, (y_pred, y_quantiles, y_std) in uq_results.items()
         }
 
-    @abstractmethod
-    def train_base_model(self, X_train, y_train):
-        raise NotImplementedError
+    def train_base_models(self, X_train, y_train) -> dict[str, Any]:
+        """
+
+        :param X_train:
+        :param y_train:
+        :return: dict of (base_model_name, base_model)
+        """
+        base_models = {}
+        for method_name, method in self.get_base_model_methods():
+            base_model_kwargs = self.methods_kwargs[method_name]
+            base_model = method(X_train, y_train, **base_model_kwargs)
+            base_models[method_name] = base_model
+        return base_models
+
+    @staticmethod
+    def predict_base_models(base_models: dict[str, Any], X_uq):
+        base_model_preds = {}
+        for model_name, base_model in base_models.items():
+            base_model_preds[model_name] = base_model.predict(X_uq)
+        return base_model_preds
+
+    @classmethod
+    def get_base_model_methods(cls):
+        return cls._get_methods_by_prefix('base_model')
 
     @classmethod
     def get_posthoc_methods(cls):
-        return cls._get_uq_methods_by_type("posthoc")
+        return cls._get_methods_by_prefix("posthoc")
 
     @classmethod
     def get_native_methods(cls):
-        return cls._get_uq_methods_by_type("native")
+        return cls._get_methods_by_prefix("native")
 
-    def _get_uq_methods_by_type(self, uq_type: str):
+    def _get_methods_by_prefix(self, prefix: str, sep='_'):
         """
 
-        :param uq_type: one of "native", "posthoc"
-        :return: all instance methods (i.e. callable attributes) with prefix given by uq_type
+        :param prefix:
+        :return: all instance methods (i.e. callable attributes) with given prefix
         """
+        full_prefix = prefix + sep
         for attr_name in self.__class__.__dict__.keys():
             attr = getattr(self, attr_name)
-            if attr_name.startswith(uq_type) and callable(attr):
+            if attr_name.startswith(full_prefix) and callable(attr):
                 yield attr_name, attr
 
     def run_all_methods(
@@ -253,7 +344,7 @@ class UQ_Comparer(ABC):
         """
         assert uq_type in ["posthoc", "native"]
         is_posthoc = uq_type == "posthoc"
-        uq_methods = self._get_uq_methods_by_type(uq_type)
+        uq_methods = self._get_methods_by_prefix(uq_type)
         if self.method_whitelist is not None:
             uq_methods = list(starfilter(lambda name, _: name in self.method_whitelist, uq_methods))
         if not uq_methods:
@@ -338,8 +429,7 @@ class UQ_Comparer(ABC):
             file.write(metrics_str)
 
 
-# PLOTTING
-
+#### PLOTTING ###
 
 def plot_data(
     X_train,
@@ -391,6 +481,7 @@ def plot_uq_results_all(
         if results:
             print(f"plotting {res_type} results...")
         else:
+            print(f'no {res_type} results available - skipping.')
             continue
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in results.items():
@@ -484,7 +575,75 @@ def plot_uq_result(
         plt.close(fig)
 
 
-def print_metrics(uq_metrics):
+def plot_base_results(
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+        X_uq,
+        base_models_preds,
+        plot_name,
+        uq_type,
+        show_plots=True,
+        save_plot=True,
+        plots_path=".",
+):
+
+# def plot_post_training_perf(self, base_model, X_train, y_train, do_save_figure=False, filename='base_model'):
+    from matplotlib import pyplot as plt
+
+    y_preds = base_model.predict(X_train)
+
+    num_train_steps = X_train.shape[0]
+    x_plot_train = np.arange(num_train_steps)
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+    ax.plot(
+        x_plot_train,
+        y_preds,
+        label=f"base model prediction",
+        color="green",
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    if do_save_figure:
+        self.io_helper.save_plot(f"{filename}.png")
+    plt.show()
+
+    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
+
+    x_plot_train = np.arange(num_train_steps)
+    x_plot_full = np.arange(num_train_steps + num_test_steps)
+    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
+    x_plot_uq = x_plot_full if output_uq_on_train else x_plot_test
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+    ax.plot(
+        x_plot_uq,
+        y_preds,
+        label=f"mean/median prediction {plot_name}",  # todo: mean or median?
+        color="green",
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    ax.set_title(f"{plot_name} ({uq_type})")
+    if save_plot:
+        filename = f"{plot_name}_{uq_type}.png"
+        filepath = os.path.join(plots_path, filename)
+        os.makedirs(plots_path, exist_ok=True)
+        plt.savefig(filepath)
+    if show_plots:
+        plt.show()
+    else:
+        plt.close(fig)
+
+
+def print_uq_metrics(uq_metrics):
     print()
     for uq_type, method_metrics in uq_metrics.items():
         print(f"{uq_type} metrics:")
@@ -493,3 +652,23 @@ def print_metrics(uq_metrics):
             for metric, value in metrics.items():
                 print(f"\t\t{metric}: {value}")
         print()
+
+
+def print_base_models_metrics(base_models_metrics):
+    print()
+    for model_name, metrics in base_models_metrics.items():
+        print(f"{model_name}:")
+        for metric, value in metrics.items():
+            print(f"\t{metric}: {value}")
+    print()
+
+
+def check_prefixes_ok():
+    forbidden_prefixes = ['native', 'posthoc', 'base_model']
+    for attr_name in UQ_Comparer.__dict__.keys():
+        for prefix in forbidden_prefixes:
+            assert not attr_name.startswith(prefix)
+
+
+if __name__ == '__main__':
+    check_prefixes_ok()
