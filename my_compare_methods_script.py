@@ -24,8 +24,8 @@ PLOT_RESULTS = True
 SHOW_PLOTS = True
 SAVE_PLOTS = True
 
-TEST_BASE_MODEL_ONLY = False
-TEST_RUN_ALL_BASE_MODELS = False
+TEST_BASE_MODEL_ONLY = True
+TEST_RUN_ALL_BASE_MODELS = True
 
 PLOTS_PATH = "comparison_storage/plots"
 
@@ -672,7 +672,7 @@ def test_base_model():
         y_train,
         y_test,
         y_preds,
-        plot_name='laplace_debug_test',
+        plot_name='base_model_test',
         show_plots=SHOW_PLOTS,
         save_plot=SAVE_PLOTS,
         plot_path=PLOTS_PATH,
