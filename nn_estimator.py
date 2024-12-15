@@ -11,6 +11,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 
+from helpers import np_array_to_tensor, np_arrays_to_tensors, train_val_split
+
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
 class NN_Estimator(RegressorMixin, BaseEstimator):
@@ -121,17 +123,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             y = y.reshape(-1, 1)
 
         try:
-            X_train, y_train = map(lambda arr: self._arr_to_tensor(arr), (X, y))
+            X_train, y_train = np_arrays_to_tensors(X, y)
         except TypeError:
             raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
-        n_samples = X_train.shape[0]
-        val_size = max(1, round(self.val_frac * n_samples))
-        # val_size = 20  # todo: temp
-        train_size = max(1, n_samples-val_size)
-        X_val, y_val = X_train[-val_size:], y_train[-val_size:]
-        X_train, y_train = X_train[:train_size], y_train[:train_size]
-
+        X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, self.val_frac)
         assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
@@ -165,7 +161,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
-                train_loss = self._mse_torch(model(X_train[:val_size]), y_train[:val_size])
+                train_loss = self._mse_torch(model(X_train), y_train)
             if self.use_scheduler:
                 scheduler.step(val_loss)
             val_losses.append(val_loss)
@@ -206,10 +202,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         train_loader = DataLoader(train_dataset, batch_size=batch_size)
         return train_loader
 
-    @staticmethod
-    def _arr_to_tensor(arr) -> torch.Tensor:
-        return torch.Tensor(arr).float()
-
     def _plot_losses(self, train_losses, test_losses, filename='losses'):
         fig, ax = plt.subplots()
         ax.semilogy(train_losses, label="train")
@@ -248,7 +240,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         # We need to set reset=False because we don't want to overwrite
         # `feature_names_in_` but only check that the shape is consistent.
         X = self._validate_data(X, accept_sparse=False, reset=False)
-        X = self._arr_to_tensor(X)
+        X = np_array_to_tensor(X)
         # self.model_.eval()
         with torch.no_grad():
             res = self.model_(X)
