@@ -7,8 +7,8 @@ from helpers import get_data, standardize, train_val_split, make_ys_1d, \
 from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
-    "posthoc_laplace",
+    "posthoc_conformal_prediction",
+    # "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_gp",
@@ -55,7 +55,7 @@ METHODS_KWARGS = {
         'model_name': 'gpytorch_model',
     },
     "posthoc_conformal_prediction": {
-        "n_estimators": 10,
+        "n_estimators": 5,
         "verbose": 1,
         "skip_training": False,
         "save_trained": True,
