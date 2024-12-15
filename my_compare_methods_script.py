@@ -18,10 +18,10 @@ QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use me
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 800
+N_POINTS_PER_GROUP = 100
 PLOT_DATA = False
 PLOT_RESULTS = True
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 SAVE_PLOTS = True
 
 TEST_BASE_MODEL_ONLY = False
@@ -44,6 +44,14 @@ METHODS_KWARGS = {
     "native_gp": {
         'n_restarts_optimizer': 10,
         "verbose": True,
+    },
+    "native_gpytorch": {
+        'n_epochs': 100,
+        'val_frac': 0.1,
+        'verbose': True,
+        'skip_training': True,
+        'save_model': True,
+        'model_name': 'gpytorch_model',
     },
     "posthoc_conformal_prediction": {
         "n_estimators": 10,
