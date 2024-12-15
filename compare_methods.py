@@ -431,6 +431,7 @@ def plot_uq_result(
     show_plots=True,
     save_plot=True,
     plots_path=".",
+    n_stds=2,
 ):
     num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
@@ -447,7 +448,7 @@ def plot_uq_result(
         )
         drawn_quantile = round(max(quantiles) - min(quantiles), 2)
     else:
-        ci_low, ci_high = y_preds - y_std / 2, y_preds + y_std / 2
+        ci_low, ci_high = y_preds - n_stds * y_std, y_preds + n_stds * y_std
 
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
     ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
