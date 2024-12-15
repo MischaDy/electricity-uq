@@ -168,18 +168,18 @@ class My_UQ_Comparer(UQ_Comparer):
     def train_base_model(self, *args, **kwargs):
         # todo: more flexibility in choosing (multiple) base models
         if TEST_RUN_ALL_BASE_MODELS:
-            model = self.my_train_base_model_rf(*args, **kwargs)
-            model = self.my_train_base_model_nn(*args, **kwargs)
+            model = self.train_base_model_rf(*args, **kwargs)
+            model = self.train_base_model_nn(*args, **kwargs)
         else:
             if BASE_MODEL == 'RF':
-                model = self.my_train_base_model_rf(*args, **kwargs)
+                model = self.train_base_model_rf(*args, **kwargs)
             elif BASE_MODEL == 'NN':
-                model = self.my_train_base_model_nn(*args, **kwargs)
+                model = self.train_base_model_nn(*args, **kwargs)
             else:
                 raise ValueError(f'Unknown base model type: {BASE_MODEL}')
         return model
 
-    def my_train_base_model_rf(
+    def train_base_model_rf(
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
@@ -263,7 +263,7 @@ class My_UQ_Comparer(UQ_Comparer):
             self.io_helper.save_model(model, filename_base_model)
         return model
 
-    def my_train_base_model_nn(
+    def train_base_model_nn(
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
