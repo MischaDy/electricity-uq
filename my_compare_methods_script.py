@@ -17,7 +17,7 @@ QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use me
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 100
+N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
 PLOT_RESULTS = True
 SHOW_PLOTS = True
@@ -69,7 +69,7 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "base_model": {  # todo: split
-        "n_iter": 100,
+        "n_iter": 500,
         "verbose": 1,
         "show_progress_bar": True,
         "show_losses_plot": False,
