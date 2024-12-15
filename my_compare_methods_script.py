@@ -69,6 +69,7 @@ METHODS_KWARGS = {
         "save_trained": True,
         "verbose": 1,
         "show_progress_bar": False,
+        "show_losses_plot": False,
         "save_losses_plot": True,
         "random_state": 42,
         "lr_reduction_factor": 0.5,
@@ -272,6 +273,7 @@ class My_UQ_Comparer(UQ_Comparer):
             lr_patience=5,
             lr_reduction_factor=0.5,
             show_progress_bar=True,
+            show_losses_plot=True,
             save_losses_plot=True,
             **kwargs,
     ):
@@ -324,6 +326,7 @@ class My_UQ_Comparer(UQ_Comparer):
             verbose=verbose,
             show_progress_bar=show_progress_bar,
             save_losses_plot=save_losses_plot,
+            show_losses_plot=show_losses_plot,
         )
         model.fit(X_train, y_train)
 

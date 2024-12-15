@@ -67,6 +67,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         verbose: int = 1,
         show_progress_bar=True,
         save_losses_plot=True,
+        show_losses_plot=True,
     ):
         """
         :param n_iter: 
@@ -88,6 +89,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.verbose = verbose
         self.show_progress_bar = show_progress_bar
         self.save_losses_plot = save_losses_plot
+        self.show_losses_plot = show_losses_plot
         self.is_fitted_ = False
 
     @_fit_context(prefer_skip_nested_validation=True)
@@ -213,7 +215,10 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             file_path = os.path.join(plots_path, f'{filename}.png')
             os.makedirs(plots_path, exist_ok=True)
             plt.savefig(file_path)
-        plt.show()
+        if self.show_losses_plot:
+            plt.show()
+        else:
+            plt.close(fig)
 
     @staticmethod
     def _mse_torch(y_pred, y_test):
