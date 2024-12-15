@@ -13,39 +13,15 @@ from helpers import get_data
 # source: https://scikit-learn.org/stable/auto_examples/linear_model/plot_quantile_regression.html
 
 
-# todo: potential for bugs!
-N_POINTS_TEMP = 100  # per group
+N_POINTS_PER_GROUP = 100
 
 
 def main():
-    X_train, X_test, y_train, y_test, X, y = get_data(
-        N_POINTS_TEMP, return_full_data=True
-    )
+    X_train, X_test, y_train, y_test, X, y = get_data(N_POINTS_PER_GROUP, return_full_data=True)
 
     y_preds, y_pis = estimate_quantiles(X_train, y_train, x_pred=X, alpha=[0.1])
 
     plot_intervals(X, y, X_train, y_train, y_preds, y_pis)
-
-
-# def estimate_quantiles(X_train, y_train, x_pred, alphas=None):
-#     if alphas is None:
-#         alphas = 0.5
-#
-#     quant_min = alphas / 2
-#     quant_median = 0.5
-#     quant_max = 1 - quant_min
-#
-#     predictions = {}
-#     for quantile in [quant_min, quant_median, quant_max]:
-#         qr = QuantileRegressor(quantile=quantile, alpha=0.0)
-#         qr_fit = qr.fit(X_train, y_train)
-#         y_pred = qr_fit.predict(x_pred)
-#         predictions[quantile] = y_pred
-#     y_preds = predictions[quant_median]
-#     y_pis = np.stack(
-#         [predictions[quant_min], predictions[quant_max]], axis=1
-#     )  # (n_samples, 2)
-#     return y_preds, y_pis
 
 
 def estimate_quantiles(X_train, y_train, x_pred, alpha=None, verbose=True, as_dict=False):
@@ -90,15 +66,6 @@ def plot_intervals(X, y, X_train, y_train, y_preds, y_pis):
 
     fig, ax = plt.subplots(figsize=(14, 6))
     ax.plot(x_plot_full, y, color="black", linestyle="dashed", label="True mean")
-
-    # plt.scatter(
-    #     x_plot_train,
-    #     y_train,
-    #     color="black",
-    #     marker="o",
-    #     alpha=0.5,
-    #     label="training points",
-    # )
 
     plt.vlines(
         x_plot_train.max(),
