@@ -93,6 +93,7 @@ def train_gpytorch(
         y_val,
         n_epochs,
         use_scheduler=True,
+        lr=1e-2,
         lr_patience=30,
         lr_reduction_factor=0.5,
         show_progress=True,
@@ -115,7 +116,7 @@ def train_gpytorch(
     model.train()
     likelihood.train()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     # "Loss" for GPs - the marginal log likelihood
@@ -273,6 +274,7 @@ def main():
             show_progress=SHOW_PROGRESS,
             show_plots=SHOW_PLOTS,
             do_plot_losses=PLOT_LOSSES,
+            lr=LR,
         )
 
     # noinspection PyUnboundLocalVariable
