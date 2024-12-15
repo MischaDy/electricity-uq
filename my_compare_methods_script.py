@@ -12,7 +12,7 @@ METHOD_WHITELIST = [
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_gp",
-    # "native_mvnn",
+    "native_mvnn",
 ]
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
@@ -24,7 +24,7 @@ PLOT_RESULTS = True
 SHOW_PLOTS = True
 SAVE_PLOTS = True
 
-TEST_BASE_MODEL_ONLY = True
+TEST_BASE_MODEL_ONLY = False
 TEST_RUN_ALL_BASE_MODELS = False
 BASE_MODEL = 'NN'
 
@@ -65,7 +65,7 @@ METHODS_KWARGS = {
     },
     "base_model": {
         "n_iter": 100,
-        "skip_training": False,
+        "skip_training": True,
         "save_trained": True,
         "verbose": 1,
         "show_progress_bar": True,
