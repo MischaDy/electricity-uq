@@ -8,7 +8,7 @@ from io_helper import IO_Helper
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-    # "posthoc_laplace",
+    "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_mvnn",
@@ -17,7 +17,7 @@ QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use me
 
 DATA_FILEPATH = './data.pkl'
 
-N_POINTS_PER_GROUP = 800
+N_POINTS_PER_GROUP = 100
 PLOT_DATA = False
 PLOT_RESULTS = True
 SHOW_PLOTS = True
@@ -65,8 +65,8 @@ METHODS_KWARGS = {
     },
     "posthoc_laplace": {
         "n_iter": 300,
-        'skip_training': True,  # todo: implement!
-        'save_model': True,  # todo: implement!
+        'skip_training': True,
+        'save_model': True,
     },
     "base_model": {  # todo: split
         "n_iter": 100,
@@ -416,28 +416,37 @@ class My_UQ_Comparer(UQ_Comparer):
             n_iter=100,
             batch_size=20,
             random_seed=42,
-            model_filename=None,
             skip_training=True,
+            model_filename=None,
             save_model=True,
             verbose=True,
     ):
+        # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
+        #  script)?
         from laplace import Laplace
         from tqdm import tqdm
         from helpers import get_train_loader, tensor_to_np_array
         import torch
-        torch.set_default_dtype(torch.float32)
+        from torch import nn
 
-        # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
-        #  script)?
+        torch.set_default_dtype(torch.float32)
         torch.manual_seed(random_seed)
 
+        def la_instantiator(base_model: nn.Module):
+            return Laplace(base_model, "regression")
+
+        n_training_points = X_train.shape[0]
         if model_filename is None:
-            n_training_points = X_train.shape[0]
             model_filename = f"laplace_{n_training_points}_{n_iter}.pth"
         if skip_training:
             print("skipping base model training...")
             try:
-                la = self.io_helper.load_laplace_model_statedict(model_filename)
+                # noinspection PyTypeChecker
+                la = self.io_helper.load_laplace_model_statedict(
+                    base_model,
+                    la_instantiator,
+                    laplace_model_filename=model_filename,
+                )
             except FileNotFoundError:
                 print(f"error. model {model_filename} not found, so training cannot be skipped. training from scratch.")
                 skip_training = False
@@ -446,7 +455,7 @@ class My_UQ_Comparer(UQ_Comparer):
             X_uq, X_train, y_train = np_arrays_to_tensors(X_uq, X_train, y_train)
             X_uq, X_train, y_train = tensors_to_device(X_uq, X_train, y_train)
             train_loader = get_train_loader(X_train, y_train, batch_size)
-            la = Laplace(base_model, "regression")
+            la = la_instantiator(base_model)
             la.fit(train_loader)
 
             log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
@@ -465,10 +474,8 @@ class My_UQ_Comparer(UQ_Comparer):
                 print('saving model...')
                 # noinspection PyUnboundLocalVariable
                 self.io_helper.save_laplace_model_statedict(
-                    base_model,
                     la,
-                    base_model_filename="model_state_dict.bin",
-                    laplace_model_filename="la_state_dict.bin"
+                    laplace_model_filename=model_filename
                 )
 
         f_mu, f_var = la(X_uq)

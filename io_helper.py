@@ -66,17 +66,13 @@ class IO_Helper:
 
     def load_laplace_model_statedict(
             self,
-            model_instantiator: Callable[[], nn.Module],
+            base_model: nn.Module,
             la_instantiator: Callable[[nn.Module], ParametricLaplace],
-            base_model_filename="model_state_dict.bin",
-            laplace_model_filename="la_state_dict.bin",
+            laplace_model_filename: str,
     ):
-        base_model_filepath, laplace_model_filepath = map(self.get_model_savepath,
-                                                          (base_model_filename, laplace_model_filename))
-        base_model = model_instantiator()
-        base_model.load_state_dict(torch.load(base_model_filepath))
+        laplace_model_filepath = self.get_model_savepath(laplace_model_filename)
         la = la_instantiator(base_model)
-        la.load_state_dict(torch.load(laplace_model_filepath))  # todo: only works in new versions!
+        la.load_state_dict(torch.load(laplace_model_filepath))
         return la
 
     ### SAVERS ###
@@ -102,11 +98,12 @@ class IO_Helper:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model.state_dict(), path)
 
-    def save_laplace_model_statedict(self, base_model, laplace_model, base_model_filename="model_state_dict.bin",
-                                     laplace_model_filename="la_state_dict.bin"):
-        base_model_filepath, laplace_model_filepath = map(self.get_model_savepath,
-                                                          (base_model_filename, laplace_model_filename))
-        torch.save(base_model.state_dict(), base_model_filepath)
+    def save_laplace_model_statedict(
+            self,
+            laplace_model,
+            laplace_model_filename,
+    ):
+        laplace_model_filepath = self.get_model_savepath(laplace_model_filename)
         torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
     def save_plot(self, filename):
