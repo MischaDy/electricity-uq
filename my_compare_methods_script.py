@@ -634,11 +634,7 @@ class My_UQ_Comparer(UQ_Comparer):
         ax.set_ylabel("target")
         ax.set_title(plot_name)
         if save_plot:
-            import os
-            filename = f"{plot_name}.png"
-            filepath = os.path.join(plot_path, filename)
-            os.makedirs(plot_path, exist_ok=True)
-            plt.savefig(filepath)
+            self.io_helper.save_plot(plot_name)
         if show_plots:
             plt.show()
         else:
