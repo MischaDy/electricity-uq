@@ -255,9 +255,9 @@ def main():
     if skip_training:
         print('skipping training...')
         try:
-            likelihood = IO_HELPER.load_gpytorch_model(gpytorch.likelihoods.GaussianLikelihood, model_likelihood_name)
-            model = IO_HELPER.load_gpytorch_model(ExactGPModel, model_name,
-                                                  X_train=X_train, y_train=y_train, likelihood=likelihood)
+            likelihood = IO_HELPER.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood, model_likelihood_name)
+            model = IO_HELPER.load_torch_model_statedict(ExactGPModel, model_name,
+                                                         X_train=X_train, y_train=y_train, likelihood=likelihood)
         except FileNotFoundError:
             print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
             skip_training = False
@@ -287,8 +287,8 @@ def main():
             print('skipped training, so not saving models.')
         else:
             print('saving...')
-            IO_HELPER.save_gpytorch_model(model, model_name)
-            IO_HELPER.save_gpytorch_model(likelihood, model_likelihood_name)
+            IO_HELPER.save_torch_model_statedict(model, model_name)
+            IO_HELPER.save_torch_model_statedict(likelihood, model_likelihood_name)
 
     print('evaluating...')
     # noinspection PyUnboundLocalVariable

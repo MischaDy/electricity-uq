@@ -24,15 +24,26 @@ def main():
     plot_intervals(X, y, X_train, y_train, y_preds, y_pis)
 
 
-def estimate_quantiles(X_train, y_train, x_pred, alpha=None, verbose=True, as_dict=False):
+def estimate_quantiles(
+        X_train,
+        y_train,
+        x_pred,
+        alpha=None,
+        as_dict=False,
+        verbose=True,
+        skip_training=True,
+        save_model=True,
+):
     """
 
-    :param as_dict:
-    :param verbose:
+    :param save_model:
+    :param skip_training:
     :param X_train:
     :param y_train:
     :param x_pred:
     :param alpha: Iterable of quantiles. Default: 99 uniformly spaced quantiles from 1% to 99%
+    :param as_dict:
+    :param verbose:
     :return: (y_preds, quantiles)
     """
     if alpha is None:

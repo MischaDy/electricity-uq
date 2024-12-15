@@ -70,8 +70,6 @@ METHODS_KWARGS = {
     },
     "base_model": {  # todo: split
         "n_iter": 100,
-        "skip_training": True,
-        "save_model": True,
         "verbose": 1,
         "show_progress_bar": True,
         "show_losses_plot": False,
@@ -81,6 +79,8 @@ METHODS_KWARGS = {
         "lr_reduction_factor": 0.5,
         "lr_patience": 30,
         "cv_n_iter": 5,
+        "skip_training": True,
+        "save_model": True,
     },
 }
 
@@ -270,9 +270,6 @@ class My_UQ_Comparer(UQ_Comparer):
             n_iter=500,
             batch_size=20,
             random_seed=42,
-            verbose: int = 1,
-            skip_training=True,
-            save_model=True,
             model_filename=None,
             val_frac=0.1,
             lr=0.1,
@@ -281,10 +278,14 @@ class My_UQ_Comparer(UQ_Comparer):
             show_progress_bar=True,
             show_losses_plot=True,
             save_losses_plot=True,
+            skip_training=True,
+            save_model=True,
+            verbose: int = 1,
             **kwargs,
     ):
         """
 
+        :param show_losses_plot:
         :param save_losses_plot:
         :param show_progress_bar:
         :param val_frac:
@@ -318,7 +319,6 @@ class My_UQ_Comparer(UQ_Comparer):
                 model.eval()
                 return model
             except FileNotFoundError:
-                # fmt: off
                 print("error. model not found, so training cannot be skipped. training from scratch")
 
         model = NN_Estimator(
@@ -412,13 +412,14 @@ class My_UQ_Comparer(UQ_Comparer):
             y_train: np.ndarray,
             X_uq: np.ndarray,
             quantiles,
-            model,
+            base_model,
             n_iter=100,
             batch_size=20,
             random_seed=42,
-            verbose=True,
+            model_filename=None,
             skip_training=True,
             save_model=True,
+            verbose=True,
     ):
         from laplace import Laplace
         from tqdm import tqdm
@@ -465,7 +466,9 @@ class My_UQ_Comparer(UQ_Comparer):
         return y_pred, y_quantiles, y_std
 
     def native_quantile_regression(self, X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles,
-                                   verbose=True):
+                                   verbose=True,
+            skip_training=True,
+            save_model=True,):
         from quantile_regression import estimate_quantiles as estimate_quantiles_qr
         y_pred, y_quantiles = estimate_quantiles_qr(
             X_train, y_train, X_uq, alpha=quantiles
@@ -474,14 +477,17 @@ class My_UQ_Comparer(UQ_Comparer):
         return y_pred, y_quantiles, y_std
 
     @staticmethod
-    def native_mvnn(X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles, **kwargs):
+    def native_mvnn(X_train: np.ndarray, y_train: np.ndarray, X_uq: np.ndarray, quantiles,
+            skip_training=True,
+            save_model=True,):
         from mean_var_nn import run_mean_var_nn
         return run_mean_var_nn(
             X_train,
             y_train,
             X_uq,
             quantiles,
-            **kwargs
+            skip_training=True,
+            save_model=True,
         )
 
     def native_gpytorch(
@@ -492,14 +498,14 @@ class My_UQ_Comparer(UQ_Comparer):
             quantiles,
             n_epochs=100,
             val_frac=0.1,
-            verbose=True,
-            skip_training=True,
-            save_model=True,
             model_name='gpytorch_model',
             lr=1e-2,
             show_progress=True,
             show_plots=True,
             do_plot_losses=True,
+            skip_training=True,
+            save_model=True,
+            verbose=True,
     ):
         import torch
         import gpytorch
@@ -519,10 +525,10 @@ class My_UQ_Comparer(UQ_Comparer):
         if skip_training:
             print('skipping training...')
             try:
-                likelihood = self.io_helper.load_gpytorch_model(gpytorch.likelihoods.GaussianLikelihood,
-                                                                model_likelihood_name)
-                model = self.io_helper.load_gpytorch_model(ExactGPModel, model_name,
-                                                           X_train=X_train, y_train=y_train, likelihood=likelihood)
+                likelihood = self.io_helper.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood,
+                                                                       model_likelihood_name)
+                model = self.io_helper.load_torch_model_statedict(ExactGPModel, model_name,
+                                                                  X_train=X_train, y_train=y_train, likelihood=likelihood)
             except FileNotFoundError:
                 print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
                 skip_training = False
@@ -551,8 +557,8 @@ class My_UQ_Comparer(UQ_Comparer):
                 print('skipped training, so not saving models.')
             else:
                 print('saving...')
-                self.io_helper.save_gpytorch_model(model, model_name)
-                self.io_helper.save_gpytorch_model(likelihood, model_likelihood_name)
+                self.io_helper.save_torch_model_statedict(model, model_name)
+                self.io_helper.save_torch_model_statedict(likelihood, model_likelihood_name)
 
         with torch.no_grad():
             f_preds = model(X_uq)
@@ -560,7 +566,6 @@ class My_UQ_Comparer(UQ_Comparer):
         y_std = f_preds.stddev
         y_quantiles = self.quantiles_gaussian(quantiles, y_preds, y_std)
         return y_preds, y_quantiles, y_std
-
 
     @staticmethod
     def quantiles_gaussian(quantiles, y_pred, y_std):

@@ -7,11 +7,11 @@ import torch
 # noinspection PyPep8Naming
 class IO_Helper:
     def __init__(
-        self,
-        base_folder,
-        arrays_folder="arrays",
-        models_folder="models",
-        plots_folder="plots",
+            self,
+            base_folder,
+            arrays_folder="arrays",
+            models_folder="models",
+            plots_folder="plots",
     ):
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
@@ -20,6 +20,7 @@ class IO_Helper:
         for folder in self.folders:
             os.makedirs(folder, exist_ok=True)
 
+    ### GETTERS ###
     def get_array_savepath(self, filename):
         return os.path.join(self.arrays_folder, filename)
 
@@ -29,6 +30,7 @@ class IO_Helper:
     def get_plot_savepath(self, filename):
         return os.path.join(self.plots_folder, filename)
 
+    ### LOADERS ###
     def load_array(self, filename):
         return np.load(self.get_array_savepath(filename))
 
@@ -36,21 +38,6 @@ class IO_Helper:
         import pickle
         with open(self.get_model_savepath(filename), "rb") as file:
             model = pickle.load(file)
-        return model
-
-    def load_torch_model2(self, model_class, filename, *args, **kwargs):
-        """
-
-        :param model_class:
-        :param filename:
-        :param args: args for model_class constructor
-        :param kwargs: kwargs for model_class constructor
-        :return:
-        """
-        filepath = self.get_model_savepath(filename)
-        model = model_class(*args, **kwargs)
-        model.load_state_dict(torch.load(filepath, weights_only=True))
-        model.eval()
         return model
 
     def load_torch_model(self, filename, *args, **kwargs):
@@ -67,6 +54,14 @@ class IO_Helper:
         model.eval()
         return model
 
+    def load_torch_model_statedict(self, model_class, filename, **kwargs):
+        path = self.get_model_savepath(filename)
+        state_dict = torch.load(path)
+        model = model_class(**kwargs)
+        model.load_state_dict(state_dict)
+        return model
+
+    ### SAVERS ###
     def save_array(self, array, filename):
         path = self.get_array_savepath(filename)
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -79,27 +74,16 @@ class IO_Helper:
         with open(path, "wb") as file:
             pickle.dump(model, file)
 
-    def save_torch_model2(self, model, filename):
-        path = self.get_model_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        torch.save(model.state_dict(), path)
-
     def save_torch_model(self, model, filename):
         path = self.get_model_savepath(filename)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model, path)
 
-    def save_gpytorch_model(self, model, filename):
+    def save_torch_model_statedict(self, model, filename):
         path = self.get_model_savepath(filename)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model.state_dict(), path)
 
-    def load_gpytorch_model(self, model_class, filename, **kwargs):
-        path = self.get_model_savepath(filename)
-        state_dict = torch.load(path)
-        model = model_class(**kwargs)
-        model.load_state_dict(state_dict)
-        return model
 
     def save_plot(self, filename):
         from matplotlib import pyplot as plt

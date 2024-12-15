@@ -191,6 +191,8 @@ def run_mean_var_nn(
     frozen_var_value=0.1,
     do_plot_losses=False,
     use_scheduler=True,
+    skip_training=True,
+    save_model=True,
 ):
 
     X_train, y_train, X_test = np_arrays_to_tensors(X_train, y_train, X_test)
