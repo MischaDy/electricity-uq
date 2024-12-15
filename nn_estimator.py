@@ -46,38 +46,32 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         "lr": [float],
         "lr_patience": [int],
         "lr_reduction_factor": [float],
-        "verbose": [int],
-        "skip_training": [bool],
-        "save_model": [bool],
         "to_standardize": [str],
         "val_frac": [float],
         "use_scheduler": [bool],
+        "skip_training": [bool],
+        "save_model": [bool],
+        "verbose": [int],
+        'show_progress_bar': [bool],
+        'save_losses_plot': [bool],
+        'show_losses_plot': [bool],
     }
 
     def __init__(
-        self,
-        n_iter=100,
-        batch_size=20,
-        random_seed=42,
-        val_frac=0.1,
-        use_scheduler=True,
-        lr=None,
-        lr_patience=5,
-        lr_reduction_factor=0.5,
-        verbose: int = 1,
-        show_progress_bar=True,
-        save_losses_plot=True,
-        show_losses_plot=True,
+            self,
+            n_iter=100,
+            batch_size=20,
+            random_seed=42,
+            val_frac=0.1,
+            use_scheduler=True,
+            lr=None,
+            lr_patience=5,
+            lr_reduction_factor=0.5,
+            verbose: int = 1,
+            show_progress_bar=True,
+            save_losses_plot=True,
+            show_losses_plot=True,
     ):
-        """
-        :param n_iter: 
-        :param batch_size:
-        :param random_seed:
-        :param lr: 
-        :param lr_patience: 
-        :param lr_reduction_factor: 
-        :param verbose:
-        """
         self.use_scheduler = use_scheduler
         self.n_iter = n_iter
         self.batch_size = batch_size
@@ -181,11 +175,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     @staticmethod
     def _nn_builder(
-        dim_in,
-        dim_out,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
-        activation=torch.nn.LeakyReLU,
+            dim_in,
+            dim_out,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+            activation=torch.nn.LeakyReLU,
     ):
         layers = collapse([
             torch.nn.Linear(dim_in, hidden_layer_size),
