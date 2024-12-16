@@ -1,7 +1,7 @@
 import numpy as np
 from compare_methods import UQ_Comparer
 from helpers import get_data, standardize, train_val_split
-
+from nn_estimator import NN_Estimator
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
@@ -408,7 +408,7 @@ class My_UQ_Comparer(UQ_Comparer):
             y_train: np.ndarray,
             X_uq: np.ndarray,
             quantiles,
-            base_model: "NN_Estimator",
+            base_model: NN_Estimator,
             n_iter=100,
             batch_size=20,
             random_seed=42,
