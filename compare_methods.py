@@ -86,16 +86,17 @@ class UQ_Comparer(ABC):
 
         if should_plot_base_results:
             print("plotting base model results...")
-            self.plot_base_results(
-                X_train,
-                y_train,
-                X_test,
-                y_test,
-                base_models_preds,
-                plot_name='base_results',
-                show_plots=should_show_plots,
-                save_plot=should_save_plots,
-            )
+            for base_model_name, base_model_pred in base_models_preds.items():
+                self.plot_base_results(
+                    X_train,
+                    y_train,
+                    X_test,
+                    y_test,
+                    base_model_pred,
+                    plot_name=base_model_name,
+                    show_plots=should_show_plots,
+                    save_plot=should_save_plots,
+                )
 
         print("computing base model metrics...")
         base_models_metrics = {
