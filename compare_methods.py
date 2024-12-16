@@ -2,7 +2,7 @@ import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from functools import partial
-from typing import Optional, Any
+from typing import Optional, Any, Generator, Callable
 
 import numpy as np
 import numpy.typing as npt
@@ -81,7 +81,7 @@ class UQ_Comparer(ABC):
         print("training base models...")
         X_pred, y_true = X, y
 
-        base_model_args = self.methods_kwargs['base_models']
+        base_model_args = self.methods_kwargs['base_models']  # todo: what to do if empty?
         base_models = self.train_base_models(X_train, y_train, base_model_args)
         base_models_preds = self.predict_base_models(base_models, X_pred)
 
@@ -279,11 +279,11 @@ class UQ_Comparer(ABC):
     def get_native_methods(cls):
         return cls._get_methods_by_prefix("native")
 
-    def _get_methods_by_prefix(self, prefix: str, sep='_'):
+    def _get_methods_by_prefix(self, prefix: str, sep='_') -> Generator[tuple[str, Callable], None, None]:
         """
-
+        get all instance methods (i.e. callable attributes) with given prefix
         :param prefix:
-        :return: all instance methods (i.e. callable attributes) with given prefix
+        :return: generator of (method_name, method) pairs
         """
         full_prefix = prefix + sep
         for attr_name in self.__class__.__dict__.keys():
