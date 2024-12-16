@@ -136,7 +136,7 @@ class UQ_Comparer(ABC):
         uq_results_all = {'posthoc': posthoc_results, 'native': native_results}
         uq_metrics_all = {'base_model': base_models_metrics}
         for uq_type, uq_results in uq_results_all.items():
-            print(f'\t{uq_type}...')
+            print(f'{uq_type}...')
             uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true, quantiles=quantiles)
         self.print_uq_metrics(uq_metrics_all)
         self.io_helper.save_metrics(uq_metrics_all, filename='uq')
@@ -328,13 +328,13 @@ class UQ_Comparer(ABC):
                 if base_model_name not in blacklist
             }
             if not compatible_base_models:
-                print(f'\tno compatible base models found for posthoc method {posthoc_method_name} - skipping.')
+                print(f'no compatible base models found for posthoc method {posthoc_method_name} - skipping.')
                 continue
-            print(f'\trunning {posthoc_method_name}...')
+            print(f'running {posthoc_method_name}...')
 
             method_kwargs = self.methods_kwargs[posthoc_method_name]
             for base_model_name, base_model in compatible_base_models.items():
-                print(f'\t\t...on {base_model_name}...')
+                print(f'...on {base_model_name}...')
                 base_model_copy = base_model if skip_deepcopy else copy.deepcopy(base_model)
                 y_pred, y_quantiles, y_std = posthoc_method(
                     X_train,
@@ -373,7 +373,7 @@ class UQ_Comparer(ABC):
         print(f"running native methods...")
         native_results = {}
         for native_method_name, native_method in native_methods:
-            print(f'\trunning {native_method_name}...')
+            print(f'running {native_method_name}...')
             method_kwargs = self.methods_kwargs[native_method_name]
             y_pred, y_quantiles, y_std = native_method(
                 X_train,
