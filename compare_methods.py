@@ -1,3 +1,7 @@
+import os
+filename = os.path.split(__file__)[-1]
+print(f'reading file {filename}...')
+
 from abc import ABC, abstractmethod
 import numpy as np
 import copy

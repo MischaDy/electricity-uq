@@ -1,4 +1,6 @@
-print('importing...')
+import os
+filename = os.path.split(__file__)[-1]
+print(f'reading file {filename}...')
 
 import numpy as np
 from scipy import stats
