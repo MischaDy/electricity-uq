@@ -419,8 +419,8 @@ class My_UQ_Comparer(UQ_Comparer):
         #  script)?
         from laplace import Laplace
         from tqdm import tqdm
-        from helpers import (get_train_loader, tensor_to_np_array, np_arrays_to_tensors, tensors_to_device,
-                             np_array_to_tensor)
+        from helpers import (get_train_loader, tensor_to_np_array, np_arrays_to_tensors, np_array_to_tensor,
+                             tensors_to_device, tensor_to_device)
         import torch
         from torch import nn
 
@@ -476,7 +476,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 )
 
         X_pred = np_array_to_tensor(X_pred)
-        X_pred = tensors_to_device(X_pred)
+        X_pred = tensor_to_device(X_pred)
         f_mu, f_var = la(X_pred)
         f_mu = tensor_to_np_array(f_mu.squeeze())
         f_sigma = tensor_to_np_array(f_var.squeeze().sqrt())
