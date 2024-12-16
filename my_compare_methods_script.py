@@ -1,4 +1,6 @@
 import numpy as np
+from scipy import stats
+
 from compare_methods import UQ_Comparer
 from helpers import get_data, standardize, train_val_split
 from nn_estimator import NN_Estimator
@@ -69,31 +71,32 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "n_iter": 500,
-        "verbose": 1,
+        "lr": 1e-2,
+        "lr_patience": 30,
+        "lr_reduction_factor": 0.5,
         "show_progress_bar": True,
         "show_losses_plot": False,
         "save_losses_plot": True,
         "random_state": 42,
-        "lr": 1e-2,
-        "lr_reduction_factor": 0.5,
-        "lr_patience": 30,
-        "cv_n_iter": 5,
         "skip_training": True,
         "save_model": True,
+        "verbose": 1,
     },
     "base_model_rf": {
-        "n_iter": 500,
-        "verbose": 1,
+        'model_param_distributions': {
+            "max_depth": stats.randint(2, 100),
+            "n_estimators": stats.randint(10, 1000),
+        },
+        'cv_n_iter': 100,
+        'n_cv_splits': 10,
         "show_progress_bar": True,
         "show_losses_plot": False,
         "save_losses_plot": True,
         "random_state": 42,
-        "lr": 1e-2,
-        "lr_reduction_factor": 0.5,
-        "lr_patience": 30,
-        "cv_n_iter": 5,
         "skip_training": True,
         "save_model": True,
+        "verbose": 1,
+        'n_jobs': -1,
     },
 }
 
@@ -187,12 +190,11 @@ class My_UQ_Comparer(UQ_Comparer):
             model_param_distributions=None,
             n_jobs=-1,
             cv_n_iter=100,
-            n_cv_splits=10 ,
+            n_cv_splits=10,
             random_seed=42,
             skip_training=True,
             save_model=True,
             verbose=1,
-            **kwargs,
     ):
         """
 
@@ -206,18 +208,16 @@ class My_UQ_Comparer(UQ_Comparer):
         :param cv_n_iter:
         :param save_model:
         :param verbose:
-        :param kwargs: unused kwargs (for other base model)
         :return:
         """
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-        from scipy.stats import randint
 
         # todo: more flexibility in choosing (multiple) base models
         if model_param_distributions is None:
             model_param_distributions = {
-                "max_depth": randint(2, 100),
-                "n_estimators": randint(10, 1000),
+                "max_depth": stats.randint(2, 100),
+                "n_estimators": stats.randint(10, 1000),
             }
 
         model_class = RandomForestRegressor
@@ -276,7 +276,6 @@ class My_UQ_Comparer(UQ_Comparer):
             skip_training=True,
             save_model=True,
             verbose: int = 1,
-            **kwargs,
     ):
         """
 
@@ -296,7 +295,6 @@ class My_UQ_Comparer(UQ_Comparer):
         :param n_iter:
         :param batch_size:
         :param random_seed:
-        :param kwargs: unused kwargs (for other base model)
         :return:
         """
         from nn_estimator import NN_Estimator
