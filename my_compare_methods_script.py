@@ -13,8 +13,8 @@ METHOD_WHITELIST = [
     "native_quantile_regression",
     "native_gpytorch",
     "native_mvnn",
-    'base_model_rf',
-    # 'base_model_nn',
+    # 'base_model_rf',
+    'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
     'posthoc_laplace': {
