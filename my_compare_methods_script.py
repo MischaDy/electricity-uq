@@ -10,7 +10,7 @@ METHOD_WHITELIST = [
     # "native_gpytorch",
     # "native_mvnn",
     'base_model_rf',
-    'base_model_nn',
+    # 'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
     'posthoc_laplace': {
@@ -81,7 +81,7 @@ METHODS_KWARGS = {
         "skip_training": True,
         "save_model": True,
     },
-    "base_model_rf": {  # todo: split
+    "base_model_rf": {
         "n_iter": 500,
         "verbose": 1,
         "show_progress_bar": True,
@@ -184,21 +184,23 @@ class My_UQ_Comparer(UQ_Comparer):
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
-            model_params_choices=None,
-            model_init_params=None,
-            skip_training=True,
+            model_param_distributions=None,
             n_jobs=-1,
-            cv_n_iter=10,
+            cv_n_iter=100,
+            n_cv_splits=10 ,
+            random_seed=42,
+            skip_training=True,
             save_model=True,
             verbose=1,
             **kwargs,
     ):
         """
 
+        :param random_seed:
+        :param n_cv_splits:
         :param X_train:
         :param y_train:
-        :param model_params_choices:
-        :param model_init_params:
+        :param model_param_distributions:
         :param skip_training:
         :param n_jobs:
         :param cv_n_iter:
@@ -212,16 +214,11 @@ class My_UQ_Comparer(UQ_Comparer):
         from scipy.stats import randint
 
         # todo: more flexibility in choosing (multiple) base models
-        if model_params_choices is None:
-            model_params_choices = {
-                "max_depth": randint(2, 30),
-                "n_estimators": randint(10, 100),
+        if model_param_distributions is None:
+            model_param_distributions = {
+                "max_depth": randint(2, 100),
+                "n_estimators": randint(10, 1000),
             }
-        random_seed = 42
-        if model_init_params is None:
-            model_init_params = {}
-        elif "random_seed" not in model_init_params:
-            model_init_params["random_seed"] = random_seed
 
         model_class = RandomForestRegressor
         filename_base_model = f"base_{model_class.__name__}.model"
@@ -236,18 +233,15 @@ class My_UQ_Comparer(UQ_Comparer):
             except FileNotFoundError:
                 print(f"trained base model '{filename_base_model}' not found")
 
-        assert all(
-            item is not None for item in [X_train, y_train, model_params_choices]
-        )
+        assert all(item is not None for item in [X_train, y_train, model_param_distributions])
         print("training random forest...")
 
         # CV parameter search
-        n_splits = 5
-        tscv = TimeSeriesSplit(n_splits=n_splits)
-        model = model_class(random_state=random_seed, **model_init_params)
+        tscv = TimeSeriesSplit(n_splits=n_cv_splits)
+        model = model_class(random_state=random_seed)
         cv_obj = RandomizedSearchCV(
             model,
-            param_distributions=model_params_choices,
+            param_distributions=model_param_distributions,
             n_iter=cv_n_iter,
             cv=tscv,
             scoring="neg_root_mean_squared_error",
