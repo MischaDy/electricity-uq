@@ -231,7 +231,7 @@ def plot_uq_result(
         os.makedirs(plots_path, exist_ok=True)
         plt.savefig(filepath)
     if show_plot:
-        plt.show()
+        plt.show(block=True)
     plt.close(fig)
 
 
@@ -339,7 +339,7 @@ def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
     plt.plot(x_plot_test, y_test, label='y_test')
     plt.legend()
     if SHOW_PLOTS:
-        plt.show()
+        plt.show(block=True)
     plt.close()
 
 
@@ -354,7 +354,7 @@ def plot_losses(losses, show_plots=True):
     plt_func(losses, label="loss")
     ax.legend()
     if show_plots:
-        plt.show()
+        plt.show(block=True)
     plt.close(fig)
 
 

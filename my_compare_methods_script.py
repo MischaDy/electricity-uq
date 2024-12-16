@@ -659,7 +659,7 @@ class My_UQ_Comparer(UQ_Comparer):
         if save_plot:
             self.io_helper.save_plot(plot_name)
         if show_plots:
-            plt.show()
+            plt.show(block=True)
         plt.close(fig)
 
 

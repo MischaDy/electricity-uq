@@ -78,7 +78,7 @@ def plot_data(X_train, X_test, y_train, y_test, io_helper=None, filename="data",
     plt.legend(["Training data", "Test data"])
     if do_save_figure:
         io_helper.save_plot(filename)
-    plt.show()
+    plt.show(block=True)
 
 
 def unzip(iterable):

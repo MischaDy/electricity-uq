@@ -210,7 +210,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             os.makedirs(plots_path, exist_ok=True)
             plt.savefig(file_path)
         if self.show_losses_plot:
-            plt.show()
+            plt.show(block=True)
         plt.close(fig)
 
     @staticmethod

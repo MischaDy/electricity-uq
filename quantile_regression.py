@@ -101,7 +101,7 @@ def plot_intervals(X, y, X_train, y_preds, y_pis):
     plt.xlabel("data")
     plt.ylabel("target")
     plt.title("QR")
-    plt.show()
+    plt.show(block=True)
 
 
 def plot_data(X_train, X_test, y_train, y_test):

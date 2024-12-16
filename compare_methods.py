@@ -445,7 +445,7 @@ class UQ_Comparer(ABC):
         if save_plot:
             self.io_helper.save_plot(filename)
         if show_plot:
-            plt.show()
+            plt.show(block=True)
         plt.close(fig)
 
     def plot_uq_results(
@@ -537,7 +537,7 @@ class UQ_Comparer(ABC):
         if save_plot:
             self.io_helper.save_plot(plot_name)
         if show_plots:
-            plt.show()
+            plt.show(block=True)
         plt.close(fig)
 
     def plot_base_results(
@@ -573,7 +573,7 @@ class UQ_Comparer(ABC):
         if save_plot:
             self.io_helper.save_plot(plot_name)
         if show_plots:
-            plt.show()
+            plt.show(block=True)
         plt.close(fig)
 
     @staticmethod

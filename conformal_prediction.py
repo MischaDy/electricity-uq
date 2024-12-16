@@ -665,7 +665,7 @@ def plot_data(X_train, X_test, y_train, y_test, filename="data", do_save_figure=
     plt.legend(["Training data", "Test data"])
     if do_save_figure:
         io_helper.save_plot(f"{filename}_{filename_postfix}.png")
-    plt.show()
+    plt.show(block=True)
 
 
 def plot_prediction_intervals(
@@ -737,7 +737,7 @@ def plot_prediction_intervals(
         ax.legend()
     fig.tight_layout()
     io_helper.save_plot(f"{filename}1_{filename_postfix}.png")
-    plt.show()
+    plt.show(block=True)
 
     fig, axs = plt.subplots(
         nrows=2, ncols=1, figsize=(14, 8), sharey="row", sharex="col"
@@ -762,7 +762,7 @@ def plot_prediction_intervals(
         ax.legend()
     fig.tight_layout()
     io_helper.save_plot(f"{filename}2_{filename_postfix}.png")
-    plt.show()
+    plt.show(block=True)
 
 
 def plot_prediction_intervals_all_quantiles(
@@ -794,7 +794,7 @@ def plot_prediction_intervals_all_quantiles(
         ax.legend()
     fig.tight_layout()
     io_helper.save_plot(f"{filename}1_{filename_postfix}.png")
-    plt.show()
+    plt.show(block=True)
 
 
 def compare_coverages(
@@ -886,7 +886,7 @@ def compare_coverages(
 
     plt.legend()
     io_helper.save_plot(f"{filename}_{filename_postfix}.png")
-    plt.show()
+    plt.show(block=True)
 
 
 if __name__ == "__main__":

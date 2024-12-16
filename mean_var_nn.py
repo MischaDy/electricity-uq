@@ -168,7 +168,7 @@ def plot_losses(train_losses, val_losses):
     plt_func(train_losses, label="train loss")
     plt_func(val_losses, label="validation loss")
     ax.legend()
-    plt.show()
+    plt.show(block=True)
 
 
 def _nll_loss_np(y_pred, y_test):
@@ -280,7 +280,7 @@ def plot_uq_result(
     ax.legend()
     ax.set_xlabel("data")
     ax.set_ylabel("target")
-    plt.show()
+    plt.show(block=True)
 
 
 def get_clean_data(n_points_per_group, to_standardize, do_plot_data=True):
@@ -298,7 +298,7 @@ def my_plot_data(X, y):
         plt.plot(x_plot, X, label='X')
     plt.plot(x_plot, y, label='y')
     plt.legend()
-    plt.show()
+    plt.show(block=True)
 
 
 def _standardize_or_to_array(variable, to_standardize, *dfs):
