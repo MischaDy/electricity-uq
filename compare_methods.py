@@ -103,7 +103,6 @@ class UQ_Comparer(ABC):
             model_name: self.compute_metrics_det(model_preds, y_true)
             for model_name, model_preds in y_preds_base_models.items()
         }
-        self.io_helper.save_metrics(base_models_metrics)
         self.print_base_models_metrics(base_models_metrics)
 
         print("running posthoc UQ methods...")
@@ -137,7 +136,7 @@ class UQ_Comparer(ABC):
             print(f'\t{uq_type}...')
             uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true, quantiles=quantiles)
         self.print_uq_metrics(uq_metrics_all)
-        self.io_helper.save_metrics(uq_metrics_all)
+        self.io_helper.save_metrics(uq_metrics_all, filename='uq')
         return base_models_metrics, uq_metrics_all
 
     # todo: make classmethod?

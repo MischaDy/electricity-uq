@@ -6,8 +6,6 @@ import torch
 from laplace import ParametricLaplace
 from torch import nn
 
-from helpers import timestamped_filename
-
 
 # noinspection PyPep8Naming
 class IO_Helper:
@@ -120,14 +118,10 @@ class IO_Helper:
         path = self.get_plot_savepath(plotname)
         plt.savefig(path)
 
-    def save_metrics(self, metrics: dict, filename='metrics', add_timestamp=True):
+    def save_metrics(self, metrics: dict, filename=None, postfix='metrics'):
         import json
-
-        if add_timestamp:
-            filename = timestamped_filename(filename, 'json')
-        else:
-            filename = f'{filename}.json'
-
+        filename = f'{filename}_{postfix}' if filename is not None else postfix
+        filename += '.json'
         path = self.get_metrics_savepath(filename)
         metrics_str = json.dumps(metrics, indent=4)
         with open(path, 'w') as file:
