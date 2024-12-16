@@ -1,14 +1,13 @@
 import numpy as np
-import torch
-from matplotlib import pyplot as plt
 from more_itertools import collapse
+
 # noinspection PyProtectedMember
 from sklearn.base import RegressorMixin, BaseEstimator, _fit_context
-from sklearn.utils.estimator_checks import check_estimator
-from sklearn.utils.validation import check_is_fitted
+
+import torch
 from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils.data import TensorDataset, DataLoader
+
 from tqdm import tqdm
 
 from helpers import np_array_to_tensor, np_arrays_to_tensors, train_val_split
@@ -194,11 +193,13 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     @classmethod
     def _get_train_loader(cls, X_train: torch.Tensor, y_train: torch.Tensor, batch_size):
+        from torch.utils.data import TensorDataset, DataLoader
         train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size)
         return train_loader
 
     def _plot_losses(self, train_losses, test_losses, filename='losses'):
+        from matplotlib import pyplot as plt
         fig, ax = plt.subplots()
         ax.semilogy(train_losses, label="train")
         ax.semilogy(test_losses, label="val")
@@ -233,6 +234,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             Returns an array of ones.
 
         """
+        from sklearn.utils.validation import check_is_fitted
+
         # Check if fit had been called
         check_is_fitted(self)
         # We need to set reset=False because we don't want to overwrite
@@ -273,5 +276,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
 
 if __name__ == '__main__':
+    from sklearn.utils.estimator_checks import check_estimator
     estimator = NN_Estimator(verbose=0)
     check_estimator(estimator)

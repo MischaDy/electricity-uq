@@ -9,6 +9,7 @@ from compare_methods import UQ_Comparer
 from helpers import get_data, standardize, train_val_split
 from nn_estimator import NN_Estimator
 
+
 METHOD_WHITELIST = [
     "posthoc_conformal_prediction",
     "posthoc_laplace",

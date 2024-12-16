@@ -2,9 +2,6 @@ import os
 from typing import Callable
 
 import numpy as np
-import torch
-from laplace import ParametricLaplace
-from torch import nn
 
 
 # noinspection PyPep8Naming
@@ -56,6 +53,7 @@ class IO_Helper:
         :param kwargs: kwargs for torch.load
         :return:
         """
+        import torch
         filepath = self.get_model_savepath(filename)
         kwargs['weights_only'] = False
         model = torch.load(filepath, *args, **kwargs)
@@ -63,18 +61,21 @@ class IO_Helper:
         return model
 
     def load_torch_model_statedict(self, model_class, filename, **kwargs):
+        import torch
         path = self.get_model_savepath(filename)
         state_dict = torch.load(path)
         model = model_class(**kwargs)
         model.load_state_dict(state_dict)
         return model
 
+    # noinspection PyUnresolvedReferences
     def load_laplace_model_statedict(
             self,
-            base_model: nn.Module,
-            la_instantiator: Callable[[nn.Module], ParametricLaplace],
+            base_model: 'torch.nn.Module',
+            la_instantiator: Callable[['torch.nn.Module'], 'laplace.ParametricLaplace'],
             laplace_model_filename: str,
     ):
+        import torch
         laplace_model_filepath = self.get_model_savepath(laplace_model_filename)
         la = la_instantiator(base_model)
         la.load_state_dict(torch.load(laplace_model_filepath))
@@ -92,10 +93,12 @@ class IO_Helper:
             pickle.dump(model, file)
 
     def save_torch_model(self, model, filename):
+        import torch
         path = self.get_model_savepath(filename)
         torch.save(model, path)
 
     def save_torch_model_statedict(self, model, filename):
+        import torch
         path = self.get_model_savepath(filename)
         torch.save(model.state_dict(), path)
 
@@ -104,6 +107,7 @@ class IO_Helper:
             laplace_model,
             laplace_model_filename,
     ):
+        import torch
         laplace_model_filepath = self.get_model_savepath(laplace_model_filename)
         torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
