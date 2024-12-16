@@ -77,7 +77,7 @@ METHODS_KWARGS = {
         "show_progress_bar": True,
         "show_losses_plot": False,
         "save_losses_plot": True,
-        "random_state": 42,
+        "random_seed": 42,
         "skip_training": True,
         "save_model": True,
         "verbose": 1,
@@ -89,8 +89,8 @@ METHODS_KWARGS = {
         },
         'cv_n_iter': 100,
         'n_cv_splits': 10,
-        "random_state": 42,
-        "skip_training": True,
+        "random_seed": 42,
+        "skip_training": False,
         "save_model": True,
         "verbose": 1,
         'n_jobs': -1,
@@ -221,14 +221,12 @@ class My_UQ_Comparer(UQ_Comparer):
         filename_base_model = f"base_{model_class.__name__}.model"
 
         if skip_training:
-            # Model previously optimized with a cross-validation:
-            # RandomForestRegressor(max_depth=13, n_estimators=89, random_state=42)
             try:
                 print('skipping base model training')
                 model = self.io_helper.load_model(filename_base_model)
                 return model
             except FileNotFoundError:
-                print(f"trained base model '{filename_base_model}' not found")
+                print(f"trained base model '{filename_base_model}' not found. training from scratch.")
 
         assert all(item is not None for item in [X_train, y_train, model_param_distributions])
         print("training random forest...")
