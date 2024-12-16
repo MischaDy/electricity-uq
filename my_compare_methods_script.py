@@ -419,7 +419,8 @@ class My_UQ_Comparer(UQ_Comparer):
         #  script)?
         from laplace import Laplace
         from tqdm import tqdm
-        from helpers import get_train_loader, tensor_to_np_array, np_arrays_to_tensors, tensors_to_device
+        from helpers import (get_train_loader, tensor_to_np_array, np_arrays_to_tensors, tensors_to_device,
+                             np_array_to_tensor)
         import torch
         from torch import nn
 
@@ -448,8 +449,8 @@ class My_UQ_Comparer(UQ_Comparer):
                 skip_training = False
 
         if not skip_training:
-            X_pred, X_train, y_train = np_arrays_to_tensors(X_pred, X_train, y_train)
-            X_pred, X_train, y_train = tensors_to_device(X_pred, X_train, y_train)
+            X_train, y_train = np_arrays_to_tensors(X_train, y_train)
+            X_train, y_train = tensors_to_device(X_train, y_train)
             train_loader = get_train_loader(X_train, y_train, batch_size)
             la = la_instantiator(base_model_nn)
             la.fit(train_loader)
@@ -474,6 +475,8 @@ class My_UQ_Comparer(UQ_Comparer):
                     laplace_model_filename=model_filename
                 )
 
+        X_pred = np_array_to_tensor(X_pred)
+        X_pred = tensors_to_device(X_pred)
         f_mu, f_var = la(X_pred)
         f_mu = tensor_to_np_array(f_mu.squeeze())
         f_sigma = tensor_to_np_array(f_var.squeeze().sqrt())
