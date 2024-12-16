@@ -13,6 +13,11 @@ METHOD_WHITELIST = [
     # "native_gpytorch",
     # "native_mvnn",
 ]
+POSTHOC_BASE_BLACKLIST = {
+    'posthoc_laplace': {
+        'base_model_rf',
+    },
+}
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
 DATA_FILEPATH = './data.pkl'
@@ -69,7 +74,21 @@ METHODS_KWARGS = {
         'skip_training': True,
         'save_model': True,
     },
-    "base_model": {  # todo: split
+    "base_model_nn": {
+        "n_iter": 500,
+        "verbose": 1,
+        "show_progress_bar": True,
+        "show_losses_plot": False,
+        "save_losses_plot": True,
+        "random_state": 42,
+        "lr": 1e-2,
+        "lr_reduction_factor": 0.5,
+        "lr_patience": 30,
+        "cv_n_iter": 5,
+        "skip_training": True,
+        "save_model": True,
+    },
+    "base_model_rf": {  # todo: split
         "n_iter": 500,
         "verbose": 1,
         "show_progress_bar": True,
@@ -169,21 +188,7 @@ class My_UQ_Comparer(UQ_Comparer):
         }
         return metrics
 
-    def train_base_model(self, *args, **kwargs):
-        # todo: more flexibility in choosing (multiple) base models
-        if TEST_RUN_ALL_BASE_MODELS:
-            model = self.train_base_model_rf(*args, **kwargs)
-            model = self.train_base_model_nn(*args, **kwargs)
-        else:
-            if BASE_MODEL == 'RF':
-                model = self.train_base_model_rf(*args, **kwargs)
-            elif BASE_MODEL == 'NN':
-                model = self.train_base_model_nn(*args, **kwargs)
-            else:
-                raise ValueError(f'Unknown base model type: {BASE_MODEL}')
-        return model
-
-    def train_base_model_rf(
+    def base_model_rf(
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
@@ -267,7 +272,7 @@ class My_UQ_Comparer(UQ_Comparer):
             self.io_helper.save_model(model, filename_base_model)
         return model
 
-    def train_base_model_nn(
+    def base_model_nn(
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
@@ -673,6 +678,7 @@ def test_base_model():
     uq_comparer = My_UQ_Comparer(
         methods_kwargs=METHODS_KWARGS,
         method_whitelist=METHOD_WHITELIST,
+        posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
         to_standardize=TO_STANDARDIZE,
         n_points_per_group=N_POINTS_PER_GROUP,
     )
