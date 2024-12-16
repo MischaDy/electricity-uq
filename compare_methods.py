@@ -266,28 +266,24 @@ class UQ_Comparer(ABC):
             base_model_preds[model_name] = base_model.predict(X_pred)
         return base_model_preds
 
-    @classmethod
-    def get_base_model_methods(cls):
-        return cls._get_methods_by_prefix('base_model')
+    def get_base_model_methods(self):
+        return self._get_methods_by_prefix('base_model')
 
-    @classmethod
-    def get_posthoc_methods(cls):
-        return cls._get_methods_by_prefix("posthoc")
+    def get_posthoc_methods(self):
+        return self._get_methods_by_prefix("posthoc")
 
-    @classmethod
-    def get_native_methods(cls):
-        return cls._get_methods_by_prefix("native")
+    def get_native_methods(self):
+        return self._get_methods_by_prefix("native")
 
-    @classmethod
-    def _get_methods_by_prefix(cls, prefix: str, sep='_') -> Generator[tuple[str, Callable], None, None]:
+    def _get_methods_by_prefix(self, prefix: str, sep='_') -> Generator[tuple[str, Callable], None, None]:
         """
         get all instance methods (i.e. callable attributes) with given prefix
         :param prefix:
         :return: generator of (method_name, method) pairs
         """
         full_prefix = prefix + sep
-        for attr_name in cls.__dict__.keys():
-            attr = getattr(cls, attr_name)
+        for attr_name in self.__class__.__dict__.keys():
+            attr = getattr(self, attr_name)
             if attr_name.startswith(full_prefix) and callable(attr):
                 yield attr_name, attr
 
