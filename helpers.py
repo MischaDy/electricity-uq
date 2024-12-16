@@ -44,7 +44,7 @@ def get_data(
     # X = df[input_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
     # y = df[output_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
 
-    lim = 2*_n_points_per_group if _n_points_per_group is not None else -1
+    lim = 2*_n_points_per_group if _n_points_per_group is not None else None
     X = df[input_cols].iloc[:lim]
     y = df[output_cols].iloc[:lim]
 
