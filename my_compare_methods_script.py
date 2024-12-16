@@ -22,7 +22,7 @@ POSTHOC_BASE_BLACKLIST = {
 }
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
-DATA_FILEPATH = './data.pkl'
+DATA_FILEPATH = './data_1600.pkl'
 
 N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
