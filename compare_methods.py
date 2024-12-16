@@ -16,6 +16,7 @@ from io_helper import IO_Helper
 # noinspection PyPep8Naming
 class UQ_Comparer(ABC):
     # todo: After these required inputs, they may accept any args or kwargs you wish.
+    # todo: update usage guide!
     """
     Usage:
     1. Inherit from this class.
@@ -249,8 +250,11 @@ class UQ_Comparer(ABC):
         :param y_train:
         :return: dict of (base_model_name, base_model)
         """
+        base_models_methods = self.get_base_model_methods()
+        whitelisted_methods = dict(starfilter(lambda name, _: name in self.method_whitelist,
+                                              base_models_methods))
         base_models = {}
-        for method_name, method in self.get_base_model_methods():
+        for method_name, method in whitelisted_methods.items():
             base_model_kwargs = self.methods_kwargs[method_name]
             base_model = method(X_train, y_train, **base_model_kwargs)
             base_models[method_name] = base_model

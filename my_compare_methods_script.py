@@ -12,6 +12,8 @@ METHOD_WHITELIST = [
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_mvnn",
+    # 'base_model_rf',
+    # 'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
     'posthoc_laplace': {
@@ -28,10 +30,6 @@ PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
 SHOW_PLOTS = True
 SAVE_PLOTS = True
-
-TEST_BASE_MODEL_ONLY = False
-TEST_RUN_ALL_BASE_MODELS = False
-BASE_MODEL = 'NN'  # 'RF'
 
 PLOTS_PATH = "comparison_storage/plots"
 
