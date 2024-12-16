@@ -126,7 +126,7 @@ class UQ_Comparer(ABC):
             partial_plotting(posthoc_results)
 
         print("running native UQ methods...")
-        native_results = self.run_native_methods(X_train, y_train, X_pred)
+        native_results = self.run_native_methods(X_train, y_train, X_pred, quantiles=quantiles)
 
         if should_plot_uq_results:
             print("plotting native results...")
@@ -353,6 +353,7 @@ class UQ_Comparer(ABC):
             X_train,
             y_train,
             X_pred,
+            quantiles,
     ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
@@ -378,6 +379,7 @@ class UQ_Comparer(ABC):
                 X_train,
                 y_train,
                 X_pred,
+                quantiles=quantiles,
                 **method_kwargs
             )
             native_results[native_method_name] = y_pred
