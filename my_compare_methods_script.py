@@ -84,15 +84,15 @@ METHODS_KWARGS = {
     },
     "base_model_rf": {
         'model_param_distributions': {
-            "max_depth": stats.randint(2, 100),
-            "n_estimators": stats.randint(10, 1000),
+            "max_depth": stats.randint(2, 50),
+            "n_estimators": stats.randint(10, 200),
         },
-        'cv_n_iter': 50,
-        'n_cv_splits': 4,
+        'cv_n_iter': 20,
+        'n_cv_splits': 5,
         "random_seed": 42,
         "skip_training": False,
         "save_model": True,
-        "verbose": 1,
+        "verbose": 4,
         'n_jobs': -1,
     },
 }
