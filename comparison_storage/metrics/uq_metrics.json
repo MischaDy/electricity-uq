@@ -1,8 +1,8 @@
 {
     "base_model": {
         "base_model_rf": {
-            "rmse": 0.257216764466684,
-            "smape_scaled": 0.34546505895844554
+            "rmse": 0.2577424122923975,
+            "smape_scaled": 0.3467413424211523
         }
     },
     "posthoc": {},
