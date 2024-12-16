@@ -658,44 +658,6 @@ class My_UQ_Comparer(UQ_Comparer):
         plt.close(fig)
 
 
-# def test_base_model():
-#     print('running base model test')
-#     import torch
-#     torch.set_default_dtype(torch.float32)
-#
-#     print('loading data...')
-#     uq_comparer = My_UQ_Comparer(
-#         methods_kwargs=METHODS_KWARGS,
-#         method_whitelist=METHOD_WHITELIST,
-#         posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
-#         to_standardize=TO_STANDARDIZE,
-#         n_points_per_group=N_POINTS_PER_GROUP,
-#     )
-#     X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
-#     X_uq = np.row_stack((X_train, X_test))
-#
-#     print("training base model...")
-#     base_model_kwargs = uq_comparer.methods_kwargs['base_model']
-#     base_model = uq_comparer.train_base_model(X_train, y_train, **base_model_kwargs)
-#
-#     print('predicting...')
-#     y_preds = base_model.predict(X_uq)
-#
-#     print('plotting...')
-#     uq_comparer.plot_base_model_test_result(
-#         X_train,
-#         X_test,
-#         y_train,
-#         y_test,
-#         y_preds,
-#         plot_name='base_model_test',
-#         show_plots=SHOW_PLOTS,
-#         save_plot=SAVE_PLOTS,
-#         plot_path=PLOTS_PATH,
-#     )
-#     print('done.')
-
-
 def main():
     import torch
     torch.set_default_dtype(torch.float32)
@@ -717,8 +679,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # if TEST_BASE_MODEL_ONLY:
-    #     test_base_model()
-    # else:
-    #     main()
     main()
