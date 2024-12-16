@@ -1,9 +1,6 @@
 import numpy as np
-
 from compare_methods import UQ_Comparer
-
-from helpers import get_data, standardize, train_val_split, make_ys_1d, \
-    np_arrays_to_tensors, make_tensors_contiguous, tensors_to_device, dfs_to_np_arrays
+from helpers import get_data, standardize, train_val_split
 
 
 METHOD_WHITELIST = [
@@ -309,6 +306,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         from nn_estimator import NN_Estimator
+        from helpers import np_arrays_to_tensors, tensors_to_device
 
         X_train, y_train = np_arrays_to_tensors(X_train, y_train)
         X_train, y_train = tensors_to_device(X_train, y_train)
@@ -429,7 +427,7 @@ class My_UQ_Comparer(UQ_Comparer):
         #  script)?
         from laplace import Laplace
         from tqdm import tqdm
-        from helpers import get_train_loader, tensor_to_np_array
+        from helpers import get_train_loader, tensor_to_np_array, np_arrays_to_tensors, tensors_to_device
         import torch
         from torch import nn
 
@@ -553,6 +551,7 @@ class My_UQ_Comparer(UQ_Comparer):
         import torch
         import gpytorch
         from gp_regression_gpytorch import ExactGPModel, train_gpytorch
+        from helpers import make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, tensors_to_device
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
@@ -620,6 +619,8 @@ class My_UQ_Comparer(UQ_Comparer):
                          for mean, std in zip(y_pred, y_std)])
 
     def _standardize_or_to_array(self, variable, *dfs):
+        from helpers import dfs_to_np_arrays
+
         if variable in self.to_standardize:
             return standardize(*dfs, return_scaler=False)
         return dfs_to_np_arrays(dfs)

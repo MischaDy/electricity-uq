@@ -1,15 +1,12 @@
-import copy
 from abc import ABC, abstractmethod
+import numpy as np
+import copy
 from collections import defaultdict
 from functools import partial
-from typing import Optional, Any, Generator, Callable
+from typing import Any, Generator, Callable
 
-import numpy as np
-import numpy.typing as npt
-from matplotlib import pyplot as plt
-
-from helpers import starfilter, is_ascending
 from io_helper import IO_Helper
+from helpers import starfilter
 
 
 # todo: add type hints
@@ -144,12 +141,12 @@ class UQ_Comparer(ABC):
     def get_data(
             self,
     ) -> tuple[
-        npt.NDArray[float],
-        npt.NDArray[float],
-        npt.NDArray[float],
-        npt.NDArray[float],
-        npt.NDArray[float],
-        npt.NDArray[float],
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
     ]:
         """
 
@@ -160,8 +157,8 @@ class UQ_Comparer(ABC):
     def compute_metrics(
             self,
             y_pred,
-            y_quantiles: Optional[npt.NDArray],
-            y_std: Optional[npt.NDArray],
+            y_quantiles: np.ndarray | None,
+            y_std: np.ndarray | None,
             y_true,
             quantiles=None,
     ) -> dict[str, float]:
@@ -199,8 +196,8 @@ class UQ_Comparer(ABC):
     def compute_metrics_uq(
             self,
             y_pred,
-            y_quantiles: Optional[npt.NDArray],
-            y_std: Optional[npt.NDArray],
+            y_quantiles: np.ndarray | None,
+            y_std: np.ndarray | None,
             y_true,
             quantiles,
     ) -> dict[str, float]:
@@ -221,9 +218,9 @@ class UQ_Comparer(ABC):
             uq_results: dict[
                 str,
                 tuple[
-                    npt.NDArray[float],
-                    Optional[npt.NDArray[float]],
-                    Optional[npt.NDArray[float]],
+                    np.ndarray,
+                    np.ndarray | None,
+                    np.ndarray | None
                 ],
             ],
             y_true,
@@ -250,8 +247,10 @@ class UQ_Comparer(ABC):
         :return: dict of (base_model_name, base_model)
         """
         base_models_methods = self.get_base_model_methods()
-        whitelisted_methods = dict(starfilter(lambda name, _: name in self.method_whitelist,
-                                              base_models_methods))
+        whitelisted_methods: dict[str, Callable] = dict(
+            starfilter(lambda name, _: name in self.method_whitelist,
+                       base_models_methods)
+        )
         base_models = {}
         for method_name, method in whitelisted_methods.items():
             base_model_kwargs = self.methods_kwargs[method_name]
@@ -295,7 +294,7 @@ class UQ_Comparer(ABC):
             base_models: dict[str, Any],
             quantiles,
             skip_deepcopy=False,
-    ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
+    ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
         :param quantiles:
@@ -350,7 +349,7 @@ class UQ_Comparer(ABC):
             X_train,
             y_train,
             X_pred,
-    ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
+    ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
         :param X_train:
@@ -381,7 +380,7 @@ class UQ_Comparer(ABC):
         return native_results
 
     @staticmethod
-    def stds_from_quantiles(quantiles: npt.NDArray):
+    def stds_from_quantiles(quantiles: np.ndarray):
         """
         :param quantiles: array of shape (number of datapoints, number of quantiles), where number of quantiles should
         be at least about 100
@@ -402,7 +401,7 @@ class UQ_Comparer(ABC):
         return sorted(pis)
 
     @staticmethod
-    def quantiles_from_pis(pis: npt.NDArray, check_order=False):
+    def quantiles_from_pis(pis: np.ndarray, check_order=False):
         """
         currently "buggy" for odd number of quantiles.
         :param check_order:
@@ -411,6 +410,7 @@ class UQ_Comparer(ABC):
         """
         # todo: assumption that quantile ordering is definitely consistent fulfilled?
         if check_order:
+            from helpers import is_ascending
             assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
         y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
         return y_quantiles
@@ -425,11 +425,13 @@ class UQ_Comparer(ABC):
             y_test,
             filename="data",
             figsize=(16, 5),
-            ylabel="energy data",  # todo: details!
+            ylabel="energy data",
             show_plot=True,
             save_plot=True,
     ):
         """visualize training and test sets"""
+        from matplotlib import pyplot as plt
+
         num_train_steps = X_train.shape[0]
         num_test_steps = X_test.shape[0]
 
@@ -494,6 +496,7 @@ class UQ_Comparer(ABC):
             show_plots=True,
             save_plot=True,
     ):
+        from matplotlib import pyplot as plt
         num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
         x_plot_train = np.arange(num_train_steps)
@@ -550,6 +553,7 @@ class UQ_Comparer(ABC):
             show_plots=True,
             save_plot=True,
     ):
+        from matplotlib import pyplot as plt
         num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
         x_plot_train = np.arange(num_train_steps)
