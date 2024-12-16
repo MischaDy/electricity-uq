@@ -431,12 +431,14 @@ class My_UQ_Comparer(UQ_Comparer):
         n_training_points = X_train.shape[0]
         if model_filename is None:
             model_filename = f"laplace_{n_training_points}_{n_iter}.pth"
+
+        base_model_nn = base_model.get_nn()
         if skip_training:
             print("skipping base model training...")
             try:
                 # noinspection PyTypeChecker
                 la = self.io_helper.load_laplace_model_statedict(
-                    base_model,
+                    base_model_nn,
                     la_instantiator,
                     laplace_model_filename=model_filename,
                 )
@@ -448,7 +450,7 @@ class My_UQ_Comparer(UQ_Comparer):
             X_pred, X_train, y_train = np_arrays_to_tensors(X_pred, X_train, y_train)
             X_pred, X_train, y_train = tensors_to_device(X_pred, X_train, y_train)
             train_loader = get_train_loader(X_train, y_train, batch_size)
-            la = la_instantiator(base_model.get_nn())
+            la = la_instantiator(base_model_nn)
             la.fit(train_loader)
 
             log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
