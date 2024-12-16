@@ -71,8 +71,8 @@ class UQ_Comparer(ABC):
             print("plotting data...")
             self.plot_data(
                 X_train,
-                X_test,
                 y_train,
+                X_test,
                 y_test,
                 show_plot=should_show_plots,
                 save_plot=should_save_plots,
@@ -82,17 +82,17 @@ class UQ_Comparer(ABC):
         X_pred, y_true = X, y
 
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
-        base_models_preds = self.predict_base_models(base_models, X_pred)
+        y_preds_base_models = self.predict_base_models(base_models, X_pred)
 
         if should_plot_base_results:
             print("plotting base model results...")
-            for base_model_name, base_model_pred in base_models_preds.items():
+            for base_model_name, y_pred_base_model in y_preds_base_models.items():
                 self.plot_base_results(
                     X_train,
                     y_train,
                     X_test,
                     y_test,
-                    base_model_pred,
+                    y_pred_base_model,
                     plot_name=base_model_name,
                     show_plots=should_show_plots,
                     save_plot=should_save_plots,
@@ -101,7 +101,7 @@ class UQ_Comparer(ABC):
         print("computing base model metrics...")
         base_models_metrics = {
             model_name: self.compute_metrics_det(model_preds, y_true)
-            for model_name, model_preds in base_models_preds.items()
+            for model_name, model_preds in y_preds_base_models.items()
         }
         self.io_helper.save_metrics(base_models_metrics)
         self.print_base_models_metrics(base_models_metrics)
@@ -421,8 +421,8 @@ class UQ_Comparer(ABC):
     def plot_data(
             self,
             X_train,
-            X_test,
             y_train,
+            X_test,
             y_test,
             filename="data",
             figsize=(16, 5),
@@ -467,8 +467,8 @@ class UQ_Comparer(ABC):
                 continue
             self.plot_uq_result(
                 X_train,
-                X_test,
                 y_train,
+                X_test,
                 y_test,
                 y_preds,
                 y_quantiles,
@@ -483,8 +483,8 @@ class UQ_Comparer(ABC):
     def plot_uq_result(
             self,
             X_train,
-            X_test,
             y_train,
+            X_test,
             y_test,
             y_preds,
             y_quantiles,
@@ -543,8 +543,8 @@ class UQ_Comparer(ABC):
     def plot_base_results(
             self,
             X_train,
-            X_test,
             y_train,
+            X_test,
             y_test,
             y_preds,
             plot_name='base_results',
