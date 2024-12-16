@@ -660,6 +660,7 @@ def main():
     uq_comparer = My_UQ_Comparer(
         methods_kwargs=METHODS_KWARGS,
         method_whitelist=METHOD_WHITELIST,
+        posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
         to_standardize=TO_STANDARDIZE,
         n_points_per_group=N_POINTS_PER_GROUP,
     )
