@@ -8,11 +8,11 @@ from helpers import get_data, standardize, train_val_split
 from nn_estimator import NN_Estimator
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
-    # "posthoc_laplace",
-    # "native_quantile_regression",
-    # "native_gpytorch",
-    # "native_mvnn",
+    "posthoc_conformal_prediction",
+    "posthoc_laplace",
+    "native_quantile_regression",
+    "native_gpytorch",
+    "native_mvnn",
     'base_model_rf',
     # 'base_model_nn',
 ]
@@ -29,7 +29,7 @@ N_POINTS_PER_GROUP = 800
 PLOT_DATA = False
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 SAVE_PLOTS = True
 
 METHODS_KWARGS = {
@@ -40,11 +40,11 @@ METHODS_KWARGS = {
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
-        'skip_training': False,
+        'skip_training': True,
         'save_model': True,
     },
     "native_quantile_regression": {
-        'skip_training': False,
+        'skip_training': True,
         'save_model': True,
         "verbose": True,
     },
@@ -92,7 +92,7 @@ METHODS_KWARGS = {
         'cv_n_iter': 20,
         'n_cv_splits': 5,
         "random_seed": 42,
-        "skip_training": False,
+        "skip_training": True,
         "save_model": True,
         "verbose": 4,
         'n_jobs': -1,
