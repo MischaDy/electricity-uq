@@ -81,8 +81,7 @@ class UQ_Comparer(ABC):
         print("training base models...")
         X_pred, y_true = X, y
 
-        base_model_args = self.methods_kwargs['base_models']  # todo: what to do if empty?
-        base_models = self.train_base_models(X_train, y_train, base_model_args)
+        base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
         base_models_preds = self.predict_base_models(base_models, X_pred)
 
         if should_plot_base_results:
@@ -95,7 +94,7 @@ class UQ_Comparer(ABC):
                 base_models_preds,
                 plot_name='base_results',
                 show_plots=should_show_plots,
-                save_plots=should_save_plots,
+                save_plot=should_save_plots,
             )
 
         print("computing base model metrics...")
@@ -124,7 +123,7 @@ class UQ_Comparer(ABC):
             partial_plotting(posthoc_results)
 
         print("running native UQ methods...")
-        native_results = self.run_native_methods(X_train, y_train, X_pred, quantiles=quantiles)
+        native_results = self.run_native_methods(X_train, y_train, X_pred)
 
         if should_plot_uq_results:
             print("plotting native results...")
@@ -279,15 +278,16 @@ class UQ_Comparer(ABC):
     def get_native_methods(cls):
         return cls._get_methods_by_prefix("native")
 
-    def _get_methods_by_prefix(self, prefix: str, sep='_') -> Generator[tuple[str, Callable], None, None]:
+    @classmethod
+    def _get_methods_by_prefix(cls, prefix: str, sep='_') -> Generator[tuple[str, Callable], None, None]:
         """
         get all instance methods (i.e. callable attributes) with given prefix
         :param prefix:
         :return: generator of (method_name, method) pairs
         """
         full_prefix = prefix + sep
-        for attr_name in self.__class__.__dict__.keys():
-            attr = getattr(self, attr_name)
+        for attr_name in cls.__dict__.keys():
+            attr = getattr(cls, attr_name)
             if attr_name.startswith(full_prefix) and callable(attr):
                 yield attr_name, attr
 

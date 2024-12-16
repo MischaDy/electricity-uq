@@ -31,8 +31,6 @@ PLOT_BASE_RESULTS = True
 SHOW_PLOTS = True
 SAVE_PLOTS = True
 
-PLOTS_PATH = "comparison_storage/plots"
-
 METHODS_KWARGS = {
     "native_mvnn": {
         "n_iter": 300,
@@ -720,8 +718,6 @@ def main():
         should_plot_base_results=PLOT_BASE_RESULTS,
         should_show_plots=SHOW_PLOTS,
         should_save_plots=SAVE_PLOTS,
-        plots_path=PLOTS_PATH,
-        output_uq_on_train=True,
     )
 
 
