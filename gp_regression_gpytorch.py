@@ -80,7 +80,8 @@ def preprocess_data(X_train, X_test, y_train, y_test, val_frac, standardize_x, s
         plot_data(X_train, y_train, X_val, y_val, X_test, y_test)
 
     print('making data contiguous and mapping to device...')
-    X_train, y_train, X_val, y_val, X_test, y_test = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_test, y_test)
+    X_train, y_train, X_val, y_val, X_test, y_test = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_test,
+                                                                             y_test)
     X_train, y_train, X_val, y_val, X_test, y_test = tensors_to_device(X_train, y_train, X_val, y_val, X_test, y_test)
     return X_train, y_train, X_val, y_val, X_test, y_test
 
@@ -186,7 +187,9 @@ def plot_uq_result(
     import matplotlib.pyplot as plt
     import numpy as np
 
-    X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = tensors_to_np_arrays(X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std)
+    X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = tensors_to_np_arrays(
+        X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std
+    )
     X_train = np.row_stack((X_train, X_val))
     y_train = np.hstack((y_train, y_val))
     num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
@@ -228,8 +231,7 @@ def plot_uq_result(
         plt.savefig(filepath)
     if show_plot:
         plt.show()
-    else:
-        plt.close(fig)
+    plt.close(fig)
 
 
 def main():
@@ -251,11 +253,13 @@ def main():
 
     skip_training = SKIP_TRAINING
     common_prefix, common_postfix = f'{MODEL_NAME}', f'{N_DATAPOINTS}_{N_EPOCHS}'
-    model_name, model_likelihood_name = f'{common_prefix}_{common_postfix}.pth', f'{common_prefix}_likelihood_{common_postfix}.pth'
+    model_name = f'{common_prefix}_{common_postfix}.pth'
+    model_likelihood_name = f'{common_prefix}_likelihood_{common_postfix}.pth'
     if skip_training:
         print('skipping training...')
         try:
-            likelihood = IO_HELPER.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood, model_likelihood_name)
+            likelihood = IO_HELPER.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood,
+                                                              model_likelihood_name)
             model = IO_HELPER.load_torch_model_statedict(ExactGPModel, model_name,
                                                          X_train=X_train, y_train=y_train, likelihood=likelihood)
         except FileNotFoundError:
@@ -335,8 +339,7 @@ def plot_data(X_train, y_train, X_val, y_val, X_test, y_test):
     plt.legend()
     if SHOW_PLOTS:
         plt.show()
-    else:
-        plt.close()
+    plt.close()
 
 
 def plot_losses(losses, show_plots=True):
@@ -351,8 +354,7 @@ def plot_losses(losses, show_plots=True):
     ax.legend()
     if show_plots:
         plt.show()
-    else:
-        plt.close(fig)
+    plt.close(fig)
 
 
 if __name__ == '__main__':

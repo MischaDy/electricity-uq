@@ -21,7 +21,7 @@ def main():
 
     y_preds, y_pis = estimate_quantiles(X_train, y_train, x_pred=X, alpha=[0.1])
 
-    plot_intervals(X, y, X_train, y_train, y_preds, y_pis)
+    plot_intervals(X, y, X_train, y_preds, y_pis)
 
 
 def estimate_quantiles(
@@ -69,7 +69,7 @@ def estimate_quantiles(
     return y_preds, y_pis
 
 
-def plot_intervals(X, y, X_train, y_train, y_preds, y_pis):
+def plot_intervals(X, y, X_train, y_preds, y_pis):
     num_train_steps = X_train.shape[0]
     num_steps_total = X.shape[0]
     x_plot_train = np.arange(num_train_steps)

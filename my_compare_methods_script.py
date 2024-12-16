@@ -4,7 +4,7 @@ from compare_methods import UQ_Comparer
 
 from helpers import get_data, standardize, train_val_split, make_ys_1d, \
     np_arrays_to_tensors, make_tensors_contiguous, tensors_to_device, dfs_to_np_arrays
-from io_helper import IO_Helper
+
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
@@ -127,10 +127,9 @@ class My_UQ_Comparer(UQ_Comparer):
         :param kwargs: passed to super.__init__
         :param n_points_per_group: both training size and test size
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, storage_path=storage_path, **kwargs)
         if methods_kwargs is not None:
             self.methods_kwargs.update(methods_kwargs)
-        self.io_helper = IO_Helper(storage_path)
         self.to_standardize = to_standardize
         self.n_points_per_group = n_points_per_group
 
@@ -198,7 +197,7 @@ class My_UQ_Comparer(UQ_Comparer):
             n_jobs=-1,
             cv_n_iter=10,
             save_model=True,
-            verbose=True,
+            verbose=1,
             **kwargs,
     ):
         """
@@ -260,7 +259,7 @@ class My_UQ_Comparer(UQ_Comparer):
             cv=tscv,
             scoring="neg_root_mean_squared_error",
             random_state=random_seed,
-            verbose=1,
+            verbose=verbose,
             n_jobs=n_jobs,
         )
         # todo: ravel?
@@ -569,7 +568,8 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train, y_train, X_val, y_val, X_uq = tensors_to_device(X_train, y_train, X_val, y_val, X_uq)
 
         common_prefix, common_postfix = f'{model_name}', f'{self.n_points_per_group}_{n_epochs}'
-        model_name, model_likelihood_name = f'{common_prefix}_{common_postfix}.pth', f'{common_prefix}_likelihood_{common_postfix}.pth'
+        model_name = f'{common_prefix}_{common_postfix}.pth'
+        model_likelihood_name = f'{common_prefix}_likelihood_{common_postfix}.pth'
         if skip_training:
             print('skipping training...')
             try:
@@ -591,9 +591,9 @@ class My_UQ_Comparer(UQ_Comparer):
                 y_val,
                 n_epochs,
                 lr=lr,
-                show_progress=True,
-                show_plots=True,
-                do_plot_losses=True,
+                show_progress=show_progress,
+                show_plots=show_plots,
+                do_plot_losses=do_plot_losses,
             )
 
         # noinspection PyUnboundLocalVariable
@@ -638,7 +638,6 @@ class My_UQ_Comparer(UQ_Comparer):
             plot_name='base_model',
             show_plots=True,
             save_plot=True,
-            plot_path='plots',
     ):
         from matplotlib import pyplot as plt
         num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
@@ -665,46 +664,45 @@ class My_UQ_Comparer(UQ_Comparer):
             self.io_helper.save_plot(plot_name)
         if show_plots:
             plt.show()
-        else:
-            plt.close(fig)
+        plt.close(fig)
 
 
-def test_base_model():
-    print('running base model test')
-    import torch
-    torch.set_default_dtype(torch.float32)
-
-    print('loading data...')
-    uq_comparer = My_UQ_Comparer(
-        methods_kwargs=METHODS_KWARGS,
-        method_whitelist=METHOD_WHITELIST,
-        posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
-        to_standardize=TO_STANDARDIZE,
-        n_points_per_group=N_POINTS_PER_GROUP,
-    )
-    X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
-    X_uq = np.row_stack((X_train, X_test))
-
-    print("training base model...")
-    base_model_kwargs = uq_comparer.methods_kwargs['base_model']
-    base_model = uq_comparer.train_base_model(X_train, y_train, **base_model_kwargs)
-
-    print('predicting...')
-    y_preds = base_model.predict(X_uq)
-
-    print('plotting...')
-    uq_comparer.plot_base_model_test_result(
-        X_train,
-        X_test,
-        y_train,
-        y_test,
-        y_preds,
-        plot_name='base_model_test',
-        show_plots=SHOW_PLOTS,
-        save_plot=SAVE_PLOTS,
-        plot_path=PLOTS_PATH,
-    )
-    print('done.')
+# def test_base_model():
+#     print('running base model test')
+#     import torch
+#     torch.set_default_dtype(torch.float32)
+#
+#     print('loading data...')
+#     uq_comparer = My_UQ_Comparer(
+#         methods_kwargs=METHODS_KWARGS,
+#         method_whitelist=METHOD_WHITELIST,
+#         posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
+#         to_standardize=TO_STANDARDIZE,
+#         n_points_per_group=N_POINTS_PER_GROUP,
+#     )
+#     X_train, X_test, y_train, y_test, X, y = uq_comparer.get_data()
+#     X_uq = np.row_stack((X_train, X_test))
+#
+#     print("training base model...")
+#     base_model_kwargs = uq_comparer.methods_kwargs['base_model']
+#     base_model = uq_comparer.train_base_model(X_train, y_train, **base_model_kwargs)
+#
+#     print('predicting...')
+#     y_preds = base_model.predict(X_uq)
+#
+#     print('plotting...')
+#     uq_comparer.plot_base_model_test_result(
+#         X_train,
+#         X_test,
+#         y_train,
+#         y_test,
+#         y_preds,
+#         plot_name='base_model_test',
+#         show_plots=SHOW_PLOTS,
+#         save_plot=SAVE_PLOTS,
+#         plot_path=PLOTS_PATH,
+#     )
+#     print('done.')
 
 
 def main():
@@ -730,7 +728,8 @@ def main():
 
 
 if __name__ == "__main__":
-    if TEST_BASE_MODEL_ONLY:
-        test_base_model()
-    else:
-        main()
+    # if TEST_BASE_MODEL_ONLY:
+    #     test_base_model()
+    # else:
+    #     main()
+    main()

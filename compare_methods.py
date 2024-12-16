@@ -1,6 +1,4 @@
 import copy
-import json
-import os
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from functools import partial
@@ -10,7 +8,8 @@ import numpy as np
 import numpy.typing as npt
 from matplotlib import pyplot as plt
 
-from helpers import starfilter, is_ascending, timestamped_filename
+from helpers import starfilter, is_ascending
+from io_helper import IO_Helper
 
 
 # todo: add type hints
@@ -30,53 +29,52 @@ class UQ_Comparer(ABC):
     4. Call compare_methods from the child class
     """
 
-    def __init__(self, method_whitelist=None, posthoc_base_blacklist: dict[str, str] | None = None, metrics_path='metrics'):
+    def __init__(self, storage_path, method_whitelist=None, posthoc_base_blacklist: dict[str, str] | None = None):
+        self.io_helper = IO_Helper(storage_path)
         # todo: store train and test data once loaded
         self.methods_kwargs = defaultdict(dict)
         self.method_whitelist = method_whitelist
         if posthoc_base_blacklist is None:
             self.posthoc_base_blacklist = defaultdict(set)
-        self.metrics_path = metrics_path
 
     def compare_methods(
-        self,
-        quantiles,
-        should_plot_data=True,
-        should_plot_uq_results=True,
-        should_plot_base_results=True,
-        should_show_plots=True,
-        should_save_plots=True,
-        plots_path=".",
-        skip_deepcopy=False,
-        output_uq_on_train=True,
+            self,
+            quantiles,
+            should_plot_data=True,
+            should_plot_uq_results=True,
+            should_plot_base_results=True,
+            should_show_plots=True,
+            should_save_plots=True,
+            skip_deepcopy=False,
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
         # todo: improve, e.g. tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
+        Output is produced over the whole of X
+
         :param should_plot_base_results:
         :param should_show_plots:
         :param skip_deepcopy:
-        :param plots_path:
         :param should_save_plots:
         :param quantiles:
         :param should_plot_data:
         :param should_plot_uq_results:
-        :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
-        :param output_uq_on_train: whether to produce results for X_train, too. Output for X_test is always produced.
         :return: UQ metrics and UQ results if return_results is False, else UQ metrics also native and posthoc results
         """
+        # todo: bring back return_results?
+        #  :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
+
         print("loading data...")
         X_train, X_test, y_train, y_test, X, y = self.get_data()
         print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
         if should_plot_data:
             print("plotting data...")
-            plot_data(
+            self.plot_data(
                 X_train,
                 X_test,
                 y_train,
                 y_test,
                 show_plot=should_show_plots,
                 save_plot=should_save_plots,
-                plots_path=plots_path,
             )
 
         print("training base models...")
@@ -88,17 +86,15 @@ class UQ_Comparer(ABC):
 
         if should_plot_base_results:
             print("plotting base model results...")
-            plot_base_results(
+            self.plot_base_results(
                 X_train,
                 y_train,
                 X_test,
                 y_test,
                 base_models_preds,
-                plot_name=...,
+                plot_name='base_results',
                 show_plots=should_show_plots,
                 save_plots=should_save_plots,
-                plots_path=plots_path,
-                io_helper=...,
             )
 
         print("computing base model metrics...")
@@ -106,14 +102,14 @@ class UQ_Comparer(ABC):
             model_name: self.compute_metrics_det(model_preds, y_true)
             for model_name, model_preds in base_models_preds.items()
         }
-        self.save_metrics(base_models_metrics)
-        print_base_models_metrics(base_models_metrics)
+        self.io_helper.save_metrics(base_models_metrics)
+        self.print_base_models_metrics(base_models_metrics)
 
         print("running posthoc UQ methods...")
         posthoc_results = self.run_posthoc_methods(X_train, y_train, X_pred, base_models, quantiles=quantiles,
                                                    skip_deepcopy=skip_deepcopy)
         partial_plotting = partial(
-            plot_uq_results,
+            self.plot_uq_results,
             X_train,
             y_train,
             X_test,
@@ -121,7 +117,6 @@ class UQ_Comparer(ABC):
             quantiles=quantiles,
             show_plots=should_show_plots,
             save_plots=should_save_plots,
-            plots_path=plots_path,
         )
         if should_plot_uq_results:
             print("plotting posthoc results...")
@@ -140,14 +135,14 @@ class UQ_Comparer(ABC):
         for uq_type, uq_results in uq_results_all.items():
             print(f'\t{uq_type}...')
             uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true, quantiles=quantiles)
-        print_uq_metrics(uq_metrics_all)
-        self.save_metrics(uq_metrics_all)
+        self.print_uq_metrics(uq_metrics_all)
+        self.io_helper.save_metrics(uq_metrics_all)
         return base_models_metrics, uq_metrics_all
 
     # todo: make classmethod?
     @abstractmethod
     def get_data(
-        self,
+            self,
     ) -> tuple[
         npt.NDArray[float],
         npt.NDArray[float],
@@ -187,9 +182,9 @@ class UQ_Comparer(ABC):
 
     @abstractmethod
     def compute_metrics_det(
-        self,
-        y_pred,
-        y_true,
+            self,
+            y_pred,
+            y_true,
     ) -> dict[str, float]:
         """
         Evaluate a UQ method by computing all desired deterministic metrics.
@@ -202,12 +197,12 @@ class UQ_Comparer(ABC):
 
     @abstractmethod
     def compute_metrics_uq(
-        self,
-        y_pred,
-        y_quantiles: Optional[npt.NDArray],
-        y_std: Optional[npt.NDArray],
-        y_true,
-        quantiles,
+            self,
+            y_pred,
+            y_quantiles: Optional[npt.NDArray],
+            y_std: Optional[npt.NDArray],
+            y_true,
+            quantiles,
     ) -> dict[str, float]:
         """
         Evaluate a UQ method by computing all desired uncertainty metrics.
@@ -222,17 +217,17 @@ class UQ_Comparer(ABC):
         raise NotImplementedError
 
     def compute_all_metrics(
-        self,
-        uq_results: dict[
-            str,
-            tuple[
-                npt.NDArray[float],
-                Optional[npt.NDArray[float]],
-                Optional[npt.NDArray[float]],
+            self,
+            uq_results: dict[
+                str,
+                tuple[
+                    npt.NDArray[float],
+                    Optional[npt.NDArray[float]],
+                    Optional[npt.NDArray[float]],
+                ],
             ],
-        ],
-        y_true,
-        quantiles=None,
+            y_true,
+            quantiles=None,
     ) -> dict[str, dict[str, float]]:
         """
         Evaluate all UQ methods by computing all desired metrics.
@@ -351,10 +346,10 @@ class UQ_Comparer(ABC):
         return posthoc_results
 
     def run_native_methods(
-        self,
-        X_train,
-        y_train,
-        X_pred,
+            self,
+            X_train,
+            y_train,
+            X_pred,
     ) -> dict[str, tuple[npt.NDArray[float], npt.NDArray[float], npt.NDArray[float]]]:
         """
 
@@ -394,7 +389,8 @@ class UQ_Comparer(ABC):
         """
         num_quantiles = quantiles.shape[1]
         if num_quantiles < 50:
-            print(f"warning: {num_quantiles} quantiles are too few to compute a reliable std from (should be about 100)")
+            print(f"warning: {num_quantiles} quantiles are too few"
+                  f" to compute a reliable std from (should be about 100)")
         return np.std(quantiles, ddof=1, axis=1)
 
     @staticmethod
@@ -419,82 +415,72 @@ class UQ_Comparer(ABC):
         y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
         return y_quantiles
 
-    def save_metrics(self, uq_metrics: dict[str, dict[str, dict[str, float]]]):
-        """
-        input looks like:
-        {
-            uq_type: {
-                method_name: {
-                    metric_name: metric_value, ...
-                }, ...
-            }, ...
-        }
-        :param uq_metrics: dict of items:
-        :return:
-        """
-        os.makedirs(self.metrics_path, exist_ok=True)
-        filename = timestamped_filename('metrics', 'json')
-        filepath = os.path.join(self.metrics_path, filename)
+    #### PLOTTING ###
 
-        metrics_str = json.dumps(uq_metrics, indent=4)
-        with open(filepath, 'w') as file:
-            file.write(metrics_str)
+    def plot_data(
+            self,
+            X_train,
+            X_test,
+            y_train,
+            y_test,
+            filename="data",
+            figsize=(16, 5),
+            ylabel="energy data",  # todo: details!
+            show_plot=True,
+            save_plot=True,
+    ):
+        """visualize training and test sets"""
+        num_train_steps = X_train.shape[0]
+        num_test_steps = X_test.shape[0]
 
+        x_plot_train = np.arange(num_train_steps)
+        x_plot_test = x_plot_train + num_test_steps
 
-#### PLOTTING ###
-
-def plot_data(
-    X_train,
-    X_test,
-    y_train,
-    y_test,
-    figsize=(16, 5),
-    ylabel="energy data",  # todo: details!
-    show_plot=True,
-    save_plot=True,
-    filename="data.png",
-    plots_path=".",
-):
-    """visualize training and test sets"""
-    num_train_steps = X_train.shape[0]
-    num_test_steps = X_test.shape[0]
-
-    x_plot_train = np.arange(num_train_steps)
-    x_plot_test = x_plot_train + num_test_steps
-
-    fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(x_plot_train, y_train)
-    ax.plot(x_plot_test, y_test)
-    ax.set_ylabel(ylabel)
-    ax.legend(["Training data", "Test data"])
-    if save_plot:
-        filepath = os.path.join(plots_path, filename)
-        os.makedirs(plots_path, exist_ok=True)
-        plt.savefig(filepath)
-    if show_plot:
-        plt.show()
-    else:
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.plot(x_plot_train, y_train)
+        ax.plot(x_plot_test, y_test)
+        ax.set_ylabel(ylabel)
+        ax.legend(["Training data", "Test data"])
+        if save_plot:
+            self.io_helper.save_plot(filename)
+        if show_plot:
+            plt.show()
         plt.close(fig)
 
+    def plot_uq_results(
+            self,
+            X_train,
+            y_train,
+            X_test,
+            y_test,
+            uq_results: dict[str, tuple[Any, Any, Any]],
+            quantiles,
+            show_plots=True,
+            save_plots=True,
+            n_stds=2,
+    ):
+        # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
+        for method_name, (y_preds, y_quantiles, y_std) in uq_results.items():
+            if y_quantiles is None and y_std is None:
+                print(f"warning: cannot plot method {method_name}, because both y_quantiles and y_std are None")
+                continue
+            self.plot_uq_result(
+                X_train,
+                X_test,
+                y_train,
+                y_test,
+                y_preds,
+                y_quantiles,
+                y_std,
+                quantiles,
+                n_stds=n_stds,
+                plot_name=method_name,
+                show_plots=show_plots,
+                save_plot=save_plots,
+            )
 
-def plot_uq_results(
-    X_train,
-    y_train,
-    X_test,
-    y_test,
-    uq_results: dict[str, tuple[Any, Any, Any]],
-    quantiles,
-    show_plots=True,
-    save_plots=True,
-    plots_path=".",
-    n_stds=2,
-):
-    # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
-    for method_name, (y_preds, y_quantiles, y_std) in uq_results.items():
-        if y_quantiles is None and y_std is None:
-            print(f"warning: cannot plot method {method_name}, because both y_quantiles and y_std are None")
-            continue
-        plot_uq_result(
+    def plot_uq_result(
+            self,
             X_train,
             X_test,
             y_train,
@@ -503,136 +489,111 @@ def plot_uq_results(
             y_quantiles,
             y_std,
             quantiles,
-            plot_name=method_name,
-            show_plots=show_plots,
-            save_plot=save_plots,
-            plots_path=plots_path,
-            n_stds=n_stds,
+            n_stds=2,
+            plot_name='uq_result',
+            show_plots=True,
+            save_plot=True,
+    ):
+        num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
+
+        x_plot_train = np.arange(num_train_steps)
+        x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
+        x_plot_full = np.arange(num_train_steps + num_test_steps)
+
+        drawing_quantiles = y_quantiles is not None
+        if drawing_quantiles:
+            ci_low, ci_high = (
+                y_quantiles[:, 0],
+                y_quantiles[:, -1],
+            )
+            drawn_quantile = round(max(quantiles) - min(quantiles), 2)
+        else:
+            ci_low, ci_high = y_preds - n_stds * y_std, y_preds + n_stds * y_std
+
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+        ax.plot(
+            x_plot_full,
+            y_preds,
+            label=f"mean/median prediction {plot_name}",  # todo: mean or median?
+            color="green",
         )
-
-
-def plot_uq_result(
-    X_train,
-    X_test,
-    y_train,
-    y_test,
-    y_preds,
-    y_quantiles,
-    y_std,
-    quantiles,
-    plot_name,
-    show_plots=True,
-    save_plot=True,
-    plots_path=".",
-    n_stds=2,
-):
-    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
-
-    x_plot_train = np.arange(num_train_steps)
-    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-    x_plot_full = np.arange(num_train_steps + num_test_steps)
-
-    drawing_quantiles = y_quantiles is not None
-    if drawing_quantiles:
-        ci_low, ci_high = (
-            y_quantiles[:, 0],
-            y_quantiles[:, -1],
+        # noinspection PyUnboundLocalVariable
+        label = rf"{plot_name} {f'{100 * drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'}"
+        ax.fill_between(
+            x_plot_full.ravel(),
+            ci_low,
+            ci_high,
+            color="green",
+            alpha=0.2,
+            label=label,
         )
-        drawn_quantile = round(max(quantiles) - min(quantiles), 2)
-    else:
-        ci_low, ci_high = y_preds - n_stds * y_std, y_preds + n_stds * y_std
-
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-    ax.plot(
-        x_plot_full,
-        y_preds,
-        label=f"mean/median prediction {plot_name}",  # todo: mean or median?
-        color="green",
-    )
-    # noinspection PyUnboundLocalVariable
-    label = rf"{plot_name} {f'{100*drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'}"
-    ax.fill_between(
-        x_plot_full.ravel(),
-        ci_low,
-        ci_high,
-        color="green",
-        alpha=0.2,
-        label=label,
-    )
-    ax.legend()
-    ax.set_xlabel("data")
-    ax.set_ylabel("target")
-    ax.set_title(plot_name)
-    if save_plot:
-        filename = f"{plot_name}.png"
-        filepath = os.path.join(plots_path, filename)
-        os.makedirs(plots_path, exist_ok=True)
-        plt.savefig(filepath)
-    if show_plots:
-        plt.show()
-    else:
+        ax.legend()
+        ax.set_xlabel("data")
+        ax.set_ylabel("target")
+        ax.set_title(plot_name)
+        if save_plot:
+            self.io_helper.save_plot(plot_name)
+        if show_plots:
+            plt.show()
         plt.close(fig)
 
+    def plot_base_results(
+            self,
+            X_train,
+            X_test,
+            y_train,
+            y_test,
+            y_preds,
+            plot_name='base_results',
+            show_plots=True,
+            save_plot=True,
+    ):
+        num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
-def plot_base_results(
-        X_train,
-        X_test,
-        y_train,
-        y_test,
-        y_preds,
-        plot_name,
-        io_helper,
-        show_plots=True,
-        save_plot=True,
-):
-    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
+        x_plot_train = np.arange(num_train_steps)
+        x_plot_full = np.arange(num_train_steps + num_test_steps)
+        x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
 
-    x_plot_train = np.arange(num_train_steps)
-    x_plot_full = np.arange(num_train_steps + num_test_steps)
-    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-    ax.plot(
-        x_plot_full,
-        y_preds,
-        label=f"mean/median prediction {plot_name}",  # todo: mean or median?
-        color="green",
-    )
-    ax.legend()
-    ax.set_xlabel("data")
-    ax.set_ylabel("target")
-    ax.set_title(plot_name)
-    if save_plot:
-        filename = f"{plot_name}.png"
-        io_helper.save_plot(filename)
-    if show_plots:
-        plt.show()
-    else:
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+        ax.plot(
+            x_plot_full,
+            y_preds,
+            label=f"mean/median prediction {plot_name}",  # todo: mean or median?
+            color="green",
+        )
+        ax.legend()
+        ax.set_xlabel("data")
+        ax.set_ylabel("target")
+        ax.set_title(plot_name)
+        if save_plot:
+            self.io_helper.save_plot(plot_name)
+        if show_plots:
+            plt.show()
         plt.close(fig)
 
-
-def print_uq_metrics(uq_metrics):
-    print()
-    for uq_type, method_metrics in uq_metrics.items():
-        print(f"{uq_type} metrics:")
-        for method, metrics in method_metrics.items():
-            print(f"\t{method}:")
-            for metric, value in metrics.items():
-                print(f"\t\t{metric}: {value}")
+    @staticmethod
+    def print_uq_metrics(uq_metrics):
         print()
+        for uq_type, method_metrics in uq_metrics.items():
+            print(f"{uq_type} metrics:")
+            for method, metrics in method_metrics.items():
+                print(f"\t{method}:")
+                for metric, value in metrics.items():
+                    print(f"\t\t{metric}: {value}")
+            print()
 
-
-def print_base_models_metrics(base_models_metrics):
-    print()
-    for model_name, metrics in base_models_metrics.items():
-        print(f"{model_name}:")
-        for metric, value in metrics.items():
-            print(f"\t{metric}: {value}")
-    print()
+    @staticmethod
+    def print_base_models_metrics(base_models_metrics):
+        print()
+        for model_name, metrics in base_models_metrics.items():
+            print(f"{model_name}:")
+            for metric, value in metrics.items():
+                print(f"\t{metric}: {value}")
+        print()
 
 
 def check_prefixes_ok():

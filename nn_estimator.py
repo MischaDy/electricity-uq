@@ -211,8 +211,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             plt.savefig(file_path)
         if self.show_losses_plot:
             plt.show()
-        else:
-            plt.close(fig)
+        plt.close(fig)
 
     @staticmethod
     def _mse_torch(y_pred, y_test):

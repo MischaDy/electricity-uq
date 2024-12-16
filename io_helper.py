@@ -6,6 +6,8 @@ import torch
 from laplace import ParametricLaplace
 from torch import nn
 
+from helpers import timestamped_filename
+
 
 # noinspection PyPep8Naming
 class IO_Helper:
@@ -15,11 +17,13 @@ class IO_Helper:
             arrays_folder="arrays",
             models_folder="models",
             plots_folder="plots",
+            metrics_folder='metrics',
     ):
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
         self.plots_folder = os.path.join(base_folder, plots_folder)
-        self.folders = [self.arrays_folder, self.models_folder, self.plots_folder]
+        self.metrics_folder = os.path.join(base_folder, metrics_folder)
+        self.folders = [self.arrays_folder, self.models_folder, self.plots_folder, self.metrics_folder]
         for folder in self.folders:
             os.makedirs(folder, exist_ok=True)
 
@@ -32,6 +36,9 @@ class IO_Helper:
 
     def get_plot_savepath(self, filename):
         return os.path.join(self.plots_folder, filename)
+
+    def get_metrics_savepath(self, filename):
+        return os.path.join(self.metrics_folder, filename)
 
     ### LOADERS ###
     def load_array(self, filename):
@@ -78,24 +85,20 @@ class IO_Helper:
     ### SAVERS ###
     def save_array(self, array, filename):
         path = self.get_array_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
         np.save(path, array)
 
     def save_model(self, model, filename):
         import pickle
         path = self.get_model_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "wb") as file:
             pickle.dump(model, file)
 
     def save_torch_model(self, model, filename):
         path = self.get_model_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model, path)
 
     def save_torch_model_statedict(self, model, filename):
         path = self.get_model_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(model.state_dict(), path)
 
     def save_laplace_model_statedict(
@@ -106,9 +109,26 @@ class IO_Helper:
         laplace_model_filepath = self.get_model_savepath(laplace_model_filename)
         torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
-    def save_plot(self, filename):
+    def save_plot(self, plotname=None):
         from matplotlib import pyplot as plt
 
-        path = self.get_plot_savepath(filename)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        ext = os.path.splitext(plotname)[-1]
+        if ext not in {'png', 'jpeg', 'jpg'}:
+            print(f'filename {plotname} had no extension. saving as PNG')
+            plotname += '.png'
+
+        path = self.get_plot_savepath(plotname)
         plt.savefig(path)
+
+    def save_metrics(self, metrics: dict, filename='metrics', add_timestamp=True):
+        import json
+
+        if add_timestamp:
+            filename = timestamped_filename(filename, 'json')
+        else:
+            filename = f'{filename}.json'
+
+        path = self.get_metrics_savepath(filename)
+        metrics_str = json.dumps(metrics, indent=4)
+        with open(path, 'w') as file:
+            file.write(metrics_str)
