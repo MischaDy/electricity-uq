@@ -341,7 +341,7 @@ class My_UQ_Comparer(UQ_Comparer):
             self,
             X_train,
             y_train,
-            X_uq,
+            X_pred,
             quantiles,
             model,
             random_seed=42,
@@ -359,7 +359,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param verbose:
         :param X_train:
         :param y_train: 
-        :param X_uq: 
+        :param X_pred:
         :param quantiles: 
         :param model: 
         :param random_seed: 
@@ -382,7 +382,7 @@ class My_UQ_Comparer(UQ_Comparer):
             model,
             cv,
             alphas,
-            X_uq,
+            X_pred,
             X_train,
             y_train,
             skip_training=skip_training,
@@ -403,7 +403,7 @@ class My_UQ_Comparer(UQ_Comparer):
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
-            X_uq: np.ndarray,
+            X_pred: np.ndarray,
             quantiles,
             base_model: NN_Estimator,
             n_iter=100,
@@ -445,8 +445,8 @@ class My_UQ_Comparer(UQ_Comparer):
                 skip_training = False
 
         if not skip_training:
-            X_uq, X_train, y_train = np_arrays_to_tensors(X_uq, X_train, y_train)
-            X_uq, X_train, y_train = tensors_to_device(X_uq, X_train, y_train)
+            X_pred, X_train, y_train = np_arrays_to_tensors(X_pred, X_train, y_train)
+            X_pred, X_train, y_train = tensors_to_device(X_pred, X_train, y_train)
             train_loader = get_train_loader(X_train, y_train, batch_size)
             la = la_instantiator(base_model.get_nn())
             la.fit(train_loader)
@@ -471,7 +471,7 @@ class My_UQ_Comparer(UQ_Comparer):
                     laplace_model_filename=model_filename
                 )
 
-        f_mu, f_var = la(X_uq)
+        f_mu, f_var = la(X_pred)
         f_mu = tensor_to_np_array(f_mu.squeeze())
         f_sigma = tensor_to_np_array(f_var.squeeze().sqrt())
         pred_std = np.sqrt(f_sigma ** 2 + la.sigma_noise.item() ** 2)
@@ -484,7 +484,7 @@ class My_UQ_Comparer(UQ_Comparer):
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
-            X_uq: np.ndarray,
+            X_pred: np.ndarray,
             quantiles,
             verbose=True,
             skip_training=True,
@@ -494,7 +494,7 @@ class My_UQ_Comparer(UQ_Comparer):
         y_pred, y_quantiles = estimate_quantiles_qr(
             X_train,
             y_train,
-            X_uq,
+            X_pred,
             alpha=quantiles,
             skip_training=skip_training,
             save_model=save_model,
@@ -507,7 +507,7 @@ class My_UQ_Comparer(UQ_Comparer):
     def native_mvnn(
             X_train: np.ndarray,
             y_train: np.ndarray,
-            X_uq: np.ndarray,
+            X_pred: np.ndarray,
             quantiles,
             skip_training=True,
             save_model=True,
@@ -516,7 +516,7 @@ class My_UQ_Comparer(UQ_Comparer):
         return run_mean_var_nn(
             X_train,
             y_train,
-            X_uq,
+            X_pred,
             quantiles,
             skip_training=True,
             save_model=True,
@@ -526,7 +526,7 @@ class My_UQ_Comparer(UQ_Comparer):
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
-            X_uq: np.ndarray,
+            X_pred: np.ndarray,
             quantiles,
             n_epochs=100,
             val_frac=0.1,
@@ -546,12 +546,12 @@ class My_UQ_Comparer(UQ_Comparer):
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
-        X_train, y_train, X_val, y_val, X_uq = np_arrays_to_tensors(X_train, y_train, X_val, y_val, X_uq)
+        X_train, y_train, X_val, y_val, X_pred = np_arrays_to_tensors(X_train, y_train, X_val, y_val, X_pred)
         y_train, y_val = make_ys_1d(y_train, y_val)
 
         print('making data contiguous and mapping to device...')
-        X_train, y_train, X_val, y_val, X_uq = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_uq)
-        X_train, y_train, X_val, y_val, X_uq = tensors_to_device(X_train, y_train, X_val, y_val, X_uq)
+        X_train, y_train, X_val, y_val, X_pred = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_pred)
+        X_train, y_train, X_val, y_val, X_pred = tensors_to_device(X_train, y_train, X_val, y_val, X_pred)
 
         common_prefix, common_postfix = f'{model_name}', f'{self.n_points_per_group}_{n_epochs}'
         model_name = f'{common_prefix}_{common_postfix}.pth'
@@ -596,7 +596,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 self.io_helper.save_torch_model_statedict(likelihood, model_likelihood_name)
 
         with torch.no_grad():
-            f_preds = model(X_uq)
+            f_preds = model(X_pred)
         y_preds = f_preds.mean
         y_std = f_preds.stddev
         y_quantiles = self.quantiles_gaussian(quantiles, y_preds, y_std)
