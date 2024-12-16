@@ -122,6 +122,7 @@ def train_mean_var_nn(
     else:
         model.freeze_variance(frozen_var_value)
         _mse_loss = nn.MSELoss()
+        # noinspection PyPep8
         criterion = lambda input_, target, var: _mse_loss(input_, target)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)

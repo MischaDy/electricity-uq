@@ -30,6 +30,7 @@ VALIDATION_FRAC = 0.1
 IO_HELPER = IO_Helper('gpytorch_storage')
 
 
+# noinspection PyPep8Naming
 class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, X_train, y_train, likelihood):
         super(ExactGPModel, self).__init__(X_train, y_train, likelihood)
