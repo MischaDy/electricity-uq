@@ -33,7 +33,9 @@ class UQ_Comparer(ABC):
         self.methods_kwargs = defaultdict(dict)
         self.method_whitelist = method_whitelist
         if posthoc_base_blacklist is None:
-            self.posthoc_base_blacklist = defaultdict(set)
+            posthoc_base_blacklist = dict()
+        self.posthoc_base_blacklist = defaultdict(set)
+        self.posthoc_base_blacklist.update(posthoc_base_blacklist)
 
     def compare_methods(
             self,
@@ -247,12 +249,10 @@ class UQ_Comparer(ABC):
         :return: dict of (base_model_name, base_model)
         """
         base_models_methods = self.get_base_model_methods()
-        whitelisted_methods: dict[str, Callable] = dict(
-            starfilter(lambda name, _: name in self.method_whitelist,
-                       base_models_methods)
-        )
         base_models = {}
-        for method_name, method in whitelisted_methods.items():
+        for method_name, method in base_models_methods:
+            if self.method_whitelist is not None and method_name not in self.method_whitelist:
+                continue
             base_model_kwargs = self.methods_kwargs[method_name]
             base_model = method(X_train, y_train, **base_model_kwargs)
             base_models[method_name] = base_model
