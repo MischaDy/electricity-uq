@@ -447,7 +447,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
         base_model_nn = base_model.get_nn(to_device=True)
         if skip_training:
-            print("skipping base model training...")
+            print("skipping model training...")
             try:
                 # noinspection PyTypeChecker
                 la = self.io_helper.load_laplace_model_statedict(
@@ -487,6 +487,8 @@ class My_UQ_Comparer(UQ_Comparer):
                     la,
                     laplace_model_filename=model_filename
                 )
+
+        print('predicting...')
 
         X_pred = np_array_to_tensor(X_pred)
         X_pred = obj_to_device(X_pred)
