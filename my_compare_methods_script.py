@@ -74,8 +74,8 @@ METHODS_KWARGS = {
         "save_model": True,
     },
     "posthoc_laplace": {
-        "n_iter": 300,
-        'skip_training': True,
+        "n_iter": 100,
+        'skip_training': False,
         'save_model': True,
     },
     "base_model_nn": {
@@ -491,6 +491,9 @@ class My_UQ_Comparer(UQ_Comparer):
                 )
 
         print('predicting...')
+
+        # import ipdb
+        # ipdb.set_trace()
 
         X_pred = np_array_to_tensor(X_pred)
         X_pred = object_to_cuda(X_pred)

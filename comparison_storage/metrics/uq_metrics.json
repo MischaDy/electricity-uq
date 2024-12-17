@@ -1,13 +1,18 @@
 {
-    "base_model": {},
-    "posthoc": {},
-    "native": {
-        "native_gpytorch": {
-            "rmse": 0.2262534350156784,
-            "smape_scaled": 0.3602416217327118,
-            "crps": null,
-            "nll_gaussian": 0.43576224609295366,
-            "mean_pinball": 0.01878680830482063
+    "base_model": {
+        "base_model_nn": {
+            "rmse": 0.2572040855884552,
+            "smape_scaled": 0.40683525800704956
         }
-    }
+    },
+    "posthoc": {
+        "posthoc_laplace__base_model_nn": {
+            "rmse": 0.2572040855884552,
+            "smape_scaled": 0.40683525800704956,
+            "crps": null,
+            "nll_gaussian": 0.07529991719546496,
+            "mean_pinball": 0.027132198598684265
+        }
+    },
+    "native": {}
 }
