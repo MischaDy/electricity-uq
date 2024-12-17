@@ -189,7 +189,7 @@ def obj_to_device(obj):
 def objects_to_device(*objs: Any) -> Generator[Any, None, None]:
     cuda_available = torch.cuda.is_available()
     if not cuda_available:
-        print('warning: cuda not available!')
+        print('warning: cuda not available! using CPU')
         yield from objs
     else:
         yield from map(obj_to_device, objs)
