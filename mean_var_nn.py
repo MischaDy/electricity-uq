@@ -150,9 +150,9 @@ def train_mean_var_nn(
         model.eval()
 
         with torch.no_grad():
-            y_pred_train = tensor_to_np_array(model(X_train))
+            y_pred_train = tensors_to_np_arrays(model(X_train))
             train_loss = _nll_loss_np(y_pred_train, y_train)
-            y_pred_val = tensor_to_np_array(model(X_val))
+            y_pred_val = tensors_to_np_arrays(model(X_val))
             val_loss = _nll_loss_np(y_pred_val, y_val)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
