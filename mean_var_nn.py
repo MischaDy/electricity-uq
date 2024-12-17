@@ -12,7 +12,7 @@ from uncertainty_toolbox import nll_gaussian
 
 from helpers import (get_train_loader, get_data, standardize, tensors_to_np_arrays, dfs_to_np_arrays,
                      np_arrays_to_tensors, objects_to_cuda, train_val_split, make_tensors_contiguous, get_device,
-                     object_to_cuda, make_ys_1d)
+                     object_to_cuda, make_ys_1d, np_array_to_tensor, make_tensor_contiguous)
 
 
 torch.set_default_device(get_device())
@@ -81,8 +81,8 @@ class MeanVarNN(nn.Module):
 
 
 def train_mean_var_nn(
-    X,
-    y,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
     model: MeanVarNN = None,
     n_iter=200,
     batch_size=20,
@@ -101,13 +101,19 @@ def train_mean_var_nn(
 ):
     torch.manual_seed(random_seed)
 
-    try:
-        X_train, y_train = np_arrays_to_tensors(X, y)
-    except TypeError:
-        raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
-    X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
+    # try:
+    #     X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
+    # except TypeError:
+    #     raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
+    X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
+
+    y_train_np, y_val_np = y_train.copy(), y_val.copy()  # for eval
+
+    X_train, y_train, X_val, y_val = np_arrays_to_tensors(X_train, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = objects_to_cuda(X_train, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
@@ -129,7 +135,6 @@ def train_mean_var_nn(
     else:
         model.freeze_variance(frozen_var_value)
         _mse_loss = nn.MSELoss()
-        # noinspection PyPep8
         criterion = lambda input_, target, var: _mse_loss(input_, target)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -141,23 +146,24 @@ def train_mean_var_nn(
         iterable = tqdm(iterable)
     for _ in iterable:
         model.train()
-        for X, y in train_loader:
+        for X_train, y_train in train_loader:
             optimizer.zero_grad()
-            y_pred_mean, y_pred_var = model(X)
-            loss = criterion(y_pred_mean, y, y_pred_var)
+            y_pred_mean, y_pred_var = model(X_train)
+            loss = criterion(y_pred_mean, y_train, y_pred_var)
             loss.backward()
             optimizer.step()
         model.eval()
 
         with torch.no_grad():
             y_pred_mean_train, y_pred_var_train = model(X_train)
-            y_pred_mean_train, y_pred_var_train, y_train = tensors_to_np_arrays(y_pred_mean_train, y_pred_var_train, y_train)
-            train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train)
+            y_pred_mean_train, y_pred_var_train = tensors_to_np_arrays(y_pred_mean_train, y_pred_var_train)
+            train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train_np)
+            train_losses.append(train_loss)
+
             y_pred_mean_val, y_pred_var_val = model(X_val)
-            y_pred_mean_val, y_pred_var_val, y_val = tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val, y_val)
-            val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val)
-        val_losses.append(val_loss)
-        train_losses.append(train_loss)
+            y_pred_mean_val, y_pred_var_val = tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val)
+            val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val_np)
+            val_losses.append(val_loss)
         if use_scheduler:
             scheduler.step(val_loss)
     if do_plot_losses:
@@ -204,9 +210,9 @@ def run_mean_var_nn(
     skip_training=True,
     save_model=True,
 ):
-    X_train, y_train, X_test = np_arrays_to_tensors(X_train, y_train, X_test)
-    X_train, y_train, X_test = objects_to_cuda(X_train, y_train, X_test)
-    X_train, y_train, X_test = make_tensors_contiguous(X_train, y_train, X_test)
+    X_test = np_array_to_tensor(X_test)
+    X_test = object_to_cuda(X_test)
+    X_test = make_tensor_contiguous(X_test)
     common_params = {
         "lr": lr,
         "lr_patience": lr_patience,
