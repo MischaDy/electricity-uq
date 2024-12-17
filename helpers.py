@@ -1,4 +1,7 @@
+from typing import Generator
+
 import numpy as np
+import pandas as pd
 import torch
 
 
@@ -57,8 +60,8 @@ def get_data(
     return X_train, X_test, y_train, y_test
 
 
-def set_dtype_float(*arrs):
-    return map(lambda arr: arr.astype('float32'), arrs)
+def set_dtype_float(*arrs: list[np.ndarray]) -> Generator[np.ndarray, None, None]:
+    yield from map(lambda arr: arr.astype('float32'), arrs)
 
 
 def plot_data(X_train, X_test, y_train, y_test, io_helper=None, filename="data", do_save_figure=False):
@@ -140,15 +143,15 @@ def standardize(train_data, *arrays_to_standardize, return_scaler=False):
     return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
-def df_to_np_array(df):  #: pd.DataFrame) -> np.ndarray:
+def df_to_np_array(df: pd.DataFrame) -> np.ndarray:
     return df.to_numpy(dtype=float)
 
 
-def dfs_to_np_arrays(*dfs):
+def dfs_to_np_arrays(*dfs: pd.DataFrame):
     return map(df_to_np_array, dfs)
 
 
-def df_to_tensor(df):  # pd.DataFrame) -> torch.Tensor:
+def df_to_tensor(df: pd.DataFrame) -> torch.Tensor:
     return np_array_to_tensor(df_to_np_array(df))
 
 
@@ -156,15 +159,15 @@ def dfs_to_tensors(*dfs):
     return map(df_to_tensor, dfs)
 
 
-def np_array_to_tensor(arr: np.ndarray):  # -> torch.Tensor:
+def np_array_to_tensor(arr: np.ndarray) -> torch.Tensor:
     return torch.Tensor(arr).float()
 
 
-def np_arrays_to_tensors(*arrays):  # -> torch.Tensor:
+def np_arrays_to_tensors(*arrays):
     return map(np_array_to_tensor, arrays)
 
 
-def tensor_to_np_array(tensor: torch.Tensor):  # -> np.ndarray:
+def tensor_to_np_array(tensor: torch.Tensor) -> np.ndarray:
     return tensor.numpy(force=True)
 
 
@@ -173,19 +176,23 @@ def tensors_to_np_arrays(*tensors):
 
 
 def tensor_to_device(tensor: torch.Tensor) -> torch.Tensor:
-    return next(tensors_to_device(tensor))
-
-
-def tensors_to_device(*tensors):
     cuda_available = torch.cuda.is_available()
     if not cuda_available:
         print('warning: cuda not available!')
-        return tensors
+        return tensor
     device = torch.cuda.current_device()
-    return map(lambda tensor: tensor.to(device), tensors)
+    return tensor.to(device)
 
 
-def make_arr_2d(arr):
+def tensors_to_device(*tensors) -> Generator[torch.Tensor, None, None]:
+    cuda_available = torch.cuda.is_available()
+    if not cuda_available:
+        print('warning: cuda not available!')
+        yield from tensors
+    yield from map(tensor_to_device, tensors)
+
+
+def make_arr_2d(arr: np.ndarray):
     return arr.reshape(-1, 1)
 
 
@@ -193,12 +200,12 @@ def make_arrs_2d(*arrs):
     return map(make_arr_2d, arrs)
 
 
+def make_y_1d(y: np.ndarray):
+    return y.squeeze()
+
+
 def make_ys_1d(*ys):
     return map(make_y_1d, ys)
-
-
-def make_y_1d(y):
-    return y.squeeze()
 
 
 def make_tensor_contiguous(tensor: torch.Tensor):
@@ -224,7 +231,11 @@ def timestamped_filename(prefix, ext):
     return filename
 
 
-def train_val_split(X_train, y_train, val_frac: float):
+def train_val_split(
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        val_frac: float
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     assert 0 < val_frac <= 1
     n_samples = X_train.shape[0]
     val_size = max(1, round(val_frac * n_samples))
