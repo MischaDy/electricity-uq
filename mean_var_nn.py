@@ -12,7 +12,7 @@ from uncertainty_toolbox import nll_gaussian
 
 from helpers import (get_train_loader, get_data, standardize, tensors_to_np_arrays, dfs_to_np_arrays,
                      np_arrays_to_tensors, objects_to_cuda, train_val_split, make_tensors_contiguous, get_device,
-                     object_to_cuda, make_ys_1d, tensor_to_np_array)
+                     object_to_cuda, make_ys_1d)
 
 
 torch.set_default_device(get_device())
