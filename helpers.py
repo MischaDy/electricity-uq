@@ -191,7 +191,8 @@ def objects_to_device(*objs: Any) -> Generator[Any, None, None]:
     if not cuda_available:
         print('warning: cuda not available!')
         yield from objs
-    yield from map(obj_to_device, objs)
+    else:
+        yield from map(obj_to_device, objs)
 
 
 def make_arr_2d(arr: np.ndarray):
