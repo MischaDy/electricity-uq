@@ -1,7 +1,7 @@
 import gpytorch
 import torch
 
-from helpers import (standardize, get_data, train_val_split, make_tensors_contiguous, objects_to_device,
+from helpers import (standardize, get_data, train_val_split, make_tensors_contiguous, objects_to_cuda,
                      tensors_to_np_arrays, dfs_to_tensors, np_arrays_to_tensors, make_ys_1d, get_device)
 from io_helper import IO_Helper
 
@@ -85,7 +85,7 @@ def preprocess_data(X_train, X_test, y_train, y_test, val_frac, standardize_x, s
         plot_data(X_train, y_train, X_val, y_val, X_test, y_test)
 
     print('making data contiguous and mapping to device...')
-    X_train, y_train, X_val, y_val, X_test, y_test = objects_to_device(X_train, y_train, X_val, y_val, X_test, y_test)
+    X_train, y_train, X_val, y_val, X_test, y_test = objects_to_cuda(X_train, y_train, X_val, y_val, X_test, y_test)
     X_train, y_train, X_val, y_val, X_test, y_test = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_test,
                                                                              y_test)
     return X_train, y_train, X_val, y_val, X_test, y_test
@@ -116,7 +116,7 @@ def train_gpytorch(
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model = ExactGPModel(X_train, y_train, likelihood)
 
-    model, likelihood = objects_to_device(model, likelihood)
+    model, likelihood = objects_to_cuda(model, likelihood)
 
     model.train()
     likelihood.train()

@@ -302,14 +302,14 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         from nn_estimator import NN_Estimator
-        from helpers import (np_arrays_to_tensors, objects_to_device, make_tensors_contiguous, get_device,
-                             object_to_device)
+        from helpers import (np_arrays_to_tensors, objects_to_cuda, make_tensors_contiguous, get_device,
+                             object_to_cuda)
         import torch
 
         torch.set_default_device(get_device())
 
         X_train, y_train = np_arrays_to_tensors(X_train, y_train)
-        X_train, y_train = objects_to_device(X_train, y_train)
+        X_train, y_train = objects_to_cuda(X_train, y_train)
         X_train, y_train = make_tensors_contiguous(X_train, y_train)
 
         if model_filename is None:
@@ -319,7 +319,7 @@ class My_UQ_Comparer(UQ_Comparer):
             print("skipping base model training")
             try:
                 model = self.io_helper.load_torch_model(model_filename)
-                model = object_to_device(model)
+                model = object_to_cuda(model)
                 model.eval()
                 return model
             except FileNotFoundError:
@@ -431,7 +431,7 @@ class My_UQ_Comparer(UQ_Comparer):
         from laplace import Laplace
         from tqdm import tqdm
         from helpers import (get_train_loader, tensor_to_np_array, np_arrays_to_tensors, np_array_to_tensor,
-                             objects_to_device, object_to_device, make_tensors_contiguous, make_tensor_contiguous,
+                             objects_to_cuda, object_to_cuda, make_tensors_contiguous, make_tensor_contiguous,
                              get_device)
         import torch
         from torch import nn
@@ -463,7 +463,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
         if not skip_training:
             X_train, y_train = np_arrays_to_tensors(X_train, y_train)
-            X_train, y_train = objects_to_device(X_train, y_train)
+            X_train, y_train = objects_to_cuda(X_train, y_train)
             X_train, y_train = make_tensors_contiguous(X_train, y_train)
 
             train_loader = get_train_loader(X_train, y_train, batch_size)
@@ -493,7 +493,7 @@ class My_UQ_Comparer(UQ_Comparer):
         print('predicting...')
 
         X_pred = np_array_to_tensor(X_pred)
-        X_pred = object_to_device(X_pred)
+        X_pred = object_to_cuda(X_pred)
         X_pred = make_tensor_contiguous(X_pred)
 
         # noinspection PyArgumentList
@@ -582,7 +582,7 @@ class My_UQ_Comparer(UQ_Comparer):
         import torch
         import gpytorch
         from gp_regression_gpytorch import ExactGPModel, train_gpytorch
-        from helpers import (make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_device)
+        from helpers import (make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_cuda)
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
@@ -590,7 +590,7 @@ class My_UQ_Comparer(UQ_Comparer):
         y_train, y_val = make_ys_1d(y_train, y_val)
 
         print('mapping data to device and making it contiguous...')
-        X_train, y_train, X_val, y_val, X_pred = objects_to_device(X_train, y_train, X_val, y_val, X_pred)
+        X_train, y_train, X_val, y_val, X_pred = objects_to_cuda(X_train, y_train, X_val, y_val, X_pred)
         X_train, y_train, X_val, y_val, X_pred = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_pred)
 
         common_prefix, common_postfix = f'{model_name}', f'{self.n_points_per_group}_{n_epochs}'
@@ -604,7 +604,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 model = self.io_helper.load_torch_model_statedict(ExactGPModel, model_name,
                                                                   X_train=X_train, y_train=y_train,
                                                                   likelihood=likelihood)
-                model, likelihood = objects_to_device(model, likelihood)
+                model, likelihood = objects_to_cuda(model, likelihood)
             except FileNotFoundError:
                 print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
                 skip_training = False
