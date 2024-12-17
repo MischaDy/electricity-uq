@@ -75,7 +75,7 @@ METHODS_KWARGS = {
     },
     "posthoc_laplace": {
         "n_iter": 100,
-        'skip_training': False,
+        'skip_training': True,
         'save_model': True,
     },
     "base_model_nn": {
