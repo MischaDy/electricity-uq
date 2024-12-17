@@ -1,17 +1,17 @@
 {
     "base_model": {
         "base_model_nn": {
-            "rmse": 0.2572040855884552,
-            "smape_scaled": 0.40683525800704956
+            "rmse": 0.22605715692043304,
+            "smape_scaled": 0.32970497012138367
         }
     },
     "posthoc": {
         "posthoc_laplace__base_model_nn": {
-            "rmse": 0.2572040855884552,
-            "smape_scaled": 0.40683525800704956,
+            "rmse": 0.22605715692043304,
+            "smape_scaled": 0.32970497012138367,
             "crps": null,
-            "nll_gaussian": 0.07529991719546496,
-            "mean_pinball": 0.027132198598684265
+            "nll_gaussian": 1.073908423869601,
+            "mean_pinball": 0.012698998078951586
         }
     },
     "native": {}
