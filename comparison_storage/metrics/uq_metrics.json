@@ -2,12 +2,12 @@
     "base_model": {},
     "posthoc": {},
     "native": {
-        "native_quantile_regression": {
-            "rmse": 0.32355594542088023,
-            "smape_scaled": 0.4453608774281729,
+        "native_mvnn": {
+            "rmse": 0.23460429906845093,
+            "smape_scaled": 0.37237754464149475,
             "crps": null,
-            "nll_gaussian": 0.18996283040639095,
-            "mean_pinball": 0.02770492623015136
+            "nll_gaussian": 0.1563317906034886,
+            "mean_pinball": 0.016071581947780453
         }
     }
 }

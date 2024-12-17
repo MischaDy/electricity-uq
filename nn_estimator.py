@@ -252,6 +252,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         res = res.reshape(-1, 1) if self.is_y_2d_ else res.squeeze()
         if as_np:
             res = np.array(res, dtype='float32')
+
         return res
 
     def get_nn(self, to_device=True) -> nn.Module:
