@@ -12,7 +12,7 @@ from uncertainty_toolbox import nll_gaussian
 
 from helpers import (get_train_loader, get_data, standardize, tensors_to_np_arrays, dfs_to_np_arrays,
                      np_arrays_to_tensors, objects_to_cuda, train_val_split, make_tensors_contiguous, get_device,
-                     object_to_cuda)
+                     object_to_cuda, make_ys_1d, tensor_to_np_array)
 
 
 torch.set_default_device(get_device())
@@ -136,7 +136,6 @@ def train_mean_var_nn(
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     train_losses, val_losses = [], []
-    temp_vars = []
     iterable = np.arange(n_iter) + 1
     if show_progress:
         iterable = tqdm(iterable)
@@ -149,10 +148,12 @@ def train_mean_var_nn(
             loss.backward()
             optimizer.step()
         model.eval()
+
         with torch.no_grad():
-            val_loss = _nll_loss_np(model(X_val), y_val)
-            train_loss = _nll_loss_np(model(X_train), y_train)
-            temp_vars.append(model(X_train)[1].mean())
+            y_pred_train = tensor_to_np_array(model(X_train))
+            train_loss = _nll_loss_np(y_pred_train, y_train)
+            y_pred_val = tensor_to_np_array(model(X_val))
+            val_loss = _nll_loss_np(y_pred_val, y_val)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
         if use_scheduler:
@@ -178,12 +179,12 @@ def plot_losses(train_losses, val_losses):
     plt.show(block=True)
 
 
-def _nll_loss_np(y_pred, y_test):
+def _nll_loss_np(y_pred: np.ndarray, y_test: np.ndarray):
     # todo: use nn.NLLLoss instead!
     y_pred_mean, y_pred_var = y_pred
-    tensors = y_pred_mean, np.sqrt(y_pred_var), y_test
-    arrs = map(lambda t: t.numpy(force=True).squeeze(), tensors)
-    return nll_gaussian(*arrs)
+    y_pred_std = np.sqrt(y_pred_var)
+    y_pred_mean, y_pred_std, y_test = make_ys_1d(y_pred_mean, y_pred_std, y_test)
+    return nll_gaussian(y_pred_mean, y_pred_std, y_test)
 
 
 def run_mean_var_nn(
