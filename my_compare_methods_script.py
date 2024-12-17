@@ -17,8 +17,8 @@ METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    # "native_gpytorch",
-    "native_mvnn",
+    # "native_mvnn",
+    "native_gpytorch",
     # 'base_model_rf',
     # 'base_model_nn',
 ]
