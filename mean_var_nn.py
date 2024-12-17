@@ -150,10 +150,12 @@ def train_mean_var_nn(
         model.eval()
 
         with torch.no_grad():
-            y_pred_train = tensors_to_np_arrays(*model(X_train))
-            train_loss = _nll_loss_np(y_pred_train, y_train)
-            y_pred_val = tensors_to_np_arrays(*model(X_val))
-            val_loss = _nll_loss_np(y_pred_val, y_val)
+            y_pred_mean_train, y_pred_var_train = model(X_train)
+            y_pred_mean_train, y_pred_var_train, y_train = tensors_to_np_arrays(y_pred_mean_train, y_pred_var_train, y_train)
+            train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train)
+            y_pred_mean_val, y_pred_var_val = model(X_val)
+            y_pred_mean_val, y_pred_var_val, y_val = tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val, y_val)
+            val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val)
         val_losses.append(val_loss)
         train_losses.append(train_loss)
         if use_scheduler:
@@ -179,9 +181,8 @@ def plot_losses(train_losses, val_losses):
     plt.show(block=True)
 
 
-def _nll_loss_np(y_pred: np.ndarray, y_test: np.ndarray):
+def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.ndarray):
     # todo: use nn.NLLLoss instead!
-    y_pred_mean, y_pred_var = y_pred
     y_pred_std = np.sqrt(y_pred_var)
     y_pred_mean, y_pred_std, y_test = make_ys_1d(y_pred_mean, y_pred_std, y_test)
     return nll_gaussian(y_pred_mean, y_pred_std, y_test)
