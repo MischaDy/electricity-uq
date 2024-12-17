@@ -17,8 +17,8 @@ METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    "native_mvnn",
-    # "native_gpytorch",
+    # "native_mvnn",
+    "native_gpytorch",
     # 'base_model_rf',
     # 'base_model_nn',
 ]
@@ -47,7 +47,7 @@ METHODS_KWARGS = {
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
-        'skip_training': False,
+        'skip_training': True,
         'save_model': True,
     },
     "native_quantile_regression": {
@@ -60,9 +60,9 @@ METHODS_KWARGS = {
         'val_frac': 0.1,
         'lr': 1e-2,
         'show_progress': True,
-        'show_plots': True,
+        'show_plots': False,  # todo: centralized?
         'do_plot_losses': True,
-        'skip_training': True,
+        'skip_training': False,
         'save_model': True,
         'model_name': 'gpytorch_model',
         'verbose': True,

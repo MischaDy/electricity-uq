@@ -2,12 +2,12 @@
     "base_model": {},
     "posthoc": {},
     "native": {
-        "native_mvnn": {
-            "rmse": 0.2264985591173172,
-            "smape_scaled": 0.36353248357772827,
+        "native_gpytorch": {
+            "rmse": 0.2262534350156784,
+            "smape_scaled": 0.3602416217327118,
             "crps": null,
-            "nll_gaussian": -0.07221801848202179,
-            "mean_pinball": 0.019396393379395027
+            "nll_gaussian": 0.43576224609295366,
+            "mean_pinball": 0.01878680830482063
         }
     }
 }
