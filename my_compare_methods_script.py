@@ -37,6 +37,7 @@ PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
 SHOW_PLOTS = False
 SAVE_PLOTS = True
+SKIP_BASE_MODEL_COPY = True
 
 METHODS_KWARGS = {
     "native_mvnn": {
@@ -694,6 +695,7 @@ def main():
         should_plot_base_results=PLOT_BASE_RESULTS,
         should_show_plots=SHOW_PLOTS,
         should_save_plots=SAVE_PLOTS,
+        skip_base_model_copy=SKIP_BASE_MODEL_COPY,
     )
 
 

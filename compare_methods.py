@@ -49,7 +49,7 @@ class UQ_Comparer(ABC):
             should_plot_base_results=True,
             should_show_plots=True,
             should_save_plots=True,
-            skip_deepcopy=False,
+            skip_base_model_copy=False,
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
         # todo: improve, e.g. tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
@@ -57,7 +57,7 @@ class UQ_Comparer(ABC):
 
         :param should_plot_base_results:
         :param should_show_plots:
-        :param skip_deepcopy:
+        :param skip_base_model_copy:
         :param should_save_plots:
         :param quantiles:
         :param should_plot_data:
@@ -110,7 +110,7 @@ class UQ_Comparer(ABC):
 
         print("running posthoc UQ methods...")
         posthoc_results = self.run_posthoc_methods(X_train, y_train, X_pred, base_models, quantiles=quantiles,
-                                                   skip_deepcopy=skip_deepcopy)
+                                                   skip_base_model_copy=skip_base_model_copy)
         partial_plotting = partial(
             self.plot_uq_results,
             X_train,
@@ -297,13 +297,13 @@ class UQ_Comparer(ABC):
             X_pred,
             base_models: dict[str, Any],
             quantiles,
-            skip_deepcopy=False,
+            skip_base_model_copy=False,
     ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
         :param quantiles:
         :param base_models:
-        :param skip_deepcopy: whether to skip making a deepcopy of the base model. speeds up execution, but can lead to
+        :param skip_base_model_copy: whether to skip making a deepcopy of the base model. speeds up execution, but can lead to
          bugs if posthoc method affects the base model object.
         :param X_train:
         :param y_train:
@@ -335,7 +335,7 @@ class UQ_Comparer(ABC):
             method_kwargs = self.methods_kwargs[posthoc_method_name]
             for base_model_name, base_model in compatible_base_models.items():
                 print(f'...on {base_model_name}...')
-                base_model_copy = base_model if skip_deepcopy else copy.deepcopy(base_model)
+                base_model_copy = base_model if skip_base_model_copy else copy.deepcopy(base_model)
                 y_pred, y_quantiles, y_std = posthoc_method(
                     X_train,
                     y_train,
