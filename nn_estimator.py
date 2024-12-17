@@ -1,4 +1,3 @@
-import numpy as np
 from more_itertools import collapse
 
 # noinspection PyProtectedMember
