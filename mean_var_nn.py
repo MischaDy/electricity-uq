@@ -109,8 +109,6 @@ def train_mean_var_nn(
     X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
-    y_train_np, y_val_np = y_train.copy(), y_val.copy()  # for eval
-
     X_train, y_train, X_val, y_val = np_arrays_to_tensors(X_train, y_train, X_val, y_val)
     X_train, y_train, X_val, y_val = objects_to_cuda(X_train, y_train, X_val, y_val)
     X_train, y_train, X_val, y_val = make_tensors_contiguous(X_train, y_train, X_val, y_val)
@@ -156,16 +154,13 @@ def train_mean_var_nn(
 
         with torch.no_grad():
             y_pred_mean_train, y_pred_var_train = model(X_train)
-            y_pred_mean_train, y_pred_var_train = tensors_to_np_arrays(y_pred_mean_train, y_pred_var_train)
-
-            print('shapes:', y_pred_mean_train.shape, y_pred_var_train.shape, y_train_np.shape)
-
-            train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train_np)
+            y_pred_mean_train, y_pred_var_train, y_train = tensors_to_np_arrays(y_pred_mean_train, y_pred_var_train, y_train)
+            train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train)
             train_losses.append(train_loss)
 
             y_pred_mean_val, y_pred_var_val = model(X_val)
-            y_pred_mean_val, y_pred_var_val = tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val)
-            val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val_np)
+            y_pred_mean_val, y_pred_var_val, y_val = tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val, y_val)
+            val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val)
             val_losses.append(val_loss)
         if use_scheduler:
             scheduler.step(val_loss)
