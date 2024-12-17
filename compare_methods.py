@@ -383,7 +383,7 @@ class UQ_Comparer(ABC):
                 quantiles=quantiles,
                 **method_kwargs
             )
-            native_results[native_method_name] = y_pred
+            native_results[native_method_name] = y_pred, y_quantiles, y_std
         return native_results
 
     @staticmethod
