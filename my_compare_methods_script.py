@@ -70,7 +70,7 @@ METHODS_KWARGS = {
     "posthoc_conformal_prediction": {
         "n_estimators": 5,
         "verbose": 1,
-        "skip_training": True,
+        "skip_training": False,
         "save_model": True,
     },
     "posthoc_laplace": {
