@@ -15,7 +15,7 @@ from nn_estimator import NN_Estimator
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-     "posthoc_laplace",
+    # "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_mvnn",
@@ -87,7 +87,7 @@ METHODS_KWARGS = {
         "show_losses_plot": False,
         "save_losses_plot": True,
         "random_seed": 42,
-        "skip_training": True,
+        "skip_training": False,
         "save_model": True,
         "verbose": 1,
     },
