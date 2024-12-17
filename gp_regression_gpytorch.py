@@ -309,6 +309,8 @@ def main():
     y_preds = f_preds.mean
     y_std = f_preds.stddev
 
+    y_preds, y_std = tensors_to_np_arrays(y_preds, y_std)
+
     plot_uq_result(
         X_train,
         y_train,

@@ -102,6 +102,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         - run different checks on the input data;
         - define some attributes associated to the input data: `n_features_in_` and
           `feature_names_in_`."""
+        from helpers import tensor_to_np_array
         import torch
 
         torch.set_default_device(get_device())
@@ -157,12 +158,14 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
-                val_losses.append(val_loss)
                 if self.save_losses_plot:
                     train_loss = self._mse_torch(model(X_train), y_train)
+                    train_loss = tensor_to_np_array(train_loss)
                     train_losses.append(train_loss)
             if self.use_scheduler:
                 scheduler.step(val_loss)
+            val_loss = tensor_to_np_array(val_loss)
+            val_losses.append(val_loss)
 
         model.eval()
         self.model_ = model

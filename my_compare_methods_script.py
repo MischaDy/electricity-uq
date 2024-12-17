@@ -302,8 +302,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         from nn_estimator import NN_Estimator
-        from helpers import (np_arrays_to_tensors, objects_to_cuda, make_tensors_contiguous, get_device,
-                             object_to_cuda)
+        from helpers import object_to_cuda
 
         if model_filename is None:
             n_training_points = X_train.shape[0]
@@ -578,7 +577,8 @@ class My_UQ_Comparer(UQ_Comparer):
         import torch
         import gpytorch
         from gp_regression_gpytorch import ExactGPModel, train_gpytorch
-        from helpers import (make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_cuda)
+        from helpers import (make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_cuda,
+                             tensors_to_np_arrays)
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
@@ -632,15 +632,17 @@ class My_UQ_Comparer(UQ_Comparer):
                 self.io_helper.save_torch_model_statedict(model, model_name)
                 self.io_helper.save_torch_model_statedict(likelihood, model_likelihood_name)
 
-        with torch.no_grad():
+        with torch.no_grad():  # todo: use gpytorch.settings.fast_pred_var()?
             f_preds = model(X_pred)
         y_preds = f_preds.mean
         y_std = f_preds.stddev
+        y_preds, y_std = tensors_to_np_arrays(y_preds, y_std)
+
         y_quantiles = self.quantiles_gaussian(quantiles, y_preds, y_std)
         return y_preds, y_quantiles, y_std
 
     @staticmethod
-    def quantiles_gaussian(quantiles, y_pred, y_std):
+    def quantiles_gaussian(quantiles, y_pred: np.ndarray, y_std: np.ndarray):
         from scipy.stats import norm
         # todo: does this work for multi-dim outputs?
         return np.array([norm.ppf(quantiles, loc=mean, scale=std)
