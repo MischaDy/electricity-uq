@@ -157,6 +157,9 @@ def train_mean_var_nn(
         with torch.no_grad():
             y_pred_mean_train, y_pred_var_train = model(X_train)
             y_pred_mean_train, y_pred_var_train = tensors_to_np_arrays(y_pred_mean_train, y_pred_var_train)
+
+            print('shapes:', y_pred_mean_train.shape, y_pred_var_train.shape, y_train_np.shape)
+
             train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train_np)
             train_losses.append(train_loss)
 
