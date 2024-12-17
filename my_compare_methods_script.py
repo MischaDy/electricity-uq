@@ -302,7 +302,8 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         from nn_estimator import NN_Estimator
-        from helpers import np_arrays_to_tensors, objects_to_device, make_tensors_contiguous, get_device
+        from helpers import (np_arrays_to_tensors, objects_to_device, make_tensors_contiguous, get_device,
+                             object_to_device)
         import torch
 
         torch.set_default_device(get_device())
@@ -318,6 +319,7 @@ class My_UQ_Comparer(UQ_Comparer):
             print("skipping base model training")
             try:
                 model = self.io_helper.load_torch_model(model_filename)
+                model = object_to_device(model)
                 model.eval()
                 return model
             except FileNotFoundError:
@@ -566,7 +568,8 @@ class My_UQ_Comparer(UQ_Comparer):
         import torch
         import gpytorch
         from gp_regression_gpytorch import ExactGPModel, train_gpytorch
-        from helpers import make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_device
+        from helpers import (make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_device,
+                             object_to_device)
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
@@ -588,6 +591,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 model = self.io_helper.load_torch_model_statedict(ExactGPModel, model_name,
                                                                   X_train=X_train, y_train=y_train,
                                                                   likelihood=likelihood)
+                model, likelihood = objects_to_device(model, likelihood)
             except FileNotFoundError:
                 print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
                 skip_training = False

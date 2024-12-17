@@ -115,9 +115,8 @@ def train_gpytorch(
 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model = ExactGPModel(X_train, y_train, likelihood)
-    if torch.cuda.is_available():
-        likelihood = likelihood.cuda()
-        model = model.cuda()
+
+    model, likelihood = objects_to_device(model, likelihood)
 
     model.train()
     likelihood.train()
