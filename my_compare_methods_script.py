@@ -14,12 +14,12 @@ from nn_estimator import NN_Estimator
 
 
 METHOD_WHITELIST = [
-    "posthoc_conformal_prediction",
+    # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_mvnn",
-    # 'base_model_rf',
+    'base_model_rf',
     'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
@@ -70,7 +70,7 @@ METHODS_KWARGS = {
     "posthoc_conformal_prediction": {
         "n_estimators": 5,
         "verbose": 1,
-        "skip_training": False,
+        "skip_training": True,
         "save_model": True,
     },
     "posthoc_laplace": {
@@ -79,7 +79,7 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "base_model_nn": {
-        "n_iter": 500,
+        "n_iter": 200,
         "lr": 1e-2,
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
@@ -87,7 +87,7 @@ METHODS_KWARGS = {
         "show_losses_plot": False,
         "save_losses_plot": True,
         "random_seed": 42,
-        "skip_training": True,
+        "skip_training": False,
         "save_model": True,
         "verbose": 1,
     },
@@ -99,7 +99,7 @@ METHODS_KWARGS = {
         'cv_n_iter': 20,
         'n_cv_splits': 5,
         "random_seed": 42,
-        "skip_training": True,
+        "skip_training": False,
         "save_model": True,
         "verbose": 4,
         'n_jobs': -1,
