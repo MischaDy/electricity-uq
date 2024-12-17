@@ -17,8 +17,8 @@ METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    # "native_mvnn",
-    "native_gpytorch",
+    "native_mvnn",
+    # "native_gpytorch",
     # 'base_model_rf',
     # 'base_model_nn',
 ]
@@ -41,13 +41,13 @@ SKIP_BASE_MODEL_COPY = True
 
 METHODS_KWARGS = {
     "native_mvnn": {
-        "n_iter": 300,
+        "n_iter": 100,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
-        'skip_training': True,
+        'skip_training': False,
         'save_model': True,
     },
     "native_quantile_regression": {
