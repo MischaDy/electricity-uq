@@ -6,12 +6,12 @@
         }
     },
     "posthoc": {
-        "posthoc_laplace__base_model_nn": {
+        "posthoc_conformal_prediction__base_model_nn": {
             "rmse": 0.22703437507152557,
             "smape_scaled": 0.3240281939506531,
             "crps": null,
-            "nll_gaussian": 0.9079069026338702,
-            "mean_pinball": 0.013478339846313046
+            "nll_gaussian": null,
+            "mean_pinball": 0.007588971654574077
         }
     },
     "native": {}

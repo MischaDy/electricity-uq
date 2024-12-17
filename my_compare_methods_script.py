@@ -14,8 +14,8 @@ from nn_estimator import NN_Estimator
 
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
-    "posthoc_laplace",
+    "posthoc_conformal_prediction",
+    # "posthoc_laplace",
     # "native_quantile_regression",
     # "native_gpytorch",
     # "native_mvnn",
