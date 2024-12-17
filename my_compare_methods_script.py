@@ -484,9 +484,6 @@ class My_UQ_Comparer(UQ_Comparer):
 
         print('predicting...')
 
-        # import ipdb
-        # ipdb.set_trace()
-
         X_pred = np_array_to_tensor(X_pred)
         X_pred = object_to_cuda(X_pred)
         X_pred = make_tensor_contiguous(X_pred)

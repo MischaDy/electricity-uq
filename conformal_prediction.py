@@ -379,9 +379,6 @@ def estimate_pred_interals_no_pfit_enbpi(
 
     filename_enbpi_no_pfit = f"mapie_enbpi_no_pfit_{filename_postfix}.model"
 
-    # import ipdb
-    # ipdb.set_trace()
-
     if skip_training:
         try:
             mapie_enbpi = io_helper.load_model(filename_enbpi_no_pfit)
