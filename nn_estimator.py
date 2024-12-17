@@ -263,6 +263,10 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         return {'poor_score': True,
                 '_xfail_checks': {'check_methods_sample_order_invariance': '(barely) failing for unknown reason'}}
 
+    def to(self, device):
+        self.model_ = object_to_device(self.model_)
+        return self
+
     def __getattr__(self, item):
         try:
             return getattr(self.__getattribute__('model_'), item)
