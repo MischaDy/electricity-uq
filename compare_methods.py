@@ -357,6 +357,7 @@ class UQ_Comparer(ABC):
     ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
+        :param quantiles:
         :param X_train:
         :param y_train:
         :param X_pred:

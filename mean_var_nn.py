@@ -1,10 +1,10 @@
 import torch
-from scipy.stats import norm
 from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.stats import norm
 
 from more_itertools import collapse
 from tqdm import tqdm
@@ -223,7 +223,6 @@ def run_mean_var_nn(
         X_train, y_train, model=mean_var_nn, n_iter=n_iter, train_var=True, do_plot_losses=do_plot_losses,
         **common_params
     )
-    # plot_post_training_perf(mean_var_nn, X_train, y_train)
     with torch.no_grad():
         y_pred, y_var = mean_var_nn(X_test)
     y_pred, y_var = tensors_to_np_arrays(y_pred, y_var)
@@ -311,7 +310,7 @@ def my_plot_data(X, y):
 def _standardize_or_to_array(variable, to_standardize, *dfs):
     if variable in to_standardize:
         return standardize(*dfs, return_scaler=False)
-    return dfs_to_np_arrays(dfs)
+    return dfs_to_np_arrays(*dfs)
 
 
 def main():

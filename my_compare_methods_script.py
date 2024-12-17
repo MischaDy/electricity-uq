@@ -491,6 +491,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_pred = obj_to_device(X_pred)
         X_pred = make_tensor_contiguous(X_pred)
 
+        # noinspection PyArgumentList
         f_mu, f_var = la(X_pred)
         f_mu = tensor_to_np_array(f_mu.squeeze())
         f_sigma = tensor_to_np_array(f_var.squeeze().sqrt())
