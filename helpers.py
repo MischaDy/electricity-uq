@@ -168,7 +168,7 @@ def np_arrays_to_tensors(*arrays):
 
 
 def tensor_to_np_array(tensor: torch.Tensor) -> np.ndarray:
-    return tensor.numpy(force=True)
+    return tensor.numpy(force=True).astype('float32')
 
 
 def tensors_to_np_arrays(*tensors):

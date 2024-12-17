@@ -236,6 +236,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         """
         from sklearn.utils.validation import check_is_fitted
+        from helpers import tensor_to_np_array
 
         # Check if fit had been called
         check_is_fitted(self)
@@ -251,8 +252,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             res = self.model_(X)
         res = res.reshape(-1, 1) if self.is_y_2d_ else res.squeeze()
         if as_np:
-            res = np.array(res, dtype='float32')
-
+            res = tensor_to_np_array(res)
         return res
 
     def get_nn(self, to_device=True) -> nn.Module:
