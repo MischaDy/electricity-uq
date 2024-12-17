@@ -256,7 +256,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def get_nn(self, to_device=True) -> nn.Module:
         if to_device:
-            return obj_to_device(self.model)
+            return obj_to_device(self.model_)
         return self.model_
 
     def _more_tags(self):
