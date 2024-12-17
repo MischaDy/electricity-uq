@@ -15,11 +15,7 @@ from helpers import np_array_to_tensor, np_arrays_to_tensors, train_val_split
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
 class NN_Estimator(RegressorMixin, BaseEstimator):
-    """A template estimator to be used as a reference implementation.
-
-    For more information regarding how to build your own estimator, read more
-    in the :ref:`User Guide <user_guide>`.
-
+    """
     Parameters
     ----------
 
@@ -36,8 +32,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         has feature names that are all strings.
     """
 
-    # This is a dictionary allowing to define the type of parameters.
-    # It's used to validate parameter within the `_fit_context` decorator.
     _parameter_constraints = {
         "n_iter": [int],
         "batch_size": [int],
@@ -87,9 +81,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
-        # todo: add model_params_choices=None,
-        """A reference implementation of a fitting function.
-
+        """
         Parameters
         ----------
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
@@ -134,6 +126,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             # activation=torch.nn.LeakyReLU,
         )
 
+        # noinspection PyTypeChecker
         train_loader = self._get_train_loader(X_train, y_train, self.batch_size)
 
         if self.lr is None:
@@ -148,7 +141,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         for _ in epochs:
             model.train()
             for X, y in train_loader:
-                optimizer.zero_grad()  # todo: introduce y_pred
+                optimizer.zero_grad()
                 y_pred = model(X)
                 loss = criterion(y_pred, y)
                 loss.backward()
@@ -156,11 +149,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
-                train_loss = self._mse_torch(model(X_train), y_train)
+                val_losses.append(val_loss)
+                if self.save_losses_plot:
+                    train_loss = self._mse_torch(model(X_train), y_train)
+                    train_losses.append(train_loss)
             if self.use_scheduler:
                 scheduler.step(val_loss)
-            val_losses.append(val_loss)
-            train_losses.append(train_loss)
 
         model.eval()
         self.model_ = model
