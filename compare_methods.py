@@ -526,11 +526,11 @@ class UQ_Comparer(ABC):
         ax.plot(
             x_plot_full,
             y_preds,
-            label=f"mean/median prediction {plot_name}",  # todo: mean or median?
+            label=f"mean/median prediction",  # todo: mean or median?
             color="green",
         )
         # noinspection PyUnboundLocalVariable
-        label = rf"{plot_name} {f'{100 * drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'}"
+        label = rf'{100 * drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'
         ax.fill_between(
             x_plot_full.ravel(),
             ci_low,
