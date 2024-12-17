@@ -535,6 +535,12 @@ class My_UQ_Comparer(UQ_Comparer):
             y_train: np.ndarray,
             X_pred: np.ndarray,
             quantiles,
+            n_iter=300,
+            lr=1e-4,
+            lr_patience=30,
+            regularization=0,  # 1e-2,
+            warmup_period=50,
+            frozen_var_value=0.1,
             skip_training=True,
             save_model=True,
     ):
@@ -544,8 +550,16 @@ class My_UQ_Comparer(UQ_Comparer):
             y_train,
             X_pred,
             quantiles,
-            skip_training=True,
-            save_model=True,
+            n_iter=n_iter,
+            lr=lr,
+            lr_patience=lr_patience,
+            regularization=regularization,
+            warmup_period=warmup_period,
+            frozen_var_value=frozen_var_value,
+            do_plot_losses=False,
+            use_scheduler=True,
+            skip_training=skip_training,
+            save_model=save_model,
         )
 
     def native_gpytorch(
