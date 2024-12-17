@@ -304,13 +304,6 @@ class My_UQ_Comparer(UQ_Comparer):
         from nn_estimator import NN_Estimator
         from helpers import (np_arrays_to_tensors, objects_to_cuda, make_tensors_contiguous, get_device,
                              object_to_cuda)
-        import torch
-
-        torch.set_default_device(get_device())
-
-        X_train, y_train = np_arrays_to_tensors(X_train, y_train)
-        X_train, y_train = objects_to_cuda(X_train, y_train)
-        X_train, y_train = make_tensors_contiguous(X_train, y_train)
 
         if model_filename is None:
             n_training_points = X_train.shape[0]

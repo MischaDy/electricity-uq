@@ -1,3 +1,4 @@
+import numpy as np
 from more_itertools import collapse
 
 # noinspection PyProtectedMember
@@ -11,8 +12,6 @@ from tqdm import tqdm
 
 from helpers import (np_array_to_tensor, np_arrays_to_tensors, train_val_split, objects_to_cuda,
                      make_tensors_contiguous, object_to_cuda, make_tensor_contiguous, get_device)
-
-torch.set_default_device(get_device())
 
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
@@ -82,7 +81,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.is_fitted_ = False
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y):
+    def fit(self, X: np.ndarray, y: np.ndarray):
         """
         Parameters
         ----------
@@ -103,9 +102,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         - run different checks on the input data;
         - define some attributes associated to the input data: `n_features_in_` and
           `feature_names_in_`."""
-        X, y = self._validate_data(X, y, accept_sparse=False)  # todo: remove "y is 2d" warning
+        import torch
 
+        torch.set_default_device(get_device())
         torch.manual_seed(self.random_seed)
+
+        X, y = self._validate_data(X, y, accept_sparse=False)  # todo: remove "y is 2d" warning
 
         self.is_y_2d_ = len(y.shape) == 2
         if len(y.shape) < 2:
