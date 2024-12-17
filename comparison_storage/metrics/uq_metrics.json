@@ -1,10 +1,18 @@
 {
     "base_model": {
-        "base_model_rf": {
-            "rmse": 0.2577424122923975,
-            "smape_scaled": 0.3467413424211523
+        "base_model_nn": {
+            "rmse": 0.22703437507152557,
+            "smape_scaled": 0.3240281939506531
         }
     },
-    "posthoc": {},
+    "posthoc": {
+        "posthoc_laplace__base_model_nn": {
+            "rmse": 0.22703437507152557,
+            "smape_scaled": 0.3240281939506531,
+            "crps": null,
+            "nll_gaussian": 0.9079069026338702,
+            "mean_pinball": 0.013478339846313046
+        }
+    },
     "native": {}
 }
