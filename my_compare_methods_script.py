@@ -1,4 +1,7 @@
 import os
+
+import pandas as pd
+
 filename = os.path.split(__file__)[-1]
 print(f'reading file {filename}...')
 
@@ -298,10 +301,14 @@ class My_UQ_Comparer(UQ_Comparer):
         :return:
         """
         from nn_estimator import NN_Estimator
-        from helpers import np_arrays_to_tensors, tensors_to_device
+        from helpers import np_arrays_to_tensors, objects_to_device, make_tensors_contiguous, get_device
+        import torch
+
+        torch.set_default_device(get_device())
 
         X_train, y_train = np_arrays_to_tensors(X_train, y_train)
-        X_train, y_train = tensors_to_device(X_train, y_train)
+        X_train, y_train = objects_to_device(X_train, y_train)
+        X_train, y_train = make_tensors_contiguous(X_train, y_train)
 
         if model_filename is None:
             n_training_points = X_train.shape[0]
@@ -328,6 +335,7 @@ class My_UQ_Comparer(UQ_Comparer):
             save_losses_plot=save_losses_plot,
             show_losses_plot=show_losses_plot,
         )
+        # noinspection PyTypeChecker
         model.fit(X_train, y_train)
 
         if save_model:
@@ -420,12 +428,14 @@ class My_UQ_Comparer(UQ_Comparer):
         from laplace import Laplace
         from tqdm import tqdm
         from helpers import (get_train_loader, tensor_to_np_array, np_arrays_to_tensors, np_array_to_tensor,
-                             tensors_to_device, tensor_to_device)
+                             objects_to_device, obj_to_device, make_tensors_contiguous, make_tensor_contiguous,
+                             get_device)
         import torch
         from torch import nn
 
         torch.set_default_dtype(torch.float32)
         torch.manual_seed(random_seed)
+        torch.set_default_device(get_device())
 
         def la_instantiator(base_model: nn.Module):
             return Laplace(base_model, "regression")
@@ -434,7 +444,7 @@ class My_UQ_Comparer(UQ_Comparer):
         if model_filename is None:
             model_filename = f"laplace_{n_training_points}_{n_iter}.pth"
 
-        base_model_nn = base_model.get_nn()
+        base_model_nn = base_model.get_nn(to_device=True)
         if skip_training:
             print("skipping base model training...")
             try:
@@ -450,7 +460,9 @@ class My_UQ_Comparer(UQ_Comparer):
 
         if not skip_training:
             X_train, y_train = np_arrays_to_tensors(X_train, y_train)
-            X_train, y_train = tensors_to_device(X_train, y_train)
+            X_train, y_train = objects_to_device(X_train, y_train)
+            X_train, y_train = make_tensors_contiguous(X_train, y_train)
+
             train_loader = get_train_loader(X_train, y_train, batch_size)
             la = la_instantiator(base_model_nn)
             la.fit(train_loader)
@@ -476,7 +488,9 @@ class My_UQ_Comparer(UQ_Comparer):
                 )
 
         X_pred = np_array_to_tensor(X_pred)
-        X_pred = tensor_to_device(X_pred)
+        X_pred = obj_to_device(X_pred)
+        X_pred = make_tensor_contiguous(X_pred)
+
         f_mu, f_var = la(X_pred)
         f_mu = tensor_to_np_array(f_mu.squeeze())
         f_sigma = tensor_to_np_array(f_var.squeeze().sqrt())
@@ -548,16 +562,16 @@ class My_UQ_Comparer(UQ_Comparer):
         import torch
         import gpytorch
         from gp_regression_gpytorch import ExactGPModel, train_gpytorch
-        from helpers import make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, tensors_to_device
+        from helpers import make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_device
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
         X_train, y_train, X_val, y_val, X_pred = np_arrays_to_tensors(X_train, y_train, X_val, y_val, X_pred)
         y_train, y_val = make_ys_1d(y_train, y_val)
 
-        print('making data contiguous and mapping to device...')
+        print('mapping data to device and making it contiguous...')
+        X_train, y_train, X_val, y_val, X_pred = objects_to_device(X_train, y_train, X_val, y_val, X_pred)
         X_train, y_train, X_val, y_val, X_pred = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_pred)
-        X_train, y_train, X_val, y_val, X_pred = tensors_to_device(X_train, y_train, X_val, y_val, X_pred)
 
         common_prefix, common_postfix = f'{model_name}', f'{self.n_points_per_group}_{n_epochs}'
         model_name = f'{common_prefix}_{common_postfix}.pth'
@@ -615,12 +629,12 @@ class My_UQ_Comparer(UQ_Comparer):
         return np.array([norm.ppf(quantiles, loc=mean, scale=std)
                          for mean, std in zip(y_pred, y_std)])
 
-    def _standardize_or_to_array(self, variable, *dfs):
+    def _standardize_or_to_array(self, variable, *dfs: pd.DataFrame):
         from helpers import dfs_to_np_arrays
 
         if variable in self.to_standardize:
             return standardize(*dfs, return_scaler=False)
-        return dfs_to_np_arrays(dfs)
+        return dfs_to_np_arrays(*dfs)
 
     def plot_base_model_test_result(
             self,

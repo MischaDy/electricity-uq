@@ -10,9 +10,13 @@ from more_itertools import collapse
 from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
 
-from helpers import get_train_loader, get_data, standardize, \
-    tensors_to_np_arrays, dfs_to_np_arrays, \
-    np_arrays_to_tensors, tensors_to_device, train_val_split
+from helpers import (get_train_loader, get_data, standardize, tensors_to_np_arrays, dfs_to_np_arrays,
+                     np_arrays_to_tensors, objects_to_device, train_val_split, make_tensors_contiguous, get_device,
+                     obj_to_device)
+
+
+torch.set_default_device(get_device())
+
 
 QUANTILES = [0.05, 0.25, 0.75, 0.95]
 
@@ -51,7 +55,7 @@ class MeanVarNN(nn.Module):
         self.last_layer_var = nn.Linear(hidden_layer_size, 1)
         self._frozen_var = None
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
         # todo: make tensor if isn't?
         x = self.first_layer_stack(x)
         mean = self.last_layer_mean(x)
@@ -113,12 +117,15 @@ def train_mean_var_nn(
             num_hidden_layers=2,
             hidden_layer_size=50,
         )
+    model = obj_to_device(model)
 
+    # noinspection PyTypeChecker
     train_loader = get_train_loader(X_train, y_train, batch_size)
 
     if train_var:
         model.unfreeze_variance()
         criterion = nn.GaussianNLLLoss()
+        criterion = obj_to_device(criterion)
     else:
         model.freeze_variance(frozen_var_value)
         _mse_loss = nn.MSELoss()
@@ -195,9 +202,9 @@ def run_mean_var_nn(
     skip_training=True,
     save_model=True,
 ):
-
     X_train, y_train, X_test = np_arrays_to_tensors(X_train, y_train, X_test)
-    X_train, y_train, X_test = tensors_to_device(X_train, y_train, X_test)
+    X_train, y_train, X_test = objects_to_device(X_train, y_train, X_test)
+    X_train, y_train, X_test = make_tensors_contiguous(X_train, y_train, X_test)
     common_params = {
         "lr": lr,
         "lr_patience": lr_patience,

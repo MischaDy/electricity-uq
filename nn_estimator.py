@@ -10,7 +10,10 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from tqdm import tqdm
 
-from helpers import np_array_to_tensor, np_arrays_to_tensors, train_val_split
+from helpers import (np_array_to_tensor, np_arrays_to_tensors, train_val_split, objects_to_device,
+                     make_tensors_contiguous, obj_to_device, make_tensor_contiguous, get_device)
+
+torch.set_default_device(get_device())
 
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
@@ -115,6 +118,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, self.val_frac)
+        X_train, y_train, X_val, y_val = objects_to_device(X_train, y_train, X_val, y_val)
+        X_train, y_train, X_val, y_val = make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
@@ -125,6 +130,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             hidden_layer_size=50,
             # activation=torch.nn.LeakyReLU,
         )
+        model = obj_to_device(model)
 
         # noinspection PyTypeChecker
         train_loader = self._get_train_loader(X_train, y_train, self.batch_size)
@@ -135,6 +141,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
         scheduler = ReduceLROnPlateau(optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor)
         criterion = nn.MSELoss()
+        criterion = obj_to_device(criterion)
 
         train_losses, val_losses = [], []
         epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
@@ -236,6 +243,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         # `feature_names_in_` but only check that the shape is consistent.
         X = self._validate_data(X, accept_sparse=False, reset=False)
         X = np_array_to_tensor(X)
+        X = obj_to_device(X)
+        X = make_tensor_contiguous(X)
+
         # self.model_.eval()
         with torch.no_grad():
             res = self.model_(X)
@@ -244,7 +254,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             res = np.array(res, dtype='float32')
         return res
 
-    def get_nn(self) -> nn.Module:
+    def get_nn(self, to_device=True) -> nn.Module:
+        if to_device:
+            return obj_to_device(self.model)
         return self.model_
 
     def _more_tags(self):
@@ -260,10 +272,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
                 msg += ', or only has it is after fitting'
             raise AttributeError(msg)
 
-    def __call__(self, *args, **kwargs):
-        if self.__getattribute__('is_fitted_'):
-            return self.model_(*args, **kwargs)
-        raise TypeError('NN_Estimator is only callable after fitting')
+    def __call__(self, tensor: torch.Tensor):
+        if not self.__getattribute__('is_fitted_'):
+            raise TypeError('NN_Estimator is only callable after fitting')
+        tensor = obj_to_device(tensor)
+        tensor = make_tensor_contiguous(tensor)
+        return self.model_(tensor)
 
     def __setattr__(self, key, value):
         self.__dict__[key] = value

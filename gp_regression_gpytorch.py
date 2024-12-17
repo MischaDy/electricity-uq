@@ -1,9 +1,13 @@
 import gpytorch
 import torch
 
-from helpers import standardize, get_data, train_val_split, make_tensors_contiguous, \
-    tensors_to_device, tensors_to_np_arrays, dfs_to_tensors, np_arrays_to_tensors, make_ys_1d
+from helpers import (standardize, get_data, train_val_split, make_tensors_contiguous, objects_to_device,
+                     tensors_to_np_arrays, dfs_to_tensors, np_arrays_to_tensors, make_ys_1d, get_device)
 from io_helper import IO_Helper
+
+
+torch.set_default_device(get_device())
+
 
 N_EPOCHS = 100
 LR = 1e-1  # 1e-3
@@ -81,9 +85,9 @@ def preprocess_data(X_train, X_test, y_train, y_test, val_frac, standardize_x, s
         plot_data(X_train, y_train, X_val, y_val, X_test, y_test)
 
     print('making data contiguous and mapping to device...')
+    X_train, y_train, X_val, y_val, X_test, y_test = objects_to_device(X_train, y_train, X_val, y_val, X_test, y_test)
     X_train, y_train, X_val, y_val, X_test, y_test = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_test,
                                                                              y_test)
-    X_train, y_train, X_val, y_val, X_test, y_test = tensors_to_device(X_train, y_train, X_val, y_val, X_test, y_test)
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 

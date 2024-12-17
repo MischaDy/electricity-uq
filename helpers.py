@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Any
 
 import numpy as np
 import pandas as pd
@@ -175,21 +175,23 @@ def tensors_to_np_arrays(*tensors):
     return map(tensor_to_np_array, tensors)
 
 
-def tensor_to_device(tensor: torch.Tensor) -> torch.Tensor:
+def get_device():
+    return 'cuda:0' if torch.cuda.is_available() else 'cpu'
+
+
+def obj_to_device(obj):
+    device = get_device()
+    if device == 'cpu':
+        print('warning: cuda not available! Using CPU')
+    return obj.to(device)
+
+
+def objects_to_device(*objs: Any) -> Generator[Any, None, None]:
     cuda_available = torch.cuda.is_available()
     if not cuda_available:
         print('warning: cuda not available!')
-        return tensor
-    device = torch.cuda.current_device()
-    return tensor.to(device)
-
-
-def tensors_to_device(*tensors) -> Generator[torch.Tensor, None, None]:
-    cuda_available = torch.cuda.is_available()
-    if not cuda_available:
-        print('warning: cuda not available!')
-        yield from tensors
-    yield from map(tensor_to_device, tensors)
+        yield from objs
+    yield from map(obj_to_device, objs)
 
 
 def make_arr_2d(arr: np.ndarray):
