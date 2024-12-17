@@ -429,7 +429,7 @@ class My_UQ_Comparer(UQ_Comparer):
         from laplace import Laplace
         from tqdm import tqdm
         from helpers import (get_train_loader, tensor_to_np_array, np_arrays_to_tensors, np_array_to_tensor,
-                             objects_to_device, obj_to_device, make_tensors_contiguous, make_tensor_contiguous,
+                             objects_to_device, object_to_device, make_tensors_contiguous, make_tensor_contiguous,
                              get_device)
         import torch
         from torch import nn
@@ -491,7 +491,7 @@ class My_UQ_Comparer(UQ_Comparer):
         print('predicting...')
 
         X_pred = np_array_to_tensor(X_pred)
-        X_pred = obj_to_device(X_pred)
+        X_pred = object_to_device(X_pred)
         X_pred = make_tensor_contiguous(X_pred)
 
         # noinspection PyArgumentList

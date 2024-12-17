@@ -12,7 +12,7 @@ from uncertainty_toolbox import nll_gaussian
 
 from helpers import (get_train_loader, get_data, standardize, tensors_to_np_arrays, dfs_to_np_arrays,
                      np_arrays_to_tensors, objects_to_device, train_val_split, make_tensors_contiguous, get_device,
-                     obj_to_device)
+                     object_to_device)
 
 
 torch.set_default_device(get_device())
@@ -117,7 +117,7 @@ def train_mean_var_nn(
             num_hidden_layers=2,
             hidden_layer_size=50,
         )
-    model = obj_to_device(model)
+    model = object_to_device(model)
 
     # noinspection PyTypeChecker
     train_loader = get_train_loader(X_train, y_train, batch_size)
@@ -125,7 +125,7 @@ def train_mean_var_nn(
     if train_var:
         model.unfreeze_variance()
         criterion = nn.GaussianNLLLoss()
-        criterion = obj_to_device(criterion)
+        criterion = object_to_device(criterion)
     else:
         model.freeze_variance(frozen_var_value)
         _mse_loss = nn.MSELoss()

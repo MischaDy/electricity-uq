@@ -179,7 +179,7 @@ def get_device():
     return 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 
-def obj_to_device(obj):
+def object_to_device(obj):
     device = get_device()
     if device == 'cpu':
         print('warning: cuda not available! Using CPU')
@@ -192,7 +192,7 @@ def objects_to_device(*objs: Any) -> Generator[Any, None, None]:
         print('warning: cuda not available! using CPU')
         yield from objs
     else:
-        yield from map(obj_to_device, objs)
+        yield from map(object_to_device, objs)
 
 
 def make_arr_2d(arr: np.ndarray):
