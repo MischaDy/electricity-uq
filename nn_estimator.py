@@ -147,6 +147,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         train_losses, val_losses = [], []
         epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
+        import ipdb
+        ipdb.set_trace()
         for _ in epochs:
             model.train()
             for X, y in train_loader:
@@ -170,6 +172,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         model.eval()
         self.model_ = model
 
+        ipdb.set_trace()
         if self.save_losses_plot:
             loss_skip = min(100, self.n_iter // 10)
             self._plot_losses(train_losses[loss_skip:], val_losses[loss_skip:])
