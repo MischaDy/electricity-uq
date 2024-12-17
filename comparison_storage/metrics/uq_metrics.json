@@ -1,18 +1,27 @@
 {
-    "base_model": {
-        "base_model_nn": {
-            "rmse": 0.22605715692043304,
-            "smape_scaled": 0.32970497012138367
-        }
-    },
-    "posthoc": {
-        "posthoc_laplace__base_model_nn": {
-            "rmse": 0.22605715692043304,
-            "smape_scaled": 0.32970497012138367,
+    "base_model": {},
+    "posthoc": {},
+    "native": {
+        "native_quantile_regression": {
+            "rmse": 0.32355594542088023,
+            "smape_scaled": 0.4453608774281729,
             "crps": null,
-            "nll_gaussian": 1.073908423869601,
-            "mean_pinball": 0.012698998078951586
+            "nll_gaussian": 0.18996283040639103,
+            "mean_pinball": 0.02770492623015136
+        },
+        "native_mvnn": {
+            "rmse": 0.25036123394966125,
+            "smape_scaled": 0.39992016553878784,
+            "crps": null,
+            "nll_gaussian": 0.36762464227055797,
+            "mean_pinball": 0.016417821928549212
+        },
+        "native_gpytorch": {
+            "rmse": 0.22625339031219482,
+            "smape_scaled": 0.3602416217327118,
+            "crps": null,
+            "nll_gaussian": 0.4357613555342826,
+            "mean_pinball": 0.018786806611249148
         }
-    },
-    "native": {}
+    }
 }
