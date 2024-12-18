@@ -10,7 +10,7 @@ from functools import partial
 from typing import Any, Generator, Callable
 
 from io_helper import IO_Helper
-from helpers import starfilter
+from helpers import starfilter, inverse_transform_ys
 
 
 # todo: add type hints
@@ -465,7 +465,7 @@ class UQ_Comparer(ABC):
 
         y_train_trans, y_test_trans = y_train, y_test
         if scaler_y is not None:
-            y_train_trans, y_test_trans = map(scaler_y.inverse_transform, [y_train_trans, y_test_trans])
+            y_train_trans, y_test_trans = inverse_transform_ys(scaler_y, y_train_trans, y_test_trans)
 
         fig, ax = plt.subplots(figsize=figsize)
         ax.plot(x_plot_train, y_train_trans)
@@ -568,8 +568,7 @@ class UQ_Comparer(ABC):
 
         y_train_trans, y_test_trans, y_preds_trans = y_train, y_test, y_preds
         if scaler_y is not None:
-            y_train_trans, y_test_trans, y_preds_trans = map(scaler_y.inverse_transform,
-                                                             [y_train_trans, y_test_trans, y_preds_trans])
+            y_train_trans, y_test_trans, y_preds_trans = inverse_transform_ys(scaler_y, y_train_trans, y_test_trans, y_preds_trans)
         # todo: how to handle y_stds and y_quantiles???
 
         drawing_quantiles = y_quantiles is not None
@@ -645,8 +644,7 @@ class UQ_Comparer(ABC):
 
         y_train_trans, y_test_trans, y_preds_trans = y_train, y_test, y_preds
         if scaler_y is not None:
-            y_train_trans, y_test_trans, y_preds_trans = map(scaler_y.inverse_transform,
-                                                             [y_train_trans, y_test_trans, y_preds_trans])
+            y_train_trans, y_test_trans, y_preds_trans = inverse_transform_ys(scaler_y, y_train_trans, y_test_trans, y_preds_trans)
 
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
         ax.plot(x_plot_train, y_train_trans, label='y_train', linestyle="dashed", color="black")
