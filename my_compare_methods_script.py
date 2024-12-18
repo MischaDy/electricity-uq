@@ -16,13 +16,13 @@ QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use me
 
 DATA_FILEPATH = './data_1600.pkl'
 
-N_POINTS_PER_GROUP = 100
+N_POINTS_PER_GROUP = 800
 STANDARDIZE_DATA = True
 
 PLOT_DATA = False
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
 
@@ -82,7 +82,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": False,
-        "n_iter": 200,
+        "n_iter": 500,
         "lr": 1e-2,
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
