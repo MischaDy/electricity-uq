@@ -8,12 +8,12 @@ from sklearn.metrics import mean_pinball_loss as mean_pinball_loss_
 
 def smape_scaled(y_true, y_pred):
     """
-    output 100 * smape, which is in [0, 1]
+    output 100 * smape, which is in [0, 2] (?)
     :param y_true:
     :param y_pred:
     :return:
     """
-    # todo
+    # todo: why such terrible perf?
     numerators = np.abs(y_pred - y_true)
     denominators = (np.abs(y_pred) + np.abs(y_true)) / 2
     return np.mean(numerators/denominators)
