@@ -64,15 +64,22 @@ def get_data(
     return X_train, X_test, y_train, y_test, X, y, scaler_y
 
 
+def inverse_transform_y(scaler_y, y: np.ndarray):
+    n_dim = len(y.shape)
+    if n_dim < 2:
+        y = make_arr_2d(y)
+    y = scaler_y.inverse_transform(y)
+    if n_dim < 2:
+        y = make_y_1d(y)
+    return y
+
+
 def inverse_transform_ys(scaler_y, *ys: np.ndarray):
-    for y in ys:
-        n_dim = len(y.shape)
-        if n_dim < 2:
-            y = make_arr_2d(y)
-        y = scaler_y.inverse_transform(y)
-        if n_dim < 2:
-            y = make_y_1d(y)
-        yield y
+    return map(lambda y: inverse_transform_y(scaler_y, y), ys)
+
+
+def upscale_y_std(scaler_y, y_std):
+    return scaler_y.scale_ * y_std
 
 
 def set_dtype_float(*arrs: list[np.ndarray]) -> Generator[np.ndarray, None, None]:

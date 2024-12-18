@@ -10,7 +10,7 @@ from functools import partial
 from typing import Any, Generator, Callable
 
 from io_helper import IO_Helper
-from helpers import starfilter, inverse_transform_ys
+from helpers import starfilter, inverse_transform_ys, inverse_transform_y, upscale_y_std
 
 
 # todo: add type hints
@@ -96,7 +96,7 @@ class UQ_Comparer(ABC):
         X_pred, y_true = X, y
 
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
-        y_preds_base_models = self.predict_base_models(base_models, X_pred)
+        y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y)
 
         if should_plot_base_results:
             print("plotting base model results...")
@@ -121,8 +121,15 @@ class UQ_Comparer(ABC):
         self.print_base_models_metrics(base_models_metrics)
 
         print("running posthoc UQ methods...")
-        posthoc_results = self.run_posthoc_methods(X_train, y_train, X_pred, base_models, quantiles=quantiles,
-                                                   skip_base_model_copy=skip_base_model_copy)
+        posthoc_results = self.run_posthoc_methods(
+            X_train,
+            y_train,
+            X_pred,
+            scaler_y,
+            base_models,
+            quantiles=quantiles,
+            skip_base_model_copy=skip_base_model_copy
+        )
         partial_plotting = partial(
             self.plot_uq_results,
             X_train=X_train,
@@ -139,7 +146,7 @@ class UQ_Comparer(ABC):
             partial_plotting(uq_results=posthoc_results)
 
         print("running native UQ methods...")
-        native_results = self.run_native_methods(X_train, y_train, X_pred, quantiles=quantiles)
+        native_results = self.run_native_methods(X_train, y_train, X_pred, scaler_y, quantiles=quantiles)
 
         if should_plot_uq_results:
             print("plotting native results...")
@@ -266,10 +273,12 @@ class UQ_Comparer(ABC):
         return base_models
 
     @staticmethod
-    def predict_base_models(base_models: dict[str, Any], X_pred):
+    def predict_base_models(base_models: dict[str, Any], X_pred, scaler_y):
         base_model_preds = {}
         for model_name, base_model in base_models.items():
-            base_model_preds[model_name] = base_model.predict(X_pred)
+            y_pred = base_model.predict(X_pred)
+            y_pred = inverse_transform_y(scaler_y, y_pred)
+            base_model_preds[model_name] = y_pred
         return base_model_preds
 
     def get_base_model_methods(self):
@@ -298,12 +307,14 @@ class UQ_Comparer(ABC):
             X_train,
             y_train,
             X_pred,
+            scaler_y,
             base_models: dict[str, Any],
             quantiles,
             skip_base_model_copy=False,
     ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
+        :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
         :param quantiles:
         :param base_models:
         :param skip_base_model_copy: whether to skip making a deepcopy of the base model. speeds up execution, but can
@@ -347,6 +358,9 @@ class UQ_Comparer(ABC):
                     base_model_copy,
                     **method_kwargs
                 )
+                y_pred = inverse_transform_y(scaler_y, y_pred)
+                y_quantiles = inverse_transform_ys(scaler_y, *y_quantiles)
+                y_std = upscale_y_std(scaler_y, y_std)
                 key = f'{posthoc_method_name}__{base_model_name}'
                 posthoc_results[key] = y_pred, y_quantiles, y_std
         return posthoc_results
@@ -356,10 +370,12 @@ class UQ_Comparer(ABC):
             X_train,
             y_train,
             X_pred,
+            scaler_y,
             quantiles,
     ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
+        :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
         :param quantiles:
         :param X_train:
         :param y_train:
@@ -386,6 +402,9 @@ class UQ_Comparer(ABC):
                 quantiles=quantiles,
                 **method_kwargs
             )
+            y_pred = inverse_transform_y(scaler_y, y_pred)
+            y_quantiles = inverse_transform_ys(scaler_y, y_quantiles)
+            y_std = upscale_y_std(scaler_y, y_std)
             native_results[native_method_name] = y_pred, y_quantiles, y_std
         return native_results
 
@@ -463,13 +482,12 @@ class UQ_Comparer(ABC):
         x_plot_train = np.arange(num_train_steps)
         x_plot_test = x_plot_train + num_test_steps
 
-        y_train_trans, y_test_trans = y_train, y_test
         if scaler_y is not None:
-            y_train_trans, y_test_trans = inverse_transform_ys(scaler_y, y_train_trans, y_test_trans)
+            y_train, y_test = inverse_transform_ys(scaler_y, y_train, y_test)
 
         fig, ax = plt.subplots(figsize=figsize)
-        ax.plot(x_plot_train, y_train_trans)
-        ax.plot(x_plot_test, y_test_trans)
+        ax.plot(x_plot_train, y_train)
+        ax.plot(x_plot_test, y_test)
         ax.set_ylabel(ylabel)
         ax.legend(["Training data", "Test data"])
         if save_plot:
@@ -566,10 +584,8 @@ class UQ_Comparer(ABC):
         x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
         x_plot_full = np.arange(num_train_steps + num_test_steps)
 
-        y_train_trans, y_test_trans, y_preds_trans = y_train, y_test, y_preds
         if scaler_y is not None:
-            y_train_trans, y_test_trans, y_preds_trans = inverse_transform_ys(scaler_y, y_train_trans, y_test_trans, y_preds_trans)
-        # todo: how to handle y_stds and y_quantiles???
+            y_train, y_test = inverse_transform_ys(scaler_y, y_train, y_test)
 
         drawing_quantiles = y_quantiles is not None
         if drawing_quantiles:
@@ -642,16 +658,15 @@ class UQ_Comparer(ABC):
         x_plot_full = np.arange(num_train_steps + num_test_steps)
         x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
 
-        y_train_trans, y_test_trans, y_preds_trans = y_train, y_test, y_preds
         if scaler_y is not None:
-            y_train_trans, y_test_trans, y_preds_trans = inverse_transform_ys(scaler_y, y_train_trans, y_test_trans, y_preds_trans)
+            y_train, y_test = inverse_transform_ys(scaler_y, y_train, y_test)
 
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        ax.plot(x_plot_train, y_train_trans, label='y_train', linestyle="dashed", color="black")
-        ax.plot(x_plot_test, y_test_trans, label='y_test', linestyle="dashed", color="blue")
+        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
+        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
         ax.plot(
             x_plot_full,
-            y_preds_trans,
+            y_preds,
             label=f"mean/median prediction {plot_name}",  # todo: mean or median?
             color="green",
         )
