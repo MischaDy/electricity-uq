@@ -87,8 +87,7 @@ class UQ_Comparer(ABC):
         #  :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
 
         print("loading data...")
-        data = self.get_data()
-        X_train, X_test, y_train, y_test, X, y, scaler_y = data
+        X_train, X_test, y_train, y_test, X, y, scaler_y = self.get_data()
 
         print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
         if should_plot_data:
@@ -134,10 +133,10 @@ class UQ_Comparer(ABC):
                                                    skip_base_model_copy=skip_base_model_copy)
         partial_plotting = partial(
             self.plot_uq_results,
-            X_train,
-            y_train,
-            X_test,
-            y_test,
+            X_train=X_train,
+            y_train=y_train,
+            X_test=X_test,
+            y_test=y_test,
             quantiles=quantiles,
             show_plots=should_show_plots,
             save_plots=should_save_plots,
@@ -314,8 +313,8 @@ class UQ_Comparer(ABC):
 
         :param quantiles:
         :param base_models:
-        :param skip_base_model_copy: whether to skip making a deepcopy of the base model. speeds up execution, but can lead to
-         bugs if posthoc method affects the base model object.
+        :param skip_base_model_copy: whether to skip making a deepcopy of the base model. speeds up execution, but can
+         lead to bugs if posthoc method affects the base model object.
         :param X_train:
         :param y_train:
         :param X_pred:
@@ -485,14 +484,14 @@ class UQ_Comparer(ABC):
                 print(f"warning: cannot plot method {method_name}, because both y_quantiles and y_std are None")
                 continue
             self.plot_uq_result(
-                X_train,
-                y_train,
-                X_test,
-                y_test,
-                y_preds,
-                y_quantiles,
-                y_std,
-                quantiles,
+                X_train=X_train,
+                y_train=y_train,
+                X_test=X_test,
+                y_test=y_test,
+                y_preds=y_preds,
+                y_quantiles=y_quantiles,
+                y_std=y_std,
+                quantiles=quantiles,
                 n_stds=n_stds,
                 plot_name=method_name,
                 show_plots=show_plots,

@@ -12,8 +12,6 @@ def get_data(
     output_cols=None,
     standardize_data=True,
 ):
-    # -> (tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
-    #   | tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]):  # fmt: skip
     """
     load and prepare data
 

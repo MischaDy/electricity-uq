@@ -90,6 +90,7 @@ class IO_Helper:
         import pickle
         path = self.get_model_savepath(filename)
         with open(path, "wb") as file:
+            # noinspection PyTypeChecker
             pickle.dump(model, file)
 
     def save_torch_model(self, model, filename):

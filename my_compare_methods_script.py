@@ -117,7 +117,7 @@ class My_UQ_Comparer(UQ_Comparer):
             methods_kwargs: dict[str, dict[str, Any]] = None,
             n_points_per_group=800,
             method_whitelist=None,
-            posthoc_base_blacklist=None,
+            posthoc_base_blacklist: dict[str, set[str]] = None,
             standardize_data=True,
     ):
         """
