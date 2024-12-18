@@ -6,7 +6,7 @@ import torch
 
 
 def get_data(
-    _n_points_per_group,
+    n_points_per_group=None,
     filepath="data.pkl",
     input_cols=None,
     output_cols=None,
@@ -17,8 +17,8 @@ def get_data(
     """
     load and prepare data
 
-    :param _n_points_per_group:
     :param standardize_data:
+    :param n_points_per_group:
     :param filepath:
     :param input_cols:
     :param output_cols:
@@ -39,11 +39,7 @@ def get_data(
                       if col not in output_cols and not col.startswith('ts_')]
     numerical_cols = [col for col in input_cols if not col.startswith('cat_')]
 
-    # mid = df.shape[0] // 2
-    # X = df[input_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
-    # y = df[output_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
-
-    lim = 2*_n_points_per_group if _n_points_per_group is not None else None
+    lim = 2 * n_points_per_group if n_points_per_group is not None else None
     X = df[input_cols].iloc[:lim]
     y = df[output_cols].iloc[:lim]
 
