@@ -67,6 +67,27 @@ def get_data(
     return X_train, X_test, y_train, y_test, X, y, scaler_y
 
 
+# def standardize(cols_to_standardize: list[str], train_data: pd.DataFrame, *dfs_to_standardize: pd.DataFrame,
+#                 return_scaler=True):
+#     from sklearn.preprocessing import StandardScaler
+#     from sklearn.compose import make_column_transformer
+#
+#     x_scaler = make_column_transformer(
+#         (StandardScaler(), cols_to_standardize),
+#         remainder='passthrough',
+#         force_int_remainder_cols=False,
+#     )
+#     scaler.fit(train_data)
+#
+#     def transform(arr):
+#         if arr is None:
+#             return
+#         return scaler.transform(arr)
+#
+#     standardized_data = map(transform, [train_data, *dfs_to_standardize])
+#     return standardized_data if not return_scaler else (scaler, standardized_data)
+
+
 def set_dtype_float(*arrs: list[np.ndarray]) -> Generator[np.ndarray, None, None]:
     yield from map(lambda arr: arr.astype('float32'), arrs)
 
@@ -132,22 +153,6 @@ def is_ascending(*arrays):
     from more_itertools import collapse
     arr = list(collapse(arrays))
     return all(a <= b for a, b in zip(arr, arr[1:]))
-
-
-def standardize(train_data, *arrays_to_standardize, return_scaler=False):
-    from sklearn.preprocessing import StandardScaler
-
-    # todo: bugfix - only standardize continuous columns!
-    scaler = StandardScaler()
-    scaler.fit(train_data)
-
-    def transform(arr):
-        if arr is None:
-            return
-        return scaler.transform(arr)
-
-    standardized_data = map(transform, [train_data, *arrays_to_standardize])
-    return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
 def df_to_np_array(df: pd.DataFrame) -> np.ndarray:

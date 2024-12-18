@@ -8,7 +8,7 @@ import numpy as np
 from scipy import stats
 
 from compare_methods import UQ_Comparer
-from helpers import get_data, standardize, train_val_split
+from helpers import get_data, train_val_split
 from nn_estimator import NN_Estimator
 
 
