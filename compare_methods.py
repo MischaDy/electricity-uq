@@ -13,6 +13,16 @@ from io_helper import IO_Helper
 from helpers import starfilter
 
 
+DataTuple = tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+]
+
+
 # todo: add type hints
 # noinspection PyPep8Naming
 class UQ_Comparer(ABC):
@@ -142,18 +152,8 @@ class UQ_Comparer(ABC):
         self.io_helper.save_metrics(uq_metrics_all, filename='uq')
         return base_models_metrics, uq_metrics_all
 
-    # todo: make classmethod?
     @abstractmethod
-    def get_data(
-            self,
-    ) -> tuple[
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-        np.ndarray,
-    ]:
+    def get_data(self) -> DataTuple | Any:
         """
 
         :return: X_train, X_test, y_train, y_test, X, y

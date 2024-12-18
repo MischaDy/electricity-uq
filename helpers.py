@@ -31,15 +31,8 @@ def get_data(
     if output_cols is None:
         output_cols = ["load_to_pred"]
     if input_cols is None:
-        # input_cols = [
-        #     "load_last_week",
-        #     "load_last_hour",
-        #     "load_now",
-        #     "is_workday",
-        #     "is_saturday_and_not_holiday",
-        #     "is_sunday_or_holiday",
-        #     "is_heating_period",
-        # ]
+        # input_cols = ["load_last_week", "load_last_hour", "load_now", "cat_is_workday",
+        # "cat_is_saturday_and_not_holiday", "cat_is_sunday_or_holiday", "cat_is_heating_period"]
         input_cols = [col for col in df.columns
                       if col not in output_cols and not col.startswith('ts')]
 
@@ -51,9 +44,8 @@ def get_data(
     X = df[input_cols].iloc[:lim]
     y = df[output_cols].iloc[:lim]
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.5, shuffle=False
-    )
+    # todo: allow different train/test split?
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
     X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
     if return_full_data:
         return X_train, X_test, y_train, y_test, X, y
