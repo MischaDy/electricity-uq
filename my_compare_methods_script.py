@@ -43,13 +43,13 @@ POSTHOC_BASE_BLACKLIST = {
 
 METHODS_KWARGS = {
     "native_mvnn": {
+        'skip_training': True,
         "n_iter": 300,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
-        'skip_training': True,
         'save_model': True,
     },
     "native_quantile_regression": {
@@ -58,29 +58,30 @@ METHODS_KWARGS = {
         "verbose": True,
     },
     "native_gpytorch": {
+        'skip_training': True,
         'n_epochs': 100,
         'val_frac': 0.1,
         'lr': 1e-2,
         'show_progress': True,
         'show_plots': True,
         'do_plot_losses': True,
-        'skip_training': True,
         'save_model': True,
         'model_name': 'gpytorch_model',
         'verbose': True,
     },
     "posthoc_conformal_prediction": {
+        "skip_training": True,
         "n_estimators": 5,
         "verbose": 1,
-        "skip_training": True,
         "save_model": True,
     },
     "posthoc_laplace": {
-        "n_iter": 100,
         'skip_training': True,
+        "n_iter": 100,
         'save_model': True,
     },
     "base_model_nn": {
+        "skip_training": True,
         "n_iter": 200,
         "lr": 1e-2,
         "lr_patience": 30,
@@ -89,11 +90,11 @@ METHODS_KWARGS = {
         "show_losses_plot": False,
         "save_losses_plot": True,
         "random_seed": 42,
-        "skip_training": True,
         "save_model": True,
         "verbose": 1,
     },
     "base_model_rf": {
+        "skip_training": True,
         'model_param_distributions': {
             "max_depth": stats.randint(2, 50),
             "n_estimators": stats.randint(10, 200),
@@ -101,7 +102,6 @@ METHODS_KWARGS = {
         'cv_n_iter': 20,
         'n_cv_splits': 5,
         "random_seed": 42,
-        "skip_training": True,
         "save_model": True,
         "verbose": 4,
         'n_jobs': -1,
