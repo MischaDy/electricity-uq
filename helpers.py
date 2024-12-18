@@ -74,8 +74,11 @@ def inverse_transform_y(scaler_y, y: np.ndarray):
     return y
 
 
-def inverse_transform_ys(scaler_y, *ys: np.ndarray):
-    return map(lambda y: inverse_transform_y(scaler_y, y), ys)
+def inverse_transform_ys(scaler_y, *ys: np.ndarray, to_np=False):
+    transformed = map(lambda y: inverse_transform_y(scaler_y, y), ys)
+    if not to_np:
+        return transformed
+    return np.array(list(transformed))
 
 
 def upscale_y_std(scaler_y, y_std):

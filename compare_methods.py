@@ -359,7 +359,7 @@ class UQ_Comparer(ABC):
                     **method_kwargs
                 )
                 y_pred = inverse_transform_y(scaler_y, y_pred)
-                y_quantiles = inverse_transform_ys(scaler_y, *y_quantiles)
+                y_quantiles = inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
                 y_std = upscale_y_std(scaler_y, y_std)
                 key = f'{posthoc_method_name}__{base_model_name}'
                 posthoc_results[key] = y_pred, y_quantiles, y_std
@@ -403,7 +403,7 @@ class UQ_Comparer(ABC):
                 **method_kwargs
             )
             y_pred = inverse_transform_y(scaler_y, y_pred)
-            y_quantiles = inverse_transform_ys(scaler_y, y_quantiles)
+            y_quantiles = inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
             y_std = upscale_y_std(scaler_y, y_std)
             native_results[native_method_name] = y_pred, y_quantiles, y_std
         return native_results
