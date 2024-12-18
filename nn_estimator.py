@@ -10,8 +10,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from tqdm import tqdm
 
-from helpers import (np_array_to_tensor, np_arrays_to_tensors, train_val_split, objects_to_cuda,
-                     make_tensors_contiguous, object_to_cuda, make_tensor_contiguous, get_device)
+import helpers
 
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
@@ -105,7 +104,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         from helpers import tensor_to_np_array
         import torch
 
-        torch.set_default_device(get_device())
+        torch.set_default_device(helpers.get_device())
         torch.manual_seed(self.random_seed)
 
         X, y = self._validate_data(X, y, accept_sparse=False)  # todo: remove "y is 2d" warning
@@ -115,13 +114,13 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             y = y.reshape(-1, 1)
 
         try:
-            X_train, y_train = np_arrays_to_tensors(X, y)
+            X_train, y_train = helpers.np_arrays_to_tensors(X, y)
         except TypeError:
             raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
-        X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, self.val_frac)
-        X_train, y_train, X_val, y_val = objects_to_cuda(X_train, y_train, X_val, y_val)
-        X_train, y_train, X_val, y_val = make_tensors_contiguous(X_train, y_train, X_val, y_val)
+        X_train, y_train, X_val, y_val = helpers.train_val_split(X_train, y_train, self.val_frac)
+        X_train, y_train, X_val, y_val = helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
+        X_train, y_train, X_val, y_val = helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
         dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
@@ -132,7 +131,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             hidden_layer_size=50,
             # activation=torch.nn.LeakyReLU,
         )
-        model = object_to_cuda(model)
+        model = helpers.object_to_cuda(model)
 
         # noinspection PyTypeChecker
         train_loader = self._get_train_loader(X_train, y_train, self.batch_size)
@@ -143,7 +142,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
         scheduler = ReduceLROnPlateau(optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor)
         criterion = nn.MSELoss()
-        criterion = object_to_cuda(criterion)
+        criterion = helpers.object_to_cuda(criterion)
 
         train_losses, val_losses = [], []
         epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
@@ -247,9 +246,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         # We need to set reset=False because we don't want to overwrite
         # `feature_names_in_` but only check that the shape is consistent.
         X = self._validate_data(X, accept_sparse=False, reset=False)
-        X = np_array_to_tensor(X)
-        X = object_to_cuda(X)
-        X = make_tensor_contiguous(X)
+        X = helpers.np_array_to_tensor(X)
+        X = helpers.object_to_cuda(X)
+        X = helpers.make_tensor_contiguous(X)
 
         # self.model_.eval()
         with torch.no_grad():
@@ -261,7 +260,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def get_nn(self, to_device=True) -> nn.Module:
         if to_device:
-            return object_to_cuda(self.model_)
+            return helpers.object_to_cuda(self.model_)
         return self.model_
 
     def _more_tags(self):
@@ -269,7 +268,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
                 '_xfail_checks': {'check_methods_sample_order_invariance': '(barely) failing for unknown reason'}}
 
     def to(self, device):
-        self.model_ = object_to_cuda(self.model_)
+        self.model_ = helpers.object_to_cuda(self.model_)
         return self
 
     def __getattr__(self, item):
@@ -284,8 +283,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     def __call__(self, tensor: torch.Tensor):
         if not self.__getattribute__('is_fitted_'):
             raise TypeError('NN_Estimator is only callable after fitting')
-        tensor = object_to_cuda(tensor)
-        tensor = make_tensor_contiguous(tensor)
+        tensor = helpers.object_to_cuda(tensor)
+        tensor = helpers.make_tensor_contiguous(tensor)
         return self.model_(tensor)
 
     def __setattr__(self, key, value):

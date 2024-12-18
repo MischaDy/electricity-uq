@@ -10,12 +10,10 @@ from more_itertools import collapse
 from tqdm import tqdm
 from uncertainty_toolbox import nll_gaussian
 
-from helpers import (get_train_loader, get_data, tensors_to_np_arrays, dfs_to_np_arrays,
-                     np_arrays_to_tensors, objects_to_cuda, train_val_split, make_tensors_contiguous, get_device,
-                     object_to_cuda, make_ys_1d, np_array_to_tensor, make_tensor_contiguous)
+import helpers
 
 
-torch.set_default_device(get_device())
+torch.set_default_device(helpers.get_device())
 
 
 QUANTILES = [0.05, 0.25, 0.75, 0.95]
@@ -106,14 +104,14 @@ def train_mean_var_nn(
     # except TypeError:
     #     raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
-    X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
+    X_train, y_train, X_val, y_val = helpers.train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
     y_val_np = y_val.copy()  # for eval
 
-    X_train, y_train, X_val, y_val = np_arrays_to_tensors(X_train, y_train, X_val, y_val)
-    X_train, y_train, X_val, y_val = objects_to_cuda(X_train, y_train, X_val, y_val)
-    X_train, y_train, X_val, y_val = make_tensors_contiguous(X_train, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = helpers.np_arrays_to_tensors(X_train, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
@@ -123,15 +121,15 @@ def train_mean_var_nn(
             num_hidden_layers=2,
             hidden_layer_size=50,
         )
-    model = object_to_cuda(model)
+    model = helpers.object_to_cuda(model)
 
     # noinspection PyTypeChecker
-    train_loader = get_train_loader(X_train, y_train, batch_size)
+    train_loader = helpers.get_train_loader(X_train, y_train, batch_size)
 
     if train_var:
         model.unfreeze_variance()
         criterion = nn.GaussianNLLLoss()
-        criterion = object_to_cuda(criterion)
+        criterion = helpers.object_to_cuda(criterion)
     else:
         model.freeze_variance(frozen_var_value)
         _mse_loss = nn.MSELoss()
@@ -156,12 +154,15 @@ def train_mean_var_nn(
 
         with torch.no_grad():
             y_pred_mean_train, y_pred_var_train = model(X_train)
-            y_pred_mean_train, y_pred_var_train, y_train = tensors_to_np_arrays(y_pred_mean_train, y_pred_var_train, y_train)
+            y_pred_mean_train, y_pred_var_train, y_train = helpers.tensors_to_np_arrays(
+                y_pred_mean_train,
+                y_pred_var_train,
+                y_train)
             train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train)
             train_losses.append(train_loss)
 
             y_pred_mean_val, y_pred_var_val = model(X_val)
-            y_pred_mean_val, y_pred_var_val = tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val)
+            y_pred_mean_val, y_pred_var_val = helpers.tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val)
             val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val_np)
             val_losses.append(val_loss)
         if use_scheduler:
@@ -190,7 +191,7 @@ def plot_losses(train_losses, val_losses):
 def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.ndarray):
     # todo: use nn.NLLLoss instead!
     y_pred_std = np.sqrt(y_pred_var)
-    y_pred_mean, y_pred_std, y_test = make_ys_1d(y_pred_mean, y_pred_std, y_test)
+    y_pred_mean, y_pred_std, y_test = helpers.make_ys_1d(y_pred_mean, y_pred_std, y_test)
     return nll_gaussian(y_pred_mean, y_pred_std, y_test)
 
 
@@ -210,9 +211,9 @@ def run_mean_var_nn(
     skip_training=True,
     save_model=True,
 ):
-    X_test = np_array_to_tensor(X_test)
-    X_test = object_to_cuda(X_test)
-    X_test = make_tensor_contiguous(X_test)
+    X_test = helpers.np_array_to_tensor(X_test)
+    X_test = helpers.object_to_cuda(X_test)
+    X_test = helpers.make_tensor_contiguous(X_test)
     common_params = {
         "lr": lr,
         "lr_patience": lr_patience,
@@ -233,7 +234,7 @@ def run_mean_var_nn(
     )
     with torch.no_grad():
         y_pred, y_var = mean_var_nn(X_test)
-    y_pred, y_var = tensors_to_np_arrays(y_pred, y_var)
+    y_pred, y_var = helpers.tensors_to_np_arrays(y_pred, y_var)
     y_std = np.sqrt(y_var)
     y_quantiles = quantiles_gaussian(quantiles, y_pred, y_std)
     return y_pred, y_quantiles, y_std
@@ -298,8 +299,10 @@ def plot_uq_result(
 
 
 def get_clean_data(n_points_per_group, standardize_data, do_plot_data=True):
-    X_train, X_test, y_train, y_test, X, y, _ = get_data(n_points_per_group=n_points_per_group, return_full_data=True,
-                                                         standardize_data=standardize_data, return_y_scaler=False)
+    X_train, X_test, y_train, y_test, X, y, _ = helpers.get_data(
+        n_points_per_group=n_points_per_group,
+        standardize_data=standardize_data,
+    )
     if do_plot_data:
         my_plot_data(X, y)
     return X_train, X_test, y_train, y_test, X, y
@@ -314,16 +317,14 @@ def my_plot_data(X, y):
     plt.show(block=True)
 
 
-def _standardize_or_to_array(variable, to_standardize, *dfs):
-    if variable in to_standardize:
-        return standardize(*dfs, return_scaler=False)
-    return dfs_to_np_arrays(*dfs)
-
-
 def main():
     torch.set_default_dtype(torch.float32)
     print("loading data...")
-    X_train, X_test, y_train, y_test, X, y = get_clean_data(N_POINTS_PER_GROUP, standardize_data=STANDARDIZE_DATA, do_plot_data=PLOT_DATA)
+    X_train, X_test, y_train, y_test, X, y = get_clean_data(
+        N_POINTS_PER_GROUP,
+        standardize_data=STANDARDIZE_DATA,
+        do_plot_data=PLOT_DATA
+    )
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
     print("running method...")

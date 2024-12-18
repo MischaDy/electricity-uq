@@ -1,12 +1,11 @@
 import gpytorch
 import torch
 
-from helpers import (standardize, get_data, train_val_split, make_tensors_contiguous, objects_to_cuda,
-                     tensors_to_np_arrays, dfs_to_tensors, np_arrays_to_tensors, make_ys_1d, get_device)
+import helpers
 from io_helper import IO_Helper
 
 
-torch.set_default_device(get_device())
+torch.set_default_device(helpers.get_device())
 
 
 N_EPOCHS = 100
@@ -60,22 +59,12 @@ def measure_runtime(func):
 
 
 @measure_runtime
-def preprocess_data(X_train, X_test, y_train, y_test, val_frac, standardize_x, standardize_y):
-    X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac=val_frac)
+def preprocess_data(X_train, X_test, y_train, y_test, val_frac):
+    X_train, y_train, X_val, y_val = helpers.train_val_split(X_train, y_train, val_frac=val_frac)
+    X_train, X_val, X_test = helpers.np_arrays_to_tensors(X_train, X_val, X_test)
+    y_train, y_val, y_test = helpers.np_arrays_to_tensors(y_train, y_val, y_test)
 
-    if standardize_x:
-        X_scaler, (X_train, X_val, X_test) = standardize(X_train, X_val, X_test, return_scaler=True)
-        X_train, X_val, X_test = np_arrays_to_tensors(X_train, X_val, X_test)
-    else:
-        X_train, X_val, X_test = dfs_to_tensors(X_train, X_val, X_test)
-
-    if standardize_y:
-        y_scaler, (y_train, y_val, y_test) = standardize(y_train, y_val, y_test, return_scaler=True)
-        y_train, y_val, y_test = np_arrays_to_tensors(y_train, y_val, y_test)
-    else:
-        y_train, y_val, y_test = dfs_to_tensors(y_train, y_val, y_test)
-
-    y_train, y_val, y_test = make_ys_1d(y_train, y_val, y_test)
+    y_train, y_val, y_test = helpers.make_ys_1d(y_train, y_val, y_test)
 
     shapes = map(lambda arr: arr.shape, (X_train, y_train, X_val, y_val, X_test, y_test))
     print("data shapes:", ' - '.join(map(str, shapes)))
@@ -85,8 +74,8 @@ def preprocess_data(X_train, X_test, y_train, y_test, val_frac, standardize_x, s
         plot_data(X_train, y_train, X_val, y_val, X_test, y_test)
 
     print('making data contiguous and mapping to device...')
-    X_train, y_train, X_val, y_val, X_test, y_test = objects_to_cuda(X_train, y_train, X_val, y_val, X_test, y_test)
-    X_train, y_train, X_val, y_val, X_test, y_test = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_test,
+    X_train, y_train, X_val, y_val, X_test, y_test = helpers.objects_to_cuda(X_train, y_train, X_val, y_val, X_test, y_test)
+    X_train, y_train, X_val, y_val, X_test, y_test = helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val, X_test,
                                                                              y_test)
     return X_train, y_train, X_val, y_val, X_test, y_test
 
@@ -116,7 +105,7 @@ def train_gpytorch(
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model = ExactGPModel(X_train, y_train, likelihood)
 
-    model, likelihood = objects_to_cuda(model, likelihood)
+    model, likelihood = helpers.objects_to_cuda(model, likelihood)
 
     model.train()
     likelihood.train()
@@ -191,7 +180,7 @@ def plot_uq_result(
     import matplotlib.pyplot as plt
     import numpy as np
 
-    X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = tensors_to_np_arrays(
+    X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std = helpers.tensors_to_np_arrays(
         X_train, X_val, X_test, y_train, y_val, y_test, y_preds, y_std
     )
     X_train = np.row_stack((X_train, X_val))
@@ -240,10 +229,9 @@ def plot_uq_result(
 
 def main():
     print('preparing data...')
-    X_train, X_test, y_train, y_test, _, _, _ = get_data(
+    X_train, X_test, y_train, y_test, _, _, _ = helpers.get_data(
         n_points_per_group=N_DATAPOINTS,
         standardize_data=True,
-        return_y_scaler=False,
     )
     X_train, y_train, X_val, y_val, X_test, y_test = preprocess_data(
         X_train,
@@ -251,8 +239,6 @@ def main():
         y_train,
         y_test,
         val_frac=VALIDATION_FRAC,
-        standardize_x=STANDARDIZE_X,
-        standardize_y=STANDARDIZE_Y,
     )
 
     skip_training = SKIP_TRAINING
@@ -309,7 +295,7 @@ def main():
     y_preds = f_preds.mean
     y_std = f_preds.stddev
 
-    y_preds, y_std = tensors_to_np_arrays(y_preds, y_std)
+    y_preds, y_std = helpers.tensors_to_np_arrays(y_preds, y_std)
 
     plot_uq_result(
         X_train,
