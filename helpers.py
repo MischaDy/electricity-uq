@@ -65,25 +65,6 @@ def get_data(
     return X_train, X_test, y_train, y_test, X, y, scaler_y
 
 
-# def standardize(cols_to_standardize: list[str], train_data: pd.DataFrame, *dfs_to_standardize: pd.DataFrame,
-#                 return_scaler=True):
-#     from sklearn.preprocessing import StandardScaler
-#     from sklearn.compose import make_column_transformer
-#
-#     x_scaler = make_column_transformer(
-#         (StandardScaler(), cols_to_standardize),
-#         remainder='passthrough',
-#         force_int_remainder_cols=False,
-#     )
-#     scaler.fit(train_data)
-#
-#     def transform(arr):
-#         if arr is None:
-#             return
-#         return scaler.transform(arr)
-#
-#     standardized_data = map(transform, [train_data, *dfs_to_standardize])
-#     return standardized_data if not return_scaler else (scaler, standardized_data)
 
 
 def set_dtype_float(*arrs: list[np.ndarray]) -> Generator[np.ndarray, None, None]:
