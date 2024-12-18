@@ -16,7 +16,7 @@ QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use me
 
 DATA_FILEPATH = './data_1600.pkl'
 
-N_POINTS_PER_GROUP = 800
+N_POINTS_PER_GROUP = 100
 STANDARDIZE_DATA = True
 
 PLOT_DATA = False
@@ -27,12 +27,12 @@ SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
 
 METHOD_WHITELIST = [
-     "posthoc_conformal_prediction",
-     "posthoc_laplace",
-     "native_quantile_regression",
-     "native_gpytorch",
-     "native_mvnn",
-     'base_model_rf',
+     # "posthoc_conformal_prediction",
+     # "posthoc_laplace",
+     # "native_quantile_regression",
+     # "native_gpytorch",
+     # "native_mvnn",
+     # 'base_model_rf',
      'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
@@ -81,7 +81,7 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "base_model_nn": {
-        "skip_training": True,
+        "skip_training": False,
         "n_iter": 200,
         "lr": 1e-2,
         "lr_patience": 30,
