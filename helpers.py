@@ -53,15 +53,14 @@ def get_data(
             force_int_remainder_cols=False,
         )
         scaler_X.fit(X_train)
-        X_train, X_test = map(scaler_X.transform, [X_train, X_test])
+        X_train, X_test, X = map(scaler_X.transform, [X_train, X_test, X])
         # transform y
         scaler_y = StandardScaler()
         scaler_y.fit(y_train)
-        y_train, y_test = map(scaler_y.transform, [y_train, y_test])
+        y_train, y_test, y = map(scaler_y.transform, [y_train, y_test, y])
 
     # to float arrays
     X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
-
     return X_train, X_test, y_train, y_test, X, y, scaler_y
 
 
