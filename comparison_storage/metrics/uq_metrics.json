@@ -1,10 +1,58 @@
 {
     "base_model": {
+        "base_model_rf": {
+            "rmse": 0.25734581704063153,
+            "smape_scaled": 0.34518038134253737
+        },
         "base_model_nn": {
-            "rmse": 0.26433515548706055,
-            "smape_scaled": 0.3365967273712158
+            "rmse": 0.2635883390903473,
+            "smape_scaled": 0.3363732099533081
         }
     },
-    "posthoc": {},
-    "native": {}
+    "posthoc": {
+        "posthoc_conformal_prediction__base_model_rf": {
+            "rmse": 0.25734581704063153,
+            "smape_scaled": 0.34518038134253737,
+            "crps": null,
+            "nll_gaussian": null,
+            "mean_pinball": 0.007009389286746163
+        },
+        "posthoc_conformal_prediction__base_model_nn": {
+            "rmse": 0.2635883390903473,
+            "smape_scaled": 0.3363732099533081,
+            "crps": null,
+            "nll_gaussian": null,
+            "mean_pinball": 0.006584389880299569
+        },
+        "posthoc_laplace__base_model_nn": {
+            "rmse": 0.2635883390903473,
+            "smape_scaled": 0.3363732099533081,
+            "crps": null,
+            "nll_gaussian": 1.4813531427730067,
+            "mean_pinball": 0.014042471411168631
+        }
+    },
+    "native": {
+        "native_quantile_regression": {
+            "rmse": 0.32355592702551017,
+            "smape_scaled": 0.44536086241496137,
+            "crps": null,
+            "nll_gaussian": 0.18996278667259175,
+            "mean_pinball": 0.02770492681680446
+        },
+        "native_mvnn": {
+            "rmse": 0.2535959780216217,
+            "smape_scaled": 0.4076983630657196,
+            "crps": null,
+            "nll_gaussian": 0.24882831236619488,
+            "mean_pinball": 0.017665660227238998
+        },
+        "native_gpytorch": {
+            "rmse": 0.2348797619342804,
+            "smape_scaled": 0.37248408794403076,
+            "crps": null,
+            "nll_gaussian": 0.5111672427811933,
+            "mean_pinball": 0.0180156727130983
+        }
+    }
 }

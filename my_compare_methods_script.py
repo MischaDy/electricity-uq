@@ -22,17 +22,17 @@ STANDARDIZE_DATA = True
 PLOT_DATA = False
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
 
 METHOD_WHITELIST = [
-     # "posthoc_conformal_prediction",
-     # "posthoc_laplace",
-     # "native_quantile_regression",
-     # "native_gpytorch",
-     # "native_mvnn",
-     # 'base_model_rf',
+     "posthoc_conformal_prediction",
+     "posthoc_laplace",
+     "native_quantile_regression",
+     "native_gpytorch",
+     "native_mvnn",
+     'base_model_rf',
      'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
@@ -43,7 +43,7 @@ POSTHOC_BASE_BLACKLIST = {
 
 METHODS_KWARGS = {
     "native_mvnn": {
-        'skip_training': True,
+        'skip_training': False,
         "n_iter": 300,
         "lr": 1e-4,
         "lr_patience": 30,
@@ -53,12 +53,12 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "native_quantile_regression": {
-        'skip_training': True,
+        'skip_training': False,
         'save_model': True,
         "verbose": True,
     },
     "native_gpytorch": {
-        'skip_training': True,
+        'skip_training': False,
         'n_epochs': 100,
         'val_frac': 0.1,
         'lr': 1e-2,
@@ -70,19 +70,19 @@ METHODS_KWARGS = {
         'verbose': True,
     },
     "posthoc_conformal_prediction": {
-        "skip_training": True,
+        "skip_training": False,
         "n_estimators": 5,
         "verbose": 1,
         "save_model": True,
     },
     "posthoc_laplace": {
-        'skip_training': True,
+        'skip_training': False,
         "n_iter": 100,
         'save_model': True,
     },
     "base_model_nn": {
         "skip_training": False,
-        "n_iter": 500,
+        "n_iter": 200,
         "lr": 1e-2,
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
@@ -94,7 +94,7 @@ METHODS_KWARGS = {
         "verbose": 1,
     },
     "base_model_rf": {
-        "skip_training": True,
+        "skip_training": False,
         'model_param_distributions': {
             "max_depth": stats.randint(2, 50),
             "n_estimators": stats.randint(10, 200),
