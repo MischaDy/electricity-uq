@@ -26,6 +26,10 @@ SHOW_PLOTS = False
 SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
 
+DO_TRAIN_ALL = True
+SKIP_TRAINING_ALL = False
+
+
 METHOD_WHITELIST = [
      "posthoc_conformal_prediction",
      "posthoc_laplace",
@@ -107,6 +111,14 @@ METHODS_KWARGS = {
         'n_jobs': -1,
     },
 }
+
+assert not (DO_TRAIN_ALL and SKIP_TRAINING_ALL)
+
+for _, method_kwargs in METHODS_KWARGS.items():
+    if DO_TRAIN_ALL:
+        method_kwargs['skip_training'] = True
+    elif SKIP_TRAINING_ALL:
+        method_kwargs['skip_training'] = False
 
 
 # noinspection PyPep8Naming
