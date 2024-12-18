@@ -97,6 +97,7 @@ class UQ_Comparer(ABC):
                 y_train,
                 X_test,
                 y_test,
+                scaler_y,
                 show_plot=should_show_plots,
                 save_plot=should_save_plots,
             )
@@ -116,6 +117,7 @@ class UQ_Comparer(ABC):
                     X_test,
                     y_test,
                     y_pred_base_model,
+                    scaler_y,
                     plot_name=base_model_name,
                     show_plots=should_show_plots,
                     save_plot=should_save_plots,
@@ -137,6 +139,7 @@ class UQ_Comparer(ABC):
             y_train=y_train,
             X_test=X_test,
             y_test=y_test,
+            scaler_y=scaler_y,
             quantiles=quantiles,
             show_plots=should_show_plots,
             save_plots=should_save_plots,
@@ -440,13 +443,28 @@ class UQ_Comparer(ABC):
             y_train,
             X_test,
             y_test,
+            scaler_y,
             filename="data",
             figsize=(16, 5),
             ylabel="energy data",
             show_plot=True,
             save_plot=True,
     ):
-        """visualize training and test sets"""
+        """
+        visualize training and test sets
+
+        :param X_train:
+        :param y_train:
+        :param X_test:
+        :param y_test:
+        :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
+        :param filename:
+        :param figsize:
+        :param ylabel:
+        :param show_plot:
+        :param save_plot:
+        :return:
+        """
         from matplotlib import pyplot as plt
 
         num_train_steps = X_train.shape[0]
@@ -455,9 +473,13 @@ class UQ_Comparer(ABC):
         x_plot_train = np.arange(num_train_steps)
         x_plot_test = x_plot_train + num_test_steps
 
+        y_train_trans, y_test_trans = y_train, y_test
+        if scaler_y is not None:
+            y_train_trans, y_test_trans = map(scaler_y.inverse_transform, [y_train_trans, y_test_trans])
+
         fig, ax = plt.subplots(figsize=figsize)
-        ax.plot(x_plot_train, y_train)
-        ax.plot(x_plot_test, y_test)
+        ax.plot(x_plot_train, y_train_trans)
+        ax.plot(x_plot_test, y_test_trans)
         ax.set_ylabel(ylabel)
         ax.legend(["Training data", "Test data"])
         if save_plot:
@@ -472,12 +494,27 @@ class UQ_Comparer(ABC):
             y_train,
             X_test,
             y_test,
+            scaler_y,
             uq_results: dict[str, tuple[Any, Any, Any]],
             quantiles,
             show_plots=True,
             save_plots=True,
             n_stds=2,
     ):
+        """
+
+        :param X_train:
+        :param y_train:
+        :param X_test:
+        :param y_test:
+        :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
+        :param uq_results:
+        :param quantiles:
+        :param show_plots:
+        :param save_plots:
+        :param n_stds:
+        :return:
+        """
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in uq_results.items():
             if y_quantiles is None and y_std is None:
@@ -491,6 +528,7 @@ class UQ_Comparer(ABC):
                 y_preds=y_preds,
                 y_quantiles=y_quantiles,
                 y_std=y_std,
+                scaler_y=scaler_y,
                 quantiles=quantiles,
                 n_stds=n_stds,
                 plot_name=method_name,
@@ -507,18 +545,42 @@ class UQ_Comparer(ABC):
             y_preds,
             y_quantiles,
             y_std,
+            scaler_y,
             quantiles,
             n_stds=2,
             plot_name='uq_result',
             show_plots=True,
             save_plot=True,
     ):
+        """
+
+        :param X_train:
+        :param y_train:
+        :param X_test:
+        :param y_test:
+        :param y_preds:
+        :param y_quantiles:
+        :param y_std:
+        :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
+        :param quantiles:
+        :param n_stds:
+        :param plot_name:
+        :param show_plots:
+        :param save_plot:
+        :return:
+        """
         from matplotlib import pyplot as plt
         num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
         x_plot_train = np.arange(num_train_steps)
         x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
         x_plot_full = np.arange(num_train_steps + num_test_steps)
+
+        y_train_trans, y_test_trans, y_preds_trans = y_train, y_test, y_preds
+        if scaler_y is not None:
+            y_train_trans, y_test_trans, y_preds_trans = map(scaler_y.inverse_transform,
+                                                             [y_train_trans, y_test_trans, y_preds_trans])
+        # todo: how to handle y_stds and y_quantiles???
 
         drawing_quantiles = y_quantiles is not None
         if drawing_quantiles:
@@ -566,10 +628,24 @@ class UQ_Comparer(ABC):
             X_test,
             y_test,
             y_preds,
+            scaler_y,
             plot_name='base_results',
             show_plots=True,
             save_plot=True,
     ):
+        """
+
+        :param X_train:
+        :param y_train:
+        :param X_test:
+        :param y_test:
+        :param y_preds:
+        :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
+        :param plot_name:
+        :param show_plots:
+        :param save_plot:
+        :return:
+        """
         from matplotlib import pyplot as plt
         num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
 
@@ -577,12 +653,17 @@ class UQ_Comparer(ABC):
         x_plot_full = np.arange(num_train_steps + num_test_steps)
         x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
 
+        y_train_trans, y_test_trans, y_preds_trans = y_train, y_test, y_preds
+        if scaler_y is not None:
+            y_train_trans, y_test_trans, y_preds_trans = map(scaler_y.inverse_transform,
+                                                             [y_train_trans, y_test_trans, y_preds_trans])
+
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
+        ax.plot(x_plot_train, y_train_trans, label='y_train', linestyle="dashed", color="black")
+        ax.plot(x_plot_test, y_test_trans, label='y_test', linestyle="dashed", color="blue")
         ax.plot(
             x_plot_full,
-            y_preds,
+            y_preds_trans,
             label=f"mean/median prediction {plot_name}",  # todo: mean or median?
             color="green",
         )
