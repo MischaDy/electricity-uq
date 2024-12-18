@@ -41,7 +41,15 @@ class UQ_Comparer(ABC):
     4. Call compare_methods from the child class
     """
 
-    def __init__(self, storage_path, method_whitelist=None, posthoc_base_blacklist: dict[str, str] | None = None):
+    def __init__(self, storage_path, method_whitelist=None, posthoc_base_blacklist: dict[str, str] | None = None,
+                 standardize_data=True,):
+        """
+
+        :param storage_path:
+        :param method_whitelist:
+        :param posthoc_base_blacklist:
+        :param standardize_data: True if both X and y should be standardized, False if neither.
+        """
         self.io_helper = IO_Helper(storage_path)
         # todo: store train and test data once loaded
         self.methods_kwargs = defaultdict(dict)
@@ -50,6 +58,7 @@ class UQ_Comparer(ABC):
             posthoc_base_blacklist = dict()
         self.posthoc_base_blacklist = defaultdict(set)
         self.posthoc_base_blacklist.update(posthoc_base_blacklist)
+        self.standardize_data = standardize_data
 
     def compare_methods(
             self,
@@ -78,7 +87,9 @@ class UQ_Comparer(ABC):
         #  :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
 
         print("loading data...")
-        X_train, X_test, y_train, y_test, X, y = self.get_data()
+        data = self.get_data()
+        X_train, X_test, y_train, y_test, X, y, scaler_y = data
+
         print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
         if should_plot_data:
             print("plotting data...")
@@ -156,7 +167,7 @@ class UQ_Comparer(ABC):
     def get_data(self) -> DataTuple | Any:
         """
 
-        :return: X_train, X_test, y_train, y_test, X, y
+        :return: tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). y_scaler may be None.
         """
         raise NotImplementedError
 

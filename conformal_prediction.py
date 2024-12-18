@@ -70,7 +70,8 @@ STORAGE_PATH = "mapie_storage"
 def main(storage_path):
     io_helper = IO_Helper(storage_path)
     print("loading data")
-    X_train, X_test, y_train, y_test = get_data(N_POINTS_PER_GROUP)
+    X_train, X_test, y_train, y_test, _, _, _ = get_data(n_points_per_group=N_POINTS_PER_GROUP,
+                                                      standardize_data=True, return_y_scaler=False)
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
     print("plotting data")

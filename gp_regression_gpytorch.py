@@ -240,10 +240,10 @@ def plot_uq_result(
 
 def main():
     print('preparing data...')
-    X_train, X_test, y_train, y_test = get_data(
-        N_DATAPOINTS,
-        output_cols=['load_to_pred'],
-        return_full_data=False,
+    X_train, X_test, y_train, y_test, _, _, _ = get_data(
+        n_points_per_group=N_DATAPOINTS,
+        standardize_data=True,
+        return_y_scaler=False,
     )
     X_train, y_train, X_val, y_val, X_test, y_test = preprocess_data(
         X_train,

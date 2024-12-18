@@ -10,7 +10,7 @@ def get_data(
     filepath="data.pkl",
     input_cols=None,
     output_cols=None,
-    return_full_data=False,
+    standardize_data=True,
 ):
     # -> (tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
     #   | tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]):  # fmt: skip
@@ -18,14 +18,16 @@ def get_data(
     load and prepare data
 
     :param _n_points_per_group:
+    :param standardize_data:
     :param filepath:
     :param input_cols:
     :param output_cols:
-    :param return_full_data:
-    :return: tuple (X_train, X_test, y_train, y_test), or (..., X, y) if return_full_data is True
+    :return: tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). if standardize_data=False, y_scaler is None.
     """
     import pandas as pd
     from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.compose import make_column_transformer
 
     df = pd.read_pickle(filepath)
     if output_cols is None:
@@ -34,7 +36,8 @@ def get_data(
         # input_cols = ["load_last_week", "load_last_hour", "load_now", "cat_is_workday",
         # "cat_is_saturday_and_not_holiday", "cat_is_sunday_or_holiday", "cat_is_heating_period"]
         input_cols = [col for col in df.columns
-                      if col not in output_cols and not col.startswith('ts')]
+                      if col not in output_cols and not col.startswith('ts_')]
+    numerical_cols = [col for col in input_cols if not col.startswith('cat_')]
 
     # mid = df.shape[0] // 2
     # X = df[input_cols].iloc[mid - _n_points_per_group: mid + _n_points_per_group]
@@ -46,10 +49,26 @@ def get_data(
 
     # todo: allow different train/test split?
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
+
+    scaler_y = None
+    if standardize_data:
+        # transform X
+        scaler_X = make_column_transformer(
+            (StandardScaler(), numerical_cols),
+            remainder='passthrough',
+            force_int_remainder_cols=False,
+        )
+        scaler_X.fit(X_train)
+        X_train, X_test = map(scaler_X.transform, [X_train, X_test])
+        # transform y
+        scaler_y = StandardScaler()
+        scaler_y.fit(y_train)
+        y_train, y_test = map(scaler_y.transform, [y_train, y_test])
+
+    # to float arrays
     X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
-    if return_full_data:
-        return X_train, X_test, y_train, y_test, X, y
-    return X_train, X_test, y_train, y_test
+
+    return X_train, X_test, y_train, y_test, X, y, scaler_y
 
 
 def set_dtype_float(*arrs: list[np.ndarray]) -> Generator[np.ndarray, None, None]:

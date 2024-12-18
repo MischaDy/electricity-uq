@@ -1,6 +1,5 @@
 import os
-
-import pandas as pd
+from typing import Any
 
 filename = os.path.split(__file__)[-1]
 print(f'reading file {filename}...')
@@ -12,6 +11,20 @@ from compare_methods import UQ_Comparer
 from helpers import get_data, standardize, train_val_split
 from nn_estimator import NN_Estimator
 
+
+QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
+
+DATA_FILEPATH = './data_1600.pkl'
+
+N_POINTS_PER_GROUP = 800
+STANDARDIZE_DATA = True
+
+PLOT_DATA = False
+PLOT_UQ_RESULTS = True
+PLOT_BASE_RESULTS = True
+SHOW_PLOTS = False
+SAVE_PLOTS = True
+SKIP_BASE_MODEL_COPY = True
 
 METHOD_WHITELIST = [
      "posthoc_conformal_prediction",
@@ -27,17 +40,6 @@ POSTHOC_BASE_BLACKLIST = {
         'base_model_rf',
     },
 }
-QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
-
-DATA_FILEPATH = './data_1600.pkl'
-
-N_POINTS_PER_GROUP = 800
-PLOT_DATA = False
-PLOT_UQ_RESULTS = True
-PLOT_BASE_RESULTS = True
-SHOW_PLOTS = False
-SAVE_PLOTS = True
-SKIP_BASE_MODEL_COPY = True
 
 METHODS_KWARGS = {
     "native_mvnn": {
@@ -106,47 +108,41 @@ METHODS_KWARGS = {
     },
 }
 
-TO_STANDARDIZE = "xy"
-
 
 # noinspection PyPep8Naming
 class My_UQ_Comparer(UQ_Comparer):
     def __init__(
             self,
             storage_path="comparison_storage",
-            to_standardize="X",
-            methods_kwargs=None,  # : dict[str, dict[str, Any]] = None,
+            methods_kwargs: dict[str, dict[str, Any]] = None,
             n_points_per_group=800,
-            *args,
-            **kwargs
+            method_whitelist=None,
+            posthoc_base_blacklist=None,
+            standardize_data=True,
     ):
         """
 
-        :param methods_kwargs: dict of (method_name, method_kwargs_dict) pairs
+        :param methods_kwargs: dict of (method_name, method_kwargs) pairs
         :param storage_path:
-        :param to_standardize: iterable of variables to standardize. Can contain 'x' and/or 'y', or neither.
-        :param args: passed to super.__init__
-        :param kwargs: passed to super.__init__
         :param n_points_per_group: both training size and test size
+        :param standardize_data: True if both X and y should be standardized, False if neither.
         """
-        super().__init__(*args, storage_path=storage_path, **kwargs)
-        if methods_kwargs is not None:
-            self.methods_kwargs.update(methods_kwargs)
-        self.to_standardize = to_standardize
+        super().__init__(storage_path=storage_path, method_whitelist=method_whitelist,
+                         posthoc_base_blacklist=posthoc_base_blacklist, standardize_data=standardize_data)
+        if methods_kwargs is None:
+            methods_kwargs = {}
+        self.methods_kwargs.update(methods_kwargs)
         self.n_points_per_group = n_points_per_group
 
     def get_data(self):
         """
-        :return: X_train, X_test, y_train, y_test, X, y
+        :return: tuple (X_train, X_test, y_train, y_test, X, y), or additionally (..., y_scaler) if STANDARDIZE_DATA
         """
-        X_train, X_test, y_train, y_test, X, y = get_data(
-            self.n_points_per_group,
-            return_full_data=True,
-            filepath=DATA_FILEPATH
+        return get_data(
+            n_points_per_group=self.n_points_per_group,
+            standardize_data=self.standardize_data,
+            filepath=DATA_FILEPATH,
         )
-        X_train, X_test, X = self._standardize_or_to_array("x", X_train, X_test, X)
-        y_train, y_test, y = self._standardize_or_to_array("y", y_train, y_test, y)
-        return X_train, X_test, y_train, y_test, X, y
 
     @classmethod
     def compute_metrics_det(cls, y_pred, y_true) -> dict[str, float]:
@@ -645,13 +641,6 @@ class My_UQ_Comparer(UQ_Comparer):
         return np.array([norm.ppf(quantiles, loc=mean, scale=std)
                          for mean, std in zip(y_pred, y_std)])
 
-    def _standardize_or_to_array(self, variable, *dfs: pd.DataFrame):
-        from helpers import dfs_to_np_arrays
-
-        if variable in self.to_standardize:
-            return standardize(*dfs, return_scaler=False)
-        return dfs_to_np_arrays(*dfs)
-
     def plot_base_model_test_result(
             self,
             X_train,
@@ -699,7 +688,6 @@ def main():
         methods_kwargs=METHODS_KWARGS,
         method_whitelist=METHOD_WHITELIST,
         posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
-        to_standardize=TO_STANDARDIZE,
         n_points_per_group=N_POINTS_PER_GROUP,
     )
     uq_comparer.compare_methods(

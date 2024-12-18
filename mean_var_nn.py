@@ -20,7 +20,7 @@ torch.set_default_device(get_device())
 
 QUANTILES = [0.05, 0.25, 0.75, 0.95]
 
-TO_STANDARDIZE = "xy"
+STANDARDIZE_DATA = True
 PLOT_DATA = False
 
 N_POINTS_PER_GROUP = 800
@@ -297,10 +297,9 @@ def plot_uq_result(
     plt.show(block=True)
 
 
-def get_clean_data(n_points_per_group, to_standardize, do_plot_data=True):
-    X_train, X_test, y_train, y_test, X, y = get_data(n_points_per_group, return_full_data=True)
-    X_train, X_test, X = _standardize_or_to_array("x", to_standardize, X_train, X_test, X)
-    y_train, y_test, y = _standardize_or_to_array("y", to_standardize, y_train, y_test, y)
+def get_clean_data(n_points_per_group, standardize_data, do_plot_data=True):
+    X_train, X_test, y_train, y_test, X, y, _ = get_data(n_points_per_group=n_points_per_group, return_full_data=True,
+                                                         standardize_data=standardize_data, return_y_scaler=False)
     if do_plot_data:
         my_plot_data(X, y)
     return X_train, X_test, y_train, y_test, X, y
@@ -324,7 +323,7 @@ def _standardize_or_to_array(variable, to_standardize, *dfs):
 def main():
     torch.set_default_dtype(torch.float32)
     print("loading data...")
-    X_train, X_test, y_train, y_test, X, y = get_clean_data(N_POINTS_PER_GROUP, TO_STANDARDIZE, do_plot_data=PLOT_DATA)
+    X_train, X_test, y_train, y_test, X, y = get_clean_data(N_POINTS_PER_GROUP, standardize_data=STANDARDIZE_DATA, do_plot_data=PLOT_DATA)
     print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
     print("running method...")

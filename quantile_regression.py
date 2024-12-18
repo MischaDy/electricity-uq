@@ -17,10 +17,8 @@ N_POINTS_PER_GROUP = 100
 
 
 def main():
-    X_train, X_test, y_train, y_test, X, y = get_data(N_POINTS_PER_GROUP, return_full_data=True)
-
+    X_train, X_test, y_train, y_test, X, y, _ = get_data(n_points_per_group=N_POINTS_PER_GROUP, standardize_data=True)
     y_preds, y_pis = estimate_quantiles(X_train, y_train, x_pred=X, alpha=[0.1])
-
     plot_intervals(X, y, X_train, y_preds, y_pis)
 
 
