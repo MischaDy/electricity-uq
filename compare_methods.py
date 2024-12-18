@@ -136,14 +136,14 @@ class UQ_Comparer(ABC):
         )
         if should_plot_uq_results:
             print("plotting posthoc results...")
-            partial_plotting(posthoc_results)
+            partial_plotting(uq_results=posthoc_results)
 
         print("running native UQ methods...")
         native_results = self.run_native_methods(X_train, y_train, X_pred, quantiles=quantiles)
 
         if should_plot_uq_results:
             print("plotting native results...")
-            partial_plotting(native_results)
+            partial_plotting(uq_results=native_results)
 
         print("computing and saving UQ metrics...")
         uq_results_all = {'posthoc': posthoc_results, 'native': native_results}
