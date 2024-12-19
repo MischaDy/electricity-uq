@@ -100,6 +100,8 @@ def get_data(as_df: bool):
     df.dropna(inplace=True, ignore_index=True)
     df.head()
     
+    return df
+    
     
     
     # === remove timestamps for which no grid load data is available
