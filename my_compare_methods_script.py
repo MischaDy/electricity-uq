@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Generator
 
 filename = os.path.split(__file__)[-1]
 print(f'reading file {filename}...')
@@ -175,14 +175,14 @@ class My_UQ_Comparer(UQ_Comparer):
 
         y_pred, y_quantiles, y_std, y_true = cls._clean_ys_for_metrics(y_pred, y_quantiles, y_std, y_true)
         metrics = {
-            "crps": crps(y_true, y_pred, y_std),
+            "crps": crps(y_true, y_quantiles),
             "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
             "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
         }
         return cls._clean_metrics(metrics)
 
     @staticmethod
-    def _clean_ys_for_metrics(*ys):
+    def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None]:
         for y in ys:
             if y is None:
                 yield y
