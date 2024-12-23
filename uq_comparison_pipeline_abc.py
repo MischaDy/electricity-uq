@@ -101,7 +101,10 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
         y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y)
         if should_save_results:
+            print('saving base model results...')
             self.save_outputs_base_models(y_preds_base_models)
+        else:
+            print('base model result saving is skipped.')
 
         if should_plot_base_results:
             print("plotting base model results...")
