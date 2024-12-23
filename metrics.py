@@ -59,15 +59,12 @@ def crps(y_true: np.ndarray, y_quantiles: np.ndarray):
     :param y_quantiles:
     :return:
     """
-    # todo: implement
     if y_quantiles is None:
         return None
-    array_dim = 'quantile'
-    y_quantiles = xarray.DataArray(
-        y_quantiles,
-        # coords=[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]],
-        dims=[array_dim],
+    sample_dim, ensemble_member_dim = 'samples', 'sample_quantiles'
+    y_true = xarray.DataArray(y_true, dims=[sample_dim])
+    y_quantiles = xarray.DataArray(y_quantiles, dims=[sample_dim, ensemble_member_dim])
+    crps = scores.probability.crps_for_ensemble(
+        y_quantiles, y_true, ensemble_member_dim=ensemble_member_dim, method='fair'
     )
-    y_true = xarray.DataArray(y_true)
-    return scores.probability.crps_for_ensemble(y_quantiles, y_true, ensemble_member_dim=array_dim,
-                                                method='fair')
+    return crps.to_numpy()
