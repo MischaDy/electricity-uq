@@ -74,8 +74,6 @@ METHODS_KWARGS = {
         'show_plots': True,
         'do_plot_losses': True,
         'save_model': True,
-        'model_name': 'gpytorch_model',
-        'verbose': True,
     },
     "posthoc_conformal_prediction": {
         "skip_training": False,
@@ -609,14 +607,12 @@ class My_UQ_Comparer(UQ_Comparer):
             quantiles,
             n_epochs=100,
             val_frac=0.1,
-            model_name='gpytorch_model',
             lr=1e-2,
             show_progress=True,
             show_plots=True,
             do_plot_losses=True,
             skip_training=True,
             save_model=True,
-            verbose=True,
     ):
         import torch
         import gpytorch
@@ -634,7 +630,7 @@ class My_UQ_Comparer(UQ_Comparer):
         X_train, y_train, X_val, y_val, X_pred = objects_to_cuda(X_train, y_train, X_val, y_val, X_pred)
         X_train, y_train, X_val, y_val, X_pred = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_pred)
 
-        common_prefix, common_postfix = f'{model_name}', f'{self.n_points_per_group}_{n_epochs}'
+        common_prefix, common_postfix = 'gpytorch_model', f'{self.n_points_per_group}_{n_epochs}'
         model_name = f'{common_prefix}_{common_postfix}.pth'
         model_likelihood_name = f'{common_prefix}_likelihood_{common_postfix}.pth'
         if skip_training:

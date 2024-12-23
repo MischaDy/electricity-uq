@@ -126,7 +126,7 @@ def train_gpytorch(
     epochs = np.arange(n_epochs) + 1
     if show_progress:
         epochs = tqdm(epochs)
-    for epoch in epochs:
+    for _ in epochs:
         model.train()
         likelihood.train()
         optimizer.zero_grad()

@@ -267,6 +267,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         return {'poor_score': True,
                 '_xfail_checks': {'check_methods_sample_order_invariance': '(barely) failing for unknown reason'}}
 
+    # noinspection PyUnusedLocal
     def to(self, device):
         self.model_ = misc_helpers.object_to_cuda(self.model_)
         return self
