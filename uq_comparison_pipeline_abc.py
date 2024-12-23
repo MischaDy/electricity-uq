@@ -138,6 +138,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             quantiles=quantiles,
             skip_base_model_copy=skip_base_model_copy
         )
+        if should_save_results:
+            print('saving posthoc UQ results...')
+            self.save_outputs_uq_models(posthoc_results)
+        else:
+            print('posthoc UQ results saving is skipped.')
+
         plot_uq_results = partial(
             self.plot_uq_results,
             X_train=X_train,
@@ -155,6 +161,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         print("running native UQ methods...")
         native_results = self.run_native_methods(X_train, y_train, X_pred, scaler_y, quantiles=quantiles)
+
+        if should_save_results:
+            print('saving native UQ results...')
+            self.save_outputs_uq_models(native_results)
+        else:
+            print('native UQ result saving is skipped.')
 
         if should_plot_uq_results:
             print("plotting native results...")
@@ -714,8 +726,15 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
     def save_outputs_base_models(self, y_preds_dict: dict[str, np.ndarray]):
         for base_model_name, y_pred in y_preds_dict.items():
-            filename = f'base_pred_{base_model_name}.npy'
+            filename = f'{base_model_name}_y_pred.npy'
             self.io_helper.save_array(y_pred, filename)
+
+    def save_outputs_uq_models(self, outputs_uq_models: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]):
+        for model_name, outputs_uq_model in outputs_uq_models.items():
+            for output_type, output in zip(['y_pred', 'y_quantiles', 'y_std'], outputs_uq_model):
+                filename = f'{model_name}_{output_type}.npy'
+                self.io_helper.save_array(output, filename)
+
 
 def check_prefixes_ok():
     forbidden_prefixes = ['native', 'posthoc', 'base_model']
