@@ -1,58 +1,10 @@
 {
     "base_model": {
-        "base_model_rf": {
-            "rmse": 14855.484803125235,
-            "smape_scaled": 1.999877386557069
-        },
-        "base_model_nn": {
-            "rmse": 14828.8427734375,
-            "smape_scaled": 1.9998772144317627
+        "base_model_linreg": {
+            "rmse": 14997.279296875,
+            "smape_scaled": 1.9998779296875
         }
     },
-    "posthoc": {
-        "posthoc_conformal_prediction__base_model_rf": {
-            "rmse": 14828.8427734375,
-            "smape_scaled": 1.9998772144317627,
-            "crps": null,
-            "nll_gaussian": null,
-            "mean_pinball": 14.707343988316797
-        },
-        "posthoc_conformal_prediction__base_model_nn": {
-            "rmse": 14828.8427734375,
-            "smape_scaled": 1.9998772144317627,
-            "crps": null,
-            "nll_gaussian": null,
-            "mean_pinball": 14.707343988316797
-        },
-        "posthoc_laplace__base_model_nn": {
-            "rmse": 14828.8427734375,
-            "smape_scaled": 1.9998772144317627,
-            "crps": null,
-            "nll_gaussian": 1764.428993776335,
-            "mean_pinball": 31.366221445186355
-        }
-    },
-    "native": {
-        "native_quantile_regression": {
-            "rmse": 15027.252691702664,
-            "smape_scaled": 1.999880038545956,
-            "crps": null,
-            "nll_gaussian": 402.96108645562947,
-            "mean_pinball": 61.88361323402198
-        },
-        "native_mvnn": {
-            "rmse": 14889.271484375,
-            "smape_scaled": 1.9998779296875,
-            "crps": null,
-            "nll_gaussian": 1528.6468717647624,
-            "mean_pinball": 39.45922298423154
-        },
-        "native_gpytorch": {
-            "rmse": 14747.974609375,
-            "smape_scaled": 1.9998761415481567,
-            "crps": null,
-            "nll_gaussian": 1903.0603632297525,
-            "mean_pinball": 40.241034733644184
-        }
-    }
+    "posthoc": {},
+    "native": {}
 }
