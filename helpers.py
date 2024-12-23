@@ -20,7 +20,9 @@ def get_data(
     :param filepath:
     :param input_cols:
     :param output_cols:
-    :return: tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). if standardize_data=False, y_scaler is None.
+    :return:
+    A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If standardize_data=False, y_scaler is None.
+    All variables except for the scaler are 2D np arrays.
     """
     import pandas as pd
     from sklearn.model_selection import train_test_split

@@ -148,7 +148,11 @@ class My_UQ_Comparer(UQ_Comparer):
 
     def get_data(self):
         """
-        :return: tuple (X_train, X_test, y_train, y_test, X, y), or additionally (..., y_scaler) if STANDARDIZE_DATA
+        load and prepare data
+
+        :return:
+        A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If self.standardize_data=False, y_scaler is None.
+        All variables except for the scaler are 2D np arrays.
         """
         return get_data(
             n_points_per_group=self.n_points_per_group,
