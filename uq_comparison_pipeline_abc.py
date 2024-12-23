@@ -101,7 +101,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
         y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y)
         if should_save_results:
-            self.store_outputs_base_models(y_preds_base_models)
+            self.save_outputs_base_models(y_preds_base_models)
 
         if should_plot_base_results:
             print("plotting base model results...")
@@ -135,7 +135,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             quantiles=quantiles,
             skip_base_model_copy=skip_base_model_copy
         )
-        partial_plotting = partial(
+        plot_uq_results = partial(
             self.plot_uq_results,
             X_train=X_train,
             y_train=y_train,
@@ -148,14 +148,14 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         )
         if should_plot_uq_results:
             print("plotting posthoc results...")
-            partial_plotting(uq_results=posthoc_results)
+            plot_uq_results(uq_results=posthoc_results)
 
         print("running native UQ methods...")
         native_results = self.run_native_methods(X_train, y_train, X_pred, scaler_y, quantiles=quantiles)
 
         if should_plot_uq_results:
             print("plotting native results...")
-            partial_plotting(uq_results=native_results)
+            plot_uq_results(uq_results=native_results)
 
         print("computing and saving UQ metrics...")
         uq_results_all = {'posthoc': posthoc_results, 'native': native_results}
@@ -709,7 +709,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 print(f"\t{metric}: {value}")
         print()
 
-    def store_outputs_base_models(self, y_preds_dict: dict[str, np.ndarray]):
+    def save_outputs_base_models(self, y_preds_dict: dict[str, np.ndarray]):
         for base_model_name, y_pred in y_preds_dict.items():
             filename = f'base_pred_{base_model_name}.npy'
             self.io_helper.save_array(y_pred, filename)
