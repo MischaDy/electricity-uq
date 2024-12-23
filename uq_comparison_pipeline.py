@@ -7,7 +7,7 @@ print(f'reading file {filename}...')
 import numpy as np
 from scipy import stats
 
-from compare_methods import UQ_Comparer
+from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers.misc_helpers import get_data, train_val_split
 from src_base_models.nn_estimator import NN_Estimator
 
@@ -129,7 +129,7 @@ for _, method_kwargs in METHODS_KWARGS.items():
 
 
 # noinspection PyPep8Naming
-class My_UQ_Comparer(UQ_Comparer):
+class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     def __init__(
             self,
             storage_path="comparison_storage",
@@ -731,7 +731,7 @@ def main():
     import torch
     torch.set_default_dtype(torch.float32)
 
-    uq_comparer = My_UQ_Comparer(
+    uq_comparer = UQ_Comparison_Pipeline(
         storage_path=STORAGE_PATH,
         methods_kwargs=METHODS_KWARGS,
         method_whitelist=METHOD_WHITELIST,

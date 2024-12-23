@@ -15,7 +15,7 @@ from helpers.misc_helpers import starfilter, inverse_transform_ys, inverse_trans
 
 # todo: add type hints
 # noinspection PyPep8Naming
-class UQ_Comparer(ABC):
+class UQ_Comparison_Pipeline_ABC(ABC):
     # todo: After these required inputs, they may accept any args or kwargs you wish.
     # todo: update usage guide!
     """
@@ -707,7 +707,7 @@ class UQ_Comparer(ABC):
 
 def check_prefixes_ok():
     forbidden_prefixes = ['native', 'posthoc', 'base_model']
-    for attr_name in UQ_Comparer.__dict__.keys():
+    for attr_name in UQ_Comparison_Pipeline_ABC.__dict__.keys():
         for prefix in forbidden_prefixes:
             assert not attr_name.startswith(prefix)
     print('all prefixes ok')
