@@ -193,7 +193,7 @@ class My_UQ_Comparer(UQ_Comparer):
         return cls._clean_metrics(metrics)
 
     @staticmethod
-    def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None]:
+    def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None, None, None]:
         for y in ys:
             if y is None:
                 yield y
