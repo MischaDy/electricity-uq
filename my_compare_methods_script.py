@@ -275,7 +275,7 @@ class My_UQ_Comparer(UQ_Comparer):
 
         if skip_training:
             try:
-                print('skipping base model training')
+                print('skipping random forest base model training')
                 model = self.io_helper.load_model(filename_base_model)
                 return model
             except FileNotFoundError:
@@ -302,7 +302,7 @@ class My_UQ_Comparer(UQ_Comparer):
         model = cv_obj.best_estimator_
         print("done.")
         if save_model:
-            print('saving model...')
+            print('saving RF base model...')
             self.io_helper.save_model(model, filename_base_model)
         return model
 
@@ -352,7 +352,7 @@ class My_UQ_Comparer(UQ_Comparer):
             n_training_points = X_train.shape[0]
             model_filename = f"base_nn_{n_training_points}.pth"
         if skip_training:
-            print("skipping base model training")
+            print("skipping NN base model training")
             try:
                 model = self.io_helper.load_torch_model(model_filename)
                 model = object_to_cuda(model)
@@ -378,7 +378,7 @@ class My_UQ_Comparer(UQ_Comparer):
         model.fit(X_train, y_train)
 
         if save_model:
-            print('saving model...')
+            print('saving NN base model...')
             self.io_helper.save_torch_model(model, model_filename)
 
         # noinspection PyTypeChecker
