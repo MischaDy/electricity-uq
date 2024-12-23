@@ -54,6 +54,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self,
             quantiles,
             *,
+            should_save_results=True,
             should_plot_data=True,
             should_plot_uq_results=True,
             should_plot_base_results=True,
@@ -65,6 +66,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         Output is produced over the whole of X
 
+        :param should_save_results:
         :param should_plot_base_results:
         :param should_show_plots:
         :param skip_base_model_copy:
@@ -98,7 +100,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
         y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y)
-        self.store_outputs_base_models(y_preds_base_models)
+        if should_save_results:
+            self.store_outputs_base_models(y_preds_base_models)
 
         if should_plot_base_results:
             print("plotting base model results...")

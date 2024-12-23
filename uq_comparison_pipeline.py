@@ -25,6 +25,7 @@ PLOT_BASE_RESULTS = True
 SHOW_PLOTS = True
 SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
+SHOULD_SAVE_RESULTS = True
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -746,6 +747,7 @@ def main():
         should_plot_base_results=PLOT_BASE_RESULTS,
         should_show_plots=SHOW_PLOTS,
         should_save_plots=SAVE_PLOTS,
+        should_save_results=SHOULD_SAVE_RESULTS,
         skip_base_model_copy=SKIP_BASE_MODEL_COPY,
     )
 
