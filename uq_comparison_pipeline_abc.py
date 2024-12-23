@@ -98,6 +98,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
         y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y)
+        self.store_outputs_base_models(y_preds_base_models)
 
         if should_plot_base_results:
             print("plotting base model results...")
@@ -705,6 +706,10 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 print(f"\t{metric}: {value}")
         print()
 
+    def store_outputs_base_models(self, y_preds_dict: dict[str, np.ndarray]):
+        for base_model_name, y_pred in y_preds_dict.items():
+            filename = f'base_pred_{base_model_name}.npy'
+            self.io_helper.save_array(y_pred, filename)
 
 def check_prefixes_ok():
     forbidden_prefixes = ['native', 'posthoc', 'base_model']
