@@ -53,6 +53,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     def compare_methods(
             self,
             quantiles,
+            *,
             should_plot_data=True,
             should_plot_uq_results=True,
             should_plot_base_results=True,

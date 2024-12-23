@@ -132,6 +132,7 @@ for _, method_kwargs in METHODS_KWARGS.items():
 class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     def __init__(
             self,
+            *,
             storage_path="comparison_storage",
             methods_kwargs: dict[str, dict[str, Any]] = None,
             n_points_per_group=800,
