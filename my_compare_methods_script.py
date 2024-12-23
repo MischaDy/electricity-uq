@@ -273,7 +273,7 @@ class My_UQ_Comparer(UQ_Comparer):
             }
 
         model_class = RandomForestRegressor
-        filename_base_model = f"base_{model_class.__name__}.model"
+        filename_base_model = f"base_rf.model"
 
         if skip_training:
             try:
