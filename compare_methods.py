@@ -9,8 +9,8 @@ from collections import defaultdict
 from functools import partial
 from typing import Any, Generator, Callable
 
-from io_helper import IO_Helper
-from helpers import starfilter, inverse_transform_ys, inverse_transform_y, upscale_y_std
+from helpers.io_helper import IO_Helper
+from helpers.misc_helpers import starfilter, inverse_transform_ys, inverse_transform_y, upscale_y_std
 
 
 # todo: add type hints
@@ -443,7 +443,7 @@ class UQ_Comparer(ABC):
         """
         # todo: assumption that quantile ordering is definitely consistent fulfilled?
         if check_order:
-            from helpers import is_ascending
+            from helpers.misc_helpers import is_ascending
             assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
         y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
         return y_quantiles

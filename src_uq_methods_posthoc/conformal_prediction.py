@@ -57,14 +57,14 @@ from mapie.metrics import coverage_width_based, regression_coverage_score, regre
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
 
-from helpers import get_data
-from io_helper import IO_Helper
+from helpers.misc_helpers import get_data
+from helpers.io_helper import IO_Helper
 
 warnings.simplefilter("ignore")
 
 N_POINTS_PER_GROUP = 100
 
-DATA_PATH = './data/data_1600.pkl'
+DATA_PATH = '../data/data_1600.pkl'
 
 STORAGE_PATH = "mapie_storage"
 

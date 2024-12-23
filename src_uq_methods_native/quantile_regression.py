@@ -8,12 +8,12 @@ import numpy as np
 from sklearn.linear_model import QuantileRegressor
 from tqdm import tqdm
 
-from helpers import get_data
+from helpers.misc_helpers import get_data
 
 # source: https://scikit-learn.org/stable/auto_examples/linear_model/plot_quantile_regression.html
 
 
-DATA_PATH = './data/data_1600.pkl'
+DATA_PATH = '../data/data_1600.pkl'
 N_POINTS_PER_GROUP = 100
 
 

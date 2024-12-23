@@ -8,8 +8,8 @@ import numpy as np
 from scipy import stats
 
 from compare_methods import UQ_Comparer
-from helpers import get_data, train_val_split
-from nn_estimator import NN_Estimator
+from helpers.misc_helpers import get_data, train_val_split
+from src_base_models.nn_estimator import NN_Estimator
 
 
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
@@ -172,7 +172,7 @@ class My_UQ_Comparer(UQ_Comparer):
     @classmethod
     def compute_metrics_det(cls, y_pred, y_true) -> dict[str, float]:
         # todo: sharpness? calibration? PIT? coverage?
-        from metrics import rmse, smape_scaled
+        from helpers.metrics import rmse, smape_scaled
 
         y_pred, y_true = cls._clean_ys_for_metrics(y_pred, y_true)
         metrics = {
@@ -184,7 +184,7 @@ class My_UQ_Comparer(UQ_Comparer):
     @classmethod
     def compute_metrics_uq(cls, y_pred, y_quantiles, y_std, y_true, quantiles=None) -> dict[str, float]:
         # todo: sharpness? calibration? PIT? coverage?
-        from metrics import crps, nll_gaussian, mean_pinball_loss
+        from helpers.metrics import crps, nll_gaussian, mean_pinball_loss
 
         y_pred, y_quantiles, y_std, y_true = cls._clean_ys_for_metrics(y_pred, y_quantiles, y_std, y_true)
         metrics = {
@@ -347,8 +347,8 @@ class My_UQ_Comparer(UQ_Comparer):
         :param random_seed:
         :return:
         """
-        from nn_estimator import NN_Estimator
-        from helpers import object_to_cuda
+        from src_base_models.nn_estimator import NN_Estimator
+        from helpers.misc_helpers import object_to_cuda
 
         if model_filename is None:
             n_training_points = X_train.shape[0]
@@ -418,7 +418,7 @@ class My_UQ_Comparer(UQ_Comparer):
         :param bootstrap_overlapping_blocks: 
         :return: 
         """
-        from conformal_prediction import estimate_pred_interals_no_pfit_enbpi
+        from src_uq_methods_posthoc.conformal_prediction import estimate_pred_interals_no_pfit_enbpi
         from mapie.subsample import BlockBootstrap
 
         cv = BlockBootstrap(
@@ -468,9 +468,10 @@ class My_UQ_Comparer(UQ_Comparer):
         #  script)?
         from laplace import Laplace
         from tqdm import tqdm
-        from helpers import (get_train_loader, tensor_to_np_array, np_arrays_to_tensors, np_array_to_tensor,
-                             objects_to_cuda, object_to_cuda, make_tensors_contiguous, make_tensor_contiguous,
-                             get_device)
+        from helpers.misc_helpers import (
+            get_train_loader, tensor_to_np_array, np_arrays_to_tensors, np_array_to_tensor, objects_to_cuda,
+            object_to_cuda, make_tensors_contiguous, make_tensor_contiguous, get_device
+        )
         import torch
         from torch import nn
 
@@ -554,7 +555,7 @@ class My_UQ_Comparer(UQ_Comparer):
             skip_training=True,
             save_model=True,
     ):
-        from quantile_regression import estimate_quantiles as estimate_quantiles_qr
+        from src_uq_methods_native.quantile_regression import estimate_quantiles as estimate_quantiles_qr
         y_pred, y_quantiles = estimate_quantiles_qr(
             X_train,
             y_train,
@@ -582,7 +583,7 @@ class My_UQ_Comparer(UQ_Comparer):
             skip_training=True,
             save_model=True,
     ):
-        from mean_var_nn import run_mean_var_nn
+        from src_uq_methods_native.mean_var_nn import run_mean_var_nn
         return run_mean_var_nn(
             X_train,
             y_train,
@@ -619,9 +620,10 @@ class My_UQ_Comparer(UQ_Comparer):
     ):
         import torch
         import gpytorch
-        from gp_regression_gpytorch import ExactGPModel, train_gpytorch
-        from helpers import (make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_cuda,
-                             tensors_to_np_arrays)
+        from src_uq_methods_native.gp_regression_gpytorch import ExactGPModel, train_gpytorch
+        from helpers.misc_helpers import (
+            make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_cuda, tensors_to_np_arrays,
+        )
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)

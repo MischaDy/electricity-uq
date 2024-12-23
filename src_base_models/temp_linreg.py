@@ -1,13 +1,13 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from helpers import get_data
-from io_helper import IO_Helper
+from helpers.misc_helpers import get_data
+from helpers.io_helper import IO_Helper
 
-DATA_FILEPATH = './data/data_1600.pkl'
+DATA_FILEPATH = '../data/data_1600.pkl'
 N_POINTS_PER_GROUP = 800
 STANDARDIZE_DATA = True
-STORAGE_PATH = "comparison_storage"
+STORAGE_PATH = "../comparison_storage"
 SKIP_TRAINING = True
 SAVE_MODEL = True
 
