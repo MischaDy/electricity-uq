@@ -36,11 +36,13 @@ METHOD_WHITELIST = [
      "native_quantile_regression",
      "native_gpytorch",
      "native_mvnn",
+     'base_model_linreg',
      'base_model_rf',
      'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
     'posthoc_laplace': {
+        'base_model_linreg',
         'base_model_rf',
     },
 }
@@ -83,6 +85,11 @@ METHODS_KWARGS = {
         'skip_training': False,
         "n_iter": 100,
         'save_model': True,
+    },
+    "base_model_linreg": {
+        "skip_training": False,
+        "n_jobs": -1,
+        "save_model": True,
     },
     "base_model_nn": {
         "skip_training": False,
@@ -200,6 +207,31 @@ class My_UQ_Comparer(UQ_Comparer):
             for metric_name, value in metrics.items()
         }
         return metrics
+
+    def base_model_linreg(
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            n_jobs=-1,
+            skip_training=True,
+            save_model=True,
+    ):
+        from sklearn import linear_model
+
+        filename_base_model = f"base_linreg.model"
+        if skip_training:
+            try:
+                print('skipping linreg base model training')
+                model = self.io_helper.load_model(filename_base_model)
+                return model
+            except FileNotFoundError:
+                print(f"trained base model '{filename_base_model}' not found. training from scratch.")
+        model = linear_model.LinearRegression(n_jobs=n_jobs)
+        model.fit(X_train, y_train)
+        if save_model:
+            print('saving linreg base model...')
+            self.io_helper.save_model(model, filename_base_model)
+        return model
 
     def base_model_rf(
             self,
