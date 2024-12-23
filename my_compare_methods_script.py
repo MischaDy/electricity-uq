@@ -29,6 +29,8 @@ SKIP_BASE_MODEL_COPY = True
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
 
+STORAGE_PATH = "comparison_storage"
+
 
 METHOD_WHITELIST = [
      "posthoc_conformal_prediction",
@@ -733,6 +735,7 @@ def main():
     torch.set_default_dtype(torch.float32)
 
     uq_comparer = My_UQ_Comparer(
+        storage_path=STORAGE_PATH,
         methods_kwargs=METHODS_KWARGS,
         method_whitelist=METHOD_WHITELIST,
         posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
