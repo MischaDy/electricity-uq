@@ -155,9 +155,9 @@ class My_UQ_Comparer(UQ_Comparer):
         All variables except for the scaler are 2D np arrays.
         """
         return get_data(
+            filepath=DATA_FILEPATH,
             n_points_per_group=self.n_points_per_group,
             standardize_data=self.standardize_data,
-            filepath=DATA_FILEPATH,
         )
 
     @classmethod

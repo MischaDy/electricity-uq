@@ -7,6 +7,7 @@ from io_helper import IO_Helper
 
 torch.set_default_device(helpers.get_device())
 
+DATA_PATH = './data/data_1600.pkl'
 
 N_EPOCHS = 100
 LR = 1e-1  # 1e-3
@@ -230,6 +231,7 @@ def plot_uq_result(
 def main():
     print('preparing data...')
     X_train, X_test, y_train, y_test, _, _, _ = helpers.get_data(
+        DATA_PATH,
         n_points_per_group=N_DATAPOINTS,
         standardize_data=True,
     )

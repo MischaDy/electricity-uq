@@ -16,6 +16,7 @@ import helpers
 torch.set_default_device(helpers.get_device())
 
 
+DATA_PATH = './data/data_1600.pkl'
 QUANTILES = [0.05, 0.25, 0.75, 0.95]
 
 STANDARDIZE_DATA = True
@@ -300,6 +301,7 @@ def plot_uq_result(
 
 def get_clean_data(n_points_per_group, standardize_data, do_plot_data=True):
     X_train, X_test, y_train, y_test, X, y, _ = helpers.get_data(
+        DATA_PATH,
         n_points_per_group=n_points_per_group,
         standardize_data=standardize_data,
     )

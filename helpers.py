@@ -6,8 +6,8 @@ import torch
 
 
 def get_data(
+    filepath,
     n_points_per_group=None,
-    filepath="data.pkl",
     input_cols=None,
     output_cols=None,
     standardize_data=True,
