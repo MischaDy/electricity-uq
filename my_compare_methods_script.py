@@ -466,16 +466,13 @@ class My_UQ_Comparer(UQ_Comparer):
         #  script)?
         from laplace import Laplace
         from tqdm import tqdm
-        from helpers.misc_helpers import (
-            get_train_loader, tensor_to_np_array, np_arrays_to_tensors, np_array_to_tensor, objects_to_cuda,
-            object_to_cuda, make_tensors_contiguous, make_tensor_contiguous, get_device
-        )
+        from helpers import misc_helpers
         import torch
         from torch import nn
 
         torch.set_default_dtype(torch.float32)
         torch.manual_seed(random_seed)
-        torch.set_default_device(get_device())
+        torch.set_default_device(misc_helpers.get_device())
 
         def la_instantiator(base_model: nn.Module):
             return Laplace(base_model, "regression")
@@ -499,11 +496,11 @@ class My_UQ_Comparer(UQ_Comparer):
                 skip_training = False
 
         if not skip_training:
-            X_train, y_train = np_arrays_to_tensors(X_train, y_train)
-            X_train, y_train = objects_to_cuda(X_train, y_train)
-            X_train, y_train = make_tensors_contiguous(X_train, y_train)
+            X_train, y_train = misc_helpers.np_arrays_to_tensors(X_train, y_train)
+            X_train, y_train = misc_helpers.objects_to_cuda(X_train, y_train)
+            X_train, y_train = misc_helpers.make_tensors_contiguous(X_train, y_train)
 
-            train_loader = get_train_loader(X_train, y_train, batch_size)
+            train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
             la = la_instantiator(base_model_nn)
             la.fit(train_loader)
 
@@ -529,14 +526,14 @@ class My_UQ_Comparer(UQ_Comparer):
 
         print('predicting...')
 
-        X_pred = np_array_to_tensor(X_pred)
-        X_pred = object_to_cuda(X_pred)
-        X_pred = make_tensor_contiguous(X_pred)
+        X_pred = misc_helpers.np_array_to_tensor(X_pred)
+        X_pred = misc_helpers.object_to_cuda(X_pred)
+        X_pred = misc_helpers.make_tensor_contiguous(X_pred)
 
         # noinspection PyArgumentList
         f_mu, f_var = la(X_pred)
-        f_mu = tensor_to_np_array(f_mu.squeeze())
-        f_sigma = tensor_to_np_array(f_var.squeeze().sqrt())
+        f_mu = misc_helpers.tensor_to_np_array(f_mu.squeeze())
+        f_sigma = misc_helpers.tensor_to_np_array(f_var.squeeze().sqrt())
         pred_std = np.sqrt(f_sigma ** 2 + la.sigma_noise.item() ** 2)
 
         y_pred, y_std = f_mu, pred_std
@@ -617,18 +614,20 @@ class My_UQ_Comparer(UQ_Comparer):
         import torch
         import gpytorch
         from src_uq_methods_native.gp_regression_gpytorch import ExactGPModel, train_gpytorch
-        from helpers.misc_helpers import (
-            make_ys_1d, np_arrays_to_tensors, make_tensors_contiguous, objects_to_cuda, tensors_to_np_arrays,
-        )
+        from helpers import misc_helpers
 
         print('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
-        X_train, y_train, X_val, y_val, X_pred = np_arrays_to_tensors(X_train, y_train, X_val, y_val, X_pred)
-        y_train, y_val = make_ys_1d(y_train, y_val)
+        X_train, y_train, X_val, y_val, X_pred = misc_helpers.np_arrays_to_tensors(
+            X_train, y_train, X_val, y_val, X_pred
+        )
+        y_train, y_val = misc_helpers.make_ys_1d(y_train, y_val)
 
         print('mapping data to device and making it contiguous...')
-        X_train, y_train, X_val, y_val, X_pred = objects_to_cuda(X_train, y_train, X_val, y_val, X_pred)
-        X_train, y_train, X_val, y_val, X_pred = make_tensors_contiguous(X_train, y_train, X_val, y_val, X_pred)
+        X_train, y_train, X_val, y_val, X_pred = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val, X_pred)
+        X_train, y_train, X_val, y_val, X_pred = misc_helpers.make_tensors_contiguous(
+            X_train, y_train, X_val, y_val, X_pred
+        )
 
         common_prefix, common_postfix = 'gpytorch_model', f'{self.n_points_per_group}_{n_epochs}'
         model_name = f'{common_prefix}_{common_postfix}.pth'
@@ -641,7 +640,7 @@ class My_UQ_Comparer(UQ_Comparer):
                 model = self.io_helper.load_torch_model_statedict(ExactGPModel, model_name,
                                                                   X_train=X_train, y_train=y_train,
                                                                   likelihood=likelihood)
-                model, likelihood = objects_to_cuda(model, likelihood)
+                model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
             except FileNotFoundError:
                 print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
                 skip_training = False
@@ -677,7 +676,7 @@ class My_UQ_Comparer(UQ_Comparer):
             f_preds = model(X_pred)
         y_preds = f_preds.mean
         y_std = f_preds.stddev
-        y_preds, y_std = tensors_to_np_arrays(y_preds, y_std)
+        y_preds, y_std = misc_helpers.tensors_to_np_arrays(y_preds, y_std)
 
         y_quantiles = self.quantiles_gaussian(quantiles, y_preds, y_std)
         return y_preds, y_quantiles, y_std
