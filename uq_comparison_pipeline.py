@@ -773,7 +773,24 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         plt.close(fig)
 
 
+def check_method_kwargs_dict(class_, method_kwargs_dict):
+    from inspect import signature
+    wrong_kwargs = {}
+    for method_name, method_kwargs in method_kwargs_dict.items():
+        method = getattr(class_, method_name)
+        method_params_names = set(signature(method).parameters)
+        method_params_names.discard('self')
+        kwargs_names = set(method_kwargs)
+        if not kwargs_names.issubset(method_params_names):
+            wrong_kwargs[method_name] = method_params_names.difference(kwargs_names)
+    if wrong_kwargs:
+        raise ValueError(f'Wrong method(s) kwargs: {wrong_kwargs}')
+    print('kwargs dict check successful')
+
+
 def main():
+    check_method_kwargs_dict(UQ_Comparison_Pipeline, METHODS_KWARGS)
+
     import torch
     torch.set_default_dtype(torch.float32)
 
