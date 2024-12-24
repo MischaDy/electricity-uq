@@ -206,7 +206,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         from sklearn import linear_model
 
-        filename_base_model = f"base_model_linreg.model"
+        n_samples = X_train.shape[0]
+        filename_base_model = f"base_model_linreg_n{n_samples}.model"
         if skip_training:
             try:
                 print('skipping linreg base model training')
@@ -258,7 +259,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "n_estimators": stats.randint(10, 1000),
             }
 
-        filename_base_model = f"base_model_rf.model"
+        n_samples = X_train.shape[0]
+        filename_base_model = f"base_model_rf_n{n_samples}_it1{cv_n_iter}_it2{cv_n_splits}.model"
 
         if skip_training:
             try:
@@ -332,7 +334,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         from src_base_models.nn_estimator import NN_Estimator
         from helpers.misc_helpers import object_to_cuda
 
-        model_filename = f"base_model_nn.pth"
+        n_samples = X_train.shape[0]
+        model_filename = f"base_model_nn_n{n_samples}_it{n_iter}.pth"
         if skip_training:
             print("skipping NN base model training")
             try:
@@ -408,6 +411,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             random_state=random_seed,
         )
         alphas = self.pis_from_quantiles(quantiles)
+
+        n_samples = X_train.shape[0]
+        filename = f'posthoc_conformal_prediction_n{n_samples}_it{n_estimators}.model'
         y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
             model,
             cv,
@@ -415,7 +421,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_pred,
             X_train,
             y_train,
-            filename='posthoc_conformal_prediction.model',
+            filename=filename,
             skip_training=skip_training,
             save_model=save_model,
             io_helper=self.io_helper,
@@ -459,7 +465,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         def la_instantiator(base_model: nn.Module):
             return Laplace(base_model, "regression")
 
-        model_filename = f"posthoc_laplace.pth"
+        n_samples = X_train.shape[0]
+        model_filename = f"posthoc_laplace_n{n_samples}_it{n_iter}.pth"
         base_model_nn = base_model.get_nn(to_device=True)
         if skip_training:
             print("skipping model training...")
@@ -563,7 +570,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         if activation is None:
             activation = torch.nn.LeakyReLU
 
-        filename = 'native_mvnn.pth'
+        n_samples = X_train.shape[0]
+        filename = f'native_mvnn_n{n_samples}_it{n_iter}_nh{num_hidden_layers}_hs{hidden_layer_size}.pth'
         if skip_training:
             print('skipping training...')
             try:
@@ -652,20 +660,22 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train, y_train, X_val, y_val, X_pred
         )
 
+        n_samples = X_train.shape[0]
+        common_postfix = f'n{n_samples}_it{n_epochs}'
         common_prefix = 'native_gpytorch'
-        model_name = f'{common_prefix}.pth'
-        model_likelihood_name = f'{common_prefix}_likelihood.pth'
+        filename_model = f'{common_prefix}_{common_postfix}.pth'
+        filename_likelihood = f'{common_prefix}_likelihood_{common_postfix}.pth'
         if skip_training:
             print('skipping training...')
             try:
                 likelihood = self.io_helper.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood,
-                                                                       model_likelihood_name)
-                model = self.io_helper.load_torch_model_statedict(ExactGPModel, model_name,
+                                                                       filename_likelihood)
+                model = self.io_helper.load_torch_model_statedict(ExactGPModel, filename_model,
                                                                   X_train=X_train, y_train=y_train,
                                                                   likelihood=likelihood)
                 model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
             except FileNotFoundError:
-                print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
+                print(f'error: cannot load models {filename_model} and/or {filename_likelihood}')
                 skip_training = False
 
         if not skip_training:
@@ -685,8 +695,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 print('saving model...')
                 model.eval()
                 likelihood.eval()
-                self.io_helper.save_torch_model_statedict(model, model_name)
-                self.io_helper.save_torch_model_statedict(likelihood, model_likelihood_name)
+                self.io_helper.save_torch_model_statedict(model, filename_model)
+                self.io_helper.save_torch_model_statedict(likelihood, filename_likelihood)
 
         # noinspection PyUnboundLocalVariable
         model.eval()
