@@ -260,7 +260,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             }
 
         n_samples = X_train.shape[0]
-        filename_base_model = f"base_model_rf_n{n_samples}_it1{cv_n_iter}_it2{cv_n_splits}.model"
+        filename_base_model = f"base_model_rf_n{n_samples}_it{cv_n_iter}_its{cv_n_splits}.model"
 
         if skip_training:
             try:
