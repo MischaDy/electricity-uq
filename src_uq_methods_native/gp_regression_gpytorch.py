@@ -90,7 +90,7 @@ def train_gpytorch(
         y_train,
         X_val,
         y_val,
-        n_epochs,
+        n_iter,
         use_scheduler=True,
         lr=1e-2,
         lr_patience=30,
@@ -108,9 +108,7 @@ def train_gpytorch(
 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model = ExactGPModel(X_train, y_train, likelihood)
-
     model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
-
     model.train()
     likelihood.train()
 
@@ -121,9 +119,8 @@ def train_gpytorch(
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
     # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
-
     losses = []
-    epochs = np.arange(n_epochs) + 1
+    epochs = np.arange(n_iter) + 1
     if show_progress:
         epochs = tqdm(epochs)
     for _ in epochs:
@@ -269,7 +266,7 @@ def main():
             X_val,
             y_val,
             use_scheduler=USE_SCHEDULER,
-            n_epochs=N_EPOCHS,
+            n_iter=N_EPOCHS,
             show_progress=SHOW_PROGRESS,
             show_plots=SHOW_PLOTS,
             do_plot_losses=PLOT_LOSSES,
