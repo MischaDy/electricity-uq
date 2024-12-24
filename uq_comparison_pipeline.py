@@ -386,20 +386,20 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         """
-        
+
         :param save_model:
         :param skip_training:
         :param verbose:
         :param X_train:
-        :param y_train: 
+        :param y_train:
         :param X_pred:
-        :param quantiles: 
-        :param model: 
-        :param random_seed: 
+        :param quantiles:
+        :param model:
+        :param random_seed:
         :param n_estimators: number of model clones to train for ensemble
-        :param bootstrap_n_blocks: 
-        :param bootstrap_overlapping_blocks: 
-        :return: 
+        :param bootstrap_n_blocks:
+        :param bootstrap_overlapping_blocks:
+        :return:
         """
         from src_uq_methods_posthoc.conformal_prediction import estimate_pred_interals_no_pfit_enbpi
         from mapie.subsample import BlockBootstrap
