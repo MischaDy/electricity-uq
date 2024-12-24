@@ -208,8 +208,6 @@ def run_mean_var_nn(
     frozen_var_value=0.1,
     do_plot_losses=False,
     use_scheduler=True,
-    skip_training=True,
-    save_model=True,
 ):
     X_test = misc_helpers.np_array_to_tensor(X_test)
     X_test = misc_helpers.object_to_cuda(X_test)
