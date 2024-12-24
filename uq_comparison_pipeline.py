@@ -782,7 +782,7 @@ def check_method_kwargs_dict(class_, method_kwargs_dict):
         method_params_names.discard('self')
         kwargs_names = set(method_kwargs)
         if not kwargs_names.issubset(method_params_names):
-            wrong_kwargs[method_name] = method_params_names.difference(kwargs_names)
+            wrong_kwargs[method_name] = kwargs_names.difference(method_params_names)
     if wrong_kwargs:
         raise ValueError(f'Wrong method(s) kwargs: {wrong_kwargs}')
     print('kwargs dict check successful')
