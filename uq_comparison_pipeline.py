@@ -33,14 +33,14 @@ SKIP_TRAINING_ALL = False
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
-    # "posthoc_laplace",
-    # "native_quantile_regression",
-    # "native_gpytorch",
-    # "native_mvnn",
+    "posthoc_conformal_prediction",
+    "posthoc_laplace",
+    "native_quantile_regression",
+    "native_gpytorch",
+    "native_mvnn",
     'base_model_linreg',
-    # 'base_model_rf',
-    # 'base_model_nn',
+    'base_model_rf',
+    'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
     'posthoc_laplace': {
@@ -55,7 +55,7 @@ METHODS_KWARGS = {
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
-        "n_iter": 300,
+        "n_iter": 100,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
@@ -96,7 +96,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": False,
-        "n_iter": 200,
+        "n_iter": 100,
         "lr": 1e-2,
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
