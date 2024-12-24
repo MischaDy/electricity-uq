@@ -349,6 +349,7 @@ def estimate_pred_interals_no_pfit_enbpi(
         y_train=None,
         skip_training=True,
         save_model=True,
+        filename=None,
         io_helper: IO_Helper = None,
         agg_function: str = 'mean',
         verbose=1,
@@ -357,6 +358,7 @@ def estimate_pred_interals_no_pfit_enbpi(
     """
     Estimate prediction intervals without partial fit using EnbPI.
 
+    :param filename:
     :param filename_postfix:
     :param save_model:
     :param verbose:
@@ -383,11 +385,12 @@ def estimate_pred_interals_no_pfit_enbpi(
         model, method="enbpi", cv=cv_mapie_ts, agg_function=agg_function, n_jobs=-1, verbose=verbose,
     )
 
-    filename_enbpi_no_pfit = f"mapie_enbpi_no_pfit_{filename_postfix}.model"
+    if filename is None:
+        filename = f"mapie_enbpi_no_pfit_{filename_postfix}.model"
 
     if skip_training:
         try:
-            mapie_enbpi = io_helper.load_model(filename_enbpi_no_pfit)
+            mapie_enbpi = io_helper.load_model(filename)
             print("loaded model successfully")
         except FileNotFoundError:
             print(f"skipping training not possible")
@@ -402,7 +405,7 @@ def estimate_pred_interals_no_pfit_enbpi(
             print('skipped training, so not saving model.')
         else:
             print('saving model...')
-            io_helper.save_model(mapie_enbpi, filename_enbpi_no_pfit)
+            io_helper.save_model(mapie_enbpi, filename)
 
     print("predicting enbpi_no_pfit...")
     y_pred_enbpi_no_pfit, y_pis_enbpi_no_pfit = mapie_enbpi.predict(

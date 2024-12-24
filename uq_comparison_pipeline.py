@@ -193,22 +193,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         }
         return cls._clean_metrics(metrics)
 
-    @staticmethod
-    def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None, None, None]:
-        for y in ys:
-            if y is None:
-                yield y
-            else:
-                yield np.array(y).squeeze()
-
-    @staticmethod
-    def _clean_metrics(metrics):
-        metrics = {
-            metric_name: (None if value is None else float(value))
-            for metric_name, value in metrics.items()
-        }
-        return metrics
-
     def base_model_linreg(
             self,
             X_train: np.ndarray,
@@ -219,7 +203,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         from sklearn import linear_model
 
-        filename_base_model = f"base_linreg.model"
+        filename_base_model = f"base_model_linreg.model"
         if skip_training:
             try:
                 print('skipping linreg base model training')
@@ -272,7 +256,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             }
 
         model_class = RandomForestRegressor
-        filename_base_model = f"base_rf.model"
+        filename_base_model = f"base_model_rf.model"
 
         if skip_training:
             try:
@@ -314,7 +298,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             n_iter=500,
             batch_size=20,
             random_seed=42,
-            model_filename=None,
             val_frac=0.1,
             lr=0.1,
             lr_patience=30,
@@ -335,7 +318,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :param lr_reduction_factor:
         :param lr:
         :param lr_patience:
-        :param model_filename:
         :param save_model:
         :param skip_training:
         :param verbose:
@@ -349,9 +331,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         from src_base_models.nn_estimator import NN_Estimator
         from helpers.misc_helpers import object_to_cuda
 
-        if model_filename is None:
-            n_training_points = X_train.shape[0]
-            model_filename = f"base_nn_{n_training_points}.pth"
+        model_filename = f"base_model_nn.pth"
         if skip_training:
             print("skipping NN base model training")
             try:
@@ -434,6 +414,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_pred,
             X_train,
             y_train,
+            filename='posthoc_conformal_prediction.model',
             skip_training=skip_training,
             save_model=save_model,
             io_helper=self.io_helper,
@@ -459,7 +440,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             batch_size=20,
             random_seed=42,
             skip_training=True,
-            model_filename=None,
             save_model=True,
             verbose=True,
     ):
@@ -478,10 +458,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         def la_instantiator(base_model: nn.Module):
             return Laplace(base_model, "regression")
 
-        n_training_points = X_train.shape[0]
-        if model_filename is None:
-            model_filename = f"laplace_{n_training_points}_{n_iter}.pth"
-
+        model_filename = f"posthoc_laplace.pth"
         base_model_nn = base_model.get_nn(to_device=True)
         if skip_training:
             print("skipping model training...")
@@ -514,12 +491,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 neg_marglik.backward()
                 hyper_optimizer.step()
 
-        if save_model:
-            if skip_training:
-                print('skipped training, so not saving model.')
-            else:
+            if save_model:
                 print('saving model...')
-                # noinspection PyUnboundLocalVariable
                 self.io_helper.save_laplace_model_statedict(
                     la,
                     laplace_model_filename=model_filename
@@ -531,7 +504,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         X_pred = misc_helpers.object_to_cuda(X_pred)
         X_pred = misc_helpers.make_tensor_contiguous(X_pred)
 
-        # noinspection PyArgumentList
+        # noinspection PyArgumentList,PyUnboundLocalVariable
         f_mu, f_var = la(X_pred)
         f_mu = misc_helpers.tensor_to_np_array(f_mu.squeeze())
         f_sigma = misc_helpers.tensor_to_np_array(f_var.squeeze().sqrt())
@@ -630,9 +603,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train, y_train, X_val, y_val, X_pred
         )
 
-        common_prefix, common_postfix = 'gpytorch_model', f'{self.n_points_per_group}_{n_epochs}'
-        model_name = f'{common_prefix}_{common_postfix}.pth'
-        model_likelihood_name = f'{common_prefix}_likelihood_{common_postfix}.pth'
+        common_prefix = 'native_gpytorch'
+        model_name = f'{common_prefix}.pth'
+        model_likelihood_name = f'{common_prefix}_likelihood.pth'
         if skip_training:
             print('skipping training...')
             try:
@@ -647,7 +620,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 skip_training = False
 
         if not skip_training:
-            print('training...')
+            print('training from scratch...')
             model, likelihood = train_gpytorch(
                 X_train,
                 y_train,
@@ -659,20 +632,17 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 show_plots=show_plots,
                 do_plot_losses=do_plot_losses,
             )
+            if save_model:
+                print('saving model...')
+                model.eval()
+                likelihood.eval()
+                self.io_helper.save_torch_model_statedict(model, model_name)
+                self.io_helper.save_torch_model_statedict(likelihood, model_likelihood_name)
 
         # noinspection PyUnboundLocalVariable
         model.eval()
         # noinspection PyUnboundLocalVariable
         likelihood.eval()
-
-        if save_model:
-            if skip_training:
-                print('skipped training, so not saving models.')
-            else:
-                print('saving...')
-                self.io_helper.save_torch_model_statedict(model, model_name)
-                self.io_helper.save_torch_model_statedict(likelihood, model_likelihood_name)
-
         with torch.no_grad():  # todo: use gpytorch.settings.fast_pred_var()?
             f_preds = model(X_pred)
         y_preds = f_preds.mean
@@ -688,6 +658,22 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         # todo: does this work for multi-dim outputs?
         return np.array([norm.ppf(quantiles, loc=mean, scale=std)
                          for mean, std in zip(y_pred, y_std)])
+
+    @staticmethod
+    def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None, None, None]:
+        for y in ys:
+            if y is None:
+                yield y
+            else:
+                yield np.array(y).squeeze()
+
+    @staticmethod
+    def _clean_metrics(metrics):
+        metrics = {
+            metric_name: (None if value is None else float(value))
+            for metric_name, value in metrics.items()
+        }
+        return metrics
 
     def plot_base_model_test_result(
             self,
