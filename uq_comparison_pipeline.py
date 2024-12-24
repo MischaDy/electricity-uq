@@ -22,7 +22,7 @@ STANDARDIZE_DATA = True
 PLOT_DATA = False
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
@@ -75,7 +75,7 @@ METHODS_KWARGS = {
         'lr': 1e-2,
         'show_progress': True,
         'show_plots': True,
-        'do_plot_losses': True,
+        'do_plot_losses': False,
         'save_model': True,
     },
     "posthoc_conformal_prediction": {
