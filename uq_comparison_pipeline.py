@@ -70,7 +70,7 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_epochs': 100,
+        'n_iter': 100,
         'val_frac': 0.1,
         'lr': 1e-2,
         'show_progress': True,
@@ -633,7 +633,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             y_train: np.ndarray,
             X_pred: np.ndarray,
             quantiles,
-            n_epochs=100,
+            n_iter=100,
             val_frac=0.1,
             lr=1e-2,
             show_progress=True,
@@ -661,7 +661,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         )
 
         n_samples = X_train.shape[0]
-        common_postfix = f'n{n_samples}_it{n_epochs}'
+        common_postfix = f'n{n_samples}_it{n_iter}'
         common_prefix = 'native_gpytorch'
         filename_model = f'{common_prefix}_{common_postfix}.pth'
         filename_likelihood = f'{common_prefix}_likelihood_{common_postfix}.pth'
@@ -685,7 +685,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 y_train,
                 X_val,
                 y_val,
-                n_epochs,
+                n_iter,
                 lr=lr,
                 show_progress=show_progress,
                 show_plots=show_plots,
