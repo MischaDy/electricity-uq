@@ -1,0 +1,69 @@
+{
+    "base_model": {
+        "base_model_linreg": {
+            "rmse": 14997.279296875,
+            "smape_scaled": 1.9998779296875
+        },
+        "base_model_rf": {
+            "rmse": 14848.162052075591,
+            "smape_scaled": 1.9998754402803292
+        },
+        "base_model_nn": {
+            "rmse": 14852.8583984375,
+            "smape_scaled": 1.9998761415481567
+        }
+    },
+    "posthoc": {
+        "posthoc_conformal_prediction__base_model_linreg": {
+            "rmse": 14995.9677734375,
+            "smape_scaled": 1.9998779296875,
+            "crps": 14573.430503569385,
+            "nll_gaussian": null,
+            "mean_pinball": 13.816952713567305
+        },
+        "posthoc_conformal_prediction__base_model_rf": {
+            "rmse": 14995.9677734375,
+            "smape_scaled": 1.9998779296875,
+            "crps": 14573.430503569385,
+            "nll_gaussian": null,
+            "mean_pinball": 13.816952713567305
+        },
+        "posthoc_conformal_prediction__base_model_nn": {
+            "rmse": 14995.9677734375,
+            "smape_scaled": 1.9998779296875,
+            "crps": 14573.430503569385,
+            "nll_gaussian": null,
+            "mean_pinball": 13.816952713567305
+        },
+        "posthoc_laplace__base_model_nn": {
+            "rmse": 14852.8583984375,
+            "smape_scaled": 1.9998761415481567,
+            "crps": 14413.824311279168,
+            "nll_gaussian": 2240.827749588385,
+            "mean_pinball": 27.868453963520963
+        }
+    },
+    "native": {
+        "native_quantile_regression": {
+            "rmse": 14958.732733044002,
+            "smape_scaled": 1.9998775014706254,
+            "crps": 14527.32519408375,
+            "nll_gaussian": 2485.4552667689063,
+            "mean_pinball": 38.13197192160667
+        },
+        "native_mvnn": {
+            "rmse": 14959.140625,
+            "smape_scaled": 1.999876856803894,
+            "crps": 14574.606296851962,
+            "nll_gaussian": 9896.979510684509,
+            "mean_pinball": 20.86694243120353
+        },
+        "native_gpytorch": {
+            "rmse": 14267.611328125,
+            "smape_scaled": 1.9998615980148315,
+            "crps": 13237.284891737601,
+            "nll_gaussian": 210.34669770990413,
+            "mean_pinball": 121.63845223906284
+        }
+    }
+}
