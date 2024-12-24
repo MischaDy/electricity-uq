@@ -61,6 +61,13 @@ class IO_Helper:
         return model
 
     def load_torch_model_statedict(self, model_class, filename, **kwargs):
+        """
+
+        :param model_class: constructor for the model class. Must be able to accept all arguments as keyword arguments.
+        :param filename:
+        :param kwargs: kwargs passed to the model_class constructor
+        :return:
+        """
         import torch
         path = self.get_model_savepath(filename)
         state_dict = torch.load(path)
