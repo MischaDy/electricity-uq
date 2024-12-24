@@ -226,9 +226,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train: np.ndarray,
             y_train: np.ndarray,
             model_param_distributions=None,
-            n_jobs=-1,
             cv_n_iter=100,
-            n_cv_splits=10,
+            cv_n_splits=10,
+            n_jobs=-1,
             random_seed=42,
             skip_training=True,
             save_model=True,
@@ -237,7 +237,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         """
 
         :param random_seed:
-        :param n_cv_splits:
+        :param cv_n_splits:
         :param X_train:
         :param y_train:
         :param model_param_distributions:
@@ -258,7 +258,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "n_estimators": stats.randint(10, 1000),
             }
 
-        model_class = RandomForestRegressor
         filename_base_model = f"base_model_rf.model"
 
         if skip_training:
@@ -273,13 +272,12 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         print("training random forest...")
 
         # CV parameter search
-        tscv = TimeSeriesSplit(n_splits=n_cv_splits)
-        model = model_class(random_state=random_seed)
+        model = RandomForestRegressor(random_state=random_seed)
         cv_obj = RandomizedSearchCV(
             model,
             param_distributions=model_param_distributions,
             n_iter=cv_n_iter,
-            cv=tscv,
+            cv=TimeSeriesSplit(n_splits=cv_n_splits),
             scoring="neg_root_mean_squared_error",
             random_state=random_seed,
             verbose=verbose,
