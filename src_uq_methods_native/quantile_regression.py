@@ -23,14 +23,14 @@ def main():
         n_points_per_group=N_POINTS_PER_GROUP,
         standardize_data=True,
     )
-    y_preds, y_pis = estimate_quantiles(X_train, y_train, x_pred=X, alpha=[0.1])
+    y_preds, y_pis = estimate_quantiles(X_train, y_train, X_pred=X, alpha=[0.1])
     plot_intervals(X, y, X_train, y_preds, y_pis)
 
 
 def estimate_quantiles(
         X_train,
         y_train,
-        x_pred,
+        X_pred,
         alpha=None,
         as_dict=False,
         skip_training=True,
@@ -43,7 +43,7 @@ def estimate_quantiles(
     :param skip_training:
     :param X_train:
     :param y_train:
-    :param x_pred:
+    :param X_pred:
     :param alpha: Iterable of quantiles. Default: 99 uniformly spaced quantiles from 1% to 99%
     :param as_dict:
     :param verbose:
@@ -62,7 +62,7 @@ def estimate_quantiles(
         qr = QuantileRegressor(quantile=alpha, alpha=0.0)
         qr_fit = qr.fit(X_train, y_train)
         # noinspection PyUnresolvedReferences
-        y_pred = qr_fit.predict(x_pred)
+        y_pred = qr_fit.predict(X_pred)
         predictions[alpha] = y_pred
     y_preds = predictions[0.5]  # median prediction
     if as_dict:
