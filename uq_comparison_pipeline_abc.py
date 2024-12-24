@@ -126,7 +126,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             model_name: self.compute_metrics_det(model_preds, y_true)
             for model_name, model_preds in y_preds_base_models.items()
         }
-        self.print_base_models_metrics(base_models_metrics)
+        if base_models_metrics:
+            self.print_base_models_metrics(base_models_metrics)
 
         print("running posthoc UQ methods...")
         posthoc_results = self.run_posthoc_methods(
