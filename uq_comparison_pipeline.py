@@ -52,6 +52,9 @@ POSTHOC_BASE_BLACKLIST = {
 METHODS_KWARGS = {
     "native_mvnn": {
         'skip_training': False,
+        "num_hidden_layers": 2,
+        "hidden_layer_size": 50,
+        "activation": None,  # defaults to leaky ReLU
         "n_iter": 300,
         "lr": 1e-4,
         "lr_patience": 30,
@@ -537,12 +540,15 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
-    @staticmethod
     def native_mvnn(
+            self,
             X_train: np.ndarray,
             y_train: np.ndarray,
             X_pred: np.ndarray,
             quantiles,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+            activation=None,
             n_iter=300,
             lr=1e-4,
             lr_patience=30,
@@ -552,23 +558,68 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             skip_training=True,
             save_model=True,
     ):
-        from src_uq_methods_native.mean_var_nn import run_mean_var_nn
-        return run_mean_var_nn(
-            X_train,
-            y_train,
-            X_pred,
-            quantiles,
-            n_iter=n_iter,
-            lr=lr,
-            lr_patience=lr_patience,
-            regularization=regularization,
-            warmup_period=warmup_period,
-            frozen_var_value=frozen_var_value,
-            do_plot_losses=False,
-            use_scheduler=True,
-            skip_training=skip_training,
-            save_model=save_model,
-        )
+        import torch
+        from helpers import misc_helpers
+        from src_uq_methods_native.mean_var_nn import MeanVarNN, train_mean_var_nn
+
+        if activation is None:
+            activation = torch.nn.LeakyReLU
+
+        filename = 'native_mvnn.pth'
+        if skip_training:
+            print('skipping training...')
+            try:
+                model = self.io_helper.load_torch_model_statedict(
+                    MeanVarNN,
+                    filename,
+                    dim_in=X_train.shape[0],
+                    num_hidden_layers=num_hidden_layers,
+                    hidden_layer_size=hidden_layer_size,
+                    activation=activation,
+                )
+                model = misc_helpers.objects_to_cuda(model)
+            except FileNotFoundError:
+                print(f'error: cannot load model {filename}')
+                skip_training = False
+
+        if not skip_training:
+            print('training from scratch...')
+
+            common_params = {
+                "X_train": X_train,
+                "y_train": y_train,
+                "lr": lr,
+                "lr_patience": lr_patience,
+                "weight_decay": regularization,
+                "use_scheduler": True,
+            }
+            model = None
+            if warmup_period > 0:
+                print('running warmup...')
+                model = train_mean_var_nn(
+                    n_iter=warmup_period, train_var=False, frozen_var_value=frozen_var_value, do_plot_losses=False,
+                    **common_params
+                )
+            print('running main training run...')
+            model = train_mean_var_nn(
+                model=model, n_iter=n_iter, train_var=True, do_plot_losses=False,
+                **common_params
+            )
+            if save_model:
+                print('saving model...')
+                model.eval()
+                self.io_helper.save_torch_model_statedict(model, filename)
+
+        X_pred = misc_helpers.np_array_to_tensor(X_pred)
+        X_pred = misc_helpers.object_to_cuda(X_pred)
+        X_pred = misc_helpers.make_tensor_contiguous(X_pred)
+        with torch.no_grad():
+            # noinspection PyUnboundLocalVariable,PyCallingNonCallable
+            y_pred, y_var = model(X_pred)
+        y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
+        y_std = np.sqrt(y_var)
+        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
+        return y_pred, y_quantiles, y_std
 
     def native_gpytorch(
             self,
