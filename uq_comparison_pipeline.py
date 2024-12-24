@@ -126,9 +126,9 @@ assert not (DO_TRAIN_ALL and SKIP_TRAINING_ALL)
 
 for _, method_kwargs in METHODS_KWARGS.items():
     if DO_TRAIN_ALL:
-        method_kwargs['skip_training'] = True
-    elif SKIP_TRAINING_ALL:
         method_kwargs['skip_training'] = False
+    elif SKIP_TRAINING_ALL:
+        method_kwargs['skip_training'] = True
 
 
 # noinspection PyPep8Naming
