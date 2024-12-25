@@ -37,7 +37,8 @@ METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
     # "native_quantile_regression",
-    "native_gpytorch",
+    "native_quantile_regression_nn",
+    # "native_gpytorch",
     # "native_mvnn",
     # 'base_model_linreg',
     # 'base_model_rf',
@@ -547,6 +548,81 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             verbose=verbose,
         )
         y_std = self.stds_from_quantiles(y_quantiles)
+        return y_pred, y_quantiles, y_std
+
+    def native_quantile_regression_nn(
+            self,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            X_pred: np.ndarray,
+            quantiles,
+            n_iter=300,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+            activation=None,
+            lr=1e-4,
+            lr_patience=30,
+            regularization=0,  # 1e-2,
+            warmup_period=50,
+            frozen_var_value=0.1,
+            skip_training=True,
+            save_model=True,
+    ):
+        import torch
+        from helpers import misc_helpers
+        from src_uq_methods_native.quantile_regression_nn import QR_NN, train_qr_nn
+
+        if activation is None:
+            activation = torch.nn.LeakyReLU
+
+        n_samples = X_train.shape[0]
+        filename = f'native_qrnn_n{n_samples}_it{n_iter}_nh{num_hidden_layers}_hs{hidden_layer_size}.pth'
+        if skip_training:
+            logging.info('skipping training...')
+            try:
+                model = self.io_helper.load_torch_model_statedict(
+                    QR_NN,
+                    filename,
+                    dim_in=X_train.shape[0],
+                    num_hidden_layers=num_hidden_layers,
+                    hidden_layer_size=hidden_layer_size,
+                    activation=activation,
+                )
+                model = misc_helpers.objects_to_cuda(model)
+            except FileNotFoundError:
+                logging.warning(f'cannot load model {filename}')
+                skip_training = False
+
+        if not skip_training:
+            logging.info('training from scratch...')
+
+            common_params = {
+                "X_train": X_train,
+                "y_train": y_train,
+                "lr": lr,
+                "lr_patience": lr_patience,
+                "weight_decay": regularization,
+                "use_scheduler": True,
+            }
+            logging.info('running training...')
+            model = train_qr_nn(
+                n_iter=n_iter, train_var=True, do_plot_losses=False,
+                **common_params
+            )
+            if save_model:
+                logging.info('saving model...')
+                model.eval()
+                self.io_helper.save_torch_model_statedict(model, filename)
+
+        X_pred = misc_helpers.np_array_to_tensor(X_pred)
+        X_pred = misc_helpers.object_to_cuda(X_pred)
+        X_pred = misc_helpers.make_tensor_contiguous(X_pred)
+        with torch.no_grad():
+            # noinspection PyUnboundLocalVariable,PyCallingNonCallable
+            y_pred, y_var = model(X_pred)
+        y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
+        y_std = np.sqrt(y_var)
+        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
     def native_mvnn(
