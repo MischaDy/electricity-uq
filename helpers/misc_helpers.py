@@ -1,3 +1,4 @@
+import logging
 from typing import Generator, Any
 
 import numpy as np
@@ -119,11 +120,11 @@ def check_is_ordered(pred, pis):
     lower_ordered = np.all(pis[:, 0] > pred)
     higher_ordered = np.all(pred <= pis[:, 1])
     if not lower_ordered:
-        print("not lower-ordered!")
+        logging.warning("not lower-ordered!")
     if not higher_ordered:
-        print("not higher-ordered!")
+        logging.warning("not higher-ordered!")
     if lower_ordered and higher_ordered:
-        print("ordered.")
+        logging.info("ordered.")
         return True
     return False
 
@@ -193,14 +194,14 @@ def get_device():
 def object_to_cuda(obj):
     device = get_device()
     if device == 'cpu':
-        print('warning: cuda not available! Using CPU')
+        logging.warning('cuda not available! Using CPU')
     return obj.to(device)
 
 
 def objects_to_cuda(*objs: Any) -> Generator[Any, None, None]:
     cuda_available = torch.cuda.is_available()
     if not cuda_available:
-        print('warning: cuda not available! using CPU')
+        logging.warning('cuda not available! using CPU')
         yield from objs
     else:
         yield from map(object_to_cuda, objs)

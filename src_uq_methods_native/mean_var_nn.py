@@ -1,3 +1,5 @@
+import logging
+
 import torch
 from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -169,7 +171,7 @@ def train_mean_var_nn(
             scheduler.step(val_loss)
     if do_plot_losses:
         for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
-            print(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
+            logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
         plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
 
     model.eval()
@@ -220,7 +222,7 @@ def run_mean_var_nn(
     }
     mean_var_nn = None
     if warmup_period > 0:
-        print('running warmup...')
+        logging.info('running warmup...')
         mean_var_nn = train_mean_var_nn(
             X_train, y_train, n_iter=warmup_period, train_var=False, frozen_var_value=frozen_var_value,
             do_plot_losses=False,
@@ -318,15 +320,15 @@ def my_plot_data(X, y):
 
 def main():
     torch.set_default_dtype(torch.float32)
-    print("loading data...")
+    logging.info("loading data...")
     X_train, X_test, y_train, y_test, X, y = get_clean_data(
         N_POINTS_PER_GROUP,
         standardize_data=STANDARDIZE_DATA,
         do_plot_data=PLOT_DATA
     )
-    print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    logging.info("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
 
-    print("running method...")
+    logging.info("running method...")
     X_uq = np.row_stack((X_train, X_test))
 
     y_pred, y_quantiles, y_std = run_mean_var_nn(

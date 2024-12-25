@@ -1,3 +1,5 @@
+import logging
+
 import gpytorch
 import torch
 
@@ -54,7 +56,7 @@ def measure_runtime(func):
         t1 = default_timer()
         result = func(*args, **kwargs)
         t2 = default_timer()
-        print(f'done. [took {t2 - t1}s]')
+        logging.info(f'done. [took {t2 - t1}s]')
         return result
     return wrapper
 
@@ -68,13 +70,13 @@ def preprocess_data(X_train, X_test, y_train, y_test, val_frac):
     y_train, y_val, y_test = misc_helpers.make_ys_1d(y_train, y_val, y_test)
 
     shapes = map(lambda arr: arr.shape, (X_train, y_train, X_val, y_val, X_test, y_test))
-    print("data shapes:", ' - '.join(map(str, shapes)))
+    logging.info("data shapes:", ' - '.join(map(str, shapes)))
 
     if PLOT_DATA:
-        print('plotting data...')
+        logging.info('plotting data...')
         plot_data(X_train, y_train, X_val, y_val, X_test, y_test)
 
-    print('making data contiguous and mapping to device...')
+    logging.info('making data contiguous and mapping to device...')
     X_train, y_train, X_val, y_val, X_test, y_test = misc_helpers.objects_to_cuda(
         X_train, y_train, X_val, y_val, X_test, y_test
     )
@@ -104,7 +106,7 @@ def train_gpytorch(
     from tqdm import tqdm
 
     n_devices = torch.cuda.device_count()
-    print('Planning to run on {} GPUs.'.format(n_devices))
+    logging.info('Planning to run on {} GPUs.'.format(n_devices))
 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model = ExactGPModel(X_train, y_train, likelihood)
@@ -145,7 +147,7 @@ def train_gpytorch(
         plot_skip_losses = 0
         plot_losses(losses[plot_skip_losses:], show_plots=show_plots)
 
-    print(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
+    logging.info(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
     return model, likelihood
 
 
@@ -157,9 +159,9 @@ def evaluate(model, likelihood, X_test, y_test):
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         y_pred = model.likelihood(model(X_test))
 
-    print('computing loss...')
+    logging.info('computing loss...')
     rmse = (y_pred.mean - y_test).square().mean().sqrt().item()
-    print(f"RMSE: {rmse:.3f}")
+    logging.info(f"RMSE: {rmse:.3f}")
     return y_pred
 
 
@@ -229,7 +231,7 @@ def plot_uq_result(
 
 
 def main():
-    print('preparing data...')
+    logging.info('preparing data...')
     X_train, X_test, y_train, y_test, _, _, _ = misc_helpers.get_data(
         DATA_PATH,
         n_points_per_group=N_DATAPOINTS,
@@ -248,18 +250,18 @@ def main():
     model_name = f'{common_prefix}_{common_postfix}.pth'
     model_likelihood_name = f'{common_prefix}_likelihood_{common_postfix}.pth'
     if skip_training:
-        print('skipping training...')
+        logging.info('skipping training...')
         try:
             likelihood = IO_HELPER.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood,
                                                               model_likelihood_name)
             model = IO_HELPER.load_torch_model_statedict(ExactGPModel, model_name,
                                                          X_train=X_train, y_train=y_train, likelihood=likelihood)
         except FileNotFoundError:
-            print(f'error: cannot load models {model_name} and/or {model_likelihood_name}')
+            logging.warning(f'cannot load models {model_name} and/or {model_likelihood_name}')
             skip_training = False
 
     if not skip_training:
-        print('training...')
+        logging.info('training...')
         model, likelihood = train_gpytorch(
             X_train,
             y_train,
@@ -280,17 +282,17 @@ def main():
 
     if SAVE_MODEL:
         if skip_training:
-            print('skipped training, so not saving models.')
+            logging.info('skipped training, so not saving models.')
         else:
-            print('saving...')
+            logging.info('saving...')
             IO_HELPER.save_torch_model_statedict(model, model_name)
             IO_HELPER.save_torch_model_statedict(likelihood, model_likelihood_name)
 
-    print('evaluating...')
+    logging.info('evaluating...')
     # noinspection PyUnboundLocalVariable
     evaluate(model, likelihood, X_test, y_test)
 
-    print('plotting...')
+    logging.info('plotting...')
     with torch.no_grad():
         X_uq = torch.row_stack((X_train, X_val, X_test))
         f_preds = model(X_uq)

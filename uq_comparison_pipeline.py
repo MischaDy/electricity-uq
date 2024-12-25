@@ -1,8 +1,9 @@
+import logging
 import os
 from typing import Any, Generator
 
 filename = os.path.split(__file__)[-1]
-print(f'reading file {filename}...')
+logging.info(f'reading file {filename}...')
 
 import numpy as np
 from scipy import stats
@@ -213,15 +214,15 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         filename_base_model = f"base_model_linreg_n{n_samples}.model"
         if skip_training:
             try:
-                print('skipping linreg base model training')
+                logging.info('skipping linreg base model training')
                 model = self.io_helper.load_model(filename_base_model)
                 return model
             except FileNotFoundError:
-                print(f"trained base model '{filename_base_model}' not found. training from scratch.")
+                logging.warning(f"trained base model '{filename_base_model}' not found. training from scratch.")
         model = linear_model.LinearRegression(n_jobs=n_jobs)
         model.fit(X_train, y_train)
         if save_model:
-            print('saving linreg base model...')
+            logging.info('saving linreg base model...')
             self.io_helper.save_model(model, filename_base_model)
         return model
 
@@ -267,14 +268,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         if skip_training:
             try:
-                print('skipping random forest base model training')
+                logging.info('skipping random forest base model training')
                 model = self.io_helper.load_model(filename_base_model)
                 return model
             except FileNotFoundError:
-                print(f"trained base model '{filename_base_model}' not found. training from scratch.")
+                logging.warning(f"trained base model '{filename_base_model}' not found. training from scratch.")
 
         assert all(item is not None for item in [X_train, y_train, model_param_distributions])
-        print("training random forest...")
+        logging.info("training random forest...")
 
         # CV parameter search
         model = RandomForestRegressor(random_state=random_seed)
@@ -291,9 +292,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         # todo: ravel?
         cv_obj.fit(X_train, y_train.ravel())
         model = cv_obj.best_estimator_
-        print("done.")
+        logging.info("done.")
         if save_model:
-            print('saving RF base model...')
+            logging.info('saving RF base model...')
             self.io_helper.save_model(model, filename_base_model)
         return model
 
@@ -340,14 +341,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         n_samples = X_train.shape[0]
         model_filename = f"base_model_nn_n{n_samples}_it{n_iter}.pth"
         if skip_training:
-            print("skipping NN base model training")
+            logging.info("skipping NN base model training")
             try:
                 model = self.io_helper.load_torch_model(model_filename)
                 model = object_to_cuda(model)
                 model.eval()
                 return model
             except FileNotFoundError:
-                print("error. model not found, so training cannot be skipped. training from scratch")
+                logging.warning("model not found, so training cannot be skipped. training from scratch")
 
         model = NN_Estimator(
             n_iter=n_iter,
@@ -366,7 +367,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model.fit(X_train, y_train)
 
         if save_model:
-            print('saving NN base model...')
+            logging.info('saving NN base model...')
             self.io_helper.save_torch_model(model, model_filename)
 
         # noinspection PyTypeChecker
@@ -472,7 +473,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model_filename = f"posthoc_laplace_n{n_samples}_it{n_iter}.pth"
         base_model_nn = base_model.get_nn(to_device=True)
         if skip_training:
-            print("skipping model training...")
+            logging.info("skipping model training...")
             try:
                 # noinspection PyTypeChecker
                 la = self.io_helper.load_laplace_model_statedict(
@@ -481,7 +482,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     laplace_model_filename=model_filename,
                 )
             except FileNotFoundError:
-                print(f"error. model {model_filename} not found, so training cannot be skipped. training from scratch.")
+                logging.warning(f"model {model_filename} not found, so training cannot be skipped. training from scratch.")
                 skip_training = False
 
         if not skip_training:
@@ -503,13 +504,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 hyper_optimizer.step()
 
             if save_model:
-                print('saving model...')
+                logging.info('saving model...')
                 self.io_helper.save_laplace_model_statedict(
                     la,
                     laplace_model_filename=model_filename
                 )
 
-        print('predicting...')
+        logging.info('predicting...')
 
         X_pred = misc_helpers.np_array_to_tensor(X_pred)
         X_pred = misc_helpers.object_to_cuda(X_pred)
@@ -576,7 +577,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         n_samples = X_train.shape[0]
         filename = f'native_mvnn_n{n_samples}_it{n_iter}_nh{num_hidden_layers}_hs{hidden_layer_size}.pth'
         if skip_training:
-            print('skipping training...')
+            logging.info('skipping training...')
             try:
                 model = self.io_helper.load_torch_model_statedict(
                     MeanVarNN,
@@ -588,11 +589,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 )
                 model = misc_helpers.objects_to_cuda(model)
             except FileNotFoundError:
-                print(f'error: cannot load model {filename}')
+                logging.warning(f'cannot load model {filename}')
                 skip_training = False
 
         if not skip_training:
-            print('training from scratch...')
+            logging.info('training from scratch...')
 
             common_params = {
                 "X_train": X_train,
@@ -604,18 +605,18 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             }
             model = None
             if warmup_period > 0:
-                print('running warmup...')
+                logging.info('running warmup...')
                 model = train_mean_var_nn(
                     n_iter=warmup_period, train_var=False, frozen_var_value=frozen_var_value, do_plot_losses=False,
                     **common_params
                 )
-            print('running main training run...')
+            logging.info('running main training run...')
             model = train_mean_var_nn(
                 model=model, n_iter=n_iter, train_var=True, do_plot_losses=False,
                 **common_params
             )
             if save_model:
-                print('saving model...')
+                logging.info('saving model...')
                 model.eval()
                 self.io_helper.save_torch_model_statedict(model, filename)
 
@@ -653,14 +654,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         from src_uq_methods_native.gp_regression_gpytorch import ExactGPModel, train_gpytorch
         from helpers import misc_helpers
 
-        print('preparing data..')
+        logging.info('preparing data..')
         X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
         X_train, y_train, X_val, y_val, X_pred = misc_helpers.np_arrays_to_tensors(
             X_train, y_train, X_val, y_val, X_pred
         )
         y_train, y_val = misc_helpers.make_ys_1d(y_train, y_val)
 
-        print('mapping data to device and making it contiguous...')
+        logging.info('mapping data to device and making it contiguous...')
         X_train, y_train, X_val, y_val, X_pred = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val, X_pred)
         X_train, y_train, X_val, y_val, X_pred = misc_helpers.make_tensors_contiguous(
             X_train, y_train, X_val, y_val, X_pred
@@ -672,7 +673,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         filename_model = f'{common_prefix}_{common_postfix}.pth'
         filename_likelihood = f'{common_prefix}_likelihood_{common_postfix}.pth'
         if skip_training:
-            print('skipping training...')
+            logging.info('skipping training...')
             try:
                 likelihood = self.io_helper.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood,
                                                                        filename_likelihood)
@@ -681,11 +682,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                                                                   likelihood=likelihood)
                 model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
             except FileNotFoundError:
-                print(f'error: cannot load models {filename_model} and/or {filename_likelihood}')
+                logging.warning(f'error: cannot load models {filename_model} and/or {filename_likelihood}')
                 skip_training = False
 
         if not skip_training:
-            print('training from scratch...')
+            logging.info('training from scratch...')
             model, likelihood = train_gpytorch(
                 X_train,
                 y_train,
@@ -701,7 +702,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 do_plot_losses=do_plot_losses,
             )
             if save_model:
-                print('saving model...')
+                logging.info('saving model...')
                 model.eval()
                 likelihood.eval()
                 self.io_helper.save_torch_model_statedict(model, filename_model)
@@ -794,7 +795,7 @@ def check_method_kwargs_dict(class_, method_kwargs_dict):
             wrong_kwargs[method_name] = kwargs_names.difference(method_params_names)
     if wrong_kwargs:
         raise ValueError(f'Wrong method(s) kwargs: {wrong_kwargs}')
-    print('kwargs dict check successful')
+    logging.info('kwargs dict check successful')
 
 
 def main():

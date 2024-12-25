@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -25,28 +27,28 @@ def base_model_linreg(
     filename_base_model = f"base_linreg.model"
     if skip_training:
         try:
-            print('skipping linreg base model training')
+            logging.info('skipping linreg base model training')
             model = io_helper.load_model(filename_base_model)
             return model
         except FileNotFoundError:
-            print(f"trained base model '{filename_base_model}' not found. training from scratch.")
+            logging.warning(f"trained base model '{filename_base_model}' not found. training from scratch.")
     model = linear_model.LinearRegression(n_jobs=n_jobs)
     model.fit(X_train, y_train)
     if save_model:
-        print('saving linreg base model...')
+        logging.info('saving linreg base model...')
         io_helper.save_model(model, filename_base_model)
     return model
 
 
 def main():
-    print('loading data')
+    logging.info('loading data')
     X_train, X_test, y_train, y_test, X, y, y_scaler = get_data(
         filepath=DATA_FILEPATH,
         n_points_per_group=N_POINTS_PER_GROUP,
         standardize_data=STANDARDIZE_DATA,
     )
 
-    print('training model')
+    logging.info('training model')
     io_helper = IO_Helper(STORAGE_PATH)
     model = base_model_linreg(
         X_train,
@@ -55,14 +57,14 @@ def main():
         skip_training=SKIP_TRAINING,
         save_model=SAVE_MODEL,
     )
-    print('predicting')
+    logging.info('predicting')
     y_pred = model.predict(X)
 
     x_plot_train = np.arange(X_train.shape[0])
     x_plot_test = x_plot_train + X_test.shape[0]
     x_plot_pred = np.arange(X.shape[0])
 
-    print('plotting')
+    logging.info('plotting')
     fig, ax = plt.subplots(figsize=(14, 6))
     ax.plot(x_plot_train, y_train, label='y train')
     ax.plot(x_plot_test, y_test, label='y test')

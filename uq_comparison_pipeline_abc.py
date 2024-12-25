@@ -1,6 +1,7 @@
+import logging
 import os
 filename = os.path.split(__file__)[-1]
-print(f'reading file {filename}...')
+logging.info(f'reading file {filename}...')
 
 from abc import ABC, abstractmethod
 import numpy as np
@@ -79,12 +80,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         # todo: bring back return_results?
         #  :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
 
-        print("loading data...")
+        logging.info("loading data...")
         X_train, X_test, y_train, y_test, X, y, scaler_y = self.get_data()
 
-        print("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+        logging.info("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
         if should_plot_data:
-            print("plotting data...")
+            logging.info("plotting data...")
             self.plot_data(
                 X_train,
                 y_train,
@@ -95,19 +96,19 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 save_plot=should_save_plots,
             )
 
-        print("training base models...")
+        logging.info("training base models...")
         X_pred, y_true = X, y
 
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
         y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y)
         if should_save_results:
-            print('saving base model results...')
+            logging.info('saving base model results...')
             self.save_outputs_base_models(y_preds_base_models)
         else:
-            print('base model result saving is skipped.')
+            logging.info('base model result saving is skipped.')
 
         if should_plot_base_results:
-            print("plotting base model results...")
+            logging.info("plotting base model results...")
             for base_model_name, y_pred_base_model in y_preds_base_models.items():
                 self.plot_base_results(
                     X_train,
@@ -121,7 +122,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                     save_plot=should_save_plots,
                 )
 
-        print("computing base model metrics...")
+        logging.info("computing base model metrics...")
         base_models_metrics = {
             model_name: self.compute_metrics_det(model_preds, y_true)
             for model_name, model_preds in y_preds_base_models.items()
@@ -129,7 +130,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         if base_models_metrics:
             self.print_base_models_metrics(base_models_metrics)
 
-        print("running posthoc UQ methods...")
+        logging.info("running posthoc UQ methods...")
         posthoc_results = self.run_posthoc_methods(
             X_train,
             y_train,
@@ -140,10 +141,10 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             skip_base_model_copy=skip_base_model_copy
         )
         if should_save_results:
-            print('saving posthoc UQ results...')
+            logging.info('saving posthoc UQ results...')
             self.save_outputs_uq_models(posthoc_results)
         else:
-            print('posthoc UQ results saving is skipped.')
+            logging.info('posthoc UQ results saving is skipped.')
 
         plot_uq_results = partial(
             self.plot_uq_results,
@@ -157,27 +158,27 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             save_plots=should_save_plots,
         )
         if should_plot_uq_results:
-            print("plotting posthoc results...")
+            logging.info("plotting posthoc results...")
             plot_uq_results(uq_results=posthoc_results)
 
-        print("running native UQ methods...")
+        logging.info("running native UQ methods...")
         native_results = self.run_native_methods(X_train, y_train, X_pred, scaler_y, quantiles=quantiles)
 
         if should_save_results:
-            print('saving native UQ results...')
+            logging.info('saving native UQ results...')
             self.save_outputs_uq_models(native_results)
         else:
-            print('native UQ result saving is skipped.')
+            logging.info('native UQ result saving is skipped.')
 
         if should_plot_uq_results:
-            print("plotting native results...")
+            logging.info("plotting native results...")
             plot_uq_results(uq_results=native_results)
 
-        print("computing and saving UQ metrics...")
+        logging.info("computing and saving UQ metrics...")
         uq_results_all = {'posthoc': posthoc_results, 'native': native_results}
         uq_metrics_all = {'base_model': base_models_metrics}
         for uq_type, uq_results in uq_results_all.items():
-            print(f'{uq_type}...')
+            logging.info(f'{uq_type}...')
             uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true, quantiles=quantiles)
         self.print_uq_metrics(uq_metrics_all)
         self.io_helper.save_metrics(uq_metrics_all, filename='uq')
@@ -350,10 +351,10 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             posthoc_methods = list(starfilter(lambda name, _: name in self.method_whitelist,
                                               posthoc_methods))
         if not posthoc_methods:
-            print(f'No posthoc methods found and/or whitelisted. Skipping...')
+            logging.info(f'No posthoc methods found and/or whitelisted. Skipping...')
             return dict()
 
-        print(f"running posthoc methods...")
+        logging.info(f"running posthoc methods...")
         posthoc_results = {}
         for posthoc_method_name, posthoc_method in posthoc_methods:
             blacklist = self.posthoc_base_blacklist[posthoc_method_name]
@@ -363,13 +364,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 if base_model_name not in blacklist
             }
             if not compatible_base_models:
-                print(f'no compatible base models found for posthoc method {posthoc_method_name} - skipping.')
+                logging.info(f'no compatible base models found for posthoc method {posthoc_method_name} - skipping.')
                 continue
-            print(f'running {posthoc_method_name}...')
+            logging.info(f'running {posthoc_method_name}...')
 
             method_kwargs = self.methods_kwargs[posthoc_method_name]
             for base_model_name, base_model in compatible_base_models.items():
-                print(f'...on {base_model_name}...')
+                logging.info(f'...on {base_model_name}...')
                 base_model_copy = base_model if skip_base_model_copy else copy.deepcopy(base_model)
                 y_pred, y_quantiles, y_std = posthoc_method(
                     X_train,
@@ -410,13 +411,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             native_methods = list(starfilter(lambda name, _: name in self.method_whitelist,
                                              native_methods))
         if not native_methods:
-            print(f'No native methods found and/or whitelisted. Skipping...')
+            logging.info(f'No native methods found and/or whitelisted. Skipping...')
             return dict()
 
-        print(f"running native methods...")
+        logging.info(f"running native methods...")
         native_results = {}
         for native_method_name, native_method in native_methods:
-            print(f'running {native_method_name}...')
+            logging.info(f'running {native_method_name}...')
             method_kwargs = self.methods_kwargs[native_method_name]
             y_pred, y_quantiles, y_std = native_method(
                 X_train,
@@ -442,8 +443,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         num_quantiles = quantiles.shape[1]
         if num_quantiles < 50:
-            print(f"warning: {num_quantiles} quantiles are too few"
-                  f" to compute a reliable std from (should be about 100)")
+            logging.warning(f"{num_quantiles} quantiles are too few to compute"
+                            f" a reliable std from (should be about 100)")
         return np.std(quantiles, ddof=1, axis=1)
 
     @staticmethod
@@ -551,7 +552,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in uq_results.items():
             if y_quantiles is None and y_std is None:
-                print(f"warning: cannot plot method {method_name}, because both y_quantiles and y_std are None")
+                logging.warning(f"cannot plot method {method_name}, because both y_quantiles and y_std are None")
                 continue
             self.plot_uq_result(
                 X_train=X_train,
@@ -742,7 +743,7 @@ def check_prefixes_ok():
     for attr_name in UQ_Comparison_Pipeline_ABC.__dict__.keys():
         for prefix in forbidden_prefixes:
             assert not attr_name.startswith(prefix)
-    print('all prefixes ok')
+    logging.info('all prefixes ok')
 
 
 if __name__ == '__main__':

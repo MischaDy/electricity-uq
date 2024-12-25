@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Callable
 
@@ -124,7 +125,7 @@ class IO_Helper:
 
         ext = os.path.splitext(plotname)[-1]
         if ext not in {'png', 'jpeg', 'jpg'}:
-            print(f'filename {plotname} had no extension. saving as PNG')
+            logging.info(f'filename {plotname} had no extension. saving as PNG')
             plotname += '.png'
 
         path = self.get_plot_savepath(plotname)

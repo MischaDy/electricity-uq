@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-
+import logging
 
 import numpy as np
 
@@ -31,7 +31,7 @@ def get_data(as_df: bool):
     
     for col in df.columns:
         if any(df.date_from.isna()):
-            print(f'WARNING: Missing value in column {col} detected!')
+            logging.warning(f'Missing value in column {col} detected!')
     
     
     
