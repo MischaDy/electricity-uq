@@ -64,12 +64,6 @@ class MeanVarNN(nn.Module):
             var = torch.full(var.shape, self._frozen_var)
         return mean, var
 
-    @staticmethod
-    def output_activation(x) -> tuple[torch.Tensor, torch.Tensor]:
-        mean, var = x[:, 0], x[:, 1]
-        var = torch.exp(var)
-        return mean, var
-
     def freeze_variance(self, value: float):
         assert value > 0
         # self.last_layer_var.requires_grad_(False)
