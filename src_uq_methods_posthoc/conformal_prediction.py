@@ -42,7 +42,6 @@ You can use a gamma coefficient to adjust the strength of the correction.
 
 """
 import logging
-import warnings
 from typing import Iterable, Any
 
 import numpy as np
@@ -60,7 +59,6 @@ from mapie.subsample import BlockBootstrap
 from helpers.misc_helpers import get_data
 from helpers.io_helper import IO_Helper
 
-warnings.simplefilter("ignore")
 
 N_POINTS_PER_GROUP = 100
 
