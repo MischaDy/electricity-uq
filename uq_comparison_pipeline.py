@@ -447,20 +447,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
             verbose=True,
     ):
-        # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
-        #  script)?
-        from laplace import Laplace
-        from tqdm import tqdm
         from helpers import misc_helpers
-        import torch
-        from torch import nn
-
-        torch.set_default_dtype(torch.float32)
-        torch.manual_seed(random_seed)
-        torch.set_default_device(misc_helpers.get_device())
-
-        def la_instantiator(base_model: nn.Module):
-            return Laplace(base_model, "regression")
+        from src_uq_methods_posthoc.laplace_approximation import (
+            la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
+        )
 
         n_samples = X_train.shape[0]
         model_filename = f"posthoc_laplace_n{n_samples}_it{n_iter}.pth"
@@ -469,7 +459,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             logging.info("skipping model training...")
             try:
                 # noinspection PyTypeChecker
-                la = self.io_helper.load_laplace_model_statedict(
+                model = self.io_helper.load_laplace_model_statedict(
                     base_model_nn,
                     la_instantiator,
                     laplace_model_filename=model_filename,
@@ -480,40 +470,23 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 skip_training = False
 
         if not skip_training:
-            X_train, y_train = preprocess_arrays(X_train, y_train)
-
-            train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
-            la = la_instantiator(base_model_nn)
-            la.fit(train_loader)
-
-            log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
-            hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
-            iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
-            for _ in iterable:
-                hyper_optimizer.zero_grad()
-                neg_marglik = -la.log_marginal_likelihood(log_prior.exp(), log_sigma.exp())
-                neg_marglik.backward()
-                hyper_optimizer.step()
-
+            model = train_laplace_approximation(
+                X_train,
+                y_train,
+                base_model_nn,
+                n_iter=n_iter,
+                batch_size=batch_size,
+                random_seed=random_seed,
+                verbose=verbose,
+            )
             if save_model:
                 logging.info('saving model...')
-                self.io_helper.save_laplace_model_statedict(
-                    la,
-                    laplace_model_filename=model_filename
-                )
+                self.io_helper.save_laplace_model_statedict(model, laplace_model_filename=model_filename)
 
         logging.info('predicting...')
-
         X_pred = misc_helpers.preprocess_array(X_pred)
-
-        # noinspection PyArgumentList,PyUnboundLocalVariable
-        f_mu, f_var = la(X_pred)
-        f_mu = misc_helpers.tensor_to_np_array(f_mu.squeeze())
-        f_sigma = misc_helpers.tensor_to_np_array(f_var.squeeze().sqrt())
-        pred_std = np.sqrt(f_sigma ** 2 + la.sigma_noise.item() ** 2)
-
-        y_pred, y_std = f_mu, pred_std
-        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
+        # noinspection PyUnboundLocalVariable
+        y_pred, y_quantiles, y_std = predict_with_laplace_approximation(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
     def native_quantile_regression_nn(

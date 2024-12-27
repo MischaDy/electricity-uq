@@ -270,3 +270,10 @@ def train_val_split(
     X_train, y_train = X_train[:train_size], y_train[:train_size]
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
     return X_train, y_train, X_val, y_val
+
+
+def quantiles_gaussian(quantiles: list, y_pred: np.ndarray, y_std: np.ndarray):
+    from scipy.stats import norm
+    # todo: does this work for multi-dim outputs?
+    return np.array([norm.ppf(quantiles, loc=mean, scale=std)
+                     for mean, std in zip(y_pred, y_std)])
