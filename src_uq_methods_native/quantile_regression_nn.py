@@ -178,8 +178,11 @@ def train_qr_nn(
             loss = criterion(y_pred_quantiles, y_train)
             loss.backward()
             optimizer.step()
-        model.eval()
 
+        if not use_scheduler and not do_plot_losses:
+            continue
+
+        model.eval()
         with torch.no_grad():
             y_pred_quantiles_train = model(X_train)
             train_loss = criterion(y_pred_quantiles_train, y_train)
