@@ -56,6 +56,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             batch_size=20,
             random_seed=42,
             val_frac=0.1,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+            activation=None,
             use_scheduler=True,
             lr=None,
             lr_patience=5,
@@ -70,6 +73,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.batch_size = batch_size
         self.random_seed = random_seed
         self.val_frac = val_frac
+        self.num_hidden_layers = num_hidden_layers
+        self.hidden_layer_size = hidden_layer_size
+        self.activation = activation
         self.lr = lr
         self.lr_patience = lr_patience
         self.lr_reduction_factor = lr_reduction_factor
@@ -109,6 +115,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         X, y = self._validate_data(X, y, accept_sparse=False)  # todo: remove "y is 2d" warning
 
+        if self.activation is None:
+            self.activation = torch.nn.LeakyReLU
+
         self.is_y_2d_ = len(y.shape) == 2
         if len(y.shape) < 2:
             y = y.reshape(-1, 1)
@@ -127,9 +136,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         model = self._nn_builder(
             dim_in,
             dim_out,
-            num_hidden_layers=2,
-            hidden_layer_size=50,
-            # activation=torch.nn.LeakyReLU,
+            num_hidden_layers=self.num_hidden_layers,
+            hidden_layer_size=self.hidden_layer_size,
+            activation=self.activation,
         )
         model = misc_helpers.object_to_cuda(model)
 

@@ -112,6 +112,9 @@ METHODS_KWARGS = {
     "base_model_nn": {
         "skip_training": False,
         "n_iter": 100,
+        'num_hidden_layers': 2,
+        'hidden_layer_size': 50,
+        'activation': None,
         "lr": 1e-2,
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
@@ -315,6 +318,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             batch_size=20,
             random_seed=42,
             val_frac=0.1,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+            activation=None,
             lr=0.1,
             lr_patience=30,
             lr_reduction_factor=0.5,
@@ -327,6 +333,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param activation:
+        :param hidden_layer_size:
+        :param num_hidden_layers:
         :param show_losses_plot:
         :param save_losses_plot:
         :param show_progress_bar:
@@ -364,6 +373,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             batch_size=batch_size,
             random_seed=random_seed,
             val_frac=val_frac,
+            num_hidden_layers=num_hidden_layers,
+            hidden_layer_size=hidden_layer_size,
+            activation=activation,
             lr=lr,
             lr_patience=lr_patience,
             lr_reduction_factor=lr_reduction_factor,
