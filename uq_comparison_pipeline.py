@@ -65,11 +65,6 @@ METHODS_KWARGS = {
         "frozen_var_value": 0.1,
         'save_model': True,
     },
-    "native_quantile_regression": {
-        'skip_training': False,
-        'save_model': True,
-        "verbose": True,
-    },
     "native_quantile_regression_nn": {
         'n_iter': 300,
         'num_hidden_layers': 2,
@@ -537,29 +532,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         y_pred, y_std = f_mu, pred_std
         y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
-        return y_pred, y_quantiles, y_std
-
-    def native_quantile_regression(
-            self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
-            quantiles: list,
-            verbose=True,
-            skip_training=True,
-            save_model=True,
-    ):
-        from src_uq_methods_native.quantile_regression import estimate_quantiles as estimate_quantiles_qr
-        y_pred, y_quantiles = estimate_quantiles_qr(
-            X_train,
-            y_train,
-            X_pred,
-            alpha=quantiles,
-            skip_training=skip_training,
-            save_model=save_model,
-            verbose=verbose,
-        )
-        y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
     def native_quantile_regression_nn(
