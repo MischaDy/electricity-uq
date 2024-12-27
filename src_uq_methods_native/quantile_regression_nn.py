@@ -155,11 +155,6 @@ def train_qr_nn(
     print('setup')
     torch.manual_seed(random_seed)
 
-    # try:
-    #     X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
-    # except TypeError:
-    #     raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
-
     X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
