@@ -84,7 +84,7 @@ class MultiPinballLoss:
         assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
         loss = torch.zeros_like(y_pred_quantiles, dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
-            loss[i] = pinball_loss(y_pred_quantiles[:, i], y_true)
+            loss[i] = pinball_loss(y_pred_quantiles[:, i:i+1], y_true)  # i+1 to ensure correct shape
         return loss
 
 
