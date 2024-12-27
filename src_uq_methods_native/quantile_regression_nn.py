@@ -1,7 +1,6 @@
-
-print('importing')
-
 import logging
+
+logging.info('importing')
 
 import torch
 from torch import nn
@@ -15,7 +14,7 @@ from tqdm import tqdm
 
 from helpers import misc_helpers
 
-print('done')
+logging.info('done')
 
 torch.set_default_device(misc_helpers.get_device())
 
@@ -167,20 +166,20 @@ def train_qr_nn(
     :param use_scheduler:
     :return:
     """
-    print('setup')
+    logging.info('setup')
     torch.manual_seed(random_seed)
 
-    print('train/val split')
+    logging.info('train/val split')
     X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
-    print('preprocess arrays')
+    logging.info('preprocess arrays')
     X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays(X_train, y_train, X_val, y_val)
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
     quantiles = sorted(quantiles)
 
-    print('setup model')
+    logging.info('setup model')
     model = QR_NN(
         dim_in,
         quantiles,
@@ -189,19 +188,19 @@ def train_qr_nn(
     )
     model = misc_helpers.object_to_cuda(model)
 
-    print('setup meta-stuff')
+    logging.info('setup meta-stuff')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
     criterion = MultiPinballLoss(quantiles, reduction='mean')
 
-    print('setup training')
+    logging.info('setup training')
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
     iterable = np.arange(n_iter) + 1
     if show_progress:
         iterable = tqdm(iterable)
-    print('training')
+    logging.info('training')
     for _ in iterable:
         model.train()
         for X_train, y_train in train_loader:
@@ -225,9 +224,9 @@ def train_qr_nn(
             val_losses.append(val_loss.item())
         if use_scheduler:
             scheduler.step(val_loss)
-    print('done training')
+    logging.info('done training')
     if do_plot_losses:
-        print('plotting losses')
+        logging.info('plotting losses')
         for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
             logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
         plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
@@ -272,7 +271,7 @@ def run_qr_nn(
         weight_decay=regularization,
         do_plot_losses=do_plot_losses,
     )
-    print('evaluating')
+    logging.info('evaluating')
     X_test = misc_helpers.preprocess_array(X_test)
     with torch.no_grad():
         y_quantiles_dict = qr_nn(X_test, as_dict=True)
@@ -380,7 +379,7 @@ def main():
         do_plot_losses=DO_PLOT_LOSSES,
     )
 
-    print('plotting results')
+    logging.info('plotting results...')
     plot_uq_result(
         X_train,
         X_test,
