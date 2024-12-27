@@ -28,6 +28,7 @@ LR = 1e-4
 REGULARIZATION = 0  # 1e-2
 USE_SCHEDULER = False
 LR_PATIENCE = 30
+DO_PLOT_LOSSES = True
 
 
 class QR_NN(nn.Module):
@@ -367,6 +368,7 @@ def main():
         lr_patience=LR_PATIENCE,
         regularization=REGULARIZATION,
         use_scheduler=USE_SCHEDULER,
+        do_plot_losses=DO_PLOT_LOSSES,
     )
 
     plot_uq_result(
