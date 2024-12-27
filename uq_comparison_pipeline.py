@@ -576,9 +576,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             lr=1e-4,
             use_scheduler=True,
             lr_patience=30,
-            regularization=0,  # 1e-2,
-            warmup_period=50,
-            frozen_var_value=0.1,
+            regularization=0,
             skip_training=True,
             save_model=True,
     ):
