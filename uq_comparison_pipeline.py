@@ -498,7 +498,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     laplace_model_filename=model_filename,
                 )
             except FileNotFoundError:
-                logging.warning(f"model {model_filename} not found, so training cannot be skipped. training from scratch.")
+                logging.warning(f"model {model_filename} not found, so training cannot be skipped."
+                                " training from scratch.")
                 skip_training = False
 
         if not skip_training:

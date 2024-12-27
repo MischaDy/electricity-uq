@@ -70,7 +70,7 @@ class QR_NN(nn.Module):
     def forward(self, x: torch.Tensor, as_dict=False):
         result = self.layer_stack(x)
         if as_dict:
-            result = {quantile: result[:,i]
+            result = {quantile: result[:, i]
                       for i, quantile in enumerate(self.quantiles)}
         return result
 
