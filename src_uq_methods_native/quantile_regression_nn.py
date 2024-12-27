@@ -1,3 +1,5 @@
+print('importing')
+
 import logging
 
 import torch
@@ -11,6 +13,8 @@ from more_itertools import collapse
 from tqdm import tqdm
 
 from helpers import misc_helpers
+
+print('done')
 
 torch.set_default_device(misc_helpers.get_device())
 
@@ -155,13 +159,17 @@ def train_qr_nn(
     print('setup')
     torch.manual_seed(random_seed)
 
+    print('train/val split')
     X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
+    print('preprocess arrays')
     X_train, y_train, X_val, y_val = preprocess_arrays(X_train, y_train, X_val, y_val)
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
     quantiles = sorted(quantiles)
+
+    print('setup model')
     model = QR_NN(
         dim_in,
         quantiles,
@@ -169,10 +177,13 @@ def train_qr_nn(
         hidden_layer_size=50,
     )
     model = misc_helpers.object_to_cuda(model)
+
+    print('setup meta-stuff')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
     criterion = MultiPinballLoss(quantiles, reduction='mean')
-    
+
+    print('setup training')
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
@@ -203,7 +214,7 @@ def train_qr_nn(
             val_losses.append(val_loss)
         if use_scheduler:
             scheduler.step(val_loss)
-    print('done')
+    print('done training')
     if do_plot_losses:
         print('plotting losses')
         for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
