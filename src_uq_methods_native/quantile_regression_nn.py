@@ -285,8 +285,9 @@ def run_qr_nn(
     print('evaluating')
     X_test = preprocess_array(X_test)
     with torch.no_grad():
-        y_quantiles = qr_nn(X_test)
-    y_pred = y_quantiles[0.5]
+        y_quantiles_dict = qr_nn(X_test, as_dict=True)
+    y_quantiles = np.array(list(y_quantiles_dict.values())).T
+    y_pred = y_quantiles_dict[0.5]
     y_std = None
     return y_pred, y_quantiles, y_std
 
