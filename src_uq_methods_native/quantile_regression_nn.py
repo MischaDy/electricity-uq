@@ -223,7 +223,7 @@ def run_qr_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
     X_test: np.ndarray,
-    quantiles,
+    quantiles: list,
     n_iter=100,
     lr=1e-4,
     lr_patience=5,
@@ -231,6 +231,8 @@ def run_qr_nn(
     do_plot_losses=False,
     use_scheduler=True,
 ):
+    if 0.5 not in quantiles:
+        quantiles.append(0.5)
     qr_nn = train_qr_nn(
         X_train,
         y_train,
