@@ -70,6 +70,19 @@ METHODS_KWARGS = {
         'save_model': True,
         "verbose": True,
     },
+    "native_quantile_regression_nn": {
+        'n_iter': 300,
+        'num_hidden_layers': 2,
+        'hidden_layer_size': 50,
+        'activation': None,
+        'lr': 1e-4,
+        'use_scheduler': True,
+        'lr_patience': 30,
+        'regularization': 0,
+        'skip_training': True,
+        'save_model': True,
+        "verbose": True,
+    },
     "native_gpytorch": {
         'skip_training': False,
         'n_iter': 500,
@@ -561,6 +574,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             hidden_layer_size=50,
             activation=None,
             lr=1e-4,
+            use_scheduler=True,
             lr_patience=30,
             regularization=0,  # 1e-2,
             warmup_period=50,
@@ -602,7 +616,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "lr": lr,
                 "lr_patience": lr_patience,
                 "weight_decay": regularization,
-                "use_scheduler": True,
+                "use_scheduler": use_scheduler,
             }
             logging.info('running training...')
             model = train_qr_nn(
