@@ -1,4 +1,3 @@
-from helpers.misc_helpers import preprocess_arrays, preprocess_array
 
 print('importing')
 
@@ -176,7 +175,7 @@ def train_qr_nn(
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
     print('preprocess arrays')
-    X_train, y_train, X_val, y_val = preprocess_arrays(X_train, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays(X_train, y_train, X_val, y_val)
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
     quantiles = sorted(quantiles)
@@ -274,7 +273,7 @@ def run_qr_nn(
         do_plot_losses=do_plot_losses,
     )
     print('evaluating')
-    X_test = preprocess_array(X_test)
+    X_test = misc_helpers.preprocess_array(X_test)
     with torch.no_grad():
         y_quantiles_dict = qr_nn(X_test, as_dict=True)
     y_quantiles = np.array(list(y_quantiles_dict.values())).T
