@@ -118,7 +118,7 @@ class PinballLoss:
 def train_qr_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
-    quantiles,
+    quantiles: list,
     n_iter=200,
     batch_size=20,
     random_seed=42,
@@ -132,6 +132,25 @@ def train_qr_nn(
     plot_skip_losses=10,
     use_scheduler=True,
 ):
+    """
+
+    :param X_train:
+    :param y_train:
+    :param quantiles: will be sorted internally
+    :param n_iter:
+    :param batch_size:
+    :param random_seed:
+    :param val_frac:
+    :param lr:
+    :param lr_patience:
+    :param lr_reduction_factor:
+    :param weight_decay:
+    :param show_progress:
+    :param do_plot_losses:
+    :param plot_skip_losses:
+    :param use_scheduler:
+    :return:
+    """
     torch.manual_seed(random_seed)
 
     # try:
@@ -146,6 +165,7 @@ def train_qr_nn(
     X_train, y_train, X_val, y_val = preprocess_arrays(X_train, y_train, X_val, y_val)
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
+    quantiles = sorted(quantiles)
     model = QR_NN(
         dim_in,
         quantiles,
