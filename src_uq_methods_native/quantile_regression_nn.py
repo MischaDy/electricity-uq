@@ -158,7 +158,6 @@ def train_qr_nn(
     X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
-    y_val_np = y_val.copy()  # for eval
     X_train, y_train, X_val, y_val = preprocess_arrays(X_train, y_train, X_val, y_val)
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
@@ -211,7 +210,6 @@ def train_qr_nn(
         for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
             logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
         plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
-
     model.eval()
     return model
 
