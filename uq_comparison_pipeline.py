@@ -242,38 +242,16 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
-            model_param_distributions=None,
             cv_n_iter=100,
             cv_n_splits=10,
+            model_param_distributions=None,
             n_jobs=-1,
             random_seed=42,
             skip_training=True,
             save_model=True,
             verbose=1,
     ):
-        """
-
-        :param random_seed:
-        :param cv_n_splits:
-        :param X_train:
-        :param y_train:
-        :param model_param_distributions:
-        :param skip_training:
-        :param n_jobs:
-        :param cv_n_iter:
-        :param save_model:
-        :param verbose:
-        :return:
-        """
-        from sklearn.ensemble import RandomForestRegressor
-        from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
-
-        # todo: more flexibility in choosing (multiple) base models
-        if model_param_distributions is None:
-            model_param_distributions = {
-                "max_depth": stats.randint(2, 100),
-                "n_estimators": stats.randint(10, 1000),
-            }
+        from src_base_models.random_forest import train_random_forest
 
         n_samples = X_train.shape[0]
         filename_base_model = f"base_model_rf_n{n_samples}_it{cv_n_iter}_its{cv_n_splits}.model"
@@ -288,22 +266,16 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         assert all(item is not None for item in [X_train, y_train, model_param_distributions])
         logging.info("training random forest...")
-
-        # CV parameter search
-        model = RandomForestRegressor(random_state=random_seed)
-        cv_obj = RandomizedSearchCV(
-            model,
-            param_distributions=model_param_distributions,
-            n_iter=cv_n_iter,
-            cv=TimeSeriesSplit(n_splits=cv_n_splits),
-            scoring="neg_root_mean_squared_error",
-            random_state=random_seed,
-            verbose=verbose,
+        model = train_random_forest(
+            X_train,
+            y_train,
+            cv_n_iter=cv_n_iter,
+            cv_n_splits=cv_n_splits,
+            model_param_distributions=model_param_distributions,
+            random_seed=random_seed,
             n_jobs=n_jobs,
+            verbose=verbose,
         )
-        # todo: ravel?
-        cv_obj.fit(X_train, y_train.ravel())
-        model = cv_obj.best_estimator_
         logging.info("done.")
         if save_model:
             logging.info('saving RF base model...')
