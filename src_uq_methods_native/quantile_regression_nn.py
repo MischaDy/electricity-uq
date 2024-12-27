@@ -85,10 +85,7 @@ class MultiPinballLoss:
         loss = torch.zeros_like(y_pred_quantiles, dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
             loss[i] = pinball_loss(y_pred_quantiles[:, i:i+1], y_true)  # i+1 to ensure correct shape
-        if self.reduction == 'sum':
-            loss = loss.sum()
-        elif self.reduction == 'mean':
-            loss = loss.mean()
+        loss = reduce_loss(loss, self.reduction)
         return loss
 
 
@@ -116,12 +113,16 @@ class PinballLoss:
         abs_error = abs(error)
         loss[smaller_index] = self.quantile * abs_error[smaller_index]
         loss[bigger_index] = (1 - self.quantile) * abs_error[bigger_index]
-
-        if self.reduction == 'sum':
-            loss = loss.sum()
-        elif self.reduction == 'mean':
-            loss = loss.mean()
+        loss = reduce_loss(loss, self.reduction)
         return loss
+
+
+def reduce_loss(loss, reduction):
+    if reduction == 'sum':
+        loss = loss.sum()
+    elif reduction == 'mean':
+        loss = loss.mean()
+    return loss
 
 
 def train_qr_nn(
