@@ -231,6 +231,17 @@ def make_tensors_contiguous(*tensors):
     return map(make_tensor_contiguous, tensors)
 
 
+def preprocess_array(array: np.ndarray):
+    array = np_array_to_tensor(array)
+    array = object_to_cuda(array)
+    array = make_tensor_contiguous(array)
+    return array
+
+
+def preprocess_arrays(*arrays: np.ndarray):
+    return map(preprocess_array, arrays)
+
+
 def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: int):
     from torch.utils.data import TensorDataset, DataLoader
 

@@ -1,3 +1,5 @@
+from helpers.misc_helpers import preprocess_arrays, preprocess_array
+
 print('importing')
 
 import logging
@@ -246,17 +248,6 @@ def plot_losses(train_losses, val_losses):
     plt.show(block=True)
 
 
-def preprocess_array(array: np.ndarray):
-    array = misc_helpers.np_array_to_tensor(array)
-    array = misc_helpers.object_to_cuda(array)
-    array = misc_helpers.make_tensor_contiguous(array)
-    return array
-
-
-def preprocess_arrays(*arrays: np.ndarray):
-    return map(preprocess_array, arrays)
-
-
 def run_qr_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
@@ -277,9 +268,9 @@ def run_qr_nn(
         quantiles,
         n_iter=n_iter,
         lr=lr,
+        use_scheduler=use_scheduler,
         lr_patience=lr_patience,
         weight_decay=regularization,
-        use_scheduler=use_scheduler,
         do_plot_losses=do_plot_losses,
     )
     print('evaluating')
