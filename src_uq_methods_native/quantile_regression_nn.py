@@ -53,6 +53,7 @@ class QR_NN(nn.Module):
         :param activation:
         """
         super().__init__()
+        self.quantiles = quantiles
         dim_out = len(quantiles)
         layers = collapse([
             nn.Linear(dim_in, hidden_layer_size),
@@ -64,9 +65,11 @@ class QR_NN(nn.Module):
         ])
         self.layer_stack = nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor):
-        # todo: make tensor if isn't?
+    def forward(self, x: torch.Tensor, as_dict=False):
         result = self.layer_stack(x)
+        if as_dict:
+            result = {quantile: result[:,i]
+                      for i, quantile in enumerate(self.quantiles)}
         return result
 
 
