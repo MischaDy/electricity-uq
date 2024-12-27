@@ -231,7 +231,7 @@ def run_qr_nn(
     do_plot_losses=False,
     use_scheduler=True,
 ):
-    mean_var_nn = train_qr_nn(
+    qr_nn = train_qr_nn(
         X_train,
         y_train,
         quantiles,
@@ -244,8 +244,7 @@ def run_qr_nn(
     )
     X_test = preprocess_array(X_test)
     with torch.no_grad():
-        y_pred, y_var = mean_var_nn(X_test)
-    y_quantiles = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
+        y_quantiles = qr_nn(X_test)
     y_pred = y_quantiles[0.5]
     y_std = None
     return y_pred, y_quantiles, y_std
