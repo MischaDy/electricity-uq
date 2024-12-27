@@ -152,6 +152,7 @@ def train_qr_nn(
     :param use_scheduler:
     :return:
     """
+    print('setup')
     torch.manual_seed(random_seed)
 
     # try:
@@ -185,6 +186,7 @@ def train_qr_nn(
     iterable = np.arange(n_iter) + 1
     if show_progress:
         iterable = tqdm(iterable)
+    print('training')
     for _ in iterable:
         model.train()
         for X_train, y_train in train_loader:
@@ -208,7 +210,9 @@ def train_qr_nn(
             val_losses.append(val_loss)
         if use_scheduler:
             scheduler.step(val_loss)
+    print('done')
     if do_plot_losses:
+        print('plotting losses')
         for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
             logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
         plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
@@ -265,6 +269,7 @@ def run_qr_nn(
         use_scheduler=use_scheduler,
         do_plot_losses=do_plot_losses,
     )
+    print('evaluating')
     X_test = preprocess_array(X_test)
     with torch.no_grad():
         y_quantiles = qr_nn(X_test)
@@ -371,6 +376,7 @@ def main():
         do_plot_losses=DO_PLOT_LOSSES,
     )
 
+    print('plotting results')
     plot_uq_result(
         X_train,
         X_test,
