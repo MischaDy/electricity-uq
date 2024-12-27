@@ -392,10 +392,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def posthoc_conformal_prediction(
             self,
-            X_train,
-            y_train,
-            X_pred,
-            quantiles,
+            X_train: np.ndarray,
+            y_train: np.ndarray,
+            X_pred: np.ndarray,
+            quantiles: list,
             model,
             n_estimators=10,
             bootstrap_n_blocks=10,
@@ -461,7 +461,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train: np.ndarray,
             y_train: np.ndarray,
             X_pred: np.ndarray,
-            quantiles,
+            quantiles: list,
             base_model: NN_Estimator,
             n_iter=100,
             batch_size=20,
@@ -547,7 +547,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train: np.ndarray,
             y_train: np.ndarray,
             X_pred: np.ndarray,
-            quantiles,
+            quantiles: list,
             verbose=True,
             skip_training=True,
             save_model=True,
@@ -648,7 +648,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train: np.ndarray,
             y_train: np.ndarray,
             X_pred: np.ndarray,
-            quantiles,
+            quantiles: list,
             n_iter=300,
             num_hidden_layers=2,
             hidden_layer_size=50,
@@ -730,7 +730,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train: np.ndarray,
             y_train: np.ndarray,
             X_pred: np.ndarray,
-            quantiles,
+            quantiles: list,
             n_iter=100,
             val_frac=0.1,
             lr=1e-2,
@@ -816,7 +816,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         return y_preds, y_quantiles, y_std
 
     @staticmethod
-    def quantiles_gaussian(quantiles, y_pred: np.ndarray, y_std: np.ndarray):
+    def quantiles_gaussian(quantiles: list, y_pred: np.ndarray, y_std: np.ndarray):
         from scipy.stats import norm
         # todo: does this work for multi-dim outputs?
         return np.array([norm.ppf(quantiles, loc=mean, scale=std)
