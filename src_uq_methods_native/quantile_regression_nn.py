@@ -69,7 +69,9 @@ class QR_NN(nn.Module):
 
 class MultiPinballLoss:
     def __init__(self, quantiles, reduction='mean'):
-        self.quantiles = sorted(quantiles)
+        if list(quantiles) != sorted(quantiles):
+            raise ValueError(f'Quantiles must be sorted: {quantiles}')
+        self.quantiles = quantiles
         self.reduction = reduction
         self.pinball_losses = [PinballLoss(quantile, reduction)
                                for quantile in self.quantiles]
