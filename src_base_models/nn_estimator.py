@@ -107,7 +107,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         - run different checks on the input data;
         - define some attributes associated to the input data: `n_features_in_` and
           `feature_names_in_`."""
-        from helpers.misc_helpers import tensor_to_np_array
         import torch
 
         torch.set_default_device(misc_helpers.get_device())
@@ -168,11 +167,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
                 val_loss = self._mse_torch(model(X_val), y_val)
                 if self.save_losses_plot:
                     train_loss = self._mse_torch(model(X_train), y_train)
-                    train_loss = tensor_to_np_array(train_loss)
+                    train_loss = misc_helpers.tensor_to_np_array(train_loss)
                     train_losses.append(train_loss)
             if self.use_scheduler:
                 scheduler.step(val_loss)
-            val_loss = tensor_to_np_array(val_loss)
+            val_loss = misc_helpers.tensor_to_np_array(val_loss)
             val_losses.append(val_loss)
 
         model.eval()
@@ -248,7 +247,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         """
         from sklearn.utils.validation import check_is_fitted
-        from helpers.misc_helpers import tensor_to_np_array
 
         # Check if fit had been called
         check_is_fitted(self)
@@ -264,7 +262,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             res = self.model_(X)
         res = res.reshape(-1, 1) if self.is_y_2d_ else res.squeeze()
         if as_np:
-            res = tensor_to_np_array(res)
+            res = misc_helpers.tensor_to_np_array(res)
         return res
 
     def get_nn(self, to_device=True) -> nn.Module:

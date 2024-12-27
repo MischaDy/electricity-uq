@@ -11,7 +11,7 @@ from functools import partial
 from typing import Any, Generator, Callable
 
 from helpers.io_helper import IO_Helper
-from helpers.misc_helpers import starfilter, inverse_transform_ys, inverse_transform_y, upscale_y_std
+from helpers import misc_helpers
 
 
 # todo: add type hints
@@ -299,7 +299,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         base_model_preds = {}
         for model_name, base_model in base_models.items():
             y_pred = base_model.predict(X_pred)
-            y_pred = inverse_transform_y(scaler_y, y_pred)
+            y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
             base_model_preds[model_name] = y_pred
         return base_model_preds
 
@@ -348,8 +348,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         posthoc_methods = self.get_posthoc_methods()
         if self.method_whitelist is not None:
-            posthoc_methods = list(starfilter(lambda name, _: name in self.method_whitelist,
-                                              posthoc_methods))
+            posthoc_methods = list(misc_helpers.starfilter(lambda name, _: name in self.method_whitelist,
+                                                           posthoc_methods))
         if not posthoc_methods:
             logging.info(f'No posthoc methods found and/or whitelisted. Skipping...')
             return dict()
@@ -380,11 +380,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                     base_model_copy,
                     **method_kwargs
                 )
-                y_pred = inverse_transform_y(scaler_y, y_pred)
+                y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
                 if y_quantiles is not None:
-                    y_quantiles = inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
+                    y_quantiles = misc_helpers.inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
                 if y_std is not None:
-                    y_std = upscale_y_std(scaler_y, y_std)
+                    y_std = misc_helpers.upscale_y_std(scaler_y, y_std)
                 key = f'{posthoc_method_name}__{base_model_name}'
                 posthoc_results[key] = y_pred, y_quantiles, y_std
         return posthoc_results
@@ -408,8 +408,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         native_methods = self.get_native_methods()
         if self.method_whitelist is not None:
-            native_methods = list(starfilter(lambda name, _: name in self.method_whitelist,
-                                             native_methods))
+            native_methods = list(misc_helpers.starfilter(lambda name, _: name in self.method_whitelist,
+                                                          native_methods))
         if not native_methods:
             logging.info(f'No native methods found and/or whitelisted. Skipping...')
             return dict()
@@ -426,11 +426,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 quantiles=quantiles,
                 **method_kwargs
             )
-            y_pred = inverse_transform_y(scaler_y, y_pred)
+            y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
             if y_quantiles is not None:
-                y_quantiles = inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
+                y_quantiles = misc_helpers.inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
             if y_std is not None:
-                y_std = upscale_y_std(scaler_y, y_std)
+                y_std = misc_helpers.upscale_y_std(scaler_y, y_std)
             native_results[native_method_name] = y_pred, y_quantiles, y_std
         return native_results
 
@@ -465,8 +465,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         # todo: assumption that quantile ordering is definitely consistent fulfilled?
         if check_order:
-            from helpers.misc_helpers import is_ascending
-            assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
+            assert np.all([misc_helpers.is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
         y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
         return y_quantiles
 
@@ -509,7 +508,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         x_plot_test = x_plot_train + num_test_steps
 
         if scaler_y is not None:
-            y_train, y_test = inverse_transform_ys(scaler_y, y_train, y_test)
+            y_train, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_test)
 
         fig, ax = plt.subplots(figsize=figsize)
         ax.plot(x_plot_train, y_train)
@@ -611,7 +610,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         x_plot_full = np.arange(num_train_steps + num_test_steps)
 
         if scaler_y is not None:
-            y_train, y_test = inverse_transform_ys(scaler_y, y_train, y_test)
+            y_train, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_test)
 
         drawing_quantiles = y_quantiles is not None
         if drawing_quantiles:
@@ -685,7 +684,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
 
         if scaler_y is not None:
-            y_train, y_test = inverse_transform_ys(scaler_y, y_train, y_test)
+            y_train, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_test)
 
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
         ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")

@@ -56,7 +56,7 @@ from mapie.metrics import coverage_width_based, regression_coverage_score, regre
 from mapie.regression import MapieTimeSeriesRegressor
 from mapie.subsample import BlockBootstrap
 
-from helpers.misc_helpers import get_data
+from helpers import misc_helpers
 from helpers.io_helper import IO_Helper
 
 
@@ -70,7 +70,7 @@ STORAGE_PATH = "mapie_storage"
 def main(storage_path):
     io_helper = IO_Helper(storage_path)
     logging.info("loading data")
-    X_train, X_test, y_train, y_test, _, _, _ = get_data(
+    X_train, X_test, y_train, y_test, _, _, _ = misc_helpers.get_data(
         DATA_PATH,
         n_points_per_group=N_POINTS_PER_GROUP,
         standardize_data=True,

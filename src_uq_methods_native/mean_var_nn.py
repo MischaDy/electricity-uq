@@ -6,7 +6,6 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.stats import norm
 
 from more_itertools import collapse
 from tqdm import tqdm
@@ -230,14 +229,8 @@ def run_mean_var_nn(
         y_pred, y_var = mean_var_nn(X_test)
     y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
     y_std = np.sqrt(y_var)
-    y_quantiles = quantiles_gaussian(quantiles, y_pred, y_std)
+    y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
     return y_pred, y_quantiles, y_std
-
-
-def quantiles_gaussian(quantiles, y_pred, y_std):
-    # todo: does this work for multi-dim outputs?
-    return np.array([norm.ppf(quantiles, loc=mean, scale=std)
-                     for mean, std in zip(y_pred, y_std)])
 
 
 def plot_uq_result(

@@ -9,7 +9,7 @@ import numpy as np
 from scipy import stats
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
-from helpers.misc_helpers import get_data, train_val_split, preprocess_array, preprocess_arrays
+from helpers import misc_helpers
 from src_base_models.nn_estimator import NN_Estimator
 
 
@@ -183,7 +183,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If self.standardize_data=False, y_scaler is None.
         All variables except for the scaler are 2D np arrays.
         """
-        return get_data(
+        return misc_helpers.get_data(
             filepath=DATA_FILEPATH,
             n_points_per_group=self.n_points_per_group,
             standardize_data=self.standardize_data,
@@ -326,7 +326,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :return:
         """
         from src_base_models.nn_estimator import NN_Estimator
-        from helpers.misc_helpers import object_to_cuda
 
         n_samples = X_train.shape[0]
         model_filename = f"base_model_nn_n{n_samples}_it{n_iter}.pth"
@@ -334,7 +333,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             logging.info("skipping NN base model training")
             try:
                 model = self.io_helper.load_torch_model(model_filename)
-                model = object_to_cuda(model)
+                model = misc_helpers.object_to_cuda(model)
                 model.eval()
                 return model
             except FileNotFoundError:
@@ -426,7 +425,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             verbose=verbose,
         )
         y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
-        if 0.5 in quantiles:
+        if 0.5 in quantiles:  # todo: improve handling
             num_quantiles = y_quantiles.shape[-1]
             ind = num_quantiles / 2
             y_quantiles = np.insert(y_quantiles, ind, y_pred, axis=1)
@@ -510,7 +509,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import torch
-        from helpers import misc_helpers
         from src_uq_methods_native.quantile_regression_nn import QR_NN, train_qr_nn
 
         torch.manual_seed(random_seed)
@@ -558,7 +556,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model.eval()
                 self.io_helper.save_torch_model_statedict(model, filename)
 
-        X_pred = preprocess_array(X_pred)
+        X_pred = misc_helpers.preprocess_array(X_pred)
         with torch.no_grad():
             # noinspection PyUnboundLocalVariable,PyCallingNonCallable
             y_quantiles_dict = model(X_pred, as_dict=True)
@@ -586,7 +584,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import torch
-        from helpers import misc_helpers
         from src_uq_methods_native.mean_var_nn import MeanVarNN, train_mean_var_nn
 
         if activation is None:
@@ -644,7 +641,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             y_pred, y_var = model(X_pred)
         y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
         y_std = np.sqrt(y_var)
-        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
+        y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
         return y_pred, y_quantiles, y_std
 
     def native_gpytorch(
@@ -668,10 +665,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         import torch
         import gpytorch
         from src_uq_methods_native.gp_regression_gpytorch import ExactGPModel, train_gpytorch
-        from helpers import misc_helpers
 
         logging.info('preparing data..')
-        X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
+        X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
         X_train, y_train, X_val, y_val, X_pred = misc_helpers.np_arrays_to_tensors(
             X_train, y_train, X_val, y_val, X_pred
         )
@@ -734,15 +730,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         y_std = f_preds.stddev
         y_preds, y_std = misc_helpers.tensors_to_np_arrays(y_preds, y_std)
 
-        y_quantiles = self.quantiles_gaussian(quantiles, y_preds, y_std)
+        y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_preds, y_std)
         return y_preds, y_quantiles, y_std
-
-    @staticmethod
-    def quantiles_gaussian(quantiles: list, y_pred: np.ndarray, y_std: np.ndarray):
-        from scipy.stats import norm
-        # todo: does this work for multi-dim outputs?
-        return np.array([norm.ppf(quantiles, loc=mean, scale=std)
-                         for mean, std in zip(y_pred, y_std)])
 
     @staticmethod
     def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None, None, None]:
