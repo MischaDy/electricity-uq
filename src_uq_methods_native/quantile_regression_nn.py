@@ -207,11 +207,11 @@ def train_qr_nn(
         with torch.no_grad():
             y_pred_quantiles_train = model(X_train)
             train_loss = criterion(y_pred_quantiles_train, y_train)
-            train_losses.append(train_loss)
+            train_losses.append(train_loss.item())
 
             y_pred_quantiles_val = model(X_val)
             val_loss = criterion(y_pred_quantiles_val, y_val)
-            val_losses.append(val_loss)
+            val_losses.append(val_loss.item())
         if use_scheduler:
             scheduler.step(val_loss)
     print('done training')
