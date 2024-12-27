@@ -26,8 +26,6 @@ N_POINTS_PER_GROUP = 800
 N_ITER = 100
 LR = 1e-4
 REGULARIZATION = 0  # 1e-2
-WARMUP_PERIOD = 0  # 50  # todo: use?
-FROZEN_VAR_VALUE = 0.1
 USE_SCHEDULER = False
 LR_PATIENCE = 30
 
@@ -221,7 +219,7 @@ def preprocess_arrays(*arrays: np.ndarray):
     return map(preprocess_array, arrays)
 
 
-def run_mean_var_nn(
+def run_qr_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
     X_test: np.ndarray,
@@ -233,8 +231,6 @@ def run_mean_var_nn(
     do_plot_losses=False,
     use_scheduler=True,
 ):
-    common_params = {
-    }
     mean_var_nn = train_qr_nn(
         X_train,
         y_train,
@@ -253,18 +249,6 @@ def run_mean_var_nn(
     y_pred = y_quantiles[0.5]
     y_std = None
     return y_pred, y_quantiles, y_std
-
-
-def _multi_pinball_loss_np(y_pred_quantiles: np.ndarray, y_test: np.ndarray):
-    # todo: iterate col-wise
-    error = y_pred_quantile - y_true
-    smaller_index = error < 0
-    bigger_index = 0 < error
-    abs_error = abs(error)
-    loss[smaller_index] = self.quantile * (abs_error[smaller_index])
-    loss[bigger_index] = (1 - self.quantile) * (abs_error[bigger_index])
-    y_pred_mean, y_pred_std, y_test = misc_helpers.make_ys_1d(y_pred_mean, y_pred_std, y_test)
-    return nll_gaussian(y_pred_mean, y_pred_std, y_test)
 
 
 def plot_uq_result(
@@ -352,7 +336,7 @@ def main():
     logging.info("running method...")
     X_uq = np.row_stack((X_train, X_test))
 
-    y_pred, y_quantiles, y_std = run_mean_var_nn(
+    y_pred, y_quantiles, y_std = run_qr_nn(
         X_train,
         y_train,
         X_uq,
