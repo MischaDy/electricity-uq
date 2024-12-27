@@ -75,13 +75,15 @@ METHODS_KWARGS = {
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
+        'random_seed': 42,
         'lr': 1e-4,
         'use_scheduler': True,
         'lr_patience': 30,
         'regularization': 0,
+        'show_progress': True,
+        'do_plot_losses': True,
         'skip_training': True,
         'save_model': True,
-        "verbose": True,
     },
     "native_gpytorch": {
         'skip_training': False,
@@ -568,15 +570,18 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_train: np.ndarray,
             y_train: np.ndarray,
             X_pred: np.ndarray,
-            quantiles,
+            quantiles: list,
             n_iter=300,
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=None,
+            random_seed=42,
             lr=1e-4,
             use_scheduler=True,
             lr_patience=30,
             regularization=0,
+            show_progress=True,
+            do_plot_losses=True,
             skip_training=True,
             save_model=True,
     ):
@@ -584,8 +589,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         from helpers import misc_helpers
         from src_uq_methods_native.quantile_regression_nn import QR_NN, train_qr_nn
 
+        torch.manual_seed(random_seed)
+
         if activation is None:
             activation = torch.nn.LeakyReLU
+
+        if 0.5 not in quantiles:
+            quantiles.append(0.5)
 
         n_samples = X_train.shape[0]
         filename = f'native_qrnn_n{n_samples}_it{n_iter}_nh{num_hidden_layers}_hs{hidden_layer_size}.pth'
@@ -607,19 +617,17 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         if not skip_training:
             logging.info('training from scratch...')
-
-            common_params = {
-                "X_train": X_train,
-                "y_train": y_train,
-                "lr": lr,
-                "lr_patience": lr_patience,
-                "weight_decay": regularization,
-                "use_scheduler": use_scheduler,
-            }
-            logging.info('running training...')
             model = train_qr_nn(
-                n_iter=n_iter, train_var=True, do_plot_losses=False,
-                **common_params
+                X_train,
+                y_train,
+                quantiles,
+                n_iter=n_iter,
+                lr=lr,
+                use_scheduler=use_scheduler,
+                lr_patience=lr_patience,
+                weight_decay=regularization,
+                do_plot_losses=do_plot_losses,
+                show_progress=show_progress,
             )
             if save_model:
                 logging.info('saving model...')
