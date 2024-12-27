@@ -9,7 +9,7 @@ import numpy as np
 from scipy import stats
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
-from helpers.misc_helpers import get_data, train_val_split, preprocess_array
+from helpers.misc_helpers import get_data, train_val_split, preprocess_array, preprocess_arrays
 from src_base_models.nn_estimator import NN_Estimator
 
 
@@ -502,9 +502,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 skip_training = False
 
         if not skip_training:
-            X_train, y_train = misc_helpers.np_arrays_to_tensors(X_train, y_train)
-            X_train, y_train = misc_helpers.objects_to_cuda(X_train, y_train)
-            X_train, y_train = misc_helpers.make_tensors_contiguous(X_train, y_train)
+            X_train, y_train = preprocess_arrays(X_train, y_train)
 
             train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
             la = la_instantiator(base_model_nn)
@@ -528,9 +526,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         logging.info('predicting...')
 
-        X_pred = misc_helpers.np_array_to_tensor(X_pred)
-        X_pred = misc_helpers.object_to_cuda(X_pred)
-        X_pred = misc_helpers.make_tensor_contiguous(X_pred)
+        X_pred = misc_helpers.preprocess_array(X_pred)
 
         # noinspection PyArgumentList,PyUnboundLocalVariable
         f_mu, f_var = la(X_pred)
@@ -714,9 +710,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model.eval()
                 self.io_helper.save_torch_model_statedict(model, filename)
 
-        X_pred = misc_helpers.np_array_to_tensor(X_pred)
-        X_pred = misc_helpers.object_to_cuda(X_pred)
-        X_pred = misc_helpers.make_tensor_contiguous(X_pred)
+        X_pred = misc_helpers.preprocess_array(X_pred)
         with torch.no_grad():
             # noinspection PyUnboundLocalVariable,PyCallingNonCallable
             y_pred, y_var = model(X_pred)
