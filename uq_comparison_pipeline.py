@@ -9,7 +9,7 @@ import numpy as np
 from scipy import stats
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
-from helpers.misc_helpers import get_data, train_val_split
+from helpers.misc_helpers import get_data, train_val_split, preprocess_array
 from src_base_models.nn_estimator import NN_Estimator
 
 
@@ -634,15 +634,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model.eval()
                 self.io_helper.save_torch_model_statedict(model, filename)
 
-        X_pred = misc_helpers.np_array_to_tensor(X_pred)
-        X_pred = misc_helpers.object_to_cuda(X_pred)
-        X_pred = misc_helpers.make_tensor_contiguous(X_pred)
+        X_pred = preprocess_array(X_pred)
         with torch.no_grad():
             # noinspection PyUnboundLocalVariable,PyCallingNonCallable
-            y_pred, y_var = model(X_pred)
-        y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
-        y_std = np.sqrt(y_var)
-        y_quantiles = self.quantiles_gaussian(quantiles, y_pred, y_std)
+            y_quantiles_dict = model(X_pred, as_dict=True)
+        y_quantiles = np.array(list(y_quantiles_dict.values())).T
+        y_pred = y_quantiles_dict[0.5]
+        y_std = None
         return y_pred, y_quantiles, y_std
 
     def native_mvnn(
