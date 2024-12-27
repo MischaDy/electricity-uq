@@ -84,6 +84,8 @@ class MultiPinballLoss:
 
     def __call__(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
         # todo: optimize (with torch.vmap?)
+        # todo: treat losses individually?
+
         assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
         loss = torch.zeros_like(y_pred_quantiles, dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
@@ -94,7 +96,7 @@ class MultiPinballLoss:
 
 class PinballLoss:
     """
-    copied with minor improvements from: https://github.com/ywatanabe1989/custom_losses_pytorch/blob/master/pinball_loss.py
+    copied with minor changes from: https://github.com/ywatanabe1989/custom_losses_pytorch/blob/master/pinball_loss.py
     """
     def __init__(self, quantile, reduction='none'):
         """
