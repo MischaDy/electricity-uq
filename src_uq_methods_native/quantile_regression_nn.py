@@ -145,11 +145,7 @@ def train_qr_nn(
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
     y_val_np = y_val.copy()  # for eval
-
-    X_train, y_train, X_val, y_val = misc_helpers.np_arrays_to_tensors(X_train, y_train, X_val, y_val)
-    X_train, y_train, X_val, y_val = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
-    X_train, y_train, X_val, y_val = misc_helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
-
+    X_train, y_train, X_val, y_val = preprocess_arrays(X_train, y_train, X_val, y_val)
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
 
     model = QR_NN(
@@ -214,6 +210,17 @@ def plot_losses(train_losses, val_losses):
     plt.show(block=True)
 
 
+def preprocess_array(array: np.ndarray):
+    array = misc_helpers.np_array_to_tensor(array)
+    array = misc_helpers.object_to_cuda(array)
+    array = misc_helpers.make_tensor_contiguous(array)
+    return array
+
+
+def preprocess_arrays(*arrays: np.ndarray):
+    return map(preprocess_array, arrays)
+
+
 def run_mean_var_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
@@ -226,9 +233,6 @@ def run_mean_var_nn(
     do_plot_losses=False,
     use_scheduler=True,
 ):
-    X_test = misc_helpers.np_array_to_tensor(X_test)
-    X_test = misc_helpers.object_to_cuda(X_test)
-    X_test = misc_helpers.make_tensor_contiguous(X_test)
     common_params = {
     }
     mean_var_nn = train_qr_nn(
@@ -242,6 +246,7 @@ def run_mean_var_nn(
         use_scheduler=use_scheduler,
         do_plot_losses=do_plot_losses,
     )
+    X_test = preprocess_array(X_test)
     with torch.no_grad():
         y_pred, y_var = mean_var_nn(X_test)
     y_quantiles = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
