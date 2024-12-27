@@ -95,7 +95,7 @@ class PinballLoss:
         :param quantile:
         :param reduction: one of: 'mean', 'sum', 'none'
         """
-        assert 0 < quantile < 1
+        assert 0 <= quantile <= 1
         assert reduction in {'mean', 'sum', 'none'}
         self.quantile = quantile
         self.reduction = reduction
