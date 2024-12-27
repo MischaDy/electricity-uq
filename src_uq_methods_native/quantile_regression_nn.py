@@ -107,8 +107,8 @@ class PinballLoss:
         smaller_index = error < 0
         bigger_index = 0 < error
         abs_error = abs(error)
-        loss[smaller_index] = self.quantile * (abs_error[smaller_index])
-        loss[bigger_index] = (1 - self.quantile) * (abs_error[bigger_index])
+        loss[smaller_index] = self.quantile * abs_error[smaller_index]
+        loss[bigger_index] = (1 - self.quantile) * abs_error[bigger_index]
 
         if self.reduction == 'sum':
             loss = loss.sum()
@@ -159,16 +159,13 @@ def train_qr_nn(
         hidden_layer_size=50,
     )
     model = misc_helpers.object_to_cuda(model)
-
-    # noinspection PyTypeChecker
-    train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
-
-    criterion = MultiPinballLoss(quantiles, reduction='mean')
-    criterion = misc_helpers.object_to_cuda(criterion)
-
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
-
+    criterion = MultiPinballLoss(quantiles, reduction='mean')
+    criterion = misc_helpers.object_to_cuda(criterion)
+    
+    # noinspection PyTypeChecker
+    train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
     iterable = np.arange(n_iter) + 1
     if show_progress:
