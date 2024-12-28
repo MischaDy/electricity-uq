@@ -148,10 +148,66 @@ for _, method_kwargs in METHODS_KWARGS.items():
         method_kwargs['skip_training'] = True
 
 
+FILENAME_PARTS = {
+    "native_mvnn": (
+        [
+            ('n', 'n_samples'),
+            ('it', 'n_iter'),
+            ('nh', 'num_hidden_layers'),
+            ('hs', 'hidden_layer_size'),
+        ],
+        'pth'
+    ),
+    "native_quantile_regression_nn": (
+        [
+            ('abbreviation', 'kwarg_name'),
+        ],
+        'ext'
+    ),
+    "native_gpytorch": (
+        [
+            ('abbreviation', 'kwarg_name'),
+        ],
+        'ext'
+    ),
+    "posthoc_conformal_prediction": (
+        [
+            ('abbreviation', 'kwarg_name'),
+        ],
+        'ext'
+    ),
+    "posthoc_laplace": (
+        [
+            ('abbreviation', 'kwarg_name'),
+        ],
+        'ext'
+    ),
+    "base_model_linreg": (
+        [
+            ('abbreviation', 'kwarg_name'),
+        ],
+        'ext'
+    ),
+    "base_model_nn": (
+        [
+            ('abbreviation', 'kwarg_name'),
+        ],
+        'ext'
+    ),
+    "base_model_rf": (
+        [
+            ('abbreviation', 'kwarg_name'),
+        ],
+        'ext'
+    ),
+}
+
+
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     def __init__(
             self,
+            filename_parts,
             *,
             storage_path="comparison_storage",
             methods_kwargs: dict[str, dict[str, Any]] = None,
@@ -167,7 +223,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :param n_points_per_group: both training size and test size
         :param standardize_data: True if both X and y should be standardized, False if neither.
         """
-        super().__init__(storage_path=storage_path, method_whitelist=method_whitelist,
+        super().__init__(storage_path=storage_path, filename_parts=filename_parts, method_whitelist=method_whitelist,
                          posthoc_base_blacklist=posthoc_base_blacklist, standardize_data=standardize_data)
         if methods_kwargs is None:
             methods_kwargs = {}
@@ -809,6 +865,7 @@ def main():
     torch.set_default_dtype(torch.float32)
 
     uq_comparer = UQ_Comparison_Pipeline(
+        filename_parts=FILENAME_PARTS,
         storage_path=STORAGE_PATH,
         methods_kwargs=METHODS_KWARGS,
         method_whitelist=METHOD_WHITELIST,

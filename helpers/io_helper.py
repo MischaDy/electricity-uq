@@ -10,11 +10,29 @@ class IO_Helper:
     def __init__(
             self,
             base_folder,
+            filename_parts: dict[tuple[list[tuple[str, str]], str]],  # todo: make optional?
             arrays_folder="arrays",
             models_folder="models",
             plots_folder="plots",
             metrics_folder='metrics',
     ):
+        """
+
+        :param base_folder:
+        :param filename_parts: A dict that looks like this:
+            {
+                "method_name": ([('abbrev1', 'kwarg_name1'),
+                                 ('abbrev2', 'kwarg_name2'),
+                                 ], 'ext'),
+                ...
+            }
+            and results in filenames such as: f'method_name_abbrev1{kwarg_name1}_abbrev2{kwarg_name2}.ext'.
+        :param arrays_folder:
+        :param models_folder:
+        :param plots_folder:
+        :param metrics_folder:
+        """
+        self.filename_parts = filename_parts
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
         self.plots_folder = os.path.join(base_folder, plots_folder)
