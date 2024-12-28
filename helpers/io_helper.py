@@ -47,37 +47,29 @@ class IO_Helper:
             os.makedirs(folder, exist_ok=True)
 
     ### GETTERS ###
-    def get_array_savepath(self, method_name=None, filename=None, infix=None):
-        if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+    def _get_array_savepath(self, filename):
         return os.path.join(self.arrays_folder, filename)
 
-    def get_model_savepath(self, method_name=None, filename=None, infix=None):
-        if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+    def _get_model_savepath(self, filename):
         return os.path.join(self.models_folder, filename)
 
-    def get_plot_savepath(self, method_name=None, filename=None, infix=None):
-        if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+    def _get_plot_savepath(self, filename):
         return os.path.join(self.plots_folder, filename)
 
-    def get_metrics_savepath(self, method_name=None, filename=None, infix=None):
-        if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+    def _get_metrics_savepath(self, filename):
         return os.path.join(self.metrics_folder, filename)
 
     ### LOADERS ###
     def load_array(self, method_name=None, filename=None, infix=None):
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        return np.load(self.get_array_savepath(filename))
+        return np.load(self._get_array_savepath(filename))
 
     def load_model(self, method_name=None, filename=None, infix=None):
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
         import pickle
-        with open(self.get_model_savepath(filename), "rb") as file:
+        with open(self._get_model_savepath(filename), "rb") as file:
             model = pickle.load(file)
         return model
 
@@ -85,7 +77,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
         import torch
-        filepath = self.get_model_savepath(filename)
+        filepath = self._get_model_savepath(filename)
         model = torch.load(filepath, weights_only=False)
         model.eval()
         return model
@@ -100,12 +92,11 @@ class IO_Helper:
         :return:
         """
         import torch
-
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
         if model_kwargs is None:
             model_kwargs = {}
-        path = self.get_model_savepath(filename)
+        path = self._get_model_savepath(filename)
         state_dict = torch.load(path)
         model = model_class(**model_kwargs)
         model.load_state_dict(state_dict)
@@ -123,7 +114,7 @@ class IO_Helper:
         import torch
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        laplace_model_filepath = self.get_model_savepath(filename)
+        laplace_model_filepath = self._get_model_savepath(filename)
         la = la_instantiator(base_model)
         la.load_state_dict(torch.load(laplace_model_filepath))
         return la
@@ -132,14 +123,14 @@ class IO_Helper:
     def save_array(self, array, method_name=None, filename=None, infix=None):
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        path = self.get_array_savepath(filename)
+        path = self._get_array_savepath(filename)
         np.save(path, array)
 
     def save_model(self, model, method_name=None, filename=None, infix=None):
         import pickle
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        path = self.get_model_savepath(filename)
+        path = self._get_model_savepath(filename)
         with open(path, "wb") as file:
             # noinspection PyTypeChecker
             pickle.dump(model, file)
@@ -148,28 +139,27 @@ class IO_Helper:
         import torch
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        path = self.get_model_savepath(filename)
+        path = self._get_model_savepath(filename)
         torch.save(model, path)
 
     def save_torch_model_statedict(self, model, method_name=None, filename=None, infix=None):
         import torch
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        path = self.get_model_savepath(filename)
+        path = self._get_model_savepath(filename)
         torch.save(model.state_dict(), path)
 
     def save_laplace_model_statedict(
             self,
             laplace_model,
             method_name=None,
-            method_kwargs=None,
             filename=None,
             infix=None,
     ):
         import torch
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        laplace_model_filepath = self.get_model_savepath(filename)
+        laplace_model_filepath = self._get_model_savepath(filename)
         torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
     def save_plot(self, method_name=None, filename=None, infix=None):
@@ -180,7 +170,7 @@ class IO_Helper:
         if ext not in {'png', 'jpeg', 'jpg'}:
             logging.info(f'filename {filename} had no extension. saving as PNG')
             filename += '.png'
-        path = self.get_plot_savepath(filename)
+        path = self._get_plot_savepath(filename)
         plt.savefig(path)
 
     def save_metrics(self, metrics: dict, method_name=None, filename=None, infix=None):
@@ -189,7 +179,7 @@ class IO_Helper:
             filename = self.make_filename(method_name, infix=infix)
         filename = f'{filename}_metrics'
         filename += '.json'
-        path = self.get_metrics_savepath(filename)
+        path = self._get_metrics_savepath(filename)
         metrics_str = json.dumps(metrics, indent=4)
         with open(path, 'w') as file:
             file.write(metrics_str)
