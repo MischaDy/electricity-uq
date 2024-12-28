@@ -36,7 +36,6 @@ STORAGE_PATH = "comparison_storage"
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace",
-    # "native_quantile_regression",
     "native_quantile_regression_nn",
     # "native_gpytorch",
     # "native_mvnn",
