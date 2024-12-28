@@ -516,7 +516,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model = self.io_helper.load_laplace_model_statedict(
                     base_model_nn,
                     la_instantiator,
-                    laplace_model_filename=model_filename,
+                    filename=model_filename,
                 )
             except FileNotFoundError:
                 logging.warning(f"model {model_filename} not found, so training cannot be skipped."
@@ -535,7 +535,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             )
             if save_model:
                 logging.info('saving model...')
-                self.io_helper.save_laplace_model_statedict(model, laplace_model_filename=model_filename)
+                self.io_helper.save_laplace_model_statedict(model, filename=model_filename)
 
         logging.info('predicting...')
         X_pred = misc_helpers.preprocess_array(X_pred)

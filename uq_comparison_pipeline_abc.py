@@ -516,7 +516,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         ax.set_ylabel(ylabel)
         ax.legend(["Training data", "Test data"])
         if save_plot:
-            self.io_helper.save_plot(filename)
+            self.io_helper.save_plot(filename=filename)
         if show_plot:
             plt.show(block=True)
         plt.close(fig)
