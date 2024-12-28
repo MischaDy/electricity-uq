@@ -151,7 +151,6 @@ for _, method_kwargs in METHODS_KWARGS.items():
 FILENAME_PARTS = {
     "native_mvnn": (
         [
-            ('n', 'n_samples'),
             ('it', 'n_iter'),
             ('nh', 'num_hidden_layers'),
             ('hs', 'hidden_layer_size'),
@@ -160,45 +159,49 @@ FILENAME_PARTS = {
     ),
     "native_quantile_regression_nn": (
         [
-            ('abbreviation', 'kwarg_name'),
+            ('it', 'n_iter'),
+            ('nh', 'num_hidden_layers'),
+            ('hs', 'hidden_layer_size'),
         ],
-        'ext'
+        'pth'
     ),
     "native_gpytorch": (
         [
-            ('abbreviation', 'kwarg_name'),
+            ('it', 'n_iter'),
         ],
-        'ext'
+        'pth'
     ),
     "posthoc_conformal_prediction": (
         [
-            ('abbreviation', 'kwarg_name'),
+            ('it', 'n_estimators'),
         ],
-        'ext'
+        'model'
     ),
     "posthoc_laplace": (
         [
-            ('abbreviation', 'kwarg_name'),
+            ('it', 'n_iter'),
         ],
-        'ext'
+        'pth'
     ),
     "base_model_linreg": (
         [
-            ('abbreviation', 'kwarg_name'),
         ],
-        'ext'
+        'model'
     ),
     "base_model_nn": (
         [
-            ('abbreviation', 'kwarg_name'),
+            ('it', 'n_iter'),
+            ('nh', 'num_hidden_layers'),
+            ('hs', 'hidden_layer_size'),
         ],
-        'ext'
+        'pth'
     ),
     "base_model_rf": (
         [
-            ('abbreviation', 'kwarg_name'),
+            ('it', 'cv_n_iter'),
+            ('its', 'cv_n_splits'),
         ],
-        'ext'
+        'model'
     ),
 }
 
@@ -223,11 +226,15 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :param n_points_per_group: both training size and test size
         :param standardize_data: True if both X and y should be standardized, False if neither.
         """
-        super().__init__(storage_path=storage_path, filename_parts=filename_parts, method_whitelist=method_whitelist,
-                         posthoc_base_blacklist=posthoc_base_blacklist, standardize_data=standardize_data)
-        if methods_kwargs is None:
-            methods_kwargs = {}
-        self.methods_kwargs.update(methods_kwargs)
+        super().__init__(
+            storage_path=storage_path,
+            methods_kwargs=methods_kwargs,
+            filename_parts=filename_parts,
+            n_samples=n_points_per_group,  # todo: allow setting later?
+            method_whitelist=method_whitelist,
+            posthoc_base_blacklist=posthoc_base_blacklist,
+            standardize_data=standardize_data,
+        )
         self.n_points_per_group = n_points_per_group
 
     def get_data(self):
@@ -736,9 +743,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         n_samples = X_train.shape[0]
         common_postfix = f'n{n_samples}_it{n_iter}'
+        infix = 'likelihood'
         common_prefix = 'native_gpytorch'
         filename_model = f'{common_prefix}_{common_postfix}.pth'
         filename_likelihood = f'{common_prefix}_likelihood_{common_postfix}.pth'
+
         if skip_training:
             logging.info('skipping training...')
             try:
@@ -860,6 +869,7 @@ def check_method_kwargs_dict(class_, method_kwargs_dict):
 
 def main():
     check_method_kwargs_dict(UQ_Comparison_Pipeline, METHODS_KWARGS)
+    # todo: check filename parts dict!
 
     import torch
     torch.set_default_dtype(torch.float32)
