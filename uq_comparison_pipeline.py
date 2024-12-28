@@ -428,7 +428,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             num_quantiles = y_quantiles.shape[-1]
             ind = num_quantiles / 2
             y_quantiles = np.insert(y_quantiles, ind, y_pred, axis=1)
-        y_std = None  # self.stds_from_quantiles(y_quantiles)
+        y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
     def posthoc_laplace(
@@ -561,7 +561,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             y_quantiles_dict = model(X_pred, as_dict=True)
         y_quantiles = np.array(list(y_quantiles_dict.values())).T
         y_pred = y_quantiles_dict[0.5]
-        y_std = None
+        y_std = self.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
     def native_mvnn(
