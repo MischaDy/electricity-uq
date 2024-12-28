@@ -157,3 +157,11 @@ class IO_Helper:
         metrics_str = json.dumps(metrics, indent=4)
         with open(path, 'w') as file:
             file.write(metrics_str)
+
+    def make_filename(self, method_name, kwargs, sep='_'):
+        suffixes, ext = self.filename_parts[method_name]
+        joined_suffixes = [f'{shorthand}{kwargs[kwarg_name]}'
+                           for shorthand, kwarg_name in suffixes]
+        suffix_str = sep.join(joined_suffixes)
+        filename = f'{method_name}{sep}{suffix_str}.{ext}'
+        return filename
