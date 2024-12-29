@@ -5,32 +5,13 @@ from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
-from matplotlib import pyplot as plt
 
 from more_itertools import collapse
 from tqdm import tqdm
-from uncertainty_toolbox import nll_gaussian
 
 from helpers import misc_helpers
 
 torch.set_default_device(misc_helpers.get_device())
-
-
-DATA_PATH = '../data/data_1600.pkl'
-QUANTILES = [0.05, 0.25, 0.75, 0.95]
-
-STANDARDIZE_DATA = True
-PLOT_DATA = False
-
-N_POINTS_PER_GROUP = 800
-
-N_ITER = 100
-LR = 1e-4
-REGULARIZATION = 0  # 1e-2
-WARMUP_PERIOD = 50
-FROZEN_VAR_VALUE = 0.1
-USE_SCHEDULER = False
-LR_PATIENCE = 30
 
 
 class MeanVarNN(nn.Module):
@@ -93,11 +74,6 @@ def train_mean_var_nn(
     use_scheduler=True,
 ):
     torch.manual_seed(random_seed)
-
-    # try:
-    #     X_train, y_train, X_val, y_val = train_val_split(X_train, y_train, val_frac)
-    # except TypeError:
-    #     raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
     X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
     assert X_train.shape[0] > 0 and X_val.shape[0] > 0
@@ -173,164 +149,19 @@ def train_mean_var_nn(
 
 def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.ndarray):
     # todo: use nn.NLLLoss instead!
+    # todo: use torch.nn.NLLLoss instead!
+    from uncertainty_toolbox import nll_gaussian
     y_pred_std = np.sqrt(y_pred_var)
     y_pred_mean, y_pred_std, y_test = misc_helpers.make_ys_1d(y_pred_mean, y_pred_std, y_test)
     return nll_gaussian(y_pred_mean, y_pred_std, y_test)
 
 
-def run_mean_var_nn(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_test: np.ndarray,
-    quantiles,
-    n_iter=100,
-    lr=1e-4,
-    lr_patience=5,
-    regularization=0,
-    warmup_period=10,
-    frozen_var_value=0.1,
-    do_plot_losses=False,
-    use_scheduler=True,
-):
-    X_test = misc_helpers.np_array_to_tensor(X_test)
-    X_test = misc_helpers.object_to_cuda(X_test)
-    X_test = misc_helpers.make_tensor_contiguous(X_test)
-    common_params = {
-        "lr": lr,
-        "lr_patience": lr_patience,
-        "weight_decay": regularization,
-        "use_scheduler": use_scheduler,
-    }
-    mean_var_nn = None
-    if warmup_period > 0:
-        logging.info('running warmup...')
-        mean_var_nn = train_mean_var_nn(
-            X_train, y_train, n_iter=warmup_period, train_var=False, frozen_var_value=frozen_var_value,
-            do_plot_losses=False,
-            **common_params
-        )
-    mean_var_nn = train_mean_var_nn(
-        X_train, y_train, model=mean_var_nn, n_iter=n_iter, train_var=True, do_plot_losses=do_plot_losses,
-        **common_params
-    )
+def predict_with_mvnn(model, X_pred, quantiles):
+    X_pred = misc_helpers.preprocess_array(X_pred)
     with torch.no_grad():
-        y_pred, y_var = mean_var_nn(X_test)
+        # noinspection PyUnboundLocalVariable,PyCallingNonCallable
+        y_pred, y_var = model(X_pred)
     y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
     y_std = np.sqrt(y_var)
     y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
     return y_pred, y_quantiles, y_std
-
-
-def plot_uq_result(
-    X_train,
-    X_test,
-    y_train,
-    y_test,
-    y_preds,
-    y_quantiles,
-    y_std,
-    quantiles,
-):
-    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
-
-    x_plot_train = np.arange(num_train_steps)
-    x_plot_full = np.arange(num_train_steps + num_test_steps)
-    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-    x_plot_uq = x_plot_full
-
-    drawing_std = y_quantiles is not None
-    if drawing_std:
-        ci_low, ci_high = (
-            y_quantiles[:, 0],
-            y_quantiles[:, -1],
-        )
-        drawn_quantile = round(max(quantiles) - min(quantiles), 2)
-    else:
-        ci_low, ci_high = y_preds - y_std, y_preds + y_std
-
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-    ax.plot(
-        x_plot_uq,
-        y_preds,
-        label=f"mean/median prediction",  # todo: mean or median?
-        color="green",
-    )
-    # noinspection PyUnboundLocalVariable
-    label = rf"{f'{100 * drawn_quantile}% CI' if drawing_std else '1 std'}"
-    ax.fill_between(
-        x_plot_uq.ravel(),
-        ci_low,
-        ci_high,
-        color="green",
-        alpha=0.2,
-        label=label,
-    )
-    ax.legend()
-    ax.set_xlabel("data")
-    ax.set_ylabel("target")
-    plt.show(block=True)
-
-
-def get_clean_data(n_points_per_group, standardize_data, do_plot_data=True):
-    X_train, X_test, y_train, y_test, X, y, _ = misc_helpers.get_data(
-        DATA_PATH,
-        n_points_per_group=n_points_per_group,
-        standardize_data=standardize_data,
-    )
-    if do_plot_data:
-        my_plot_data(X, y)
-    return X_train, X_test, y_train, y_test, X, y
-
-
-def my_plot_data(X, y):
-    x_plot = np.arange(X.shape[0])
-    if X.shape[-1] == 1:
-        plt.plot(x_plot, X, label='X')
-    plt.plot(x_plot, y, label='y')
-    plt.legend()
-    plt.show(block=True)
-
-
-def main():
-    torch.set_default_dtype(torch.float32)
-    logging.info("loading data...")
-    X_train, X_test, y_train, y_test, X, y = get_clean_data(
-        N_POINTS_PER_GROUP,
-        standardize_data=STANDARDIZE_DATA,
-        do_plot_data=PLOT_DATA
-    )
-    logging.info("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
-
-    logging.info("running method...")
-    X_uq = np.row_stack((X_train, X_test))
-
-    y_pred, y_quantiles, y_std = run_mean_var_nn(
-        X_train,
-        y_train,
-        X_uq,
-        QUANTILES,
-        n_iter=N_ITER,
-        lr=LR,
-        lr_patience=LR_PATIENCE,
-        regularization=REGULARIZATION,
-        warmup_period=WARMUP_PERIOD,
-        frozen_var_value=FROZEN_VAR_VALUE,
-        use_scheduler=USE_SCHEDULER,
-    )
-
-    plot_uq_result(
-        X_train,
-        X_test,
-        y_train,
-        y_test,
-        y_pred,
-        y_quantiles,
-        y_std,
-        QUANTILES
-    )
-
-
-if __name__ == '__main__':
-    main()
