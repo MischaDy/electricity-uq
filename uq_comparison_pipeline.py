@@ -283,19 +283,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         from src_base_models.linear_regression import train_linreg
-        n_samples = X_train.shape[0]
-        filename_base_model = f"base_model_linreg_n{n_samples}.model"
+        method_name = 'base_model_linreg'
         if skip_training:
-            try:
-                logging.info('skipping linreg base model training')
-                model = self.io_helper.load_model(filename_base_model)
+            model = self.try_skipping_training(method_name)
+            if model is not None:
                 return model
-            except FileNotFoundError:
-                logging.warning(f"trained base model '{filename_base_model}' not found. training from scratch.")
         model = train_linreg(X_train, y_train, n_jobs=n_jobs)
         if save_model:
-            logging.info('saving linreg base model...')
-            self.io_helper.save_model(model, filename_base_model)
+            self.save_model(model, method_name=method_name)
         return model
 
     def base_model_rf(
