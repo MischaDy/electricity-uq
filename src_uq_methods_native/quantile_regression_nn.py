@@ -212,12 +212,16 @@ def train_qr_nn(
             scheduler.step(val_loss)
     logging.info('done training.')
     if do_plot_losses:
-        logging.info('plotting losses')
-        for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
-            logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
-        misc_helpers.plot_nn_losses(train_losses, val_losses, show_plots=do_plot_losses, loss_skip=loss_skip)
+        plot_losses(train_losses, val_losses, loss_skip, do_plot_losses)
     model.eval()
     return model
+
+
+def plot_losses(train_losses, val_losses, loss_skip, do_plot_losses):
+    logging.info('plotting losses')
+    for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
+        logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
+    misc_helpers.plot_nn_losses(train_losses, val_losses, show_plots=do_plot_losses, loss_skip=loss_skip)
 
 
 def predict_with_qr_nn(model, X_pred):
