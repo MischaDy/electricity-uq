@@ -552,7 +552,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import torch
-        from src_uq_methods_native.quantile_regression_nn import QR_NN, train_qr_nn
+        from src_uq_methods_native.quantile_regression_nn import (
+            QR_NN,
+            train_qr_nn,
+            predict_with_qr_nn,
+        )
 
         torch.manual_seed(random_seed)
 
@@ -598,14 +602,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 logging.info('saving model...')
                 model.eval()
                 self.io_helper.save_torch_model_statedict(model, filename)
-
-        X_pred = misc_helpers.preprocess_array(X_pred)
-        with torch.no_grad():
-            # noinspection PyUnboundLocalVariable,PyCallingNonCallable
-            y_quantiles_dict = model(X_pred, as_dict=True)
-        y_quantiles = np.array(list(y_quantiles_dict.values())).T
-        y_pred = y_quantiles_dict[0.5]
-        y_std = misc_helpers.stds_from_quantiles(y_quantiles)
+        # noinspection PyUnboundLocalVariable
+        y_pred, y_quantiles, y_std = predict_with_qr_nn(model, X_pred)
         return y_pred, y_quantiles, y_std
 
     def native_mvnn(

@@ -89,7 +89,7 @@ class MultiPinballLoss:
         loss = torch.zeros_like(y_pred_quantiles, dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
             loss[i] = pinball_loss(y_pred_quantiles[:, i:i+1], y_true)  # i+1 to ensure correct shape
-        loss = reduce_loss(loss, self.reduction)
+        loss = _reduce_loss(loss, self.reduction)
         return loss
 
 
@@ -117,16 +117,26 @@ class PinballLoss:
         abs_error = abs(error)
         loss[smaller_index] = self.quantile * abs_error[smaller_index]
         loss[bigger_index] = (1 - self.quantile) * abs_error[bigger_index]
-        loss = reduce_loss(loss, self.reduction)
+        loss = _reduce_loss(loss, self.reduction)
         return loss
 
 
-def reduce_loss(loss, reduction):
+def _reduce_loss(loss, reduction):
     if reduction == 'sum':
         loss = loss.sum()
     elif reduction == 'mean':
         loss = loss.mean()
     return loss
+
+
+def preprocess_data(X_train, y_train, val_frac=0.1):
+    logging.info('train/val split')
+    X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
+    assert X_train.shape[0] > 0 and X_val.shape[0] > 0
+
+    logging.info('preprocess arrays')
+    X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays(X_train, y_train, X_val, y_val)
+    return X_train, y_train, X_val, y_val
 
 
 def train_qr_nn(
@@ -168,14 +178,9 @@ def train_qr_nn(
     logging.info('setup')
     torch.manual_seed(random_seed)
 
-    logging.info('train/val split')
-    X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
-    assert X_train.shape[0] > 0 and X_val.shape[0] > 0
+    X_train, y_train, X_val, y_val = preprocess_data(X_train, y_train, val_frac=val_frac)
 
-    logging.info('preprocess arrays')
-    X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays(X_train, y_train, X_val, y_val)
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-
     quantiles = sorted(quantiles)
 
     logging.info('setup model')
@@ -187,7 +192,7 @@ def train_qr_nn(
     )
     model = misc_helpers.object_to_cuda(model)
 
-    logging.info('setup meta-stuff')
+    logging.info('setup meta-models')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
     criterion = MultiPinballLoss(quantiles, reduction='mean')
@@ -233,151 +238,12 @@ def train_qr_nn(
     return model
 
 
-def run_qr_nn(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_test: np.ndarray,
-    quantiles: list,
-    n_iter=100,
-    lr=1e-4,
-    lr_patience=5,
-    regularization=0,
-    do_plot_losses=False,
-    use_scheduler=True,
-):
-    if 0.5 not in quantiles:
-        quantiles.append(0.5)
-    qr_nn = train_qr_nn(
-        X_train,
-        y_train,
-        quantiles,
-        n_iter=n_iter,
-        lr=lr,
-        use_scheduler=use_scheduler,
-        lr_patience=lr_patience,
-        weight_decay=regularization,
-        do_plot_losses=do_plot_losses,
-    )
-    logging.info('evaluating')
-    X_test = misc_helpers.preprocess_array(X_test)
+def predict_with_qr_nn(model, X_pred):
+    X_pred = misc_helpers.preprocess_array(X_pred)
     with torch.no_grad():
-        y_quantiles_dict = qr_nn(X_test, as_dict=True)
+        # noinspection PyUnboundLocalVariable,PyCallingNonCallable
+        y_quantiles_dict = model(X_pred, as_dict=True)
     y_quantiles = np.array(list(y_quantiles_dict.values())).T
     y_pred = y_quantiles_dict[0.5]
-    y_std = None
+    y_std = misc_helpers.stds_from_quantiles(y_quantiles)
     return y_pred, y_quantiles, y_std
-
-
-def plot_uq_result(
-    X_train,
-    X_test,
-    y_train,
-    y_test,
-    y_preds,
-    y_quantiles,
-    y_std,
-    quantiles,
-):
-    num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
-
-    x_plot_train = np.arange(num_train_steps)
-    x_plot_full = np.arange(num_train_steps + num_test_steps)
-    x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-    x_plot_uq = x_plot_full
-
-    drawing_std = y_quantiles is not None
-    if drawing_std:
-        ci_low, ci_high = (
-            y_quantiles[:, 0],
-            y_quantiles[:, -1],
-        )
-        drawn_quantile = round(max(quantiles) - min(quantiles), 2)
-    else:
-        ci_low, ci_high = y_preds - y_std, y_preds + y_std
-
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-    ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-    ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-    ax.plot(
-        x_plot_uq,
-        y_preds,
-        label=f"mean/median prediction",  # todo: mean or median?
-        color="green",
-    )
-    # noinspection PyUnboundLocalVariable
-    label = rf"{f'{100 * drawn_quantile}% CI' if drawing_std else '1 std'}"
-    ax.fill_between(
-        x_plot_uq.ravel(),
-        ci_low,
-        ci_high,
-        color="green",
-        alpha=0.2,
-        label=label,
-    )
-    ax.legend()
-    ax.set_xlabel("data")
-    ax.set_ylabel("target")
-    plt.show(block=True)
-
-
-def get_clean_data(n_points_per_group, standardize_data, do_plot_data=True):
-    X_train, X_test, y_train, y_test, X, y, _ = misc_helpers.get_data(
-        DATA_PATH,
-        n_points_per_group=n_points_per_group,
-        standardize_data=standardize_data,
-    )
-    if do_plot_data:
-        my_plot_data(X, y)
-    return X_train, X_test, y_train, y_test, X, y
-
-
-def my_plot_data(X, y):
-    x_plot = np.arange(X.shape[0])
-    if X.shape[-1] == 1:
-        plt.plot(x_plot, X, label='X')
-    plt.plot(x_plot, y, label='y')
-    plt.legend()
-    plt.show(block=True)
-
-
-def main():
-    torch.set_default_dtype(torch.float32)
-    logging.info("loading data...")
-    X_train, X_test, y_train, y_test, X, y = get_clean_data(
-        N_POINTS_PER_GROUP,
-        standardize_data=STANDARDIZE_DATA,
-        do_plot_data=PLOT_DATA
-    )
-    logging.info("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
-
-    logging.info("running method...")
-    X_uq = np.row_stack((X_train, X_test))
-
-    y_pred, y_quantiles, y_std = run_qr_nn(
-        X_train,
-        y_train,
-        X_uq,
-        QUANTILES,
-        n_iter=N_ITER,
-        lr=LR,
-        lr_patience=LR_PATIENCE,
-        regularization=REGULARIZATION,
-        use_scheduler=USE_SCHEDULER,
-        do_plot_losses=DO_PLOT_LOSSES,
-    )
-
-    logging.info('plotting results...')
-    plot_uq_result(
-        X_train,
-        X_test,
-        y_train,
-        y_test,
-        y_pred,
-        y_quantiles,
-        y_std,
-        QUANTILES
-    )
-
-
-if __name__ == '__main__':
-    main()
