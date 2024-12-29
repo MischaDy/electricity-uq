@@ -48,11 +48,6 @@ from mapie.subsample import BlockBootstrap
 from helpers import misc_helpers
 
 
-N_POINTS_PER_GROUP = 100
-DATA_PATH = '../data/data_1600.pkl'
-STORAGE_PATH = "mapie_storage"
-
-
 def train_conformal_prediction(
     X_train: np.ndarray,
     y_train: np.ndarray,
