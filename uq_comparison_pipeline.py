@@ -94,7 +94,7 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "posthoc_conformal_prediction": {
-        "skip_training": False,
+        "skip_training": True,
         "n_estimators": 5,
         "verbose": 1,
         "save_model": True,
@@ -123,7 +123,7 @@ METHODS_KWARGS = {
         "save_model": True,
     },
     "base_model_nn": {
-        "skip_training": False,
+        "skip_training": True,
         "n_iter": 100,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
