@@ -12,7 +12,7 @@ from scipy import stats
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
 
-logging.basicConfig(level=logging.DEBUG, force=True)
+logging.basicConfig(level=logging.INFO, force=True)
 
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
