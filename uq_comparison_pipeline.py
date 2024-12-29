@@ -758,44 +758,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         }
         return metrics
 
-    def plot_base_model_test_result(
-            self,
-            X_train,
-            X_test,
-            y_train,
-            y_test,
-            y_preds,
-            plot_name='base_model',
-            show_plots=True,
-            save_plot=True,
-    ):
-        from matplotlib import pyplot as plt
-        num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
-
-        x_plot_train = np.arange(num_train_steps)
-        x_plot_full = np.arange(num_train_steps + num_test_steps)
-        x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-        x_plot_uq = x_plot_full
-
-        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-        ax.plot(
-            x_plot_uq,
-            y_preds,
-            label=f"base model prediction {plot_name}",
-            color="green",
-        )
-        ax.legend()
-        ax.set_xlabel("data")
-        ax.set_ylabel("target")
-        ax.set_title(plot_name)
-        if save_plot:
-            self.io_helper.save_plot(plot_name)
-        if show_plots:
-            plt.show(block=True)
-        plt.close(fig)
-
     def try_skipping_training(self, method_name):
         try:
             logging.info(f'skipping model training in method {method_name}')
