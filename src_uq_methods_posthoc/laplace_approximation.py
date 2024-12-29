@@ -37,6 +37,7 @@ def train_laplace_approximation(
         neg_marglik = -la.log_marginal_likelihood(log_prior.exp(), log_sigma.exp())
         neg_marglik.backward()
         hyper_optimizer.step()
+    return la
 
 
 def predict_with_laplace_approximation(model, X_pred: np.ndarray, quantiles: list):

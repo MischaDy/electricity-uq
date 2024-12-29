@@ -316,6 +316,7 @@ def train_nn(
     )
     # noinspection PyTypeChecker
     model.fit(X_train, y_train)
+    return model
 
 
 if __name__ == '__main__':
