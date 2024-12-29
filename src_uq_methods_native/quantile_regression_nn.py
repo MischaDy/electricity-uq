@@ -17,22 +17,6 @@ logging.info('done')
 torch.set_default_device(misc_helpers.get_device())
 
 
-DATA_PATH = '../data/data_1600.pkl'
-QUANTILES = [0.05, 0.25, 0.75, 0.95]
-
-STANDARDIZE_DATA = True
-PLOT_DATA = False
-
-N_POINTS_PER_GROUP = 800
-
-N_ITER = 100
-LR = 1e-4
-REGULARIZATION = 0  # 1e-2
-USE_SCHEDULER = False
-LR_PATIENCE = 30
-DO_PLOT_LOSSES = True
-
-
 class QR_NN(torch.nn.Module):
     def __init__(
         self,
