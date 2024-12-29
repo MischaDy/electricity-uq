@@ -14,7 +14,7 @@ from helpers import misc_helpers
 
 logging.basicConfig(level=logging.INFO, force=True)
 
-QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
+QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
 DATA_FILEPATH = 'data/data_1600.pkl'
 
@@ -575,8 +575,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         if not skip_training:
             logging.info('training from scratch...')
-            if 0.5 not in quantiles:
-                quantiles.append(0.5)
             model = train_qr_nn(
                 X_train,
                 y_train,

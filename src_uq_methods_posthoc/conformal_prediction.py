@@ -85,9 +85,9 @@ def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list
         X_pred, alpha=alpha, ensemble=False, optimize_beta=False, allow_infinite_bounds=True,
     )
     y_quantiles = misc_helpers.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
-    if 0.5 in quantiles:  # todo: improve handling
+    if 0.5 in quantiles:
         num_quantiles = y_quantiles.shape[-1]
-        ind = num_quantiles / 2
+        ind = num_quantiles // 2
         y_quantiles = np.insert(y_quantiles, ind, y_pred, axis=1)
     y_std = misc_helpers.stds_from_quantiles(y_quantiles)
     return y_pred, y_quantiles, y_std

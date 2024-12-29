@@ -62,7 +62,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
     def compare_methods(
             self,
-            quantiles,
+            quantiles: list,
             *,
             should_save_results=True,
             should_plot_data=True,
@@ -88,6 +88,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         # todo: bring back return_results?
         #  :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
+
+        assert 0.5 in quantiles
 
         logging.info("loading data...")
         X_train, X_test, y_train, y_test, X, y, scaler_y = self.get_data()
