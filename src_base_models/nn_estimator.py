@@ -6,6 +6,7 @@ from sklearn.base import RegressorMixin, BaseEstimator, _fit_context
 
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.data import TensorDataset, DataLoader
 
 from tqdm import tqdm
 
@@ -106,8 +107,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         - run different checks on the input data;
         - define some attributes associated to the input data: `n_features_in_` and
           `feature_names_in_`."""
-        import torch
-
         torch.set_default_device(misc_helpers.get_device())
         torch.manual_seed(self.random_seed)
 
@@ -204,7 +203,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     @classmethod
     def _get_train_loader(cls, X_train: torch.Tensor, y_train: torch.Tensor, batch_size):
-        from torch.utils.data import TensorDataset, DataLoader
         train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size)
         return train_loader
