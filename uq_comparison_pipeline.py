@@ -54,10 +54,10 @@ POSTHOC_BASE_BLACKLIST = {
 METHODS_KWARGS = {
     "native_mvnn": {
         'skip_training': False,
+        "n_iter": 100,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
-        "n_iter": 100,
         "lr": 1e-4,
         "lr_patience": 30,
         "regularization": 0,  # 1e-2,
@@ -109,6 +109,19 @@ METHODS_KWARGS = {
         "n_jobs": -1,
         "save_model": True,
     },
+    "base_model_rf": {
+        "skip_training": True,
+        'model_param_distributions': {
+            "max_depth": stats.randint(2, 50),
+            "n_estimators": stats.randint(10, 200),
+        },
+        'cv_n_iter': 20,
+        'cv_n_splits': 5,
+        "random_seed": 42,
+        "verbose": 4,
+        'n_jobs': -1,
+        "save_model": True,
+    },
     "base_model_nn": {
         "skip_training": False,
         "n_iter": 100,
@@ -122,21 +135,8 @@ METHODS_KWARGS = {
         "show_losses_plot": False,
         "save_losses_plot": True,
         "random_seed": 42,
-        "save_model": True,
         "verbose": 1,
-    },
-    "base_model_rf": {
-        "skip_training": False,
-        'model_param_distributions': {
-            "max_depth": stats.randint(2, 50),
-            "n_estimators": stats.randint(10, 200),
-        },
-        'cv_n_iter': 20,
-        'cv_n_splits': 5,
-        "random_seed": 42,
         "save_model": True,
-        "verbose": 4,
-        'n_jobs': -1,
     },
 }
 
