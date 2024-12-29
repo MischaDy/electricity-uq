@@ -541,19 +541,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             train_qr_nn,
             predict_with_qr_nn,
         )
-
         torch.manual_seed(random_seed)
-
-        if activation is None:
-            activation = torch.nn.LeakyReLU
-
-        if 0.5 not in quantiles:
-            quantiles.append(0.5)
-
         n_samples = X_train.shape[0]
         filename = f'native_qrnn_n{n_samples}_it{n_iter}_nh{num_hidden_layers}_hs{hidden_layer_size}.pth'
         if skip_training:
             logging.info('skipping training...')
+            if activation is None:
+                activation = torch.nn.LeakyReLU
             try:
                 model = self.io_helper.load_torch_model_statedict(
                     QR_NN,
@@ -570,6 +564,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         if not skip_training:
             logging.info('training from scratch...')
+            if 0.5 not in quantiles:
+                quantiles.append(0.5)
             model = train_qr_nn(
                 X_train,
                 y_train,
