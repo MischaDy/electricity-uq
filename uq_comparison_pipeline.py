@@ -29,7 +29,7 @@ SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
 
-DO_TRAIN_ALL = True
+DO_TRAIN_ALL = False
 SKIP_TRAINING_ALL = False
 
 STORAGE_PATH = "comparison_storage"
@@ -66,6 +66,7 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "native_quantile_regression_nn": {
+        'skip_training': False,
         'n_iter': 100,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
@@ -77,7 +78,6 @@ METHODS_KWARGS = {
         'regularization': 0,
         'show_progress': True,
         'do_plot_losses': True,
-        'skip_training': True,
         'save_model': True,
     },
     "native_gpytorch": {
