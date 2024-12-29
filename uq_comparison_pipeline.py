@@ -34,7 +34,7 @@ STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
-    # "posthoc_laplace",
+    # "posthoc_laplace_approximation",
     "native_quantile_regression_nn",
     # "native_gpytorch",
     # "native_mvnn",
@@ -43,7 +43,7 @@ METHOD_WHITELIST = [
     # 'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
-    'posthoc_laplace': {
+    'posthoc_laplace_approximation': {
         'base_model_linreg',
         'base_model_rf',
     },
@@ -97,7 +97,7 @@ METHODS_KWARGS = {
         "verbose": 1,
         "save_model": True,
     },
-    "posthoc_laplace": {
+    "posthoc_laplace_approximation": {
         'skip_training': False,
         "n_iter": 100,
         'save_model': True,
@@ -176,7 +176,7 @@ FILENAME_PARTS = {
         ],
         'model'
     ),
-    "posthoc_laplace": (
+    "posthoc_laplace_approximation": (
         [
             ('it', 'n_iter'),
         ],
@@ -407,6 +407,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model.set_params(verbose=False)
         return model
 
+    # noinspection PyUnboundLocalVariable
     def posthoc_conformal_prediction(
             self,
             X_train: np.ndarray,
@@ -457,7 +458,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         return y_pred, y_quantiles, y_std
 
     # noinspection PyUnresolvedReferences
-    def posthoc_laplace(
+    def posthoc_laplace_approximation(
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
@@ -475,12 +476,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         from src_uq_methods_posthoc.laplace_approximation import (
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
         )
-
-        n_samples = X_train.shape[0]
-        model_filename = f"posthoc_laplace_n{n_samples}_it{n_iter}.pth"
+        method_name = 'posthoc_laplace_approximation'
         base_model_nn = base_model.get_nn(to_device=True)
         if skip_training:
-            logging.info("skipping model training...")
+            logging.info(f'skipping model training in method {method_name}')
             try:
                 # noinspection PyTypeChecker
                 model = self.io_helper.load_laplace_model_statedict(
@@ -488,9 +487,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     la_instantiator,
                     filename=model_filename,
                 )
-            except FileNotFoundError:
-                logging.warning(f"model {model_filename} not found, so training cannot be skipped."
-                                " training from scratch.")
+            except FileNotFoundError as error:
+                logging.warning(f"trained model '{error.filename}' not found. training from scratch.")
                 skip_training = False
 
         if not skip_training:
@@ -506,9 +504,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             if save_model:
                 logging.info('saving model...')
                 self.io_helper.save_laplace_model_statedict(model, filename=model_filename)
-
-        logging.info('predicting...')
-        X_pred = misc_helpers.preprocess_array(X_pred)
         # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_laplace_approximation(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
@@ -765,7 +760,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = self.io_helper.load_model(method_name=method_name)
             return model
         except FileNotFoundError as error:
-            logging.warning(f"trained base model '{error.filename}' not found. training from scratch.")
+            logging.warning(f"trained model '{error.filename}' not found. training from scratch.")
         return None
 
     def save_model(self, model, method_name):

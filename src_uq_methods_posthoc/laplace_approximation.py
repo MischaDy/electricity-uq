@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import torch
 from laplace import Laplace
@@ -38,7 +40,8 @@ def train_laplace_approximation(
 
 
 def predict_with_laplace_approximation(model, X_pred: np.ndarray, quantiles: list):
-    # noinspection PyArgumentList,PyUnboundLocalVariable
+    logging.info('predicting...')
+    X_pred = misc_helpers.preprocess_array(X_pred)
     f_mu, f_var = model(X_pred)
     f_mu = misc_helpers.tensor_to_np_array(f_mu.squeeze())
     f_sigma = misc_helpers.tensor_to_np_array(f_var.squeeze().sqrt())
