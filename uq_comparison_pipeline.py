@@ -377,6 +377,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :return:
         """
         from src_base_models.nn_estimator import train_nn
+        import torch  # will be imported anyways
+
+        if not torch.cuda.is_available():
+            logging.warning('cuda not available! using CPU')
 
         method_name = 'base_model_nn'
         if skip_training:
@@ -538,6 +542,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import torch
+
+        if not torch.cuda.is_available():
+            logging.warning('cuda not available! using CPU')
+
         from src_uq_methods_native.quantile_regression_nn import (
             QR_NN,
             train_qr_nn,
@@ -613,6 +621,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             train_mean_var_nn,
             predict_with_mvnn,
         )
+
+        if not torch.cuda.is_available():
+            logging.warning('cuda not available! using CPU')
+
         method_name = 'native_mvnn'
         if skip_training:
             logging.info('skipping training...')
@@ -682,12 +694,16 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import gpytorch
+        import torch  # will be imported later anyways
         from src_uq_methods_native.gp_regression_gpytorch import (
             ExactGPModel,
             train_gpytorch,
             prepare_data,
             predict_with_gpytorch,
         )
+
+        if not torch.cuda.is_available():
+            logging.warning('cuda not available! using CPU')
 
         X_train, y_train, X_val, y_val, X_pred = prepare_data(
             X_train,

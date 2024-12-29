@@ -193,15 +193,11 @@ def get_device():
 
 def object_to_cuda(obj):
     device = get_device()
-    if device == 'cpu':
-        logging.warning('cuda not available! Using CPU')
     return obj.to(device)
 
 
 def objects_to_cuda(*objs: Any) -> Generator[Any, None, None]:
-    cuda_available = torch.cuda.is_available()
-    if not cuda_available:
-        logging.warning('cuda not available! using CPU')
+    if not torch.cuda.is_available():
         yield from objs
     else:
         yield from map(object_to_cuda, objs)
