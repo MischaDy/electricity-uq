@@ -1,9 +1,10 @@
 import logging
 import os
-from typing import Any, Generator
 
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
+
+from typing import Any, Generator
 
 import numpy as np
 from scipy import stats
