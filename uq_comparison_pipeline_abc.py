@@ -126,7 +126,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                     y_test,
                     y_pred_base_model,
                     scaler_y,
-                    plot_name=base_model_name,
+                    base_model_name=base_model_name,
                     show_plots=should_show_plots,
                     save_plot=should_save_plots,
                 )
@@ -537,8 +537,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 y_std=y_std,
                 scaler_y=scaler_y,
                 quantiles=quantiles,
+                method_name=method_name,
                 n_stds=n_stds,
-                plot_name=method_name,
                 show_plots=show_plots,
                 save_plot=save_plots,
             )
@@ -554,8 +554,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_std,
             scaler_y,
             quantiles,
+            method_name,
             n_stds=2,
-            plot_name='uq_result',
             show_plots=True,
             save_plot=True,
     ):
@@ -571,7 +571,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
         :param quantiles:
         :param n_stds:
-        :param plot_name:
+        :param method_name:
         :param show_plots:
         :param save_plot:
         :return:
@@ -618,9 +618,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         ax.legend()
         ax.set_xlabel("data")
         ax.set_ylabel("target")
-        ax.set_title(plot_name)
+        ax.set_title(method_name)
         if save_plot:
-            self.io_helper.save_plot(plot_name)
+            self.io_helper.save_plot(method_name=method_name)
         if show_plots:
             plt.show(block=True)
         plt.close(fig)
@@ -633,7 +633,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_test,
             y_preds,
             scaler_y,
-            plot_name='base_results',
+            base_model_name,
             show_plots=True,
             save_plot=True,
     ):
@@ -645,7 +645,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param y_test:
         :param y_preds:
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
-        :param plot_name:
+        :param base_model_name:
         :param show_plots:
         :param save_plot:
         :return:
@@ -666,15 +666,15 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         ax.plot(
             x_plot_full,
             y_preds,
-            label=f"mean/median prediction {plot_name}",  # todo: mean or median?
+            label=f"mean/median prediction {base_model_name}",  # todo: mean or median?
             color="green",
         )
         ax.legend()
         ax.set_xlabel("data")
         ax.set_ylabel("target")
-        ax.set_title(plot_name)
+        ax.set_title(base_model_name)
         if save_plot:
-            self.io_helper.save_plot(plot_name)
+            self.io_helper.save_plot(method_name=base_model_name)
         if show_plots:
             plt.show(block=True)
         plt.close(fig)
@@ -701,14 +701,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
     def save_outputs_base_models(self, y_preds_dict: dict[str, np.ndarray]):
         for base_model_name, y_pred in y_preds_dict.items():
-            filename = f'{base_model_name}_y_pred.npy'
-            self.io_helper.save_array(y_pred, filename)
+            self.io_helper.save_array(y_pred, method_name=base_model_name)
 
     def save_outputs_uq_models(self, outputs_uq_models: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]):
         for model_name, outputs_uq_model in outputs_uq_models.items():
             for output_type, output in zip(['y_pred', 'y_quantiles', 'y_std'], outputs_uq_model):
-                filename = f'{model_name}_{output_type}.npy'
-                self.io_helper.save_array(output, filename)
+                self.io_helper.save_array(output, method_name=model_name, infix=output_type)
 
 
 def check_prefixes_ok():

@@ -108,7 +108,7 @@ def plot_data(X_train, X_test, y_train, y_test, io_helper=None, filename="data",
     plt.ylabel("energy data (details TODO)")
     plt.legend(["Training data", "Test data"])
     if do_save_figure:
-        io_helper.save_plot(filename)
+        io_helper.save_plot(filename=filename)
     plt.show(block=True)
 
 
