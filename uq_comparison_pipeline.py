@@ -542,8 +542,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             predict_with_qr_nn,
         )
         torch.manual_seed(random_seed)
-        n_samples = X_train.shape[0]
-        filename = f'native_qrnn_n{n_samples}_it{n_iter}_nh{num_hidden_layers}_hs{hidden_layer_size}.pth'
+        method_name = 'native_quantile_regression_nn'
         if skip_training:
             logging.info('skipping training...')
             if activation is None:
@@ -551,15 +550,17 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             try:
                 model = self.io_helper.load_torch_model_statedict(
                     QR_NN,
-                    filename,
-                    dim_in=X_train.shape[0],
-                    num_hidden_layers=num_hidden_layers,
-                    hidden_layer_size=hidden_layer_size,
-                    activation=activation,
+                    method_name=method_name,
+                    model_kwargs={
+                        'dim_in': X_train.shape[0],
+                        'num_hidden_layers': num_hidden_layers,
+                        'hidden_layer_size': hidden_layer_size,
+                        'activation': activation,
+                    },
                 )
                 model = misc_helpers.objects_to_cuda(model)
-            except FileNotFoundError:
-                logging.warning(f'cannot load model {filename}')
+            except FileNotFoundError as error:
+                logging.warning(f"trained model '{error.filename}' not found.")
                 skip_training = False
 
         if not skip_training:
@@ -581,7 +582,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             if save_model:
                 logging.info('saving model...')
                 model.eval()
-                self.io_helper.save_torch_model_statedict(model, filename)
+                self.io_helper.save_torch_model_statedict(model, method_name=method_name)
         # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_qr_nn(model, X_pred)
         return y_pred, y_quantiles, y_std
