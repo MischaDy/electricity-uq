@@ -512,7 +512,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             )
             if save_model:
                 logging.info('saving model...')
-                self.io_helper.save_laplace_model_statedict(model, filename=model_filename)
+                self.io_helper.save_laplace_model_statedict(model, method_name=method_name)
         # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_laplace_approximation(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
