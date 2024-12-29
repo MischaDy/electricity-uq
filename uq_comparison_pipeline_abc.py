@@ -92,7 +92,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         logging.info("loading data...")
         X_train, X_test, y_train, y_test, X, y, scaler_y = self.get_data()
 
-        logging.info("data shapes:", X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+        logging.info(f"data shapes: {X_train.shape}, {X_test.shape}, {y_train.shape}, {y_test.shape}")
         if should_plot_data:
             logging.info("plotting data...")
             self.plot_data(
