@@ -374,17 +374,12 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :return:
         """
         from src_base_models.nn_estimator import train_nn
-        n_samples = X_train.shape[0]
-        model_filename = f"base_model_nn_n{n_samples}_it{n_iter}.pth"
+
+        method_name = 'base_model_nn'
         if skip_training:
-            logging.info("skipping NN base model training")
-            try:
-                model = self.io_helper.load_torch_model(model_filename)
-                model = misc_helpers.object_to_cuda(model)
-                model.eval()
+            model = self.try_skipping_training(method_name)
+            if model is not None:
                 return model
-            except FileNotFoundError:
-                logging.warning("model not found, so training cannot be skipped. training from scratch")
 
         model = train_nn(
             X_train,
@@ -404,10 +399,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_losses_plot=save_losses_plot,
             show_losses_plot=show_losses_plot,
         )
-
         if save_model:
-            logging.info('saving NN base model...')
-            self.io_helper.save_torch_model(model, model_filename)
+            self.save_model(model, method_name=method_name)
 
         # noinspection PyTypeChecker
         model.set_params(verbose=False)
