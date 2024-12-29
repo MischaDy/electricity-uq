@@ -122,6 +122,16 @@ def preprocess_data(X_train, y_train, val_frac=0.1):
     return X_train, y_train, X_val, y_val
 
 
+def compute_eval_losses(model, criterion, X_train, y_train, X_val, y_val):
+    model.eval()
+    with torch.no_grad():
+        y_pred_quantiles_train = model(X_train)
+        train_loss = criterion(y_pred_quantiles_train, y_train)
+        y_pred_quantiles_val = model(X_val)
+        val_loss = criterion(y_pred_quantiles_val, y_val)
+    return train_loss, val_loss
+
+
 def train_qr_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
@@ -199,15 +209,9 @@ def train_qr_nn(
         if not use_scheduler and not do_plot_losses:
             continue
 
-        model.eval()
-        with torch.no_grad():
-            y_pred_quantiles_train = model(X_train)
-            train_loss = criterion(y_pred_quantiles_train, y_train)
-            train_losses.append(train_loss.item())
-
-            y_pred_quantiles_val = model(X_val)
-            val_loss = criterion(y_pred_quantiles_val, y_val)
-            val_losses.append(val_loss.item())
+        train_loss, val_loss = compute_eval_losses(model, criterion, X_train, y_train, X_val, y_val)
+        train_losses.append(train_loss.item())
+        val_losses.append(val_loss.item())
         if use_scheduler:
             scheduler.step(val_loss)
     logging.info('done training.')
