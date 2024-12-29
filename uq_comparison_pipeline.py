@@ -815,6 +815,19 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             plt.show(block=True)
         plt.close(fig)
 
+    def try_skipping_training(self, method_name):
+        try:
+            logging.info(f'skipping model training in method {method_name}')
+            model = self.io_helper.load_model(method_name=method_name)
+            return model
+        except FileNotFoundError as error:
+            logging.warning(f"trained base model '{error.filename}' not found. training from scratch.")
+        return None
+
+    def save_model(self, model, method_name):
+        logging.info(f'saving model in method {method_name}...')
+        self.io_helper.save_model(model, method_name=method_name)
+
 
 def check_method_kwargs_dict(class_, method_kwargs_dict):
     from inspect import signature

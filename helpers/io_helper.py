@@ -66,9 +66,9 @@ class IO_Helper:
         return np.load(self._get_array_savepath(filename))
 
     def load_model(self, method_name=None, filename=None, infix=None):
+        import pickle
         if filename is None:
             filename = self.make_filename(method_name, infix=infix)
-        import pickle
         with open(self._get_model_savepath(filename), "rb") as file:
             model = pickle.load(file)
         return model
