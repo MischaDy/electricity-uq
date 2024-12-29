@@ -186,12 +186,9 @@ class IO_Helper:
             file.write(metrics_str)
 
     def make_filename(self, method_name, sep='_', infix=None):
-        # todo: special-case n_samples
         # todo: docstring
-
         # todo: better handling!
         method_name = method_name.split(2*sep)[0]  # take care of posthoc_model__base_model naming
-
         kwargs = self.methods_kwargs[method_name]
         suffixes, ext = self.filename_parts[method_name]
         joined_suffixes = []
