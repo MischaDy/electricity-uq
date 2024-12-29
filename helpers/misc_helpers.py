@@ -326,3 +326,30 @@ def measure_runtime(func):
         logging.info(f'function {func_name} is done. [took {t2 - t1}s]')
         return result
     return wrapper
+
+
+def plot_nn_losses(
+        train_losses,
+        test_losses=None,
+        show_plots=True,
+        save_plot=False,
+        io_helper=None,
+        filename='losses',
+        loss_skip=0,
+):
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    plt_func = ax.plot if _contains_neg(train_losses) or _contains_neg(test_losses) else ax.semilogy
+    plt_func(train_losses[loss_skip:], label="train loss")
+    plt_func(test_losses[loss_skip:], label="test loss")
+    ax.legend()
+    if save_plot:
+        io_helper.save_plot(filename=filename)
+    if show_plots:
+        plt.show(block=True)
+    plt.close(fig)
+
+
+def _contains_neg(losses):
+    return any(map(lambda x: x < 0, losses))

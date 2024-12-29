@@ -89,7 +89,7 @@ def train_mean_var_nn(
     frozen_var_value=0.5,
     show_progress=True,
     do_plot_losses=True,
-    plot_skip_losses=10,
+    loss_skip=10,
     use_scheduler=True,
 ):
     torch.manual_seed(random_seed)
@@ -165,22 +165,10 @@ def train_mean_var_nn(
     if do_plot_losses:
         for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
             logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
-        plot_losses(train_losses[plot_skip_losses:], val_losses[plot_skip_losses:])
+        misc_helpers.plot_nn_losses(train_losses, val_losses, loss_skip=loss_skip)
 
     model.eval()
     return model
-
-
-def plot_losses(train_losses, val_losses):
-    def has_neg(losses):
-        return any(map(lambda x: x < 0, losses))
-
-    fig, ax = plt.subplots()
-    plt_func = ax.plot if has_neg(train_losses) or has_neg(val_losses) else ax.semilogy
-    plt_func(train_losses, label="train loss")
-    plt_func(val_losses, label="validation loss")
-    ax.legend()
-    plt.show(block=True)
 
 
 def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.ndarray):

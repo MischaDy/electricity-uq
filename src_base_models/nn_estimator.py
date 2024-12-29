@@ -179,7 +179,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         if self.save_losses_plot:
             loss_skip = min(100, self.n_iter // 10)
-            self._plot_losses(train_losses[loss_skip:], val_losses[loss_skip:])
+            misc_helpers.plot_nn_losses(train_losses, val_losses, loss_skip=loss_skip)
 
         self.is_fitted_ = True
         return self
@@ -209,22 +209,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size)
         return train_loader
-
-    def _plot_losses(self, train_losses, test_losses, filename='losses'):
-        from matplotlib import pyplot as plt
-        fig, ax = plt.subplots()
-        ax.semilogy(train_losses, label="train")
-        ax.semilogy(test_losses, label="val")
-        ax.legend()
-        if self.save_losses_plot:
-            import os
-            plots_path = 'plots'
-            file_path = os.path.join(plots_path, f'{filename}.png')
-            os.makedirs(plots_path, exist_ok=True)
-            plt.savefig(file_path)
-        if self.show_losses_plot:
-            plt.show(block=True)
-        plt.close(fig)
 
     @staticmethod
     def _mse_torch(y_pred, y_test):

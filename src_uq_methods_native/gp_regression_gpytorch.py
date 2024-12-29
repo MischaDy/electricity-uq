@@ -54,7 +54,7 @@ def train_gpytorch(
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
     # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
-    losses = []
+    train_losses, val_losses = [], []
     epochs = np.arange(n_iter) + 1
     if show_progress:
         epochs = tqdm(epochs)
@@ -64,21 +64,22 @@ def train_gpytorch(
         optimizer.zero_grad()
         y_pred = model(X_train)
         loss = -mll(y_pred, y_train).sum()
-        losses.append(loss.item())
+        train_losses.append(loss.item())
         loss.backward()
         optimizer.step()
 
-        if use_scheduler:
+        if use_scheduler or do_plot_losses:
             model.eval()
             likelihood.eval()
             with torch.no_grad(), gpytorch.settings.fast_pred_var():
                 y_pred = model.likelihood(model(X_val))
                 val_loss = -mll(y_pred, y_val).sum()
+                val_losses.append(val_loss.item())
             scheduler.step(val_loss)
 
     if do_plot_losses:
-        plot_skip_losses = 0
-        plot_losses(losses[plot_skip_losses:], show_plots=show_plots)
+        loss_skip = 0
+        misc_helpers.plot_nn_losses(train_losses, val_losses, show_plots=show_plots, loss_skip=loss_skip)
 
     logging.info(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
     return model, likelihood
@@ -131,19 +132,3 @@ def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
     y_preds, y_std = misc_helpers.tensors_to_np_arrays(y_preds, y_std)
     y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_preds, y_std)
     return y_preds, y_quantiles, y_std
-
-
-def plot_losses(losses, show_plots=True):
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots()
-    plt_func = ax.plot if _contains_neg(losses) else ax.semilogy
-    plt_func(losses, label="loss")
-    ax.legend()
-    if show_plots:
-        plt.show(block=True)
-    plt.close(fig)
-
-
-def _contains_neg(losses):
-    return any(map(lambda x: x < 0, losses))
