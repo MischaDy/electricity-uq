@@ -693,25 +693,24 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_pred,
             val_frac=val_frac,
         )
-
-        n_samples = X_train.shape[0]
-        common_postfix = f'n{n_samples}_it{n_iter}'
+        method_name = 'native_gpytorch'
         infix = 'likelihood'
-        common_prefix = 'native_gpytorch'
-        filename_model = f'{common_prefix}_{common_postfix}.pth'
-        filename_likelihood = f'{common_prefix}_{infix}_{common_postfix}.pth'
-
         if skip_training:
-            logging.info('skipping training...')
+            logging.info(f'skipping training in method {method_name}...')
             try:
-                likelihood = self.io_helper.load_torch_model_statedict(gpytorch.likelihoods.GaussianLikelihood,
-                                                                       filename_likelihood)
-                model = self.io_helper.load_torch_model_statedict(ExactGPModel, filename_model,
-                                                                  X_train=X_train, y_train=y_train,
-                                                                  likelihood=likelihood)
+                likelihood = self.io_helper.load_torch_model_statedict(
+                    gpytorch.likelihoods.GaussianLikelihood,
+                    method_name=method_name,
+                )
+                model = self.io_helper.load_torch_model_statedict(
+                    ExactGPModel,
+                    method_name=method_name,
+                    model_kwargs={'X_train': X_train, 'y_train': y_train, 'likelihood': likelihood},
+                    infix=infix,
+                )
                 model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
-            except FileNotFoundError:
-                logging.warning(f'error: cannot load models {filename_model} and/or {filename_likelihood}')
+            except FileNotFoundError as error:
+                logging.warning(f"trained model '{error.filename}' not found.")
                 skip_training = False
 
         if not skip_training:
@@ -734,8 +733,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 logging.info('saving model...')
                 model.eval()
                 likelihood.eval()
-                self.io_helper.save_torch_model_statedict(model, filename_model)
-                self.io_helper.save_torch_model_statedict(likelihood, filename_likelihood)
+                self.io_helper.save_torch_model_statedict(model, method_name=method_name)
+                self.io_helper.save_torch_model_statedict(likelihood, method_name=method_name, infix=infix)
         # noinspection PyUnboundLocalVariable
         y_preds, y_quantiles, y_std = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
         return y_preds, y_quantiles, y_std
