@@ -826,6 +826,7 @@ def check_method_kwargs_dict(class_, method_kwargs_dict):
 
 
 def main():
+    print('running main pipeline...')
     check_method_kwargs_dict(UQ_Comparison_Pipeline, METHODS_KWARGS)
     # todo: check filename parts dict!
 
