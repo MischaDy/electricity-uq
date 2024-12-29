@@ -705,21 +705,19 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             skip_training=True,
             save_model=True,
     ):
-        import torch
         import gpytorch
-        from src_uq_methods_native.gp_regression_gpytorch import ExactGPModel, train_gpytorch
-
-        logging.info('preparing data..')
-        X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
-        X_train, y_train, X_val, y_val, X_pred = misc_helpers.np_arrays_to_tensors(
-            X_train, y_train, X_val, y_val, X_pred
+        from src_uq_methods_native.gp_regression_gpytorch import (
+            ExactGPModel,
+            train_gpytorch,
+            prepare_data,
+            predict_with_gpytorch,
         )
-        y_train, y_val = misc_helpers.make_ys_1d(y_train, y_val)
 
-        logging.info('mapping data to device and making it contiguous...')
-        X_train, y_train, X_val, y_val, X_pred = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val, X_pred)
-        X_train, y_train, X_val, y_val, X_pred = misc_helpers.make_tensors_contiguous(
-            X_train, y_train, X_val, y_val, X_pred
+        X_train, y_train, X_val, y_val, X_pred = prepare_data(
+            X_train,
+            y_train,
+            X_pred,
+            val_frac=val_frac,
         )
 
         n_samples = X_train.shape[0]
@@ -727,7 +725,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         infix = 'likelihood'
         common_prefix = 'native_gpytorch'
         filename_model = f'{common_prefix}_{common_postfix}.pth'
-        filename_likelihood = f'{common_prefix}_likelihood_{common_postfix}.pth'
+        filename_likelihood = f'{common_prefix}_{infix}_{common_postfix}.pth'
 
         if skip_training:
             logging.info('skipping training...')
@@ -764,18 +762,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 likelihood.eval()
                 self.io_helper.save_torch_model_statedict(model, filename_model)
                 self.io_helper.save_torch_model_statedict(likelihood, filename_likelihood)
-
         # noinspection PyUnboundLocalVariable
-        model.eval()
-        # noinspection PyUnboundLocalVariable
-        likelihood.eval()
-        with torch.no_grad():  # todo: use gpytorch.settings.fast_pred_var()?
-            f_preds = model(X_pred)
-        y_preds = f_preds.mean
-        y_std = f_preds.stddev
-        y_preds, y_std = misc_helpers.tensors_to_np_arrays(y_preds, y_std)
-
-        y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_preds, y_std)
+        y_preds, y_quantiles, y_std = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
         return y_preds, y_quantiles, y_std
 
     @staticmethod
