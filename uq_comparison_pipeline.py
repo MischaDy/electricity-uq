@@ -443,17 +443,24 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             train_conformal_prediction,
             predict_with_conformal_prediction,
         )
-        # todo: skip training if requested
-        model = train_conformal_prediction(
-            X_train,
-            y_train,
-            base_model,
-            n_estimators=n_estimators,
-            bootstrap_n_blocks=bootstrap_n_blocks,
-            bootstrap_overlapping_blocks=bootstrap_overlapping_blocks,
-            random_seed=random_seed,
-            verbose=verbose,
-        )
+        method_name = 'posthoc_conformal_prediction'
+        if skip_training:
+            model = self.try_skipping_training(method_name)
+            if model is None:
+                skip_training = False
+        if not skip_training:
+            model = train_conformal_prediction(
+                X_train,
+                y_train,
+                base_model,
+                n_estimators=n_estimators,
+                bootstrap_n_blocks=bootstrap_n_blocks,
+                bootstrap_overlapping_blocks=bootstrap_overlapping_blocks,
+                random_seed=random_seed,
+                verbose=verbose,
+            )
+        if save_model:
+            self.save_model(model, method_name=method_name)
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
