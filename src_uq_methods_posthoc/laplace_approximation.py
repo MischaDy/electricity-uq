@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 from laplace import Laplace
-from torch import nn
 from tqdm import tqdm
 
 from helpers import misc_helpers
@@ -50,5 +49,5 @@ def predict_with_laplace_approximation(model, X_pred: np.ndarray, quantiles: lis
     return y_pred, y_quantiles, y_std
 
 
-def la_instantiator(base_model: nn.Module):
+def la_instantiator(base_model: torch.nn.Module):
     return Laplace(base_model, "regression")
