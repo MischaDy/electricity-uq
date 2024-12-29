@@ -38,7 +38,7 @@ def train_laplace_approximation(
         hyper_optimizer.step()
 
 
-def predict_with_laplace_approximation(model, X_pred, quantiles):
+def predict_with_laplace_approximation(model, X_pred: np.ndarray, quantiles: list):
     # noinspection PyArgumentList,PyUnboundLocalVariable
     f_mu, f_var = model(X_pred)
     f_mu = misc_helpers.tensor_to_np_array(f_mu.squeeze())
