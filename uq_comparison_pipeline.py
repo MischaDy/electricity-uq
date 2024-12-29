@@ -19,10 +19,10 @@ DATA_FILEPATH = 'data/data_1600.pkl'
 N_POINTS_PER_GROUP = 800
 STANDARDIZE_DATA = True
 
-PLOT_DATA = False
+PLOT_DATA = True
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 SAVE_PLOTS = True
 SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
@@ -33,14 +33,14 @@ SKIP_TRAINING_ALL = False
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
-    # "posthoc_laplace_approximation",
+    "posthoc_conformal_prediction",
+    "posthoc_laplace_approximation",
     "native_quantile_regression_nn",
-    # "native_gpytorch",
-    # "native_mvnn",
-    # 'base_model_linreg',
-    # 'base_model_rf',
-    # 'base_model_nn',
+    "native_gpytorch",
+    "native_mvnn",
+    'base_model_linreg',
+    'base_model_rf',
+    'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
     'posthoc_laplace_approximation': {
@@ -64,7 +64,7 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "native_quantile_regression_nn": {
-        'n_iter': 300,
+        'n_iter': 100,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
@@ -80,7 +80,7 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 500,
+        'n_iter': 100,
         'val_frac': 0.1,
         'lr': 1e-2,
         'use_scheduler': True,
