@@ -307,17 +307,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             verbose=1,
     ):
         from src_base_models.random_forest import train_random_forest
-
-        n_samples = X_train.shape[0]
-        filename_base_model = f"base_model_rf_n{n_samples}_it{cv_n_iter}_its{cv_n_splits}.model"
-
+        method_name = 'base_model_rf'
         if skip_training:
-            try:
-                logging.info('skipping random forest base model training')
-                model = self.io_helper.load_model(filename_base_model)
+            model = self.try_skipping_training(method_name)
+            if model is not None:
                 return model
-            except FileNotFoundError:
-                logging.warning(f"trained base model '{filename_base_model}' not found. training from scratch.")
 
         assert all(item is not None for item in [X_train, y_train, model_param_distributions])
         logging.info("training random forest...")
@@ -333,8 +327,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         )
         logging.info("done.")
         if save_model:
-            logging.info('saving RF base model...')
-            self.io_helper.save_model(model, filename_base_model)
+            self.save_model(model, method_name=method_name)
         return model
 
     def base_model_nn(
