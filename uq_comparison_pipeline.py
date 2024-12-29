@@ -434,7 +434,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             y_train: np.ndarray,
             X_pred: np.ndarray,
             quantiles: list,
-            model,
+            base_model,
             n_estimators=10,
             bootstrap_n_blocks=10,
             bootstrap_overlapping_blocks=False,
@@ -452,46 +452,29 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :param y_train:
         :param X_pred:
         :param quantiles:
-        :param model:
+        :param base_model:
         :param random_seed:
         :param n_estimators: number of model clones to train for ensemble
         :param bootstrap_n_blocks:
         :param bootstrap_overlapping_blocks:
         :return:
         """
-        from src_uq_methods_posthoc.conformal_prediction import estimate_pred_interals_no_pfit_enbpi
-        from mapie.subsample import BlockBootstrap
-
-        cv = BlockBootstrap(
-            n_resamplings=n_estimators,
-            n_blocks=bootstrap_n_blocks,
-            overlapping=bootstrap_overlapping_blocks,
-            random_state=random_seed,
+        from src_uq_methods_posthoc.conformal_prediction import (
+            train_conformal_prediction,
+            predict_with_conformal_prediction,
         )
-        alphas = self.pis_from_quantiles(quantiles)
-
-        n_samples = X_train.shape[0]
-        filename = f'posthoc_conformal_prediction_n{n_samples}_it{n_estimators}.model'
-        y_pred, y_pis = estimate_pred_interals_no_pfit_enbpi(
-            model,
-            cv,
-            alphas,
-            X_pred,
+        # todo: skip training if requested
+        model = train_conformal_prediction(
             X_train,
             y_train,
-            filename=filename,
-            skip_training=skip_training,
-            save_model=save_model,
-            io_helper=self.io_helper,
-            agg_function='mean',
+            base_model,
+            n_estimators=n_estimators,
+            bootstrap_n_blocks=bootstrap_n_blocks,
+            bootstrap_overlapping_blocks=bootstrap_overlapping_blocks,
+            random_seed=random_seed,
             verbose=verbose,
         )
-        y_quantiles = self.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
-        if 0.5 in quantiles:  # todo: improve handling
-            num_quantiles = y_quantiles.shape[-1]
-            ind = num_quantiles / 2
-            y_quantiles = np.insert(y_quantiles, ind, y_pred, axis=1)
-        y_std = self.stds_from_quantiles(y_quantiles)
+        y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
     def posthoc_laplace(
