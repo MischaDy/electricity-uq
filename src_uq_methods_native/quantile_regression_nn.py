@@ -187,7 +187,7 @@ def train_qr_nn(
     iterable = np.arange(n_iter) + 1
     if show_progress:
         iterable = tqdm(iterable)
-    logging.info('training')
+    logging.info('training...')
     for _ in iterable:
         model.train()
         for X_train, y_train in train_loader:
@@ -196,7 +196,6 @@ def train_qr_nn(
             loss = criterion(y_pred_quantiles, y_train)
             loss.backward()
             optimizer.step()
-
         if not use_scheduler and not do_plot_losses:
             continue
 
@@ -211,7 +210,7 @@ def train_qr_nn(
             val_losses.append(val_loss.item())
         if use_scheduler:
             scheduler.step(val_loss)
-    logging.info('done training')
+    logging.info('done training.')
     if do_plot_losses:
         logging.info('plotting losses')
         for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
