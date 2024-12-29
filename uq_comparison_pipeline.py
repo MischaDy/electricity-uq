@@ -627,15 +627,17 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import torch
-        from src_uq_methods_native.mean_var_nn import MeanVarNN, train_mean_var_nn
-
-        if activation is None:
-            activation = torch.nn.LeakyReLU
-
+        from src_uq_methods_native.mean_var_nn import (
+            MeanVarNN,
+            train_mean_var_nn,
+            predict_with_mvnn,
+        )
         n_samples = X_train.shape[0]
         filename = f'native_mvnn_n{n_samples}_it{n_iter}_nh{num_hidden_layers}_hs{hidden_layer_size}.pth'
         if skip_training:
             logging.info('skipping training...')
+            if activation is None:
+                activation = torch.nn.LeakyReLU
             try:
                 model = self.io_helper.load_torch_model_statedict(
                     MeanVarNN,
@@ -678,13 +680,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model.eval()
                 self.io_helper.save_torch_model_statedict(model, filename)
 
-        X_pred = misc_helpers.preprocess_array(X_pred)
-        with torch.no_grad():
-            # noinspection PyUnboundLocalVariable,PyCallingNonCallable
-            y_pred, y_var = model(X_pred)
-        y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
-        y_std = np.sqrt(y_var)
-        y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
+        # noinspection PyUnboundLocalVariable
+        y_pred, y_quantiles, y_std = predict_with_mvnn(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
     def native_gpytorch(
