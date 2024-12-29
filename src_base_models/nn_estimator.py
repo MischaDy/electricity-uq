@@ -5,7 +5,6 @@ from more_itertools import collapse
 from sklearn.base import RegressorMixin, BaseEstimator, _fit_context
 
 import torch
-from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from tqdm import tqdm
@@ -149,7 +148,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
         scheduler = ReduceLROnPlateau(optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor)
-        criterion = nn.MSELoss()
+        criterion = torch.nn.MSELoss()
         criterion = misc_helpers.object_to_cuda(criterion)
 
         train_losses, val_losses = [], []
@@ -249,7 +248,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             res = misc_helpers.tensor_to_np_array(res)
         return res
 
-    def get_nn(self, to_device=True) -> nn.Module:
+    def get_nn(self, to_device=True) -> torch.nn.Module:
         if to_device:
             return misc_helpers.object_to_cuda(self.model_)
         return self.model_

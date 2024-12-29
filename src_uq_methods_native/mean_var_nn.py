@@ -1,7 +1,6 @@
 import logging
 
 import torch
-from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
@@ -14,7 +13,7 @@ from helpers import misc_helpers
 torch.set_default_device(misc_helpers.get_device())
 
 
-class MeanVarNN(nn.Module):
+class MeanVarNN(torch.nn.Module):
     def __init__(
         self,
         dim_in,
@@ -24,15 +23,15 @@ class MeanVarNN(nn.Module):
     ):
         super().__init__()
         layers = collapse([
-            nn.Linear(dim_in, hidden_layer_size),
+            torch.nn.Linear(dim_in, hidden_layer_size),
             activation(),
-            [[nn.Linear(hidden_layer_size, hidden_layer_size),
+            [[torch.nn.Linear(hidden_layer_size, hidden_layer_size),
               activation()]
              for _ in range(num_hidden_layers)],
         ])
-        self.first_layer_stack = nn.Sequential(*layers)
-        self.last_layer_mean = nn.Linear(hidden_layer_size, 1)
-        self.last_layer_var = nn.Linear(hidden_layer_size, 1)
+        self.first_layer_stack = torch.nn.Sequential(*layers)
+        self.last_layer_mean = torch.nn.Linear(hidden_layer_size, 1)
+        self.last_layer_var = torch.nn.Linear(hidden_layer_size, 1)
         self._frozen_var = None
 
     def forward(self, x: torch.Tensor):
@@ -99,11 +98,11 @@ def train_mean_var_nn(
 
     if train_var:
         model.unfreeze_variance()
-        criterion = nn.GaussianNLLLoss()
+        criterion = torch.nn.GaussianNLLLoss()
         criterion = misc_helpers.object_to_cuda(criterion)
     else:
         model.freeze_variance(frozen_var_value)
-        _mse_loss = nn.MSELoss()
+        _mse_loss = torch.nn.MSELoss()
         criterion = lambda input_, target, var: _mse_loss(input_, target)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -148,7 +147,6 @@ def train_mean_var_nn(
 
 
 def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.ndarray):
-    # todo: use nn.NLLLoss instead!
     # todo: use torch.nn.NLLLoss instead!
     from uncertainty_toolbox import nll_gaussian
     y_pred_std = np.sqrt(y_pred_var)

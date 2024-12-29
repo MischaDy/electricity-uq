@@ -3,7 +3,6 @@ import logging
 logging.info('importing')
 
 import torch
-from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
@@ -35,7 +34,7 @@ LR_PATIENCE = 30
 DO_PLOT_LOSSES = True
 
 
-class QR_NN(nn.Module):
+class QR_NN(torch.nn.Module):
     def __init__(
         self,
         dim_in,
@@ -56,14 +55,14 @@ class QR_NN(nn.Module):
         self.quantiles = quantiles
         dim_out = len(quantiles)
         layers = collapse([
-            nn.Linear(dim_in, hidden_layer_size),
+            torch.nn.Linear(dim_in, hidden_layer_size),
             activation(),
-            [[nn.Linear(hidden_layer_size, hidden_layer_size),
+            [[torch.nn.Linear(hidden_layer_size, hidden_layer_size),
               activation()]
              for _ in range(num_hidden_layers)],
-            nn.Linear(hidden_layer_size, dim_out),
+            torch.nn.Linear(hidden_layer_size, dim_out),
         ])
-        self.layer_stack = nn.Sequential(*layers)
+        self.layer_stack = torch.nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor, as_dict=False):
         result = self.layer_stack(x)
