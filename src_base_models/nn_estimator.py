@@ -299,6 +299,44 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.__dict__[key] = value
 
 
+def train_nn(
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        n_iter=500,
+        batch_size=20,
+        random_seed=42,
+        val_frac=0.1,
+        num_hidden_layers=2,
+        hidden_layer_size=50,
+        activation=None,
+        lr=0.1,
+        lr_patience=30,
+        lr_reduction_factor=0.5,
+        show_progress_bar=True,
+        show_losses_plot=True,
+        save_losses_plot=True,
+        verbose: int = 1,
+):
+    model = NN_Estimator(
+        n_iter=n_iter,
+        batch_size=batch_size,
+        random_seed=random_seed,
+        val_frac=val_frac,
+        num_hidden_layers=num_hidden_layers,
+        hidden_layer_size=hidden_layer_size,
+        activation=activation,
+        lr=lr,
+        lr_patience=lr_patience,
+        lr_reduction_factor=lr_reduction_factor,
+        verbose=verbose,
+        show_progress_bar=show_progress_bar,
+        save_losses_plot=save_losses_plot,
+        show_losses_plot=show_losses_plot,
+    )
+    # noinspection PyTypeChecker
+    model.fit(X_train, y_train)
+
+
 if __name__ == '__main__':
     from sklearn.utils.estimator_checks import check_estimator
     estimator = NN_Estimator(verbose=0)

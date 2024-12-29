@@ -10,8 +10,6 @@ from scipy import stats
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
-from src_base_models.nn_estimator import NN_Estimator
-
 
 QUANTILES = [0.05, 0.25, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
@@ -387,8 +385,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :param random_seed:
         :return:
         """
-        from src_base_models.nn_estimator import NN_Estimator
-
+        from src_base_models.nn_estimator import train_nn
         n_samples = X_train.shape[0]
         model_filename = f"base_model_nn_n{n_samples}_it{n_iter}.pth"
         if skip_training:
@@ -401,7 +398,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             except FileNotFoundError:
                 logging.warning("model not found, so training cannot be skipped. training from scratch")
 
-        model = NN_Estimator(
+        model = train_nn(
+            X_train,
+            y_train,
             n_iter=n_iter,
             batch_size=batch_size,
             random_seed=random_seed,
@@ -417,8 +416,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_losses_plot=save_losses_plot,
             show_losses_plot=show_losses_plot,
         )
-        # noinspection PyTypeChecker
-        model.fit(X_train, y_train)
 
         if save_model:
             logging.info('saving NN base model...')
@@ -477,13 +474,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
+    # noinspection PyUnresolvedReferences
     def posthoc_laplace(
             self,
             X_train: np.ndarray,
             y_train: np.ndarray,
             X_pred: np.ndarray,
             quantiles: list,
-            base_model: NN_Estimator,
+            base_model: 'NN_Estimator',
             n_iter=100,
             batch_size=20,
             random_seed=42,
