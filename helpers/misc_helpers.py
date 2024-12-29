@@ -312,3 +312,17 @@ def quantiles_from_pis(pis: np.ndarray, check_order=False):
         assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
     y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
     return y_quantiles
+
+
+def measure_runtime(func):
+    from timeit import default_timer
+
+    def wrapper(*args, **kwargs):
+        func_name = func.__name__
+        logging.info(f'running function {func_name} (with timing)...')
+        t1 = default_timer()
+        result = func(*args, **kwargs)
+        t2 = default_timer()
+        logging.info(f'function {func_name} is done. [took {t2 - t1}s]')
+        return result
+    return wrapper

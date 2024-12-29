@@ -6,7 +6,6 @@ import torch
 from helpers import misc_helpers
 from helpers.io_helper import IO_Helper
 
-
 torch.set_default_device(misc_helpers.get_device())
 
 DATA_PATH = '../data/data_1600.pkl'
@@ -49,19 +48,7 @@ class ExactGPModel(gpytorch.models.ExactGP):
         return gpytorch.distributions.MultivariateNormal(X_mean, X_covar)
 
 
-def measure_runtime(func):
-    from timeit import default_timer
-
-    def wrapper(*args, **kwargs):
-        t1 = default_timer()
-        result = func(*args, **kwargs)
-        t2 = default_timer()
-        logging.info(f'done. [took {t2 - t1}s]')
-        return result
-    return wrapper
-
-
-@measure_runtime
+@misc_helpers.measure_runtime
 def preprocess_data(X_train, X_test, y_train, y_test, val_frac):
     X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac=val_frac)
     X_train, X_val, X_test = misc_helpers.np_arrays_to_tensors(X_train, X_val, X_test)
@@ -86,7 +73,7 @@ def preprocess_data(X_train, X_test, y_train, y_test, val_frac):
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
-@measure_runtime
+@misc_helpers.measure_runtime
 def train_gpytorch(
         X_train,
         y_train,
@@ -151,7 +138,7 @@ def train_gpytorch(
     return model, likelihood
 
 
-@measure_runtime
+@misc_helpers.measure_runtime
 def evaluate(model, likelihood, X_test, y_test):
     model.eval()
     likelihood.eval()
