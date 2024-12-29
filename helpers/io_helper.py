@@ -85,6 +85,7 @@ class IO_Helper:
     def load_torch_model_statedict(self, model_class, method_name=None, filename=None, model_kwargs=None, infix=None):
         """
 
+        :param infix:
         :param method_name:
         :param model_class: constructor for the model class. Must be able to accept all arguments as keyword arguments.
         :param model_kwargs: kwargs passed to the model_class constructor

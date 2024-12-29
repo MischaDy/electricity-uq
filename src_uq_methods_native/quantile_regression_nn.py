@@ -6,7 +6,6 @@ import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 import numpy as np
-from matplotlib import pyplot as plt
 
 from more_itertools import collapse
 from tqdm import tqdm

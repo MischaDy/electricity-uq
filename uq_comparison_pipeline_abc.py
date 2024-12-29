@@ -32,8 +32,16 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     4. Call compare_methods from the child class
     """
 
-    def __init__(self, storage_path, methods_kwargs, filename_parts, n_samples, method_whitelist=None, posthoc_base_blacklist: dict[str, str] | None = None,
-                 standardize_data=True,):
+    def __init__(
+            self,
+            storage_path,
+            methods_kwargs,
+            filename_parts,
+            n_samples,
+            method_whitelist=None,
+            posthoc_base_blacklist: dict[str, str] | None = None,
+            standardize_data=True,
+    ):
         """
         :param storage_path:
         :param filename_parts: see IO_Helper.filename_parts definition
