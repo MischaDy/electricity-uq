@@ -224,7 +224,7 @@ def train_qr_nn(
 def plot_losses(train_losses, val_losses, loss_skip, do_plot_losses):
     logging.info('plotting losses')
     for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
-        logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
+        logging.info(f'{loss_type}, {train_losses[:5]}, {min(losses)}, {max(losses)}, {any(np.isnan(losses))}')
     misc_helpers.plot_nn_losses(train_losses, val_losses, show_plots=do_plot_losses, loss_skip=loss_skip)
 
 
