@@ -624,7 +624,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             y_quantiles_dict = model(X_pred, as_dict=True)
         y_quantiles = np.array(list(y_quantiles_dict.values())).T
         y_pred = y_quantiles_dict[0.5]
-        y_std = self.stds_from_quantiles(y_quantiles)
+        y_std = misc_helpers.stds_from_quantiles(y_quantiles)
         return y_pred, y_quantiles, y_std
 
     def native_mvnn(

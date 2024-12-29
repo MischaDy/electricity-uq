@@ -277,3 +277,38 @@ def quantiles_gaussian(quantiles: list, y_pred: np.ndarray, y_std: np.ndarray):
     # todo: does this work for multi-dim outputs?
     return np.array([norm.ppf(quantiles, loc=mean, scale=std)
                      for mean, std in zip(y_pred, y_std)])
+
+
+def stds_from_quantiles(quantiles: np.ndarray):
+    """
+    :param quantiles: array of shape (number of datapoints, number of quantiles), where number of quantiles should
+    be at least about 100
+    :return:
+    """
+    num_quantiles = quantiles.shape[1]
+    if num_quantiles < 50:
+        logging.warning(f"{num_quantiles} quantiles are too few to compute"
+                        f" a reliable std from (should be about 100)")
+    return np.std(quantiles, ddof=1, axis=1)
+
+
+def pis_from_quantiles(quantiles):
+    mid = len(quantiles) // 2
+    first, second = quantiles[:mid], quantiles[mid:]
+    pi_limits = zip(first, reversed(second))
+    pis = [high - low for low, high in pi_limits]
+    return sorted(pis)
+
+
+def quantiles_from_pis(pis: np.ndarray, check_order=False):
+    """
+    currently "buggy" for odd number of quantiles.
+    :param check_order:
+    :param pis: prediction intervals array of shape (n_samples, 2, n_intervals)
+    :return: array of quantiles of shape (n_samples, 2 * n_intervals)
+    """
+    # todo: assumption that quantile ordering is definitely consistent fulfilled?
+    if check_order:
+        assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
+    y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])
+    return y_quantiles
