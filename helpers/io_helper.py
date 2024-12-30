@@ -196,7 +196,9 @@ class IO_Helper:
     ):
         """
         make *model* filename by default (with corresp. ending)
-        :param method_name:
+
+        :param method_name: name of the method calling this function. must be one of the
+         'native_...', 'posthoc_...' or 'base_...' methods
         :param infix:
         :param file_type: one of 'model', 'plot', 'array'
         :return:
