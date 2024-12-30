@@ -1,4 +1,5 @@
 import logging
+from typing import Literal
 
 logging.info('importing')
 
@@ -56,7 +57,7 @@ class QR_NN(torch.nn.Module):
 
 
 class MultiPinballLoss:
-    def __init__(self, quantiles, reduction='mean'):
+    def __init__(self, quantiles, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         if list(quantiles) != sorted(quantiles):
             raise ValueError(f'Quantiles must be sorted: {quantiles}')
         self.quantiles = quantiles
@@ -80,14 +81,8 @@ class PinballLoss:
     """
     copied with minor changes from: https://github.com/ywatanabe1989/custom_losses_pytorch/blob/master/pinball_loss.py
     """
-    def __init__(self, quantile, reduction='none'):
-        """
-
-        :param quantile:
-        :param reduction: one of: 'mean', 'sum', 'none'
-        """
+    def __init__(self, quantile: float, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         assert 0 <= quantile <= 1
-        assert reduction in {'mean', 'sum', 'none'}
         self.quantile = quantile
         self.reduction = reduction
 
