@@ -39,7 +39,7 @@ class IO_Helper:
         """
         self.n_samples = n_samples
         self.filename_parts = filename_parts
-        self.filename_sep = filename_sep
+        self.sep = filename_sep
         self.methods_kwargs = methods_kwargs
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
@@ -205,7 +205,7 @@ class IO_Helper:
         """
         # todo: docstring
         # todo: better handling!
-        method_name = method_name.split(2*self.filename_sep)[0]  # take care of posthoc_model__base_model naming
+        method_name = method_name.split(2 * self.sep)[0]  # take care of posthoc_model__base_model naming
         kwargs = self.methods_kwargs[method_name]
         suffixes, model_ext = self.filename_parts[method_name]
 
@@ -226,10 +226,10 @@ class IO_Helper:
             kwarg_value = f'n{self.n_samples}' if kwarg_name != 'n_samples' else kwargs[kwarg_name]
             joined_suffix = f'{shorthand}{kwarg_value}'
             joined_suffixes.append(joined_suffix)
-        suffix_str = self.filename_sep.join(joined_suffixes)
+        suffix_str = self.sep.join(joined_suffixes)
 
         filename = method_name
         if infix is not None:
-            filename += f'{self.filename_sep}{infix}'
-        filename += f'{self.filename_sep}{suffix_str}.{ext}'
+            filename += f'{self.sep}{infix}'
+        filename += f'{self.sep}{suffix_str}.{ext}'
         return filename
