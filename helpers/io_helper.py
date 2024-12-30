@@ -17,6 +17,7 @@ class IO_Helper:
             models_folder="models",
             plots_folder="plots",
             metrics_folder='metrics',
+            filename_sep='_',
     ):
         """
 
@@ -34,9 +35,11 @@ class IO_Helper:
         :param models_folder:
         :param plots_folder:
         :param metrics_folder:
+        :param filename_sep:
         """
         self.n_samples = n_samples
         self.filename_parts = filename_parts
+        self.filename_sep = filename_sep
         self.methods_kwargs = methods_kwargs
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
@@ -187,21 +190,19 @@ class IO_Helper:
     def make_filename(
             self,
             method_name,
-            sep='_',
             infix=None,
             file_type: Literal['model', 'plot', 'array', 'metrics'] = 'model',
     ):
         """
         make *model* filename by default (with corresp. ending)
         :param method_name:
-        :param sep:
         :param infix:
         :param file_type: one of 'model', 'plot', 'array'
         :return:
         """
         # todo: docstring
         # todo: better handling!
-        method_name = method_name.split(2*sep)[0]  # take care of posthoc_model__base_model naming
+        method_name = method_name.split(2*self.filename_sep)[0]  # take care of posthoc_model__base_model naming
         kwargs = self.methods_kwargs[method_name]
         suffixes, model_ext = self.filename_parts[method_name]
 
@@ -222,10 +223,10 @@ class IO_Helper:
             kwarg_value = f'n{self.n_samples}' if kwarg_name != 'n_samples' else kwargs[kwarg_name]
             joined_suffix = f'{shorthand}{kwarg_value}'
             joined_suffixes.append(joined_suffix)
-        suffix_str = sep.join(joined_suffixes)
+        suffix_str = self.filename_sep.join(joined_suffixes)
 
         filename = method_name
         if infix is not None:
-            filename += f'{sep}{infix}'
-        filename += f'{sep}{suffix_str}.{ext}'
+            filename += f'{self.filename_sep}{infix}'
+        filename += f'{self.filename_sep}{suffix_str}.{ext}'
         return filename
