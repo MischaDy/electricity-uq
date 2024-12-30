@@ -30,7 +30,7 @@ SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
 
 DO_TRAIN_ALL = False
-SKIP_TRAINING_ALL = False
+SKIP_TRAINING_ALL = True
 
 STORAGE_PATH = "comparison_storage"
 
