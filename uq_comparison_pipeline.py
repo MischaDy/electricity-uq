@@ -718,12 +718,12 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 likelihood = self.io_helper.load_torch_model_statedict(
                     gpytorch.likelihoods.GaussianLikelihood,
                     method_name=method_name,
+                    infix=infix,
                 )
                 model = self.io_helper.load_torch_model_statedict(
                     ExactGPModel,
                     method_name=method_name,
                     model_kwargs={'X_train': X_train, 'y_train': y_train, 'likelihood': likelihood},
-                    infix=infix,
                 )
                 model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
             except FileNotFoundError as error:
