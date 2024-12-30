@@ -221,10 +221,9 @@ class IO_Helper:
             case _:
                 raise ValueError(f'filetype must be one of model, plot, array, metrics. received: {file_type}')
 
-        joined_suffixes = []
+        joined_suffixes = [f'n{self.n_samples}']
         for shorthand, kwarg_name in suffixes:
-            kwarg_value = f'n{self.n_samples}' if kwarg_name != 'n_samples' else kwargs[kwarg_name]
-            joined_suffix = f'{shorthand}{kwarg_value}'
+            joined_suffix = f'{shorthand}{kwargs[kwarg_name]}'
             joined_suffixes.append(joined_suffix)
         suffix_str = self.sep.join(joined_suffixes)
 
