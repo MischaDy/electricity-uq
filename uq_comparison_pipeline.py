@@ -377,7 +377,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :return:
         """
         from src_base_models.nn_estimator import train_nn
-        import torch  # will be imported anyways
+        import torch  # will be imported anyway
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -693,7 +693,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import gpytorch
-        import torch  # will be imported later anyways
+        import torch  # will be imported later anyway
         from src_uq_methods_native.gp_regression_gpytorch import (
             ExactGPModel,
             train_gpytorch,
