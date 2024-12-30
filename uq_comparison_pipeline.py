@@ -38,7 +38,7 @@ METHOD_WHITELIST = [
     # "posthoc_conformal_prediction",
     # "posthoc_laplace_approximation",
     # "native_quantile_regression_nn",
-    "native_gpytorch",
+    # "native_gpytorch",
     "native_mvnn",
     # 'base_model_linreg',
     # 'base_model_rf',
@@ -56,7 +56,7 @@ METHODS_KWARGS = {
         'skip_training': False,
         "n_iter": 100,
         "num_hidden_layers": 2,
-        "hidden_layer_size": 50,
+        "hidden_layer_size": 20,
         "activation": None,  # defaults to leaky ReLU
         "lr": 1e-4,
         "lr_patience": 30,
