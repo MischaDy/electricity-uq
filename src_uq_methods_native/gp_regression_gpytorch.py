@@ -86,7 +86,7 @@ def train_gpytorch(
         show_plot=show_plots and show_losses_plot,
         save_plot=save_losses_plot,
         io_helper=io_helper,
-        file_name='train_gpytorch',
+        filename='train_gpytorch',
     )
 
     logging.info(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")

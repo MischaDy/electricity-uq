@@ -331,11 +331,11 @@ def plot_nn_losses(
         save_plot=False,
         io_helper=None,
         method_name=None,
-        file_name='losses',
+        filename='losses',
         loss_skip=0,
 ):
     """
-    preferably provide method_name over file_name
+    preferably provide method_name over filename
 
     :param train_losses:
     :param test_losses:
@@ -343,7 +343,7 @@ def plot_nn_losses(
     :param save_plot:
     :param io_helper:
     :param method_name:
-    :param file_name:
+    :param filename:
     :param loss_skip:
     :return:
     """
@@ -366,7 +366,7 @@ def plot_nn_losses(
         if method_name is not None:
             io_helper.save_plot(method_name=method_name)
         else:
-            io_helper.save_plot(filename=file_name)
+            io_helper.save_plot(filename=filename)
     if show_plot:
         plt.show(block=True)
     plt.close(fig)

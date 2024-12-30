@@ -185,7 +185,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             show_plot=self.show_losses_plot,
             save_plot=self.save_losses_plot,
             io_helper=self.io_helper,
-            file_name='nn_estimator_fit',
+            filename='nn_estimator_fit',
         )
 
         self.is_fitted_ = True

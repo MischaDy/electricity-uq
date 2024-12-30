@@ -223,7 +223,7 @@ def train_qr_nn(
         show_plot=show_plots and show_losses_plot,
         save_plot=save_losses_plot,
         io_helper=io_helper,
-        file_name='train_qr_nn',
+        filename='train_qr_nn',
     )
     model.eval()
     return model
