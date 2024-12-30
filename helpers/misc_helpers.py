@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import torch
 
+from helpers.io_helper import IO_Helper
+
 
 def get_data(
     filepath,
@@ -329,14 +331,16 @@ def plot_nn_losses(
         test_losses=None,
         show_plot=True,
         save_plot=False,
-        io_helper=None,
+        io_helper: IO_Helper = None,
         method_name=None,
-        filename='losses',
+        filename=None,
+        postfix='losses',
         loss_skip=0,
 ):
     """
     preferably provide method_name over filename
 
+    :param postfix:
     :param train_losses:
     :param test_losses:
     :param show_plot:
@@ -366,6 +370,7 @@ def plot_nn_losses(
         if method_name is not None:
             io_helper.save_plot(method_name=method_name)
         else:
+            filename = postfix if filename is None else f'{filename}{io_helper.sep}{postfix}'
             io_helper.save_plot(filename=filename)
     if show_plot:
         plt.show(block=True)
