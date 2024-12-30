@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Callable
+from typing import Callable, Literal
 
 import numpy as np
 
@@ -62,20 +62,20 @@ class IO_Helper:
     ### LOADERS ###
     def load_array(self, method_name=None, filename=None, infix=None):
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='array')
         return np.load(self._get_array_savepath(filename))
 
     def load_model(self, method_name=None, filename=None, infix=None):
         import pickle
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         with open(self._get_model_savepath(filename), "rb") as file:
             model = pickle.load(file)
         return model
 
     def load_torch_model(self, method_name=None, filename=None, infix=None):
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         import torch
         filepath = self._get_model_savepath(filename)
         model = torch.load(filepath, weights_only=False)
@@ -94,7 +94,7 @@ class IO_Helper:
         """
         import torch
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         if model_kwargs is None:
             model_kwargs = {}
         path = self._get_model_savepath(filename)
@@ -114,7 +114,7 @@ class IO_Helper:
     ):
         import torch
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
         la = la_instantiator(base_model)
         la.load_state_dict(torch.load(laplace_model_filepath))
@@ -123,14 +123,14 @@ class IO_Helper:
     ### SAVERS ###
     def save_array(self, array, method_name=None, filename=None, infix=None):
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='array')
         path = self._get_array_savepath(filename)
         np.save(path, array)
 
     def save_model(self, model, method_name=None, filename=None, infix=None):
         import pickle
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
         with open(path, "wb") as file:
             # noinspection PyTypeChecker
@@ -139,14 +139,14 @@ class IO_Helper:
     def save_torch_model(self, model, method_name=None, filename=None, infix=None):
         import torch
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
         torch.save(model, path)
 
     def save_torch_model_statedict(self, model, method_name=None, filename=None, infix=None):
         import torch
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
         torch.save(model.state_dict(), path)
 
@@ -159,14 +159,14 @@ class IO_Helper:
     ):
         import torch
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
         torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
     def save_plot(self, method_name=None, filename=None, infix=None):
         from matplotlib import pyplot as plt
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
+            filename = self.make_filename(method_name, infix=infix, file_type='plot')
         ext = os.path.splitext(filename)[-1]
         if ext not in {'png', 'jpeg', 'jpg'}:
             logging.info(f'filename {filename} had no extension. saving as PNG')
@@ -176,21 +176,47 @@ class IO_Helper:
 
     def save_metrics(self, metrics: dict, method_name=None, filename=None, infix=None):
         import json
+        infix = 'metrics' if infix is None else f'{infix}_metrics'
         if filename is None:
-            filename = self.make_filename(method_name, infix=infix)
-        filename = f'{filename}_metrics'
-        filename += '.json'
+            filename = self.make_filename(method_name, infix=infix, file_type='metrics')
         path = self._get_metrics_savepath(filename)
         metrics_str = json.dumps(metrics, indent=4)
         with open(path, 'w') as file:
             file.write(metrics_str)
 
-    def make_filename(self, method_name, sep='_', infix=None):
+    def make_filename(
+            self,
+            method_name,
+            sep='_',
+            infix=None,
+            file_type: Literal['model', 'plot', 'array', 'metrics'] = 'model',
+    ):
+        """
+        make *model* filename by default (with corresp. ending)
+        :param method_name:
+        :param sep:
+        :param infix:
+        :param file_type: one of 'model', 'plot', 'array'
+        :return:
+        """
         # todo: docstring
         # todo: better handling!
         method_name = method_name.split(2*sep)[0]  # take care of posthoc_model__base_model naming
         kwargs = self.methods_kwargs[method_name]
-        suffixes, ext = self.filename_parts[method_name]
+        suffixes, model_ext = self.filename_parts[method_name]
+
+        match file_type:
+            case 'model':
+                ext = model_ext
+            case 'plot':
+                ext = 'png'
+            case 'array':
+                ext = 'npy'
+            case 'metrics':
+                ext = 'json'
+            case _:
+                raise ValueError(f'filetype must be one of model, plot, array, metrics. received: {file_type}')
+
         joined_suffixes = []
         for shorthand, kwarg_name in suffixes:
             kwarg_value = f'n{self.n_samples}' if kwarg_name != 'n_samples' else kwargs[kwarg_name]
