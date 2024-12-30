@@ -465,8 +465,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 random_seed=random_seed,
                 verbose=verbose,
             )
-        if save_model:
-            self.save_model(model, method_name=method_name)
+            if save_model:
+                self.save_model(model, method_name=method_name)
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
