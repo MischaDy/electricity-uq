@@ -562,7 +562,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     QR_NN,
                     method_name=method_name,
                     model_kwargs={
-                        'dim_in': X_train.shape[0],
+                        'dim_in': X_train.shape[1],
                         'quantiles': quantiles,
                         'num_hidden_layers': num_hidden_layers,
                         'hidden_layer_size': hidden_layer_size,
@@ -634,7 +634,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     MeanVarNN,
                     method_name=method_name,
                     model_kwargs={
-                        'dim_in': X_train.shape[0],
+                        'dim_in': X_train.shape[1],
                         'num_hidden_layers': num_hidden_layers,
                         'hidden_layer_size': hidden_layer_size,
                         'activation': activation,
