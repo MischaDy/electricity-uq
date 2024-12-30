@@ -563,6 +563,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     method_name=method_name,
                     model_kwargs={
                         'dim_in': X_train.shape[0],
+                        'quantiles': quantiles,
                         'num_hidden_layers': num_hidden_layers,
                         'hidden_layer_size': hidden_layer_size,
                         'activation': activation,
