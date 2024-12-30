@@ -17,31 +17,31 @@ logging.basicConfig(level=logging.INFO, force=True)
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
 DATA_FILEPATH = 'data/data_1600.pkl'
-
 N_POINTS_PER_GROUP = 800
 STANDARDIZE_DATA = True
 
-PLOT_DATA = True
+PLOT_DATA = False
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 SAVE_PLOTS = True
+
 SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
 
-DO_TRAIN_ALL = False
-SKIP_TRAINING_ALL = True
+DO_TRAIN_ALL = True
+SKIP_TRAINING_ALL = False
 
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    "posthoc_conformal_prediction",
-    "posthoc_laplace_approximation",
+    # "posthoc_conformal_prediction",
+    # "posthoc_laplace_approximation",
     "native_quantile_regression_nn",
     "native_gpytorch",
     "native_mvnn",
-    'base_model_linreg',
-    'base_model_rf',
+    # 'base_model_linreg',
+    # 'base_model_rf',
     'base_model_nn',
 ]
 POSTHOC_BASE_BLACKLIST = {
