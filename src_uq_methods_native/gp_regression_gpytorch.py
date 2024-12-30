@@ -36,7 +36,9 @@ def train_gpytorch(
         lr_reduction_factor=0.5,
         show_progress=True,
         show_plots=True,
-        do_plot_losses=True,
+        show_losses_plot=True,
+        save_losses_plot=True,
+        io_helper=None,
 ):
     n_devices = torch.cuda.device_count()
     logging.info('Planning to run on {} GPUs.'.format(n_devices))
@@ -68,7 +70,7 @@ def train_gpytorch(
         loss.backward()
         optimizer.step()
 
-        if use_scheduler or do_plot_losses:
+        if use_scheduler or show_losses_plot:
             model.eval()
             likelihood.eval()
             with torch.no_grad(), gpytorch.settings.fast_pred_var():
@@ -77,9 +79,15 @@ def train_gpytorch(
                 val_losses.append(val_loss.item())
             scheduler.step(val_loss)
 
-    if do_plot_losses:
-        loss_skip = 0
-        misc_helpers.plot_nn_losses(train_losses, val_losses, show_plots=show_plots, loss_skip=loss_skip)
+    misc_helpers.plot_nn_losses(
+        train_losses,
+        val_losses,
+        loss_skip=0,
+        show_plot=show_plots and show_losses_plot,
+        save_plot=save_losses_plot,
+        io_helper=io_helper,
+        file_name='train_gpytorch',
+    )
 
     logging.info(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
     return model, likelihood

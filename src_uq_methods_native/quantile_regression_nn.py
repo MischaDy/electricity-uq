@@ -141,16 +141,22 @@ def train_qr_nn(
     random_seed=42,
     val_frac=0.1,
     lr=0.1,
+    use_scheduler=True,
     lr_patience=30,
     lr_reduction_factor=0.5,
     weight_decay=0.0,
     show_progress=True,
-    do_plot_losses=True,
+    show_plots=True,
+    show_losses_plot=True,
+    save_losses_plot=True,
+    io_helper=None,
     loss_skip=10,
-    use_scheduler=True,
 ):
     """
 
+    :param io_helper:
+    :param show_losses_plot:
+    :param show_plots:
     :param X_train:
     :param y_train:
     :param quantiles: will be sorted internally
@@ -163,7 +169,7 @@ def train_qr_nn(
     :param lr_reduction_factor:
     :param weight_decay:
     :param show_progress:
-    :param do_plot_losses:
+    :param save_losses_plot:
     :param loss_skip:
     :param use_scheduler:
     :return:
@@ -206,7 +212,7 @@ def train_qr_nn(
             loss = criterion(y_pred_quantiles, y_train)
             loss.backward()
             optimizer.step()
-        if not use_scheduler and not do_plot_losses:
+        if not use_scheduler and not save_losses_plot:
             continue
 
         train_loss, val_loss = compute_eval_losses(model, criterion, X_train, y_train, X_val, y_val)
@@ -215,17 +221,17 @@ def train_qr_nn(
         if use_scheduler:
             scheduler.step(val_loss)
     logging.info('done training.')
-    if do_plot_losses:
-        plot_losses(train_losses, val_losses, loss_skip, do_plot_losses)
+    misc_helpers.plot_nn_losses(
+        train_losses,
+        val_losses,
+        loss_skip=loss_skip,
+        show_plot=show_plots and show_losses_plot,
+        save_plot=save_losses_plot,
+        io_helper=io_helper,
+        file_name='train_qr_nn',
+    )
     model.eval()
     return model
-
-
-def plot_losses(train_losses, val_losses, loss_skip, do_plot_losses):
-    logging.info('plotting losses')
-    for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
-        logging.info(f'{loss_type}, {train_losses[:5]}, {min(losses)}, {max(losses)}, {any(np.isnan(losses))}')
-    misc_helpers.plot_nn_losses(train_losses, val_losses, show_plots=do_plot_losses, loss_skip=loss_skip)
 
 
 def predict_with_qr_nn(model, X_pred):

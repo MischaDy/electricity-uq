@@ -63,6 +63,8 @@ METHODS_KWARGS = {
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
+        'show_losses_plot': True,
+        'save_losses_plot': True,
         'save_model': True,
     },
     "native_quantile_regression_nn": {
@@ -77,7 +79,8 @@ METHODS_KWARGS = {
         'lr_patience': 30,
         'regularization': 0,
         'show_progress': True,
-        'do_plot_losses': True,
+        'show_losses_plot': True,
+        'save_losses_plot': True,
         'save_model': True,
     },
     "native_gpytorch": {
@@ -90,7 +93,8 @@ METHODS_KWARGS = {
         'lr_reduction_factor': 0.5,
         'show_progress': True,
         'show_plots': True,
-        'do_plot_losses': True,
+        'show_losses_plot': True,
+        'save_losses_plot': True,
         'save_model': True,
     },
     "posthoc_conformal_prediction": {
@@ -132,7 +136,7 @@ METHODS_KWARGS = {
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
         "show_progress_bar": True,
-        "show_losses_plot": False,
+        "show_losses_plot": True,
         "save_losses_plot": True,
         "random_seed": 42,
         "verbose": 1,
@@ -403,8 +407,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             lr_reduction_factor=lr_reduction_factor,
             verbose=verbose,
             show_progress_bar=show_progress_bar,
-            save_losses_plot=save_losses_plot,
             show_losses_plot=show_losses_plot,
+            save_losses_plot=save_losses_plot,
+            io_helper=self.io_helper,
         )
         if save_model:
             self.save_model(model, method_name=method_name)
@@ -537,7 +542,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             lr_patience=30,
             regularization=0,
             show_progress=True,
-            do_plot_losses=True,
+            show_losses_plot=True,
+            save_losses_plot=True,
             skip_training=True,
             save_model=True,
     ):
@@ -585,7 +591,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 use_scheduler=use_scheduler,
                 lr_patience=lr_patience,
                 weight_decay=regularization,
-                do_plot_losses=do_plot_losses,
+                show_losses_plot=show_losses_plot,
+                save_losses_plot=save_losses_plot,
+                io_helper=self.io_helper,
                 show_progress=show_progress,
             )
             if save_model:
@@ -611,6 +619,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             regularization=0,  # 1e-2,
             warmup_period=50,
             frozen_var_value=0.1,
+            show_losses_plot=True,
+            save_losses_plot=True,
             skip_training=True,
             save_model=True,
     ):
@@ -658,12 +668,21 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             if warmup_period > 0:
                 logging.info('running warmup...')
                 model = train_mean_var_nn(
-                    n_iter=warmup_period, train_var=False, frozen_var_value=frozen_var_value, do_plot_losses=False,
+                    n_iter=warmup_period,
+                    train_var=False,
+                    frozen_var_value=frozen_var_value,
+                    show_losses_plot=False,  # never show for warmup
+                    save_losses_plot=False,  # never save for warmup
                     **common_params
                 )
             logging.info('running main training run...')
             model = train_mean_var_nn(
-                model=model, n_iter=n_iter, train_var=True, do_plot_losses=False,
+                model=model,
+                n_iter=n_iter,
+                train_var=True,
+                show_losses_plot=show_losses_plot,
+                save_losses_plot=save_losses_plot,
+                io_helper=self.io_helper,
                 **common_params
             )
             if save_model:
@@ -688,7 +707,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             lr_reduction_factor=0.5,
             show_progress=True,
             show_plots=True,
-            do_plot_losses=True,
+            show_losses_plot=True,
+            save_losses_plot=True,
             skip_training=True,
             save_model=True,
     ):
@@ -744,7 +764,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 lr_reduction_factor=lr_reduction_factor,
                 show_progress=show_progress,
                 show_plots=show_plots,
-                do_plot_losses=do_plot_losses,
+                show_losses_plot=show_losses_plot,
+                save_losses_plot=save_losses_plot,
+                io_helper=self.io_helper,
             )
             if save_model:
                 logging.info('saving model...')

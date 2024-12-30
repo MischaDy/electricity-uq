@@ -1,5 +1,3 @@
-import logging
-
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -62,15 +60,17 @@ def train_mean_var_nn(
     random_seed=42,
     val_frac=0.1,
     lr=0.1,
+    use_scheduler=True,
     lr_patience=30,
     lr_reduction_factor=0.5,
     weight_decay=0.0,
     train_var=True,
     frozen_var_value=0.5,
-    show_progress=True,
-    do_plot_losses=True,
     loss_skip=10,
-    use_scheduler=True,
+    show_progress=True,
+    show_losses_plot=True,
+    save_losses_plot=True,
+    io_helper=None,
 ):
     torch.manual_seed(random_seed)
 
@@ -137,11 +137,15 @@ def train_mean_var_nn(
             val_losses.append(val_loss)
         if use_scheduler:
             scheduler.step(val_loss)
-    if do_plot_losses:
-        for loss_type, losses in {'train_losses': train_losses, 'val_losses': val_losses}.items():
-            logging.info(loss_type, train_losses[:5], min(losses), max(losses), any(np.isnan(losses)))
-        misc_helpers.plot_nn_losses(train_losses, val_losses, loss_skip=loss_skip)
-
+    misc_helpers.plot_nn_losses(
+        train_losses,
+        val_losses,
+        loss_skip=loss_skip,
+        show_plot=show_losses_plot,
+        save_plot=save_losses_plot,
+        io_helper=io_helper,
+        method_name='train_mean_var_nn',
+    )
     model.eval()
     return model
 

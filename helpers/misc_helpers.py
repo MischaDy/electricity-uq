@@ -327,13 +327,35 @@ def measure_runtime(func):
 def plot_nn_losses(
         train_losses,
         test_losses=None,
-        show_plots=True,
+        show_plot=True,
         save_plot=False,
         io_helper=None,
-        filename='losses',
+        method_name=None,
+        file_name='losses',
         loss_skip=0,
 ):
+    """
+    preferably provide method_name over file_name
+
+    :param train_losses:
+    :param test_losses:
+    :param show_plot:
+    :param save_plot:
+    :param io_helper:
+    :param method_name:
+    :param file_name:
+    :param loss_skip:
+    :return:
+    """
     import matplotlib.pyplot as plt
+
+    if not show_plot and not save_plot:
+        logging.warning('nn loss plot to be neither show nor saved. skipping entirely.')
+        return
+
+    if save_plot and io_helper is None:
+        logging.error('io_helper must be set for nn loss to be saved!')
+        save_plot = False
 
     fig, ax = plt.subplots()
     plt_func = ax.plot if _contains_neg(train_losses) or _contains_neg(test_losses) else ax.semilogy
@@ -341,8 +363,11 @@ def plot_nn_losses(
     plt_func(test_losses[loss_skip:], label="test loss")
     ax.legend()
     if save_plot:
-        io_helper.save_plot(filename=filename)
-    if show_plots:
+        if method_name is not None:
+            io_helper.save_plot(method_name=method_name)
+        else:
+            io_helper.save_plot(filename=file_name)
+    if show_plot:
         plt.show(block=True)
     plt.close(fig)
 

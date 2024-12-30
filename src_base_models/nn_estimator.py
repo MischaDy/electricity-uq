@@ -46,8 +46,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         "save_model": [bool],
         "verbose": [int],
         'show_progress_bar': [bool],
-        'save_losses_plot': [bool],
         'show_losses_plot': [bool],
+        'save_losses_plot': [bool],
     }
 
     def __init__(
@@ -65,8 +65,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             lr_reduction_factor=0.5,
             verbose: int = 1,
             show_progress_bar=True,
-            save_losses_plot=True,
             show_losses_plot=True,
+            save_losses_plot=True,
+            io_helper=None,
     ):
         self.use_scheduler = use_scheduler
         self.n_iter = n_iter
@@ -81,8 +82,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.lr_reduction_factor = lr_reduction_factor
         self.verbose = verbose
         self.show_progress_bar = show_progress_bar
-        self.save_losses_plot = save_losses_plot
         self.show_losses_plot = show_losses_plot
+        self.save_losses_plot = save_losses_plot
+        self.io_helper = io_helper
         self.is_fitted_ = False
 
     @_fit_context(prefer_skip_nested_validation=True)
@@ -175,9 +177,16 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         model.eval()
         self.model_ = model
 
-        if self.save_losses_plot:
-            loss_skip = min(100, self.n_iter // 10)
-            misc_helpers.plot_nn_losses(train_losses, val_losses, loss_skip=loss_skip)
+        loss_skip = min(100, self.n_iter // 10)
+        misc_helpers.plot_nn_losses(
+            train_losses,
+            val_losses,
+            loss_skip=loss_skip,
+            show_plot=self.show_losses_plot,
+            save_plot=self.save_losses_plot,
+            io_helper=self.io_helper,
+            file_name='nn_estimator_fit',
+        )
 
         self.is_fitted_ = True
         return self
@@ -296,6 +305,7 @@ def train_nn(
         show_progress_bar=True,
         show_losses_plot=True,
         save_losses_plot=True,
+        io_helper=None,
         verbose: int = 1,
 ):
     model = NN_Estimator(
@@ -311,8 +321,9 @@ def train_nn(
         lr_reduction_factor=lr_reduction_factor,
         verbose=verbose,
         show_progress_bar=show_progress_bar,
-        save_losses_plot=save_losses_plot,
         show_losses_plot=show_losses_plot,
+        save_losses_plot=save_losses_plot,
+        io_helper=io_helper,
     )
     # noinspection PyTypeChecker
     model.fit(X_train, y_train)
