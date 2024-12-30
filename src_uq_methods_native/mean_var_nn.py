@@ -144,7 +144,7 @@ def train_mean_var_nn(
         show_plot=show_losses_plot,
         save_plot=save_losses_plot,
         io_helper=io_helper,
-        method_name='train_mean_var_nn',
+        file_name='train_mean_var_nn',
     )
     model.eval()
     return model
