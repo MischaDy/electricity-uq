@@ -569,7 +569,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                         'activation': activation,
                     },
                 )
-                model = misc_helpers.objects_to_cuda(model)
+                model = misc_helpers.object_to_cuda(model)
             except FileNotFoundError as error:
                 logging.warning(f"trained model '{error.filename}' not found.")
                 skip_training = False
@@ -640,7 +640,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                         'activation': activation,
                     }
                 )
-                model = misc_helpers.objects_to_cuda(model)
+                model = misc_helpers.object_to_cuda(model)
             except FileNotFoundError as error:
                 logging.warning(f"trained model '{error.filename}' not found.")
                 skip_training = False

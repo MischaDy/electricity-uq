@@ -231,7 +231,6 @@ def plot_losses(train_losses, val_losses, loss_skip, do_plot_losses):
 def predict_with_qr_nn(model, X_pred):
     X_pred = misc_helpers.preprocess_array(X_pred)
     with torch.no_grad():
-        # noinspection PyUnboundLocalVariable,PyCallingNonCallable
         y_quantiles_dict = model(X_pred, as_dict=True)
     y_quantiles = np.array(list(y_quantiles_dict.values())).T
     y_pred = y_quantiles_dict[0.5]
