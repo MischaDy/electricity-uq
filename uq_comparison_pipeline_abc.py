@@ -192,7 +192,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             logging.info(f'{uq_type}...')
             uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true, quantiles=quantiles)
         self.print_uq_metrics(uq_metrics_all)
-        self.io_helper.save_metrics(uq_metrics_all, filename='uq')
+        self.io_helper.save_metrics(uq_metrics_all, filename='uq_metrics')
         return base_models_metrics, uq_metrics_all
 
     @abstractmethod
