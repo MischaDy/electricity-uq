@@ -170,10 +170,11 @@ class IO_Helper:
         from matplotlib import pyplot as plt
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='plot')
-        ext = os.path.splitext(filename)[-1]
-        if ext not in {'png', 'jpeg', 'jpg'}:
-            logging.info(f'filename {filename} had no extension. saving as PNG')
-            filename += '.png'
+        else:
+            ext = os.path.splitext(filename)[-1]
+            if ext not in {'png', 'jpeg', 'jpg'}:
+                logging.info(f'filename {filename} had no extension. saving as PNG')
+                filename += '.png'
         path = self._get_plot_savepath(filename)
         plt.savefig(path)
 
