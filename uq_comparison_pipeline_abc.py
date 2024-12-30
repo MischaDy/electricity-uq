@@ -377,11 +377,10 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             if not compatible_base_models:
                 logging.info(f'no compatible base models found for posthoc method {posthoc_method_name} - skipping.')
                 continue
-            logging.info(f'running {posthoc_method_name}...')
 
             method_kwargs = self.methods_kwargs[posthoc_method_name]
             for base_model_name, base_model in compatible_base_models.items():
-                logging.info(f'...on {base_model_name}...')
+                logging.info(f'running {posthoc_method_name} on {base_model_name}...')
                 base_model_copy = base_model if skip_base_model_copy else copy.deepcopy(base_model)
                 y_pred, y_quantiles, y_std = posthoc_method(
                     X_train,
