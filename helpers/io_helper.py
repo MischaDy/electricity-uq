@@ -183,6 +183,8 @@ class IO_Helper:
         infix = 'metrics' if infix is None else f'{infix}_metrics'
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='metrics')
+        elif not os.path.splitext(filename)[-1]:
+            filename += '.json'
         path = self._get_metrics_savepath(filename)
         metrics_str = json.dumps(metrics, indent=4)
         with open(path, 'w') as file:
