@@ -498,7 +498,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model = self.io_helper.load_laplace_model_statedict(
                     base_model_nn,
                     la_instantiator,
-                    filename=model_filename,
+                    method_name=method_name,
                 )
             except FileNotFoundError as error:
                 logging.warning(f"trained model '{error.filename}' not found. training from scratch.")
