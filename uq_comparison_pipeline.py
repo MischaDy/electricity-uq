@@ -44,12 +44,6 @@ METHOD_WHITELIST = [
     'posthoc_conformal_prediction',
     'posthoc_laplace_approximation',
 ]
-POSTHOC_BASE_BLACKLIST = {
-    'posthoc_laplace_approximation': {
-        'base_model_linreg',
-        'base_model_rf',
-    },
-}
 
 METHODS_KWARGS = {
     "native_mvnn": {
@@ -199,6 +193,13 @@ FILENAME_PARTS = {
         ],
         'model'
     ),
+}
+
+POSTHOC_BASE_BLACKLIST = {
+    'posthoc_laplace_approximation': {
+        'base_model_linreg',
+        'base_model_rf',
+    },
 }
 
 assert not (DO_TRAIN_ALL and SKIP_TRAINING_ALL)
