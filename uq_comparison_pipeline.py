@@ -35,14 +35,14 @@ SKIP_TRAINING_ALL = False
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    # "posthoc_conformal_prediction",
-    # "posthoc_laplace_approximation",
-    "native_quantile_regression_nn",
-    # "native_gpytorch",
-    # "native_mvnn",
-    # 'base_model_linreg',
-    # 'base_model_rf',
-    # 'base_model_nn',
+    'base_model_linreg',
+    'base_model_nn',
+    'base_model_rf',
+    'native_gpytorch',
+    'native_mvnn',
+    'native_quantile_regression_nn',
+    'posthoc_conformal_prediction',
+    'posthoc_laplace_approximation',
 ]
 POSTHOC_BASE_BLACKLIST = {
     'posthoc_laplace_approximation': {
