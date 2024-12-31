@@ -215,6 +215,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     def __init__(
             self,
             filename_parts,
+            data_path,
             *,
             storage_path="comparison_storage",
             methods_kwargs: dict[str, dict[str, Any]] = None,
@@ -224,7 +225,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             standardize_data=True,
     ):
         """
-
         :param methods_kwargs: dict of (method_name, method_kwargs) pairs
         :param storage_path:
         :param n_points_per_group: both training size and test size
@@ -232,6 +232,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         """
         super().__init__(
             storage_path=storage_path,
+            data_path=data_path,
             methods_kwargs=methods_kwargs,
             filename_parts=filename_parts,
             n_samples=n_points_per_group,  # todo: allow setting later?
@@ -250,7 +251,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         All variables except for the scaler are 2D np arrays.
         """
         return misc_helpers.get_data(
-            filepath=DATA_FILEPATH,
+            filepath=self.data_path,
             n_points_per_group=self.n_points_per_group,
             standardize_data=self.standardize_data,
         )
@@ -837,6 +838,7 @@ def main():
         method_whitelist=METHOD_WHITELIST,
         posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
         n_points_per_group=N_POINTS_PER_GROUP,
+        data_path=DATA_FILEPATH,
     )
     uq_comparer.compare_methods(
         QUANTILES,

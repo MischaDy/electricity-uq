@@ -35,6 +35,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     def __init__(
             self,
             storage_path,
+            data_path,
             methods_kwargs,
             filename_parts,
             n_samples,
@@ -44,12 +45,14 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     ):
         """
         :param storage_path:
+        :param data_path:
         :param filename_parts: see IO_Helper.filename_parts definition
         :param method_whitelist:
         :param posthoc_base_blacklist:
         :param standardize_data: True if both X and y should be standardized, False if neither.
         """
         # todo: store train and test data once loaded?
+        self.data_path = data_path
         self.methods_kwargs = methods_kwargs
         self.io_helper = IO_Helper(storage_path, methods_kwargs=methods_kwargs, filename_parts=filename_parts,
                                    n_samples=n_samples)
