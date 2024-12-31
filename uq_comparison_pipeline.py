@@ -16,8 +16,8 @@ logging.basicConfig(level=logging.INFO, force=True)
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
 
-DATA_FILEPATH = 'data/data_1600.pkl'
-N_POINTS_PER_GROUP = 800
+DATA_FILEPATH = 'data/data_2021_2022.pkl'
+N_POINTS_PER_GROUP = 1600
 STANDARDIZE_DATA = True
 
 PLOT_DATA = False
@@ -56,7 +56,7 @@ METHODS_KWARGS = {
         'skip_training': False,
         "n_iter": 100,
         "num_hidden_layers": 2,
-        "hidden_layer_size": 20,
+        "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
         "lr": 1e-4,
         "lr_patience": 30,
@@ -156,9 +156,9 @@ for _, method_kwargs in METHODS_KWARGS.items():
 FILENAME_PARTS = {
     "native_mvnn": (
         [
-            ('it', 'n_iter'),
-            ('nh', 'num_hidden_layers'),
-            ('hs', 'hidden_layer_size'),
+            # ('it', 'n_iter'),
+            # ('nh', 'num_hidden_layers'),
+            # ('hs', 'hidden_layer_size'),
         ],
         'pth'
     ),
