@@ -17,7 +17,7 @@ class IO_Helper:
             models_folder="models",
             plots_folder="plots",
             metrics_folder='metrics',
-            filename_sep='_',
+            sep='_',
     ):
         """
 
@@ -35,11 +35,11 @@ class IO_Helper:
         :param models_folder:
         :param plots_folder:
         :param metrics_folder:
-        :param filename_sep:
+        :param sep:
         """
         self.n_samples = n_samples
         self.filename_parts = filename_parts
-        self.sep = filename_sep
+        self.sep = sep
         self.methods_kwargs = methods_kwargs
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
