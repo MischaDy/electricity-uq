@@ -3,11 +3,11 @@
     "posthoc": {},
     "native": {
         "native_quantile_regression_nn": {
-            "rmse": 15405.99153348276,
-            "smape_scaled": 1.9998794612045385,
-            "crps": 15090.275837158204,
-            "nll_gaussian": 9164.26681285165,
-            "mean_pinball": 11.875956731724248
+            "rmse": 15446.012941876792,
+            "smape_scaled": 1.9998799551805424,
+            "crps": 15057.20169064331,
+            "nll_gaussian": 2420.009079198215,
+            "mean_pinball": 18.912565818079774
         }
     }
 }
