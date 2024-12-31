@@ -601,7 +601,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         ax.plot(
             x_plot_full,
             y_preds,
-            label=f"mean/median prediction",  # todo: mean or median?
+            label="point prediction",  # todo: mean or median?
             color="green",
         )
         # noinspection PyUnboundLocalVariable
@@ -665,7 +665,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         ax.plot(
             x_plot_full,
             y_preds,
-            label=f"mean/median prediction {base_model_name}",  # todo: mean or median?
+            label="point prediction",  # todo: mean or median?
             color="green",
         )
         ax.legend()
