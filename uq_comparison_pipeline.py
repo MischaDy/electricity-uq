@@ -77,7 +77,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         return cls._clean_metrics(metrics)
 
     @classmethod
-    def compute_metrics_uq(cls, y_pred, y_quantiles, y_std, y_true, quantiles=None) -> dict[str, float]:
+    def compute_metrics_uq(cls, y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
         # todo: sharpness? calibration? PIT? coverage?
         from helpers.metrics import crps, nll_gaussian, mean_pinball_loss
 

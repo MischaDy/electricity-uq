@@ -26,7 +26,7 @@ def main():
 
     metrics_det = compute_metrics_det(y_pred, y)
     print('metrics det:', metrics_det)
-    metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y)
+    metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
     print('metrics uq:', metrics_uq)
 
 
@@ -42,7 +42,7 @@ def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
     return _clean_metrics(metrics)
 
 
-def compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles=None) -> dict[str, float]:
+def compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
     # todo: sharpness? calibration? PIT? coverage?
     from helpers.metrics import crps, nll_gaussian, mean_pinball_loss
 
