@@ -150,7 +150,7 @@ def is_ascending(*arrays):
     """
 
     :param arrays:
-    :return: whether the (fully!) flattened concat of the arrays is ascending
+    :return: whether the (fully) flattened concatenation of the arrays is ascending
     """
     from more_itertools import collapse
     arr = list(collapse(arrays))
