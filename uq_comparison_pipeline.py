@@ -14,7 +14,7 @@ from helpers import misc_helpers
 
 logging.basicConfig(level=logging.INFO, force=True)
 
-QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]  # todo: how to handle 0.5? ==> just use mean if needed
+QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
 DATA_FILEPATH = 'data/data_1600.pkl'
 N_POINTS_PER_GROUP = 800

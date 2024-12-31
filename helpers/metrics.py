@@ -13,7 +13,6 @@ def smape_scaled(y_true: np.ndarray, y_pred: np.ndarray):
     :param y_pred:
     :return:
     """
-    # todo: why such terrible perf?
     numerators = np.abs(y_pred - y_true)
     denominators = (np.abs(y_pred) + np.abs(y_true)) / 2
     return np.mean(numerators / denominators)

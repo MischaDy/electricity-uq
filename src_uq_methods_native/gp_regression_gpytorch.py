@@ -133,7 +133,8 @@ def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
     model.eval()
     # noinspection PyUnboundLocalVariable
     likelihood.eval()
-    with torch.no_grad():  # todo: use gpytorch.settings.fast_pred_var()?
+    # todo: via gpytorch.settings, use fast_pred_var, fast_pred_samples, memory_efficient, fast_computations?
+    with torch.no_grad():
         f_preds = model(X_pred)
     y_preds = f_preds.mean
     y_std = f_preds.stddev

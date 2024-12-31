@@ -29,7 +29,6 @@ def train_random_forest(
         verbose=verbose,
         n_jobs=n_jobs,
     )
-    # todo: ravel?
     cv_obj.fit(X_train, y_train.ravel())
     model = cv_obj.best_estimator_
     return model

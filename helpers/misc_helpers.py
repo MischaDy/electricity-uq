@@ -47,6 +47,7 @@ def get_data(
     y = df[output_cols].iloc[:lim]
 
     # todo: allow different train/test split?
+    # todo: use train/val/test split by years!
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
 
     scaler_y = None
@@ -151,7 +152,6 @@ def is_ascending(*arrays):
     :param arrays:
     :return: whether the (fully!) flattened concat of the arrays is ascending
     """
-    # todo: generalize to is_ordered
     from more_itertools import collapse
     arr = list(collapse(arrays))
     return all(a <= b for a, b in zip(arr, arr[1:]))
@@ -305,7 +305,6 @@ def quantiles_from_pis(pis: np.ndarray, check_order=False):
     :param pis: prediction intervals array of shape (n_samples, 2, n_intervals)
     :return: array of quantiles of shape (n_samples, 2 * n_intervals)
     """
-    # todo: assumption that quantile ordering is definitely consistent fulfilled?
     if check_order:
         assert np.all([is_ascending(pi[0, :], reversed(pi[1, :])) for pi in pis])
     y_quantiles = np.array([sorted(pi.flatten()) for pi in pis])

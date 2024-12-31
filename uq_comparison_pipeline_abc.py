@@ -72,7 +72,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             should_save_plots=True,
             skip_base_model_copy=False,
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
-        # todo: improve, e.g. tuple[dict[str, tuple[np.array, np.array]], dict[str, tuple[np.array, np.array]]]
         """
         Output is produced over the whole of X
 
@@ -523,7 +522,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param n_stds:
         :return:
         """
-        # todo: allow results to have multiple PIs (corresp. to multiple alphas)?
         for method_name, (y_preds, y_quantiles, y_std) in uq_results.items():
             if y_quantiles is None and y_std is None:
                 logging.warning(f"cannot plot method {method_name}, because both y_quantiles and y_std are None")

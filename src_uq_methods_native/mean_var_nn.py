@@ -33,7 +33,6 @@ class MeanVarNN(torch.nn.Module):
         self._frozen_var = None
 
     def forward(self, x: torch.Tensor):
-        # todo: make tensor if isn't?
         x = self.first_layer_stack(x)
         mean = self.last_layer_mean(x)
         var = torch.exp(self.last_layer_var(x))
