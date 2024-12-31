@@ -6,212 +6,22 @@ logging.info(f'reading file {filename}...')
 
 from typing import Any, Generator
 import numpy as np
-from scipy import stats
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
 
-logging.basicConfig(level=logging.INFO, force=True)
-
-QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
-
-DATA_FILEPATH = 'data/data_1600.pkl'
-N_POINTS_PER_GROUP = 800
-STANDARDIZE_DATA = True
-
-PLOT_DATA = False
-PLOT_UQ_RESULTS = True
-PLOT_BASE_RESULTS = True
-SHOW_PLOTS = True
-SAVE_PLOTS = True
-
-SKIP_BASE_MODEL_COPY = True
-SHOULD_SAVE_RESULTS = True
-
-DO_TRAIN_ALL = True
-SKIP_TRAINING_ALL = False
-
-STORAGE_PATH = "comparison_storage"
-
-METHOD_WHITELIST = [
-    'base_model_linreg',
-    'base_model_nn',
-    'base_model_rf',
-    'native_gpytorch',
-    'native_mvnn',
-    'native_quantile_regression_nn',
-    'posthoc_conformal_prediction',
-    'posthoc_laplace_approximation',
-]
-
-METHODS_KWARGS = {
-    "native_mvnn": {
-        'skip_training': False,
-        "n_iter": 100,
-        "num_hidden_layers": 2,
-        "hidden_layer_size": 50,
-        "activation": None,  # defaults to leaky ReLU
-        "lr": 1e-4,
-        "lr_patience": 30,
-        "regularization": 0,  # 1e-2,
-        "warmup_period": 50,
-        "frozen_var_value": 0.1,
-        'show_losses_plot': True,
-        'save_losses_plot': True,
-        'save_model': True,
-    },
-    "native_quantile_regression_nn": {
-        'skip_training': False,
-        'n_iter': 100,
-        'num_hidden_layers': 2,
-        'hidden_layer_size': 50,
-        'activation': None,
-        'random_seed': 42,
-        'lr': 1e-4,
-        'use_scheduler': True,
-        'lr_patience': 30,
-        'regularization': 0,
-        'show_progress': True,
-        'show_losses_plot': True,
-        'save_losses_plot': True,
-        'save_model': True,
-    },
-    "native_gpytorch": {
-        'skip_training': False,
-        'n_iter': 100,
-        'val_frac': 0.1,
-        'lr': 1e-2,
-        'use_scheduler': True,
-        'lr_patience': 30,
-        'lr_reduction_factor': 0.5,
-        'show_progress': True,
-        'show_plots': True,
-        'show_losses_plot': True,
-        'save_losses_plot': True,
-        'save_model': True,
-    },
-    "posthoc_conformal_prediction": {
-        "skip_training": True,
-        "n_estimators": 5,
-        "verbose": 1,
-        "save_model": True,
-    },
-    "posthoc_laplace_approximation": {
-        'skip_training': False,
-        "n_iter": 100,
-        'save_model': True,
-    },
-    "base_model_linreg": {
-        "skip_training": True,
-        "n_jobs": -1,
-        "save_model": True,
-    },
-    "base_model_rf": {
-        "skip_training": True,
-        'model_param_distributions': {
-            "max_depth": stats.randint(2, 50),
-            "n_estimators": stats.randint(10, 200),
-        },
-        'cv_n_iter': 20,
-        'cv_n_splits': 5,
-        "random_seed": 42,
-        "verbose": 4,
-        'n_jobs': -1,
-        "save_model": True,
-    },
-    "base_model_nn": {
-        "skip_training": True,
-        "n_iter": 100,
-        'num_hidden_layers': 2,
-        'hidden_layer_size': 50,
-        'activation': None,
-        "lr": 1e-2,
-        "lr_patience": 30,
-        "lr_reduction_factor": 0.5,
-        "show_progress_bar": True,
-        "show_losses_plot": True,
-        "save_losses_plot": True,
-        "random_seed": 42,
-        "verbose": 1,
-        "save_model": True,
-    },
-}
-
-FILENAME_PARTS = {
-    "native_mvnn": (
-        [
-            # ('it', 'n_iter'),
-            # ('nh', 'num_hidden_layers'),
-            # ('hs', 'hidden_layer_size'),
-        ],
-        'pth'
-    ),
-    "native_quantile_regression_nn": (
-        [
-            ('it', 'n_iter'),
-            ('nh', 'num_hidden_layers'),
-            ('hs', 'hidden_layer_size'),
-        ],
-        'pth'
-    ),
-    "native_gpytorch": (
-        [
-            ('it', 'n_iter'),
-        ],
-        'pth'
-    ),
-    "posthoc_conformal_prediction": (
-        [
-            ('it', 'n_estimators'),
-        ],
-        'model'
-    ),
-    "posthoc_laplace_approximation": (
-        [
-            ('it', 'n_iter'),
-        ],
-        'pth'
-    ),
-    "base_model_linreg": (
-        [
-        ],
-        'model'
-    ),
-    "base_model_nn": (
-        [
-            ('it', 'n_iter'),
-            ('nh', 'num_hidden_layers'),
-            ('hs', 'hidden_layer_size'),
-        ],
-        'pth'
-    ),
-    "base_model_rf": (
-        [
-            ('it', 'cv_n_iter'),
-            ('its', 'cv_n_splits'),
-        ],
-        'model'
-    ),
-}
-
-POSTHOC_BASE_BLACKLIST = {
-    'posthoc_laplace_approximation': {
-        'base_model_linreg',
-        'base_model_rf',
-    },
-}
-
-assert not (DO_TRAIN_ALL and SKIP_TRAINING_ALL)
-
-for _, method_kwargs in METHODS_KWARGS.items():
-    if DO_TRAIN_ALL:
-        method_kwargs['skip_training'] = False
-    elif SKIP_TRAINING_ALL:
-        method_kwargs['skip_training'] = True
+import settings
 
 
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
+    posthoc_base_blacklist = {
+        'posthoc_laplace_approximation': {
+            'base_model_linreg',
+            'base_model_rf',
+        },
+    }
+
     def __init__(
             self,
             filename_parts,
@@ -221,7 +31,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             methods_kwargs: dict[str, dict[str, Any]] = None,
             n_points_per_group=800,
             method_whitelist=None,
-            posthoc_base_blacklist: dict[str, set[str]] = None,
             standardize_data=True,
     ):
         """
@@ -237,7 +46,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             filename_parts=filename_parts,
             n_samples=n_points_per_group,  # todo: allow setting later?
             method_whitelist=method_whitelist,
-            posthoc_base_blacklist=posthoc_base_blacklist,
             standardize_data=standardize_data,
         )
         self.n_points_per_group = n_points_per_group
@@ -808,7 +616,19 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         self.io_helper.save_model(model, method_name=method_name)
 
 
+def update_training_flags():
+    logging.info('updating training flags...')
+    assert not (settings.DO_TRAIN_ALL and settings.SKIP_TRAINING_ALL)
+
+    for _, method_kwargs in settings.METHODS_KWARGS.items():
+        if settings.DO_TRAIN_ALL:
+            method_kwargs['skip_training'] = False
+        elif settings.SKIP_TRAINING_ALL:
+            method_kwargs['skip_training'] = True
+
+
 def check_method_kwargs_dict(class_, method_kwargs_dict):
+    logging.info('checking kwargs dict...')
     from inspect import signature
     wrong_kwargs = {}
     for method_name, method_kwargs in method_kwargs_dict.items():
@@ -820,35 +640,37 @@ def check_method_kwargs_dict(class_, method_kwargs_dict):
             wrong_kwargs[method_name] = kwargs_names.difference(method_params_names)
     if wrong_kwargs:
         raise ValueError(f'Wrong method(s) kwargs: {wrong_kwargs}')
-    logging.info('kwargs dict check successful')
 
 
 def main():
+    logging.basicConfig(level=settings.LOGGING_LEVEL, force=True)
+
     logging.info('running main pipeline...')
-    check_method_kwargs_dict(UQ_Comparison_Pipeline, METHODS_KWARGS)
+    logging.info('running preliminary checks/setup...')
+    check_method_kwargs_dict(UQ_Comparison_Pipeline, settings.METHODS_KWARGS)
+    update_training_flags()
     # todo: check filename parts dict!
 
     import torch
     torch.set_default_dtype(torch.float32)
 
     uq_comparer = UQ_Comparison_Pipeline(
-        filename_parts=FILENAME_PARTS,
-        storage_path=STORAGE_PATH,
-        methods_kwargs=METHODS_KWARGS,
-        method_whitelist=METHOD_WHITELIST,
-        posthoc_base_blacklist=POSTHOC_BASE_BLACKLIST,
-        n_points_per_group=N_POINTS_PER_GROUP,
-        data_path=DATA_FILEPATH,
+        filename_parts=settings.FILENAME_PARTS,
+        data_path=settings.DATA_FILEPATH,
+        storage_path=settings.STORAGE_PATH,
+        methods_kwargs=settings.METHODS_KWARGS,
+        method_whitelist=settings.METHOD_WHITELIST,
+        n_points_per_group=settings.N_POINTS_PER_GROUP,
     )
     uq_comparer.compare_methods(
-        QUANTILES,
-        should_plot_data=PLOT_DATA,
-        should_plot_uq_results=PLOT_UQ_RESULTS,
-        should_plot_base_results=PLOT_BASE_RESULTS,
-        should_show_plots=SHOW_PLOTS,
-        should_save_plots=SAVE_PLOTS,
-        should_save_results=SHOULD_SAVE_RESULTS,
-        skip_base_model_copy=SKIP_BASE_MODEL_COPY,
+        settings.QUANTILES,
+        should_plot_data=settings.PLOT_DATA,
+        should_plot_uq_results=settings.PLOT_UQ_RESULTS,
+        should_plot_base_results=settings.PLOT_BASE_RESULTS,
+        should_show_plots=settings.SHOW_PLOTS,
+        should_save_plots=settings.SAVE_PLOTS,
+        should_save_results=settings.SHOULD_SAVE_RESULTS,
+        skip_base_model_copy=settings.SKIP_BASE_MODEL_COPY,
     )
 
 

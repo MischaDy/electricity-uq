@@ -32,6 +32,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     4. Call compare_methods from the child class
     """
 
+    # todo: for child classes to override
+    posthoc_base_blacklist: dict[str, set[str]]  # dict of pairs (posthoc_method_name, incompatible_base_methods set)
+
     def __init__(
             self,
             storage_path,
@@ -40,7 +43,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             filename_parts,
             n_samples,
             method_whitelist=None,
-            posthoc_base_blacklist: dict[str, str] | None = None,
             standardize_data=True,
     ):
         """
@@ -48,7 +50,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param data_path:
         :param filename_parts: see IO_Helper.filename_parts definition
         :param method_whitelist:
-        :param posthoc_base_blacklist:
         :param standardize_data: True if both X and y should be standardized, False if neither.
         """
         # todo: store train and test data once loaded?
@@ -57,10 +58,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         self.io_helper = IO_Helper(storage_path, methods_kwargs=methods_kwargs, filename_parts=filename_parts,
                                    n_samples=n_samples)
         self.method_whitelist = method_whitelist
-        if posthoc_base_blacklist is None:
-            posthoc_base_blacklist = dict()
-        self.posthoc_base_blacklist = defaultdict(set)
-        self.posthoc_base_blacklist.update(posthoc_base_blacklist)
         self.standardize_data = standardize_data
 
     def compare_methods(
