@@ -190,7 +190,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         for uq_type, uq_results in uq_results_all.items():
             logging.info(f'{uq_type}...')
             uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true_orig_scale, quantiles=quantiles)
-        self.print_uq_metrics(uq_metrics_all)
+        self.print_uq_metrics(uq_metrics_all, print_optimal=True)
         self.io_helper.save_metrics(uq_metrics_all, filename='uq_metrics')
         return base_models_metrics, uq_metrics_all
 
@@ -681,8 +681,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             plt.show(block=True)
         plt.close(fig)
 
-    @staticmethod
-    def print_uq_metrics(uq_metrics):
+    def print_uq_metrics(self, uq_metrics, print_optimal=True, y_true_orig_scale=None, y_quantiles=None, y_std=None,
+                         quantiles=None, eps_std=1e-2):
         print()
         for uq_type, method_metrics in uq_metrics.items():
             print(f"{uq_type} metrics:")
@@ -691,15 +691,34 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 for metric, value in metrics.items():
                     print(f"\t\t{metric}: {value}")
             print()
+        if print_optimal:
+            self.print_optimal_det_metrics(y_true_orig_scale)
+            self.print_optimal_uq_metrics(y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=1e-2)
 
-    @staticmethod
-    def print_base_models_metrics(base_models_metrics):
+    def print_optimal_uq_metrics(self, y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=1e-2):
+        print('\toptimal uq metrics:')
+        y_quantiles_opt = np.hstack([y_true_orig_scale] * y_quantiles.shape[1])
+        y_std_opt = np.ones_like(y_std) * eps_std
+        optimal_uq_metrics = self.compute_metrics_uq(y_true_orig_scale, y_quantiles_opt, y_std_opt, y_true_orig_scale,
+                                                     quantiles=quantiles)
+        for metric, value in optimal_uq_metrics.items():
+            print(f"\t\t{metric}: {value}")
+
+    def print_base_models_metrics(self, base_models_metrics, print_optimal=True, y_true_orig_scale=None):
         print()
         for model_name, metrics in base_models_metrics.items():
             print(f"{model_name}:")
             for metric, value in metrics.items():
                 print(f"\t{metric}: {value}")
         print()
+        if print_optimal:
+            self.print_optimal_det_metrics(y_true_orig_scale)
+
+    def print_optimal_det_metrics(self, y_true_orig_scale):
+        optimal_det_metrics = self.compute_metrics_det(y_true_orig_scale, y_true_orig_scale)
+        print('optimal deterministic metrics:')
+        for metric, value in optimal_det_metrics.items():
+            print(f"\t\t{metric}: {value}")
 
     def save_outputs_base_models(self, y_preds_dict: dict[str, np.ndarray]):
         for base_model_name, y_pred in y_preds_dict.items():

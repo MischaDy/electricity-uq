@@ -32,8 +32,15 @@ def main():
 
     metrics_det = compute_metrics_det(y_pred, y_true_orig_scale)
     print('metrics det:', metrics_det)
+    optimal_det = compute_metrics_det(y_true_orig_scale, y_true_orig_scale)
+    print('optimal det', optimal_det)
     metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y_true_orig_scale, settings.QUANTILES)
     print('metrics uq:', metrics_uq)
+    eps = 1e-2
+    y_quantiles_opt = np.hstack([y_true_orig_scale] * y_quantiles.shape[1])
+    y_std_opt = np.ones_like(y_std) * eps
+    optimal_uq = compute_metrics_uq(y_true_orig_scale, y_quantiles_opt, y_std_opt, y_true_orig_scale, settings.QUANTILES)
+    print('optimal uq', optimal_uq)
 
 
 def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
