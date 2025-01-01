@@ -1,3 +1,5 @@
+print('importing')
+
 from typing import Generator
 
 import numpy as np
@@ -5,9 +7,12 @@ import numpy as np
 import settings
 from helpers import misc_helpers
 from helpers.io_helper import IO_Helper
+print('done')
 
 
 def main():
+    print('running main')
+    print('loading data')
     io_helper = IO_Helper(
         settings.STORAGE_PATH,
         methods_kwargs=settings.METHODS_KWARGS,
@@ -31,7 +36,8 @@ def main():
 
 
 def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
-    # todo: sharpness? calibration? PIT? coverage?
+    print('computing det metrics')
+
     from helpers.metrics import rmse, smape_scaled
 
     y_pred, y_true = _clean_ys_for_metrics(y_pred, y_true)
@@ -43,7 +49,8 @@ def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
 
 
 def compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
-    # todo: sharpness? calibration? PIT? coverage?
+    print('computing uq metrics')
+
     from helpers.metrics import crps, nll_gaussian, mean_pinball_loss
 
     y_pred, y_quantiles, y_std, y_true = _clean_ys_for_metrics(y_pred, y_quantiles, y_std, y_true)
