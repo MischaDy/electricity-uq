@@ -6,7 +6,6 @@ logging.info(f'reading file {filename}...')
 from abc import ABC, abstractmethod
 import numpy as np
 import copy
-from collections import defaultdict
 from functools import partial
 from typing import Any, Generator, Callable
 
