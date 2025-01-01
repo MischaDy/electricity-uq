@@ -107,6 +107,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         logging.info("training base models...")
         X_pred, y_true = X, y
+        y_true_orig_scale = misc_helpers.inverse_transform_y(scaler_y, y_true)
 
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
         y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y=scaler_y)
@@ -133,7 +134,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         logging.info("computing base model metrics...")
         base_models_metrics = {
-            model_name: self.compute_metrics_det(model_preds, y_true)
+            model_name: self.compute_metrics_det(model_preds, y_true_orig_scale)
             for model_name, model_preds in y_preds_base_models.items()
         }
         if base_models_metrics:
@@ -188,7 +189,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         uq_metrics_all = {'base_model': base_models_metrics}
         for uq_type, uq_results in uq_results_all.items():
             logging.info(f'{uq_type}...')
-            uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true, quantiles=quantiles)
+            uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true_orig_scale, quantiles=quantiles)
         self.print_uq_metrics(uq_metrics_all)
         self.io_helper.save_metrics(uq_metrics_all, filename='uq_metrics')
         return base_models_metrics, uq_metrics_all

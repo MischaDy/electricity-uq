@@ -28,10 +28,11 @@ def main():
         n_points_per_group=settings.N_POINTS_PER_GROUP,
         standardize_data=True,
     )
+    y_true_orig_scale = misc_helpers.inverse_transform_y(scaler_y, y)
 
-    metrics_det = compute_metrics_det(y_pred, y)
+    metrics_det = compute_metrics_det(y_pred, y_true_orig_scale)
     print('metrics det:', metrics_det)
-    metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
+    metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y_true_orig_scale, settings.QUANTILES)
     print('metrics uq:', metrics_uq)
 
 
