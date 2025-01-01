@@ -100,7 +100,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 y_train,
                 X_test,
                 y_test,
-                scaler_y,
+                scaler_y=scaler_y,
                 show_plot=should_show_plots,
                 save_plot=should_save_plots,
             )
@@ -109,7 +109,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         X_pred, y_true = X, y
 
         base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
-        y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y)
+        y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y=scaler_y)
         if should_save_results:
             logging.info('saving base model results...')
             self.save_outputs_base_models(y_preds_base_models)
@@ -125,7 +125,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                     X_test,
                     y_test,
                     y_pred_base_model,
-                    scaler_y,
+                    scaler_y=scaler_y,
                     base_model_name=base_model_name,
                     show_plots=should_show_plots,
                     save_plot=should_save_plots,
@@ -144,9 +144,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             X_train,
             y_train,
             X_pred,
-            scaler_y,
             base_models,
             quantiles=quantiles,
+            scaler_y=scaler_y,
             skip_base_model_copy=skip_base_model_copy
         )
         if should_save_results:
@@ -161,8 +161,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_train=y_train,
             X_test=X_test,
             y_test=y_test,
-            scaler_y=scaler_y,
             quantiles=quantiles,
+            scaler_y=scaler_y,
             show_plots=should_show_plots,
             save_plots=should_save_plots,
         )
@@ -171,7 +171,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             plot_uq_results(uq_results=posthoc_results)
 
         logging.info("running native UQ methods...")
-        native_results = self.run_native_methods(X_train, y_train, X_pred, scaler_y, quantiles=quantiles)
+        native_results = self.run_native_methods(X_train, y_train, X_pred, quantiles=quantiles, scaler_y=scaler_y)
 
         if should_save_results:
             logging.info('saving native UQ results...')
@@ -304,11 +304,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         return base_models
 
     @staticmethod
-    def predict_base_models(base_models: dict[str, Any], X_pred, scaler_y):
+    def predict_base_models(base_models: dict[str, Any], X_pred, scaler_y=None):
         base_model_preds = {}
         for model_name, base_model in base_models.items():
             y_pred = base_model.predict(X_pred)
-            y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
+            if scaler_y is not None:
+                y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
             base_model_preds[model_name] = y_pred
         return base_model_preds
 
@@ -338,9 +339,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             X_train,
             y_train,
             X_pred,
-            scaler_y,
             base_models: dict[str, Any],
             quantiles,
+            scaler_y=None,
             skip_base_model_copy=False,
     ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
@@ -388,11 +389,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                     base_model_copy,
                     **method_kwargs
                 )
-                y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
-                if y_quantiles is not None:
-                    y_quantiles = misc_helpers.inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
-                if y_std is not None:
-                    y_std = misc_helpers.upscale_y_std(scaler_y, y_std)
+                if scaler_y is not None:
+                    y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
+                    if y_quantiles is not None:
+                        y_quantiles = misc_helpers.inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
+                    if y_std is not None:
+                        y_std = misc_helpers.upscale_y_std(scaler_y, y_std)
                 key = f'{posthoc_method_name}__{base_model_name}'
                 posthoc_results[key] = y_pred, y_quantiles, y_std
         return posthoc_results
@@ -402,8 +404,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             X_train,
             y_train,
             X_pred,
-            scaler_y,
             quantiles,
+            scaler_y=None,
     ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
         """
 
@@ -434,11 +436,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 quantiles=quantiles,
                 **method_kwargs
             )
-            y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
-            if y_quantiles is not None:
-                y_quantiles = misc_helpers.inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
-            if y_std is not None:
-                y_std = misc_helpers.upscale_y_std(scaler_y, y_std)
+            if scaler_y is not None:
+                y_pred = misc_helpers.inverse_transform_y(scaler_y, y_pred)
+                if y_quantiles is not None:
+                    y_quantiles = misc_helpers.inverse_transform_ys(scaler_y, *y_quantiles, to_np=True)
+                if y_std is not None:
+                    y_std = misc_helpers.upscale_y_std(scaler_y, y_std)
             native_results[native_method_name] = y_pred, y_quantiles, y_std
         return native_results
 
@@ -450,7 +453,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_train,
             X_test,
             y_test,
-            scaler_y,
+            scaler_y=None,
             filename="data",
             figsize=(16, 5),
             ylabel="energy data",
@@ -500,9 +503,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_train,
             X_test,
             y_test,
-            scaler_y,
             uq_results: dict[str, tuple[Any, Any, Any]],
             quantiles,
+            scaler_y=None,
             show_plots=True,
             save_plots=True,
             n_stds=2,
@@ -533,9 +536,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 y_preds=y_preds,
                 y_quantiles=y_quantiles,
                 y_std=y_std,
-                scaler_y=scaler_y,
                 quantiles=quantiles,
                 method_name=method_name,
+                scaler_y=scaler_y,
                 n_stds=n_stds,
                 show_plots=show_plots,
                 save_plot=save_plots,
@@ -550,9 +553,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_preds,
             y_quantiles,
             y_std,
-            scaler_y,
             quantiles,
             method_name,
+            scaler_y=None,
             n_stds=2,
             show_plots=True,
             save_plot=True,
@@ -630,8 +633,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             X_test,
             y_test,
             y_preds,
-            scaler_y,
             base_model_name,
+            scaler_y=None,
             show_plots=True,
             save_plot=True,
     ):
