@@ -69,20 +69,42 @@ def standardize_data(X_train, X_test, y_train, y_test, X, y, numerical_cols=None
     return X_train, X_test, y_train, y_test, X, y, scaler_y
 
 
-def train_test_split(X, y, test_size=0.5):
+def train_test_split(X, y, train_years: tuple[int, int] = None, test_years: tuple[int, int] = None, test_size=0.5):
     """
     split data into train/test sets. Any ts cols present in X will be dropped.
+    :param test_years:
+    :param train_years:
     :param X:
     :param y:
     :param test_size:
     :return:
     """
     from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
+
+    if train_years is not None and test_years is not None:
+        X_years = X.ts_pred.map(lambda ts: ts.year)
+        train_years_indices = _get_years_indices(X, train_years, X_years)
+        X_train, y_train = X[train_years_indices], y[train_years_indices]
+        test_years_indices = _get_years_indices(X, train_years, X_years)
+        X_test, y_test = X[test_years_indices], y[test_years_indices]
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
+
     for arr in [X_train, X_test, y_train, y_test]:
         ts_cols = [col for col in arr.columns if col.startswith('ts_')]
         arr.drop(columns=ts_cols, inplace=True)
     return X_test, X_train, y_test, y_train
+
+
+def _get_years_indices(X, years_range: tuple[int, int], X_years):
+    """
+
+    :param X:
+    :param years_range:
+    :param X_years:
+    :return: all rows of X with timestamps in years_range, excluding endpoint
+    """
+    return X[(years_range[0] <= X_years) & (X_years < years_range[1])]
 
 
 def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=800,
