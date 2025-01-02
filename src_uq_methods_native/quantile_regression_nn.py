@@ -1,8 +1,6 @@
 import logging
 from typing import Literal
 
-logging.info('importing')
-
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -12,8 +10,6 @@ from more_itertools import collapse
 from tqdm import tqdm
 
 from helpers import misc_helpers
-
-logging.info('done')
 
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
