@@ -90,7 +90,7 @@ def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_c
     X = df[input_cols].iloc[:lim]
     y = df[output_cols].iloc[:lim]
     if do_output_numerical_col_names:
-        return (X, y), numerical_col_names
+        return X, y, numerical_col_names
     return X, y
 
 
