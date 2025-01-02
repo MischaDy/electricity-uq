@@ -56,8 +56,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         load and prepare data
 
         :return:
-        A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If self.standardize_data=False, y_scaler is None.
-        All variables except for the scaler are 2D np arrays.
+        A tuple (X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y).
+        If self.standardize_data=False, y_scaler is None. All variables except for the scaler are 2D np arrays.
         """
         return misc_helpers.get_data(
             filepath=self.data_path,
@@ -228,7 +228,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model.set_params(verbose=False)
         return model
 
-    # noinspection PyUnboundLocalVariable
     def posthoc_conformal_prediction(
             self,
             X_train: 'np.ndarray',
@@ -586,8 +585,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 self.io_helper.save_torch_model_statedict(model, method_name=method_name)
                 self.io_helper.save_torch_model_statedict(likelihood, method_name=method_name, infix=infix)
         # noinspection PyUnboundLocalVariable
-        y_preds, y_quantiles, y_std = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
-        return y_preds, y_quantiles, y_std
+        y_pred, y_quantiles, y_std = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
+        return y_pred, y_quantiles, y_std
 
     @staticmethod
     def _clean_ys_for_metrics(*ys) -> Generator[Union['np.ndarray', None], None, None]:

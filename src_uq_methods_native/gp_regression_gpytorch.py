@@ -134,15 +134,13 @@ def prepare_data(
 
 
 def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
-    # noinspection PyUnboundLocalVariable
     model.eval()
-    # noinspection PyUnboundLocalVariable
     likelihood.eval()
     # todo: via gpytorch.settings, use fast_pred_var, fast_pred_samples, memory_efficient, fast_computations?
     with torch.no_grad():
-        f_preds = model(X_pred)
-    y_preds = f_preds.mean
-    y_std = f_preds.stddev
-    y_preds, y_std = misc_helpers.tensors_to_np_arrays(y_preds, y_std)
-    y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_preds, y_std)
-    return y_preds, y_quantiles, y_std
+        f_pred = model(X_pred)
+    y_pred = f_pred.mean
+    y_std = f_pred.stddev
+    y_pred, y_std = misc_helpers.tensors_to_np_arrays(y_pred, y_std)
+    y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
+    return y_pred, y_quantiles, y_std

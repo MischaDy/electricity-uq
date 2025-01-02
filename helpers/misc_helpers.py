@@ -26,8 +26,8 @@ def get_data(
     :param input_cols:
     :param output_cols:
     :return:
-    A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If standardize_data=False, y_scaler is None.
-    All variables except for the scaler are 2D np arrays.
+    A tuple (X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y).
+    If standardize_data=False, y_scaler is None. All variables except for the scaler are 2D np arrays.
     """
     X, y, numerical_cols = load_data(
         filepath,
@@ -37,21 +37,20 @@ def get_data(
         n_points_per_group=n_points_per_group,
         return_ts_col=True,
     )
-    X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X, y)
-
+    X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(X, y)
     if do_standardize_data:
-        X_train, X_val, X_test, y_train, y_val, y_test, X, y, scaler_y = standardize_data(
-            X_train, X_val, X_test, y_train, y_val, y_test, X, y, numerical_cols=numerical_cols
+        X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = standardize_data(
+            X_train, y_train, X_val, y_val, X_test, y_test, X, y, numerical_cols=numerical_cols
         )
     else:
         scaler_y = None
 
     # todo: where does casting to arrays happen? can make it happen earlier?
     # to float arrays
-    X_train, X_val, X_test, y_train, y_val, y_test, X, y = set_dtype_float(
-        X_train, X_val, X_test, y_train, y_val, y_test, X, y
+    X_train, y_train, X_val, y_val, X_test, y_test, X, y = set_dtype_float(
+        X_train, y_train, X_val, y_val, X_test, y_test, X, y
     )
-    return X_train, X_val, X_test, y_train, y_val, y_test, X, y, scaler_y
+    return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
 
 
 def standardize_data(X_train, X_val, X_test, y_train, y_val, y_test, X, y, numerical_cols=None):
@@ -96,7 +95,7 @@ def train_val_test_split(
     :param test_years:
     :param train_size: size of train set as proportion of total data (excluding validation set)
     :param val_size: size of validation set as proportion of total data
-    :return:
+    :return: tuple (X_train, y_train, X_val, y_val, X_test, y_test)
     """
     years_ranges = [train_years, val_years, test_years]
     if None not in years_ranges:
@@ -106,7 +105,7 @@ def train_val_test_split(
     for arr in [X_train, X_test, y_train, y_test]:
         ts_cols = [col for col in arr.columns if col.startswith('ts_')]
         arr.drop(columns=ts_cols, inplace=True)
-    return X_train, X_val, X_test, y_train, y_val, y_test
+    return X_train, y_train, X_val, y_val, X_test, y_test
 
 
 def _train_val_test_split_by_size(
@@ -360,21 +359,6 @@ def timestamped_filename(prefix, ext):
     timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
     filename = f'{prefix}_{timestamp}.{ext}'
     return filename
-
-
-def train_val_split(
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        val_frac: float
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    assert 0 < val_frac <= 1
-    n_samples = X_train.shape[0]
-    val_size = max(1, round(val_frac * n_samples))
-    train_size = max(1, n_samples - val_size)
-    X_val, y_val = X_train[-val_size:], y_train[-val_size:]
-    X_train, y_train = X_train[:train_size], y_train[:train_size]
-    assert X_train.shape[0] > 0 and X_val.shape[0] > 0
-    return X_train, y_train, X_val, y_val
 
 
 def quantiles_gaussian(quantiles: list, y_pred: np.ndarray, y_std: np.ndarray):
