@@ -1,11 +1,15 @@
 import logging
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from typing import TYPE_CHECKING
 from tqdm import tqdm
 import gpytorch
-import numpy as np
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from helpers import misc_helpers
+
+if TYPE_CHECKING:
+    import numpy as np
+
 
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
@@ -109,9 +113,9 @@ def evaluate(model, likelihood, X_test, y_test):
 
 
 def prepare_data(
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        X_pred: np.ndarray,
+        X_train: 'np.ndarray',
+        y_train: 'np.ndarray',
+        X_pred: 'np.ndarray',
         val_frac=0.1,
 ):
     logging.info('preparing data..')

@@ -1,8 +1,12 @@
+from typing import Callable, Literal, TYPE_CHECKING
 import logging
 import os
-from typing import Callable, Literal
 
 import numpy as np
+
+if TYPE_CHECKING:
+    import torch
+    import laplace
 
 
 # noinspection PyPep8Naming
@@ -109,7 +113,6 @@ class IO_Helper:
         model.load_state_dict(state_dict)
         return model
 
-    # noinspection PyUnresolvedReferences
     def load_laplace_model_statedict(
             self,
             base_model: 'torch.nn.Module',

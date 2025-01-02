@@ -4,13 +4,15 @@ import logging
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
 
-from typing import Any, Generator
-import numpy as np
+from typing import Any, Generator, Union, TYPE_CHECKING
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
-
 import settings
+
+if TYPE_CHECKING:
+    from src_base_models.nn_estimator import NN_Estimator
+    import numpy as np
 
 
 # noinspection PyPep8Naming
@@ -90,8 +92,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def base_model_linreg(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
             n_jobs=-1,
             skip_training=True,
             save_model=True,
@@ -109,8 +111,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def base_model_rf(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
             cv_n_iter=100,
             cv_n_splits=10,
             model_param_distributions=None,
@@ -146,8 +148,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def base_model_nn(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
             n_iter=500,
             batch_size=20,
             random_seed=42,
@@ -229,9 +231,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     # noinspection PyUnboundLocalVariable
     def posthoc_conformal_prediction(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             base_model,
             n_estimators=10,
@@ -283,12 +285,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
-    # noinspection PyUnresolvedReferences
     def posthoc_laplace_approximation(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             base_model: 'NN_Estimator',
             n_iter=100,
@@ -298,7 +299,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
             verbose=True,
     ):
-        from helpers import misc_helpers
         from src_uq_methods_posthoc.laplace_approximation import (
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
         )
@@ -336,9 +336,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def native_quantile_regression_nn(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=300,
             num_hidden_layers=2,
@@ -415,9 +415,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def native_mvnn(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=300,
             num_hidden_layers=2,
@@ -505,9 +505,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def native_gpytorch(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=100,
             val_frac=0.1,
@@ -590,7 +590,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         return y_preds, y_quantiles, y_std
 
     @staticmethod
-    def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None, None, None]:
+    def _clean_ys_for_metrics(*ys) -> Generator[Union['np.ndarray', None], None, None]:
+        import numpy as np
         for y in ys:
             if y is None:
                 yield y

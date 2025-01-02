@@ -21,7 +21,6 @@ def train_laplace_approximation(
 ):
     # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
     #  script)?
-    torch.set_default_dtype(torch.float32)
     torch.manual_seed(random_seed)
     torch.set_default_device(misc_helpers.get_device())
 

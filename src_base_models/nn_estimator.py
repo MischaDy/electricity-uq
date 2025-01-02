@@ -1,4 +1,4 @@
-import numpy as np
+from typing import TYPE_CHECKING
 from more_itertools import collapse
 
 # noinspection PyProtectedMember
@@ -12,7 +12,12 @@ from tqdm import tqdm
 
 from helpers import misc_helpers
 
+if TYPE_CHECKING:
+    import numpy as np
+
+
 torch.set_default_dtype(torch.float32)
+
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
 class NN_Estimator(RegressorMixin, BaseEstimator):
@@ -89,7 +94,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.is_fitted_ = False
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: 'np.ndarray', y: 'np.ndarray'):
         """
         Parameters
         ----------
@@ -291,8 +296,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
 
 def train_nn(
-        X_train: np.ndarray,
-        y_train: np.ndarray,
+        X_train: 'np.ndarray',
+        y_train: 'np.ndarray',
         n_iter=500,
         batch_size=20,
         random_seed=42,

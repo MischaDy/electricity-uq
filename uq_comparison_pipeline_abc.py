@@ -1,5 +1,6 @@
 import logging
 import os
+
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
 
@@ -7,13 +8,15 @@ from abc import ABC, abstractmethod
 import numpy as np
 import copy
 from functools import partial
-from typing import Any, Generator, Callable
+from typing import Any, Generator, Callable, TYPE_CHECKING
 
 from helpers.io_helper import IO_Helper
 from helpers import misc_helpers
 
+if TYPE_CHECKING:
+    from helpers.typing_ import UQ_Output
 
-# todo: add type hints
+
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline_ABC(ABC):
     # todo: After these required inputs, they may accept any args or kwargs you wish.
@@ -266,14 +269,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
     def compute_all_metrics(
             self,
-            uq_results: dict[
-                str,
-                tuple[
-                    np.ndarray,
-                    np.ndarray | None,
-                    np.ndarray | None
-                ],
-            ],
+            uq_results: dict[str, 'UQ_Output'],
             y_true,
             quantiles=None,
     ) -> dict[str, dict[str, float]]:
@@ -347,7 +343,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             quantiles,
             scaler_y=None,
             skip_base_model_copy=False,
-    ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    ) -> dict[str, UQ_Output]:
         """
 
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
@@ -410,7 +406,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             X_pred,
             quantiles,
             scaler_y=None,
-    ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    ) -> dict[str, UQ_Output]:
         """
 
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
@@ -507,7 +503,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_train,
             X_test,
             y_test,
-            uq_results: dict[str, tuple[Any, Any, Any]],
+            uq_results: dict[str, UQ_Output],
             quantiles,
             scaler_y=None,
             show_plots=True,
@@ -727,7 +723,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         for base_model_name, y_pred in y_preds_dict.items():
             self.io_helper.save_array(y_pred, method_name=base_model_name)
 
-    def save_outputs_uq_models(self, outputs_uq_models: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]):
+    def save_outputs_uq_models(self, outputs_uq_models: dict[str, UQ_Output]):
         for model_name, outputs_uq_model in outputs_uq_models.items():
             for output_type, output in zip(['y_pred', 'y_quantiles', 'y_std'], outputs_uq_model):
                 self.io_helper.save_array(output, method_name=model_name, infix=output_type)

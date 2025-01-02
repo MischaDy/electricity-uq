@@ -1,9 +1,13 @@
-import logging
-from typing import Generator, Any
+from typing import Generator, Any, TYPE_CHECKING
 
 import numpy as np
+import logging
 
-from helpers.io_helper import IO_Helper
+if TYPE_CHECKING:
+    import pandas as pd
+    import torch
+    from helpers.io_helper import IO_Helper
+    from helpers.typing_ import TrainValTestDataFrames
 
 
 def get_data(
@@ -385,6 +389,7 @@ def measure_runtime(func):
         t2 = default_timer()
         logging.info(f'function {func_name} is done. [took {t2 - t1}s]')
         return result
+
     return wrapper
 
 
@@ -393,7 +398,7 @@ def plot_nn_losses(
         test_losses=None,
         show_plot=True,
         save_plot=False,
-        io_helper: IO_Helper = None,
+        io_helper: 'IO_Helper' = None,
         method_name=None,
         filename=None,
         postfix='losses',
