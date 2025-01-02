@@ -348,6 +348,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=300,
@@ -404,6 +406,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_qr_nn(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 quantiles,
                 n_iter=n_iter,
                 lr=lr,

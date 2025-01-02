@@ -103,16 +103,6 @@ def _reduce_loss(loss, reduction):
     return loss
 
 
-def preprocess_data(X_train, y_train, val_frac=0.1):
-    logging.info('train/val split')
-    X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
-    assert X_train.shape[0] > 0 and X_val.shape[0] > 0
-
-    logging.info('preprocess arrays')
-    X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays(X_train, y_train, X_val, y_val)
-    return X_train, y_train, X_val, y_val
-
-
 def compute_eval_losses(model, criterion, X_train, y_train, X_val, y_val):
     model.eval()
     with torch.no_grad():
@@ -126,11 +116,12 @@ def compute_eval_losses(model, criterion, X_train, y_train, X_val, y_val):
 def train_qr_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
     quantiles: list,
     n_iter=200,
     batch_size=20,
     random_seed=42,
-    val_frac=0.1,
     lr=0.1,
     use_scheduler=True,
     lr_patience=30,
@@ -145,6 +136,8 @@ def train_qr_nn(
 ):
     """
 
+    :param y_val:
+    :param X_val:
     :param io_helper:
     :param show_losses_plot:
     :param show_plots:
@@ -154,7 +147,6 @@ def train_qr_nn(
     :param n_iter:
     :param batch_size:
     :param random_seed:
-    :param val_frac:
     :param lr:
     :param lr_patience:
     :param lr_reduction_factor:
@@ -168,7 +160,7 @@ def train_qr_nn(
     logging.info('setup')
     torch.manual_seed(random_seed)
 
-    X_train, y_train, X_val, y_val = preprocess_data(X_train, y_train, val_frac=val_frac)
+    X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays(X_train, y_train, X_val, y_val)
 
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
     quantiles = sorted(quantiles)
