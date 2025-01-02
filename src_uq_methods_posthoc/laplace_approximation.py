@@ -11,8 +11,10 @@ torch.set_default_dtype(torch.float32)
 
 
 def train_laplace_approximation(
-        X_train,
-        y_train,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_val: np.ndarray,
+        y_val: np.ndarray,
         base_model_nn,
         n_iter,
         batch_size=20,
@@ -23,6 +25,10 @@ def train_laplace_approximation(
     #  script)?
     torch.manual_seed(random_seed)
     torch.set_default_device(misc_helpers.get_device())
+
+    # todo: use validation data better(?)
+    X_train = np.vstack([X_train, X_val])
+    y_train = np.vstack([y_train, y_val])
 
     X_train, y_train = misc_helpers.preprocess_arrays(X_train, y_train)
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)

@@ -295,6 +295,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             X_pred: 'np.ndarray',
             quantiles: list,
             base_model: 'NN_Estimator',
@@ -327,6 +329,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_laplace_approximation(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 base_model_nn,
                 n_iter=n_iter,
                 batch_size=batch_size,
