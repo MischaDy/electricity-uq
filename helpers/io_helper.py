@@ -12,7 +12,7 @@ class IO_Helper:
             base_folder,
             methods_kwargs,
             filename_parts: dict[tuple[list[tuple[str, str]], str]],  # todo: make optional?
-            n_samples: int,
+            filesave_prefix=None,
             arrays_folder="arrays",
             models_folder="models",
             plots_folder="plots",
@@ -36,8 +36,9 @@ class IO_Helper:
         :param plots_folder:
         :param metrics_folder:
         :param sep:
+        :param filesave_prefix:
         """
-        self.n_samples = n_samples
+        self.filesave_prefix = filesave_prefix
         self.filename_parts = filename_parts
         self.sep = sep
         self.methods_kwargs = methods_kwargs
@@ -228,8 +229,7 @@ class IO_Helper:
                 ext = 'json'
             case _:
                 raise ValueError(f'filetype must be one of model, plot, array, metrics. received: {file_type}')
-
-        joined_suffixes = [f'n{self.n_samples}']
+        joined_suffixes = [self.filesave_prefix] if self.filesave_prefix is not None else []
         for shorthand, kwarg_name in suffixes:
             joined_suffix = f'{shorthand}{kwargs[kwarg_name]}'
             joined_suffixes.append(joined_suffix)

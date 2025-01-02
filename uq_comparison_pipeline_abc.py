@@ -40,7 +40,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             data_path,
             methods_kwargs,
             filename_parts,
-            n_samples,
             method_whitelist=None,
             do_standardize_data=True,
     ):
@@ -54,8 +53,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         # todo: store train and test data once loaded?
         self.data_path = data_path
         self.methods_kwargs = methods_kwargs
-        self.io_helper = IO_Helper(storage_path, methods_kwargs=methods_kwargs, filename_parts=filename_parts,
-                                   n_samples=n_samples)
+        self.io_helper = IO_Helper(storage_path, methods_kwargs=methods_kwargs, filename_parts=filename_parts)
         self.method_whitelist = method_whitelist
         self.do_standardize_data = do_standardize_data
 
@@ -70,10 +68,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             should_show_plots=True,
             should_save_plots=True,
             skip_base_model_copy=False,
+            use_filesave_prefix=True,
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
         """
-        Output is produced over the whole of X
+        ...
+        Output is produced over the whole of X!
 
+        :param use_filesave_prefix: if True, save files with prefix "n{number of samples}"
         :param should_save_results:
         :param should_plot_base_results:
         :param should_show_plots:
@@ -91,6 +92,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         logging.info("loading data...")
         X_train, X_test, y_train, y_test, X, y, scaler_y = self.get_data()
+        if use_filesave_prefix:
+            self.io_helper.filesave_prefix = f'n{X_train.shape[0]}'
 
         logging.info(f"data shapes: {X_train.shape}, {X_test.shape}, {y_train.shape}, {y_test.shape}")
         if should_plot_data:

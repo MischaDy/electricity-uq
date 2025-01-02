@@ -44,7 +44,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             data_path=data_path,
             methods_kwargs=methods_kwargs,
             filename_parts=filename_parts,
-            n_samples=n_points_per_group,  # todo: allow setting later?
             method_whitelist=method_whitelist,
             do_standardize_data=do_standardize_data,
         )
@@ -672,6 +671,7 @@ def main():
         should_save_plots=settings.SAVE_PLOTS,
         should_save_results=settings.SHOULD_SAVE_RESULTS,
         skip_base_model_copy=settings.SKIP_BASE_MODEL_COPY,
+        use_filesave_prefix=settings.USE_FILESAVE_PREFIX,
     )
 
 
