@@ -115,11 +115,11 @@ def evaluate(model, likelihood, X_test, y_test):
 def prepare_data(
         X_train: 'np.ndarray',
         y_train: 'np.ndarray',
+        X_val: 'np.ndarray',
+        y_val: 'np.ndarray',
         X_pred: 'np.ndarray',
-        val_frac=0.1,
 ):
     logging.info('preparing data..')
-    X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac=val_frac)
     X_train, y_train, X_val, y_val, X_pred = misc_helpers.np_arrays_to_tensors(
         X_train, y_train, X_val, y_val, X_pred
     )

@@ -525,10 +525,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=100,
-            val_frac=0.1,
             lr=1e-2,
             use_scheduler=True,
             lr_patience=30,
@@ -541,7 +542,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import gpytorch
-        import torch  # will be imported later anyway
+        import torch
         from src_uq_methods_native.gp_regression_gpytorch import (
             ExactGPModel,
             train_gpytorch,
@@ -553,12 +554,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
 
-        X_train, y_train, X_val, y_val, X_pred = prepare_data(
-            X_train,
-            y_train,
-            X_pred,
-            val_frac=val_frac,
-        )
+        X_train, y_train, X_val, y_val, X_pred = prepare_data(X_train, y_train, X_val, y_val, X_pred)
         method_name = 'native_gpytorch'
         infix = 'likelihood'
         if skip_training:
@@ -572,7 +568,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model = self.io_helper.load_torch_model_statedict(
                     ExactGPModel,
                     method_name=method_name,
-                    model_kwargs={'X_train': X_train, 'y_train': y_train, 'likelihood': likelihood},
+                    model_kwargs={'X_train': X_train, 'y_train': y_train, 'likelihood': likelihood},  # no val!
                 )
                 model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
             except FileNotFoundError as error:
