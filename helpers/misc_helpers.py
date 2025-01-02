@@ -2,7 +2,6 @@ import logging
 from typing import Generator, Any
 
 import numpy as np
-import pandas as pd
 import torch
 
 from helpers.io_helper import IO_Helper
@@ -157,15 +156,15 @@ def is_ascending(*arrays):
     return all(a <= b for a, b in zip(arr, arr[1:]))
 
 
-def df_to_np_array(df: pd.DataFrame) -> np.ndarray:
+def df_to_np_array(df: 'pd.DataFrame') -> np.ndarray:
     return df.to_numpy(dtype=float)
 
 
-def dfs_to_np_arrays(*dfs: pd.DataFrame):
+def dfs_to_np_arrays(*dfs: 'pd.DataFrame'):
     return map(df_to_np_array, dfs)
 
 
-def df_to_tensor(df: pd.DataFrame) -> torch.Tensor:
+def df_to_tensor(df: 'pd.DataFrame') -> 'torch.Tensor':
     return np_array_to_tensor(df_to_np_array(df))
 
 
