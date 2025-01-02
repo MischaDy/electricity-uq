@@ -24,14 +24,19 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     """
     Usage:
     1. Inherit from this class.
-    2. Override get_data, compute_metrics, and train_base_model.
-    3. Define all desired posthoc and native UQ methods. The required signature is:
-            (X_train, y_train, X_val, y_val, X_test, quantiles) -> (y_pred, y_quantiles, y_std)
-       Posthoc methods receive an additional base_model parameter, so their signature looks like:
-            (..., quantiles, base_model, *args, **kwargs) -> (y_pred, ...)
-       All posthoc and native UQ method names should start with 'posthoc_' and 'native_', respectively. They should
-       all be instance methods, not class or static methods.
-    4. Call compare_methods from the child class.
+    2. Override the get_data and compute_metrics methods.
+    3. Define all desired point estimator ('deterministic') methods. The required signature is:
+            (X_train, y_train, X_val, y_val, ...) -> trained_model
+       The methods' names should start with 'base_model_' and they should be instance methods.
+    4. Define all desired native UQ methods. The required signature is:
+            (X_train, y_train, X_val, y_val, X_test, quantiles, ...) -> (y_pred, y_quantiles, y_std)
+       y_quantiles is ... . y_std is ... .
+       The methods' names should start with 'native_' and they should be instance methods.
+    5. Define all desired posthoc UQ methods. The required signature is:
+            (X_train, y_train, X_val, y_val, X_test, quantiles, base_model, ...) -> (y_pred, y_quantiles, y_std)
+       y_quantiles and y_std are the same as for native methods.
+       The methods' names should start with 'posthoc_' and they should be instance methods.
+    6. Call compare_methods from the child class.
     """
 
     # todo: for child classes to override
