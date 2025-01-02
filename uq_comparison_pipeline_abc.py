@@ -693,7 +693,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             print()
         if print_optimal:
             self.print_optimal_det_metrics(y_true_orig_scale)
-            self.print_optimal_uq_metrics(y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=1e-2)
+            self.print_optimal_uq_metrics(y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=eps_std)
 
     def print_optimal_uq_metrics(self, y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=1e-2):
         print('\toptimal uq metrics:')

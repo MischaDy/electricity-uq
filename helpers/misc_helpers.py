@@ -7,11 +7,11 @@ from helpers.io_helper import IO_Helper
 
 
 def get_data(
-    filepath,
-    n_points_per_group=None,
-    input_cols=None,
-    output_cols=None,
-    do_standardize_data=True,
+        filepath,
+        n_points_per_group=None,
+        input_cols=None,
+        output_cols=None,
+        do_standardize_data=True,
 ):
     """
     load and prepare data
@@ -25,8 +25,13 @@ def get_data(
     A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If standardize_data=False, y_scaler is None.
     All variables except for the scaler are 2D np arrays.
     """
-    X, y, numerical_cols = load_data(filepath, input_cols, output_cols, do_output_numerical_col_names=True,
-                                     n_points_per_group=n_points_per_group)
+    X, y, numerical_cols = load_data(
+        filepath,
+        input_cols=input_cols,
+        output_cols=output_cols,
+        do_output_numerical_col_names=True,
+        n_points_per_group=n_points_per_group,
+    )
     X_test, X_train, y_test, y_train = train_test_split(X, y)
 
     scaler_y = None
@@ -35,8 +40,8 @@ def get_data(
             X_train, X_test, y_train, y_test, X, y, numerical_cols=numerical_cols
         )
 
-    # to float arrays
     # todo: where does casting to arrays happen? can make it happen earlier?
+    # to float arrays
     X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
     return X_train, X_test, y_train, y_test, X, y, scaler_y
 
@@ -63,10 +68,9 @@ def standardize_data(X_train, X_test, y_train, y_test, X, y, numerical_cols=None
     return X_train, X_test, y_train, y_test, X, y, scaler_y
 
 
-def train_test_split(X, y):
+def train_test_split(X, y, test_size=0.5):
     from sklearn.model_selection import train_test_split
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
     return X_test, X_train, y_test, y_train
 
 

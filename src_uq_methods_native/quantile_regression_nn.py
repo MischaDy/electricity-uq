@@ -190,7 +190,7 @@ def train_qr_nn(
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
-    iterable = np.arange(n_iter) + 1
+    iterable = range(1, n_iter+1)
     if show_progress:
         iterable = tqdm(iterable)
     logging.info('training...')

@@ -109,7 +109,7 @@ def train_mean_var_nn(
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     train_losses, val_losses = [], []
-    iterable = np.arange(n_iter) + 1
+    iterable = range(1, n_iter+1)
     if show_progress:
         iterable = tqdm(iterable)
     for _ in iterable:

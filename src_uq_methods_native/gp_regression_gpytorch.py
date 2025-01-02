@@ -58,7 +58,7 @@ def train_gpytorch(
 
     # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
     train_losses, val_losses = [], []
-    epochs = np.arange(n_iter) + 1
+    epochs = range(1, n_iter+1)
     if show_progress:
         epochs = tqdm(epochs)
     for _ in epochs:
