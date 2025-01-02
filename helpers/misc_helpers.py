@@ -31,7 +31,7 @@ def get_data(
         output_cols=output_cols,
         do_output_numerical_col_names=True,
         n_points_per_group=n_points_per_group,
-        return_ts_col=False,
+        return_ts_col=True,
     )
     X_test, X_train, y_test, y_train = train_test_split(X, y)
 
@@ -70,8 +70,18 @@ def standardize_data(X_train, X_test, y_train, y_test, X, y, numerical_cols=None
 
 
 def train_test_split(X, y, test_size=0.5):
+    """
+    split data into train/test sets. Any ts cols present in X will be dropped.
+    :param X:
+    :param y:
+    :param test_size:
+    :return:
+    """
     from sklearn.model_selection import train_test_split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
+    for arr in [X_train, X_test, y_train, y_test]:
+        ts_cols = [col for col in arr.columns if col.startswith('ts_')]
+        arr.drop(columns=ts_cols, inplace=True)
     return X_test, X_train, y_test, y_train
 
 
