@@ -2,7 +2,6 @@ import logging
 from typing import Generator, Any
 
 import numpy as np
-import torch
 
 from helpers.io_helper import IO_Helper
 
@@ -194,7 +193,8 @@ def dfs_to_tensors(*dfs):
     return map(df_to_tensor, dfs)
 
 
-def np_array_to_tensor(arr: np.ndarray) -> torch.Tensor:
+def np_array_to_tensor(arr: np.ndarray) -> 'torch.Tensor':
+    import torch
     return torch.Tensor(arr).float()
 
 
@@ -202,7 +202,7 @@ def np_arrays_to_tensors(*arrays):
     return map(np_array_to_tensor, arrays)
 
 
-def tensor_to_np_array(tensor: torch.Tensor) -> np.ndarray:
+def tensor_to_np_array(tensor: 'torch.Tensor') -> np.ndarray:
     return tensor.numpy(force=True).astype('float32')
 
 
@@ -211,6 +211,7 @@ def tensors_to_np_arrays(*tensors):
 
 
 def get_device():
+    import torch
     return 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 
@@ -220,6 +221,7 @@ def object_to_cuda(obj):
 
 
 def objects_to_cuda(*objs: Any) -> Generator[Any, None, None]:
+    import torch
     if not torch.cuda.is_available():
         yield from objs
     else:
@@ -242,7 +244,7 @@ def make_ys_1d(*ys):
     return map(make_y_1d, ys)
 
 
-def make_tensor_contiguous(tensor: torch.Tensor):
+def make_tensor_contiguous(tensor: 'torch.Tensor'):
     return tensor.contiguous()
 
 
@@ -261,7 +263,7 @@ def preprocess_arrays(*arrays: np.ndarray):
     return map(preprocess_array, arrays)
 
 
-def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: int):
+def get_train_loader(X_train: 'torch.Tensor', y_train: 'torch.Tensor', batch_size: int):
     from torch.utils.data import TensorDataset, DataLoader
 
     train_dataset = TensorDataset(X_train, y_train)

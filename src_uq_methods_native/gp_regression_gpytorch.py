@@ -8,6 +8,7 @@ import torch
 from helpers import misc_helpers
 
 torch.set_default_device(misc_helpers.get_device())
+torch.set_default_dtype(torch.float32)
 
 
 # noinspection PyPep8Naming

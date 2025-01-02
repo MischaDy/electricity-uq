@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 from helpers import misc_helpers
 
+torch.set_default_dtype(torch.float32)
 
 # noinspection PyAttributeOutsideInit,PyPep8Naming
 class NN_Estimator(RegressorMixin, BaseEstimator):

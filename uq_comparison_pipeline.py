@@ -190,6 +190,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         """
         from src_base_models.nn_estimator import train_nn
         import torch  # will be imported anyway
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -356,6 +357,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import torch
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -438,6 +440,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             train_mean_var_nn,
             predict_with_mvnn,
         )
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -528,6 +531,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             prepare_data,
             predict_with_gpytorch,
         )
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -650,9 +654,6 @@ def main():
     check_method_kwargs_dict(UQ_Comparison_Pipeline, settings.METHODS_KWARGS)
     update_training_flags()
     # todo: check filename parts dict!
-
-    import torch
-    torch.set_default_dtype(torch.float32)
 
     uq_comparer = UQ_Comparison_Pipeline(
         filename_parts=settings.FILENAME_PARTS,

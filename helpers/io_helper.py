@@ -80,6 +80,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         import torch
+        torch.set_default_dtype(torch.float32)
         filepath = self._get_model_savepath(filename)
         model = torch.load(filepath, weights_only=False)
         model.eval()
@@ -96,6 +97,7 @@ class IO_Helper:
         :return:
         """
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         if model_kwargs is None:
@@ -116,6 +118,7 @@ class IO_Helper:
             infix=None,
     ):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
@@ -141,6 +144,7 @@ class IO_Helper:
 
     def save_torch_model(self, model, method_name=None, filename=None, infix=None):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
@@ -148,6 +152,7 @@ class IO_Helper:
 
     def save_torch_model_statedict(self, model, method_name=None, filename=None, infix=None):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
@@ -161,6 +166,7 @@ class IO_Helper:
             infix=None,
     ):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
