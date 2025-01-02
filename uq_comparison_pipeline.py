@@ -232,6 +232,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             X_pred: 'np.ndarray',
             quantiles: list,
             base_model,
@@ -245,6 +247,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param y_val:
+        :param X_val:
         :param save_model:
         :param skip_training:
         :param verbose:
@@ -272,6 +276,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_conformal_prediction(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 base_model,
                 n_estimators=n_estimators,
                 bootstrap_n_blocks=bootstrap_n_blocks,
@@ -281,6 +287,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             )
             if save_model:
                 self.save_model(model, method_name=method_name)
+        # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
