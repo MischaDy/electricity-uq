@@ -31,6 +31,7 @@ def get_data(
         output_cols=output_cols,
         do_output_numerical_col_names=True,
         n_points_per_group=n_points_per_group,
+        return_ts_col=False,
     )
     X_test, X_train, y_test, y_train = train_test_split(X, y)
 
@@ -74,7 +75,8 @@ def train_test_split(X, y, test_size=0.5):
     return X_test, X_train, y_test, y_train
 
 
-def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=800):
+def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=800,
+              return_ts_col=False):
     import pandas as pd
 
     df = pd.read_pickle(filepath)
@@ -84,7 +86,9 @@ def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_c
         # input_cols = ["load_last_week", "load_last_hour", "load_now", "cat_is_workday",
         # "cat_is_saturday_and_not_holiday", "cat_is_sunday_or_holiday", "cat_is_heating_period"]
         input_cols = [col for col in df.columns
-                      if col not in output_cols and not col.startswith('ts_')]
+                      if col not in output_cols]
+        if not return_ts_col:
+            input_cols = [col for col in input_cols if not col.startswith('ts_')]
     numerical_col_names = [col for col in input_cols if not col.startswith('cat_')]
     lim = 2 * n_points_per_group if n_points_per_group is not None else None
     X = df[input_cols].iloc[:lim]
