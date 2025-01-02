@@ -431,6 +431,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=300,
@@ -483,6 +485,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             common_params = {
                 "X_train": X_train,
                 "y_train": y_train,
+                "X_val": X_val,
+                "y_val": y_val,
                 "lr": lr,
                 "lr_patience": lr_patience,
                 "weight_decay": regularization,
