@@ -37,21 +37,24 @@ def get_data(
         n_points_per_group=n_points_per_group,
         return_ts_col=True,
     )
-    X_test, X_train, y_test, y_train = train_test_split(X, y)
+    X_train, X_val, X_test, y_train, y_val, y_test = train_val_test_split(X, y)
 
-    scaler_y = None
     if do_standardize_data:
-        X_train, X_test, y_train, y_test, X, y, scaler_y = standardize_data(
-            X_train, X_test, y_train, y_test, X, y, numerical_cols=numerical_cols
+        X_train, X_val, X_test, y_train, y_val, y_test, X, y, scaler_y = standardize_data(
+            X_train, X_val, X_test, y_train, y_val, y_test, X, y, numerical_cols=numerical_cols
         )
+    else:
+        scaler_y = None
 
     # todo: where does casting to arrays happen? can make it happen earlier?
     # to float arrays
-    X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
-    return X_train, X_test, y_train, y_test, X, y, scaler_y
+    X_train, X_val, X_test, y_train, y_val, y_test, X, y = set_dtype_float(
+        X_train, X_val, X_test, y_train, y_val, y_test, X, y
+    )
+    return X_train, X_val, X_test, y_train, y_val, y_test, X, y, scaler_y
 
 
-def standardize_data(X_train, X_test, y_train, y_test, X, y, numerical_cols=None):
+def standardize_data(X_train, X_val, X_test, y_train, y_val, y_test, X, y, numerical_cols=None):
     from sklearn.preprocessing import StandardScaler
     from sklearn.compose import make_column_transformer
 
@@ -65,39 +68,76 @@ def standardize_data(X_train, X_test, y_train, y_test, X, y, numerical_cols=None
         force_int_remainder_cols=False,
     )
     scaler_X.fit(X_train)
-    X_train, X_test, X = map(scaler_X.transform, [X_train, X_test, X])
+    X_train, X_val, X_test, X = map(scaler_X.transform, [X_train, X_val, X_test, X])
+
     # standardize y
     scaler_y = StandardScaler()
     scaler_y.fit(y_train)
-    y_train, y_test, y = map(scaler_y.transform, [y_train, y_test, y])
-    return X_train, X_test, y_train, y_test, X, y, scaler_y
+    y_train, y_val, y_test, y = map(scaler_y.transform, [y_train, y_val, y_test, y])
+    return X_train, X_val, X_test, y_train, y_val, y_test, X, y, scaler_y
 
 
-def train_test_split(X, y, train_years: tuple[int, int] = None, test_years: tuple[int, int] = None, test_size=0.5):
+def train_val_test_split(
+        X: 'pd.DataFrame',
+        y: 'pd.DataFrame',
+        train_years: tuple[int, int] = None,
+        val_years: tuple[int, int] = None,
+        test_years: tuple[int, int] = None,
+        train_size: float = 0.4,
+        val_size: float = 0.1,
+):
     """
-    split data into train/test sets. Any ts cols present in X will be dropped.
-    :param test_years:
-    :param train_years:
+    split data into train/val/test sets. Any ts cols present in X will be dropped.
+
     :param X:
     :param y:
-    :param test_size:
+    :param train_years:
+    :param val_years:
+    :param test_years:
+    :param train_size: size of train set as proportion of total data (excluding validation set)
+    :param val_size: size of validation set as proportion of total data
     :return:
     """
-    from sklearn.model_selection import train_test_split
-
-    if train_years is not None and test_years is not None:
-        X_years = X.ts_pred.map(lambda ts: ts.year)
-        train_years_indices = _get_years_indices(X, train_years, X_years)
-        X_train, y_train = X[train_years_indices], y[train_years_indices]
-        test_years_indices = _get_years_indices(X, train_years, X_years)
-        X_test, y_test = X[test_years_indices], y[test_years_indices]
+    years_ranges = [train_years, val_years, test_years]
+    if None not in years_ranges:
+        X_train, X_val, X_test, y_train, y_val, y_test = _train_val_test_split_by_year(X, y, years_ranges)
     else:
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
-
+        X_train, X_val, X_test, y_train, y_val, y_test = _train_val_test_split_by_size(X, y, train_size, val_size)
     for arr in [X_train, X_test, y_train, y_test]:
         ts_cols = [col for col in arr.columns if col.startswith('ts_')]
         arr.drop(columns=ts_cols, inplace=True)
-    return X_test, X_train, y_test, y_train
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def _train_val_test_split_by_size(
+        X: 'pd.DataFrame', y: 'pd.DataFrame', train_size: float = 0.5, val_size: float = 0.1
+) -> 'TrainValTestDataFrames':
+    n_samples = X.shape[0]
+    cutoff_train_val = round(train_size * n_samples)
+    cutoff_val_test = cutoff_train_val + round(val_size * n_samples)
+    cutoffs = [0, cutoff_train_val, cutoff_val_test, None]
+    (X_train, X_val, X_test), (y_train, y_val, y_test) = (
+        [arr[from_:to]
+         for from_, to in zip(cutoffs, cutoffs[1:])]
+        for arr in (X, y)
+    )
+    # noinspection PyTypeChecker
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def _train_val_test_split_by_year(
+        X: 'pd.DataFrame', y: 'pd.DataFrame', years_ranges: list[tuple[int, int]]
+) -> 'TrainValTestDataFrames':
+    assert len(years_ranges) == 3
+    X_years = X.ts_pred.map(lambda ts: ts.year)
+    years_indices_all = (_get_years_indices(X, years_range, X_years)
+                         for years_range in years_ranges)
+    (X_train, y_train), (X_val, y_val), (X_test, y_test) = (
+        (X[years_indices], y[years_indices])
+        for years_indices in years_indices_all
+    )
+    # noinspection PyTypeChecker
+    return X_train, X_val, X_test, y_train, y_val, y_test
 
 
 def _get_years_indices(X, years_range: tuple[int, int], X_years):
@@ -111,7 +151,7 @@ def _get_years_indices(X, years_range: tuple[int, int], X_years):
     return X[(years_range[0] <= X_years) & (X_years < years_range[1])]
 
 
-def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=None,
+def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=800,
               return_ts_col=False):
     import pandas as pd
 
