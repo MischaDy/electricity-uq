@@ -107,7 +107,7 @@ def _get_years_indices(X, years_range: tuple[int, int], X_years):
     return X[(years_range[0] <= X_years) & (X_years < years_range[1])]
 
 
-def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=800,
+def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=None,
               return_ts_col=False):
     import pandas as pd
 
