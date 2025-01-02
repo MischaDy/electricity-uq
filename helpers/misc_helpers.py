@@ -12,12 +12,12 @@ def get_data(
     n_points_per_group=None,
     input_cols=None,
     output_cols=None,
-    standardize_data=True,
+    do_standardize_data=True,
 ):
     """
     load and prepare data
 
-    :param standardize_data:
+    :param do_standardize_data:
     :param n_points_per_group:
     :param filepath:
     :param input_cols:
@@ -26,10 +26,53 @@ def get_data(
     A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If standardize_data=False, y_scaler is None.
     All variables except for the scaler are 2D np arrays.
     """
-    import pandas as pd
-    from sklearn.model_selection import train_test_split
+    X, y, numerical_cols = load_data(filepath, input_cols, output_cols, do_output_numerical_col_names=True,
+                                     n_points_per_group=n_points_per_group)
+    X_test, X_train, y_test, y_train = train_test_split(X, y)
+
+    scaler_y = None
+    if do_standardize_data:
+        X_train, X_test, y_train, y_test, X, y, scaler_y = standardize_data(
+            X_train, X_test, y_train, y_test, X, y, numerical_cols=numerical_cols
+        )
+
+    # to float arrays
+    # todo: where does casting to arrays happen? can make it happen earlier?
+    X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
+    return X_train, X_test, y_train, y_test, X, y, scaler_y
+
+
+def standardize_data(X_train, X_test, y_train, y_test, X, y, numerical_cols=None):
     from sklearn.preprocessing import StandardScaler
     from sklearn.compose import make_column_transformer
+
+    if numerical_cols is None:
+        numerical_cols = []
+
+    # standardize X
+    scaler_X = make_column_transformer(
+        (StandardScaler(), numerical_cols),
+        remainder='passthrough',
+        force_int_remainder_cols=False,
+    )
+    scaler_X.fit(X_train)
+    X_train, X_test, X = map(scaler_X.transform, [X_train, X_test, X])
+    # standardize y
+    scaler_y = StandardScaler()
+    scaler_y.fit(y_train)
+    y_train, y_test, y = map(scaler_y.transform, [y_train, y_test, y])
+    return X_train, X_test, y_train, y_test, X, y, scaler_y
+
+
+def train_test_split(X, y):
+    from sklearn.model_selection import train_test_split
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
+    return X_test, X_train, y_test, y_train
+
+
+def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=800):
+    import pandas as pd
 
     df = pd.read_pickle(filepath)
     if output_cols is None:
@@ -39,34 +82,13 @@ def get_data(
         # "cat_is_saturday_and_not_holiday", "cat_is_sunday_or_holiday", "cat_is_heating_period"]
         input_cols = [col for col in df.columns
                       if col not in output_cols and not col.startswith('ts_')]
-    numerical_cols = [col for col in input_cols if not col.startswith('cat_')]
-
+    numerical_col_names = [col for col in input_cols if not col.startswith('cat_')]
     lim = 2 * n_points_per_group if n_points_per_group is not None else None
     X = df[input_cols].iloc[:lim]
     y = df[output_cols].iloc[:lim]
-
-    # todo: allow different train/test split?
-    # todo: use train/val/test split by years!
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
-
-    scaler_y = None
-    if standardize_data:
-        # transform X
-        scaler_X = make_column_transformer(
-            (StandardScaler(), numerical_cols),
-            remainder='passthrough',
-            force_int_remainder_cols=False,
-        )
-        scaler_X.fit(X_train)
-        X_train, X_test, X = map(scaler_X.transform, [X_train, X_test, X])
-        # transform y
-        scaler_y = StandardScaler()
-        scaler_y.fit(y_train)
-        y_train, y_test, y = map(scaler_y.transform, [y_train, y_test, y])
-
-    # to float arrays
-    X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
-    return X_train, X_test, y_train, y_test, X, y, scaler_y
+    if do_output_numerical_col_names:
+        return (X, y), numerical_col_names
+    return X, y
 
 
 def inverse_transform_y(scaler_y, y: np.ndarray):

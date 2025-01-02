@@ -42,14 +42,14 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             filename_parts,
             n_samples,
             method_whitelist=None,
-            standardize_data=True,
+            do_standardize_data=True,
     ):
         """
         :param storage_path:
         :param data_path:
         :param filename_parts: see IO_Helper.filename_parts definition
         :param method_whitelist:
-        :param standardize_data: True if both X and y should be standardized, False if neither.
+        :param do_standardize_data: True if both X and y should be standardized, False if neither.
         """
         # todo: store train and test data once loaded?
         self.data_path = data_path
@@ -57,7 +57,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         self.io_helper = IO_Helper(storage_path, methods_kwargs=methods_kwargs, filename_parts=filename_parts,
                                    n_samples=n_samples)
         self.method_whitelist = method_whitelist
-        self.standardize_data = standardize_data
+        self.do_standardize_data = do_standardize_data
 
     def compare_methods(
             self,

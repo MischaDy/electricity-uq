@@ -31,13 +31,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             methods_kwargs: dict[str, dict[str, Any]] = None,
             n_points_per_group=800,
             method_whitelist=None,
-            standardize_data=True,
+            do_standardize_data=True,
     ):
         """
         :param methods_kwargs: dict of (method_name, method_kwargs) pairs
         :param storage_path:
         :param n_points_per_group: both training size and test size
-        :param standardize_data: True if both X and y should be standardized, False if neither.
+        :param do_standardize_data: True if both X and y should be standardized, False if neither.
         """
         super().__init__(
             storage_path=storage_path,
@@ -46,7 +46,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             filename_parts=filename_parts,
             n_samples=n_points_per_group,  # todo: allow setting later?
             method_whitelist=method_whitelist,
-            standardize_data=standardize_data,
+            do_standardize_data=do_standardize_data,
         )
         self.n_points_per_group = n_points_per_group
 
@@ -61,7 +61,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         return misc_helpers.get_data(
             filepath=self.data_path,
             n_points_per_group=self.n_points_per_group,
-            standardize_data=self.standardize_data,
+            do_standardize_data=self.do_standardize_data,
         )
 
     @classmethod
