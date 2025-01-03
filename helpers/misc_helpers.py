@@ -137,7 +137,7 @@ def _train_val_test_split_by_year(
 ) -> 'TrainValTestDataFrames':
     assert len(years_ranges) == 3
     X_years = X.ts_pred.map(lambda ts: ts.year)
-    years_indices_all = (_get_years_indices(X, years_range, X_years)
+    years_indices_all = (_get_years_indices(X_years, years_range)
                          for years_range in years_ranges)
     (X_train, y_train), (X_val, y_val), (X_test, y_test) = (
         (X[years_indices], y[years_indices])
@@ -147,15 +147,15 @@ def _train_val_test_split_by_year(
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 
-def _get_years_indices(X, years_range: tuple[int, int], X_years):
+def _get_years_indices(X_years: 'pd.Series', years_range: tuple[int, int]) -> 'pd.Series':
     """
 
-    :param X:
-    :param years_range:
     :param X_years:
-    :return: all rows of X with timestamps in years_range, excluding endpoint
+    :param years_range:
+    :return: indices of X_years where each year is in years_range, excluding endpoint
     """
-    return X[(years_range[0] <= X_years) & (X_years < years_range[1])]
+    # noinspection PyTypeChecker
+    return (years_range[0] <= X_years) & (X_years < years_range[1])
 
 
 def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=800,
