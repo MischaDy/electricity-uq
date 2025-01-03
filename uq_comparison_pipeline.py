@@ -140,7 +140,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 return model
 
         assert all(item is not None for item in [X_train, y_train, model_param_distributions])
-        logging.info("training random forest...")
         model = train_random_forest(
             X_train,
             y_train,
