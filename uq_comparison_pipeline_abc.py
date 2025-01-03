@@ -528,12 +528,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
     @staticmethod
     def _plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=None, linestyle="dashed"):
-        num_train_steps = X_train.shape[0]
-        num_val_steps = X_val.shape[0]
-        num_test_steps = X_test.shape[0]
-        x_plot_train = np.arange(num_train_steps)
-        x_plot_val = x_plot_train + num_val_steps
-        x_plot_test = x_plot_val + num_test_steps
+        start_train, end_train = 0, X_train.shape[0]
+        start_val, end_val = end_train, end_train + X_val.shape[0]
+        start_test, end_test = end_val, end_val + X_test.shape[0]
+
+        x_plot_train = np.arange(start_train, end_train)
+        x_plot_val = np.arange(start_val, end_val)
+        x_plot_test = np.arange(start_test, end_test)
         if scaler_y is not None:
             y_train, y_val, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_val, y_test)
 
