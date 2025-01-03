@@ -61,7 +61,7 @@ def get_data(
     return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
 
 
-def standardize_data(X_train, X_val, X_test, y_train, y_val, y_test, X, y, numerical_cols=None):
+def standardize_data(X_train, y_train, X_val, y_val, X_test, y_test, X, y, numerical_cols=None):
     from sklearn.preprocessing import StandardScaler
     from sklearn.compose import make_column_transformer
 
@@ -81,7 +81,7 @@ def standardize_data(X_train, X_val, X_test, y_train, y_val, y_test, X, y, numer
     scaler_y = StandardScaler()
     scaler_y.fit(y_train)
     y_train, y_val, y_test, y = map(scaler_y.transform, [y_train, y_val, y_test, y])
-    return X_train, X_val, X_test, y_train, y_val, y_test, X, y, scaler_y
+    return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
 
 
 def train_val_test_split(
