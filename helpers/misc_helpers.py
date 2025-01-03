@@ -470,3 +470,9 @@ def plot_nn_losses(
 
 def _contains_neg(losses):
     return any(map(lambda x: x < 0, losses))
+
+
+def add_val_to_train(X_train: np.ndarray, X_val: np.ndarray, y_train: np.ndarray, y_val: np.ndarray):
+    X_train = np.vstack([X_train, X_val])
+    y_train = np.vstack([y_train, y_val])
+    return X_train, y_train

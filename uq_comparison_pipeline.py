@@ -94,6 +94,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             n_jobs=-1,
             skip_training=True,
             save_model=True,
@@ -104,7 +106,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = self.try_skipping_training(method_name)
             if model is not None:
                 return model
-        model = train_linreg(X_train, y_train, n_jobs=n_jobs)
+        model = train_linreg(X_train, y_train, X_val, y_val, n_jobs=n_jobs)
         if save_model:
             self.save_model(model, method_name=method_name)
         return model
@@ -113,6 +115,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             cv_n_iter=100,
             cv_n_splits=10,
             model_param_distributions=None,
