@@ -61,18 +61,18 @@ def train_conformal_prediction(
         verbose=1,
 ):
     # todo: use validation data better(?)
-    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
+    # X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
 
-    cv = BlockBootstrap(
-        n_resamplings=n_estimators,
-        n_blocks=bootstrap_n_blocks,
-        overlapping=bootstrap_overlapping_blocks,
-        random_state=random_seed,
-    )
+    # cv = BlockBootstrap(
+    #     n_resamplings=n_estimators,
+    #     n_blocks=bootstrap_n_blocks,
+    #     overlapping=bootstrap_overlapping_blocks,
+    #     random_state=random_seed,
+    # )
     model = MapieTimeSeriesRegressor(
-        base_model, method="enbpi", cv=cv, agg_function='mean', n_jobs=-1, verbose=verbose,
+        base_model, method="enbpi", cv='prefit', agg_function='mean', n_jobs=-1, verbose=verbose,
     )
-    model = model.fit(X_train, y_train)
+    model = model.fit(X_val, y_val)
     return model
 
 
