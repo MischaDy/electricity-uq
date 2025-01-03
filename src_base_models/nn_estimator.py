@@ -39,6 +39,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     """
 
     _parameter_constraints = {
+        "train_size_orig": [int],
         "n_iter": [int],
         "batch_size": [int],
         "random_state": [int],
@@ -46,7 +47,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         "lr_patience": [int],
         "lr_reduction_factor": [float],
         "to_standardize": [str],
-        "val_frac": [float],
         "use_scheduler": [bool],
         "skip_training": [bool],
         "save_model": [bool],
@@ -58,10 +58,10 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def __init__(
             self,
+            train_size_orig,
             n_iter=100,
             batch_size=20,
             random_seed=42,
-            val_frac=0.1,
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=None,
@@ -75,11 +75,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             save_losses_plot=True,
             io_helper=None,
     ):
+        self.train_size_orig = train_size_orig  # todo: temp solution
         self.use_scheduler = use_scheduler
         self.n_iter = n_iter
         self.batch_size = batch_size
         self.random_seed = random_seed
-        self.val_frac = val_frac
         self.num_hidden_layers = num_hidden_layers
         self.hidden_layer_size = hidden_layer_size
         self.activation = activation
@@ -132,7 +132,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         except TypeError:
             raise TypeError(f'Unknown label type: {X.dtype} (X) or {y.dtype} (y)')
 
-        X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, self.val_frac)
+        X_train, y_train, X_val, y_val = self._temp_train_val_split(X_train, y_train)
         X_train, y_train, X_val, y_val = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
         X_train, y_train, X_val, y_val = misc_helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
@@ -196,6 +196,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         self.is_fitted_ = True
         return self
+
+    def _temp_train_val_split(self, X_train: 'np.ndarray', y_train: 'np.ndarray'):
+        X_train, X_val = X_train[:self.train_size_orig], X_train[self.train_size_orig:]
+        y_train, y_val = y_train[:self.train_size_orig], y_train[self.train_size_orig:]
+        return X_train, y_train, X_val, y_val
 
     @staticmethod
     def _nn_builder(
@@ -298,10 +303,11 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 def train_nn(
         X_train: 'np.ndarray',
         y_train: 'np.ndarray',
+        X_val: 'np.ndarray',
+        y_val: 'np.ndarray',
         n_iter=500,
         batch_size=20,
         random_seed=42,
-        val_frac=0.1,
         num_hidden_layers=2,
         hidden_layer_size=50,
         activation=None,
@@ -314,11 +320,13 @@ def train_nn(
         io_helper=None,
         verbose: int = 1,
 ):
+    train_size_orig = X_train.shape[0]
+    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)  # todo: temp solution
     model = NN_Estimator(
+        train_size_orig=train_size_orig,
         n_iter=n_iter,
         batch_size=batch_size,
         random_seed=random_seed,
-        val_frac=val_frac,
         num_hidden_layers=num_hidden_layers,
         hidden_layer_size=hidden_layer_size,
         activation=activation,
@@ -338,5 +346,5 @@ def train_nn(
 
 if __name__ == '__main__':
     from sklearn.utils.estimator_checks import check_estimator
-    estimator = NN_Estimator(verbose=0)
+    estimator = NN_Estimator(train_size_orig=10, verbose=0)  # todo: does temp solution work?
     check_estimator(estimator)

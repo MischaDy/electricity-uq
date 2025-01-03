@@ -156,10 +156,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             n_iter=500,
             batch_size=20,
             random_seed=42,
-            val_frac=0.1,
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=None,
@@ -175,13 +176,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param y_val:
+        :param X_val:
         :param activation:
         :param hidden_layer_size:
         :param num_hidden_layers:
         :param show_losses_plot:
         :param save_losses_plot:
         :param show_progress_bar:
-        :param val_frac:
         :param lr_reduction_factor:
         :param lr:
         :param lr_patience:
@@ -196,7 +198,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :return:
         """
         from src_base_models.nn_estimator import train_nn
-        import torch  # will be imported anyway
+        import torch
         torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
@@ -211,10 +213,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model = train_nn(
             X_train,
             y_train,
+            X_val,
+            y_val,
             n_iter=n_iter,
             batch_size=batch_size,
             random_seed=random_seed,
-            val_frac=val_frac,
             num_hidden_layers=num_hidden_layers,
             hidden_layer_size=hidden_layer_size,
             activation=activation,
