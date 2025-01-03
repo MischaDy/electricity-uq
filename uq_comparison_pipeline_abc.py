@@ -394,7 +394,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         logging.info(f"running posthoc methods...")
         posthoc_results = {}
         for posthoc_method_name, posthoc_method in posthoc_methods:
-            blacklist = self.posthoc_base_blacklist[posthoc_method_name]
+            blacklist = self.posthoc_base_blacklist.get(posthoc_method_name)
+            if blacklist is None:
+                blacklist = []
             compatible_base_models = {
                 base_model_name: base_model
                 for base_model_name, base_model in base_models.items()
