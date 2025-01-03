@@ -4,14 +4,14 @@ from scipy import stats
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
-DATA_FILEPATH = 'data/data_1600.pkl'
-N_POINTS_PER_GROUP = 800
+DATA_FILEPATH = 'data/data.pkl'
+N_POINTS_PER_GROUP = None
 STANDARDIZE_DATA = True
 
 PLOT_DATA = False
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS = True
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 SAVE_PLOTS = True
 
 SKIP_BASE_MODEL_COPY = True
@@ -38,7 +38,7 @@ METHOD_WHITELIST = [
 METHODS_KWARGS = {
     "native_mvnn": {
         'skip_training': False,
-        "n_iter": 100,
+        "n_iter": 300,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
@@ -47,13 +47,13 @@ METHODS_KWARGS = {
         "regularization": 0,  # 1e-2,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
-        'show_losses_plot': True,
+        'show_losses_plot': False,
         'save_losses_plot': True,
         'save_model': True,
     },
     "native_quantile_regression_nn": {
         'skip_training': False,
-        'n_iter': 100,
+        'n_iter': 300,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
@@ -62,34 +62,34 @@ METHODS_KWARGS = {
         'use_scheduler': True,
         'lr_patience': 30,
         'regularization': 0,
-        'show_progress': True,
-        'show_losses_plot': True,
+        'show_progress': False,
+        'show_losses_plot': False,
         'save_losses_plot': True,
         'save_model': True,
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 100,
+        'n_iter': 300,
         'val_frac': 0.1,
         'lr': 1e-2,
         'use_scheduler': True,
         'lr_patience': 30,
         'lr_reduction_factor': 0.5,
-        'show_progress': True,
+        'show_progress': False,
         'show_plots': True,
-        'show_losses_plot': True,
+        'show_losses_plot': False,
         'save_losses_plot': True,
         'save_model': True,
     },
     "posthoc_conformal_prediction": {
         "skip_training": True,
-        "n_estimators": 5,
+        "n_estimators": 10,
         "verbose": 1,
         "save_model": True,
     },
     "posthoc_laplace_approximation": {
         'skip_training': False,
-        "n_iter": 100,
+        "n_iter": 300,
         'save_model': True,
     },
     "base_model_linreg": {
@@ -112,7 +112,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": True,
-        "n_iter": 100,
+        "n_iter": 300,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
@@ -131,9 +131,9 @@ METHODS_KWARGS = {
 FILENAME_PARTS = {
     "native_mvnn": (
         [
-            # ('it', 'n_iter'),
-            # ('nh', 'num_hidden_layers'),
-            # ('hs', 'hidden_layer_size'),
+            ('it', 'n_iter'),
+            ('nh', 'num_hidden_layers'),
+            ('hs', 'hidden_layer_size'),
         ],
         'pth'
     ),
