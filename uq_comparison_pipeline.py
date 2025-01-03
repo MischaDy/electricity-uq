@@ -138,6 +138,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model = train_random_forest(
             X_train,
             y_train,
+            X_val,
+            y_val,
             cv_n_iter=cv_n_iter,
             cv_n_splits=cv_n_splits,
             model_param_distributions=model_param_distributions,
