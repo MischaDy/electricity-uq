@@ -172,7 +172,8 @@ def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_c
                       if col not in output_cols]
         if not return_ts_col:
             input_cols = [col for col in input_cols if not col.startswith('ts_')]
-    numerical_col_names = [col for col in input_cols if not col.startswith('cat_')]
+    numerical_col_names = [col for col in input_cols
+                           if not col.startswith('cat_') and not col.startswith('ts_')]
     lim = 2 * n_points_per_group if n_points_per_group is not None else None
     X = df[input_cols].iloc[:lim]
     y = df[output_cols].iloc[:lim]
