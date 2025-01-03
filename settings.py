@@ -106,7 +106,7 @@ METHODS_KWARGS = {
             "max_depth": stats.randint(2, 50),
             "n_estimators": stats.randint(10, 200),
         },
-        'cv_n_iter': 20,
+        'cv_n_iter': 10,
         'cv_n_splits': 5,
         "random_seed": 42,
         "verbose": 4,
