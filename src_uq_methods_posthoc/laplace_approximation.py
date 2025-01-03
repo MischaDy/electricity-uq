@@ -7,10 +7,14 @@ from tqdm import tqdm
 
 from helpers import misc_helpers
 
+torch.set_default_dtype(torch.float32)
+
 
 def train_laplace_approximation(
-        X_train,
-        y_train,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_val: np.ndarray,
+        y_val: np.ndarray,
         base_model_nn,
         n_iter,
         batch_size=20,
@@ -19,10 +23,11 @@ def train_laplace_approximation(
 ):
     # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
     #  script)?
-    torch.set_default_dtype(torch.float32)
     torch.manual_seed(random_seed)
     torch.set_default_device(misc_helpers.get_device())
 
+    # todo: use validation data better(?)
+    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     X_train, y_train = misc_helpers.preprocess_arrays(X_train, y_train)
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     model = la_instantiator(base_model_nn)

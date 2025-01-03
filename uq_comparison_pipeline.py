@@ -4,13 +4,15 @@ import logging
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
 
-from typing import Any, Generator
-import numpy as np
+from typing import Any, Generator, Union, TYPE_CHECKING
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
-
 import settings
+
+if TYPE_CHECKING:
+    from src_base_models.nn_estimator import NN_Estimator
+    import numpy as np
 
 
 # noinspection PyPep8Naming
@@ -29,39 +31,44 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             *,
             storage_path="comparison_storage",
             methods_kwargs: dict[str, dict[str, Any]] = None,
-            n_points_per_group=800,
+            n_points_per_group=None,
             method_whitelist=None,
-            standardize_data=True,
+            do_standardize_data=True,
     ):
         """
         :param methods_kwargs: dict of (method_name, method_kwargs) pairs
         :param storage_path:
         :param n_points_per_group: both training size and test size
-        :param standardize_data: True if both X and y should be standardized, False if neither.
+        :param do_standardize_data: True if both X and y should be standardized, False if neither.
         """
         super().__init__(
             storage_path=storage_path,
             data_path=data_path,
             methods_kwargs=methods_kwargs,
             filename_parts=filename_parts,
-            n_samples=n_points_per_group,  # todo: allow setting later?
             method_whitelist=method_whitelist,
-            standardize_data=standardize_data,
+            do_standardize_data=do_standardize_data,
         )
         self.n_points_per_group = n_points_per_group
+        self.train_years = settings.TRAIN_YEARS
+        self.val_years = settings.VAL_YEARS
+        self.test_years = settings.TEST_YEARS
 
     def get_data(self):
         """
         load and prepare data
 
         :return:
-        A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If self.standardize_data=False, y_scaler is None.
-        All variables except for the scaler are 2D np arrays.
+        A tuple (X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y).
+        If self.standardize_data=False, y_scaler is None. All variables except for the scaler are 2D np arrays.
         """
         return misc_helpers.get_data(
             filepath=self.data_path,
+            train_years=self.train_years,
+            val_years=self.val_years,
+            test_years=self.test_years,
             n_points_per_group=self.n_points_per_group,
-            standardize_data=self.standardize_data,
+            do_standardize_data=self.do_standardize_data,
         )
 
     @classmethod
@@ -91,8 +98,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def base_model_linreg(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             n_jobs=-1,
             skip_training=True,
             save_model=True,
@@ -103,15 +112,17 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = self.try_skipping_training(method_name)
             if model is not None:
                 return model
-        model = train_linreg(X_train, y_train, n_jobs=n_jobs)
+        model = train_linreg(X_train, y_train, X_val, y_val, n_jobs=n_jobs)
         if save_model:
             self.save_model(model, method_name=method_name)
         return model
 
     def base_model_rf(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             cv_n_iter=100,
             cv_n_splits=10,
             model_param_distributions=None,
@@ -129,10 +140,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 return model
 
         assert all(item is not None for item in [X_train, y_train, model_param_distributions])
-        logging.info("training random forest...")
         model = train_random_forest(
             X_train,
             y_train,
+            X_val,
+            y_val,
             cv_n_iter=cv_n_iter,
             cv_n_splits=cv_n_splits,
             model_param_distributions=model_param_distributions,
@@ -147,12 +159,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def base_model_nn(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
             n_iter=500,
             batch_size=20,
             random_seed=42,
-            val_frac=0.1,
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=None,
@@ -168,13 +181,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param y_val:
+        :param X_val:
         :param activation:
         :param hidden_layer_size:
         :param num_hidden_layers:
         :param show_losses_plot:
         :param save_losses_plot:
         :param show_progress_bar:
-        :param val_frac:
         :param lr_reduction_factor:
         :param lr:
         :param lr_patience:
@@ -189,7 +203,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :return:
         """
         from src_base_models.nn_estimator import train_nn
-        import torch  # will be imported anyway
+        import torch
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -203,10 +218,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model = train_nn(
             X_train,
             y_train,
+            X_val,
+            y_val,
             n_iter=n_iter,
             batch_size=batch_size,
             random_seed=random_seed,
-            val_frac=val_frac,
             num_hidden_layers=num_hidden_layers,
             hidden_layer_size=hidden_layer_size,
             activation=activation,
@@ -226,12 +242,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model.set_params(verbose=False)
         return model
 
-    # noinspection PyUnboundLocalVariable
     def posthoc_conformal_prediction(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             base_model,
             n_estimators=10,
@@ -244,6 +261,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param y_val:
+        :param X_val:
         :param save_model:
         :param skip_training:
         :param verbose:
@@ -271,6 +290,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_conformal_prediction(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 base_model,
                 n_estimators=n_estimators,
                 bootstrap_n_blocks=bootstrap_n_blocks,
@@ -280,15 +301,17 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             )
             if save_model:
                 self.save_model(model, method_name=method_name)
+        # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
 
-    # noinspection PyUnresolvedReferences
     def posthoc_laplace_approximation(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             base_model: 'NN_Estimator',
             n_iter=100,
@@ -298,7 +321,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
             verbose=True,
     ):
-        from helpers import misc_helpers
         from src_uq_methods_posthoc.laplace_approximation import (
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
         )
@@ -321,6 +343,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_laplace_approximation(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 base_model_nn,
                 n_iter=n_iter,
                 batch_size=batch_size,
@@ -336,9 +360,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def native_quantile_regression_nn(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=300,
             num_hidden_layers=2,
@@ -356,6 +382,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import torch
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -393,6 +420,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_qr_nn(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 quantiles,
                 n_iter=n_iter,
                 lr=lr,
@@ -414,9 +443,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def native_mvnn(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=300,
             num_hidden_layers=2,
@@ -438,6 +469,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             train_mean_var_nn,
             predict_with_mvnn,
         )
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
@@ -467,6 +499,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             common_params = {
                 "X_train": X_train,
                 "y_train": y_train,
+                "X_val": X_val,
+                "y_val": y_val,
                 "lr": lr,
                 "lr_patience": lr_patience,
                 "weight_decay": regularization,
@@ -503,12 +537,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     def native_gpytorch(
             self,
-            X_train: np.ndarray,
-            y_train: np.ndarray,
-            X_pred: np.ndarray,
+            X_train: 'np.ndarray',
+            y_train: 'np.ndarray',
+            X_val: 'np.ndarray',
+            y_val: 'np.ndarray',
+            X_pred: 'np.ndarray',
             quantiles: list,
             n_iter=100,
-            val_frac=0.1,
             lr=1e-2,
             use_scheduler=True,
             lr_patience=30,
@@ -521,23 +556,19 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
     ):
         import gpytorch
-        import torch  # will be imported later anyway
+        import torch
         from src_uq_methods_native.gp_regression_gpytorch import (
             ExactGPModel,
             train_gpytorch,
             prepare_data,
             predict_with_gpytorch,
         )
+        torch.set_default_dtype(torch.float32)
 
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
 
-        X_train, y_train, X_val, y_val, X_pred = prepare_data(
-            X_train,
-            y_train,
-            X_pred,
-            val_frac=val_frac,
-        )
+        X_train, y_train, X_val, y_val, X_pred = prepare_data(X_train, y_train, X_val, y_val, X_pred)
         method_name = 'native_gpytorch'
         infix = 'likelihood'
         if skip_training:
@@ -551,7 +582,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model = self.io_helper.load_torch_model_statedict(
                     ExactGPModel,
                     method_name=method_name,
-                    model_kwargs={'X_train': X_train, 'y_train': y_train, 'likelihood': likelihood},
+                    model_kwargs={'X_train': X_train, 'y_train': y_train, 'likelihood': likelihood},  # no val!
                 )
                 model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
             except FileNotFoundError as error:
@@ -583,11 +614,12 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 self.io_helper.save_torch_model_statedict(model, method_name=method_name)
                 self.io_helper.save_torch_model_statedict(likelihood, method_name=method_name, infix=infix)
         # noinspection PyUnboundLocalVariable
-        y_preds, y_quantiles, y_std = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
-        return y_preds, y_quantiles, y_std
+        y_pred, y_quantiles, y_std = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
+        return y_pred, y_quantiles, y_std
 
     @staticmethod
-    def _clean_ys_for_metrics(*ys) -> Generator[np.ndarray | None, None, None]:
+    def _clean_ys_for_metrics(*ys) -> Generator[Union['np.ndarray', None], None, None]:
+        import numpy as np
         for y in ys:
             if y is None:
                 yield y
@@ -651,9 +683,6 @@ def main():
     update_training_flags()
     # todo: check filename parts dict!
 
-    import torch
-    torch.set_default_dtype(torch.float32)
-
     uq_comparer = UQ_Comparison_Pipeline(
         filename_parts=settings.FILENAME_PARTS,
         data_path=settings.DATA_FILEPATH,
@@ -671,6 +700,7 @@ def main():
         should_save_plots=settings.SAVE_PLOTS,
         should_save_results=settings.SHOULD_SAVE_RESULTS,
         skip_base_model_copy=settings.SKIP_BASE_MODEL_COPY,
+        use_filesave_prefix=settings.USE_FILESAVE_PREFIX,
     )
 
 

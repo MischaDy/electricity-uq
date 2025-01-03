@@ -9,6 +9,7 @@ from tqdm import tqdm
 from helpers import misc_helpers
 
 torch.set_default_device(misc_helpers.get_device())
+torch.set_default_dtype(torch.float32)
 
 
 class MeanVarNN(torch.nn.Module):
@@ -53,11 +54,12 @@ class MeanVarNN(torch.nn.Module):
 def train_mean_var_nn(
     X_train: np.ndarray,
     y_train: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
     model: MeanVarNN = None,
     n_iter=200,
     batch_size=20,
     random_seed=42,
-    val_frac=0.1,
     lr=0.1,
     use_scheduler=True,
     lr_patience=30,
@@ -72,9 +74,6 @@ def train_mean_var_nn(
     io_helper=None,
 ):
     torch.manual_seed(random_seed)
-
-    X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac)
-    assert X_train.shape[0] > 0 and X_val.shape[0] > 0
 
     y_val_np = y_val.copy()  # for eval
 
@@ -108,7 +107,7 @@ def train_mean_var_nn(
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     train_losses, val_losses = [], []
-    iterable = np.arange(n_iter) + 1
+    iterable = range(1, n_iter+1)
     if show_progress:
         iterable = tqdm(iterable)
     for _ in iterable:

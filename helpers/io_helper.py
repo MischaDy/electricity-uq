@@ -1,8 +1,12 @@
+from typing import Callable, Literal, TYPE_CHECKING
 import logging
 import os
-from typing import Callable, Literal
 
 import numpy as np
+
+if TYPE_CHECKING:
+    import torch
+    import laplace
 
 
 # noinspection PyPep8Naming
@@ -12,7 +16,7 @@ class IO_Helper:
             base_folder,
             methods_kwargs,
             filename_parts: dict[tuple[list[tuple[str, str]], str]],  # todo: make optional?
-            n_samples: int,
+            filesave_prefix=None,
             arrays_folder="arrays",
             models_folder="models",
             plots_folder="plots",
@@ -36,8 +40,9 @@ class IO_Helper:
         :param plots_folder:
         :param metrics_folder:
         :param sep:
+        :param filesave_prefix:
         """
-        self.n_samples = n_samples
+        self.filesave_prefix = filesave_prefix
         self.filename_parts = filename_parts
         self.sep = sep
         self.methods_kwargs = methods_kwargs
@@ -80,6 +85,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         import torch
+        torch.set_default_dtype(torch.float32)
         filepath = self._get_model_savepath(filename)
         model = torch.load(filepath, weights_only=False)
         model.eval()
@@ -96,6 +102,7 @@ class IO_Helper:
         :return:
         """
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         if model_kwargs is None:
@@ -106,7 +113,6 @@ class IO_Helper:
         model.load_state_dict(state_dict)
         return model
 
-    # noinspection PyUnresolvedReferences
     def load_laplace_model_statedict(
             self,
             base_model: 'torch.nn.Module',
@@ -116,6 +122,7 @@ class IO_Helper:
             infix=None,
     ):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
@@ -141,6 +148,7 @@ class IO_Helper:
 
     def save_torch_model(self, model, method_name=None, filename=None, infix=None):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
@@ -148,6 +156,7 @@ class IO_Helper:
 
     def save_torch_model_statedict(self, model, method_name=None, filename=None, infix=None):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
@@ -161,6 +170,7 @@ class IO_Helper:
             infix=None,
     ):
         import torch
+        torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
@@ -222,8 +232,7 @@ class IO_Helper:
                 ext = 'json'
             case _:
                 raise ValueError(f'filetype must be one of model, plot, array, metrics. received: {file_type}')
-
-        joined_suffixes = [f'n{self.n_samples}']
+        joined_suffixes = [self.filesave_prefix] if self.filesave_prefix is not None else []
         for shorthand, kwarg_name in suffixes:
             joined_suffix = f'{shorthand}{kwargs[kwarg_name]}'
             joined_suffixes.append(joined_suffix)

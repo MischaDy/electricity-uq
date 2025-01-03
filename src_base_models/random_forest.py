@@ -2,10 +2,19 @@ from scipy.stats import stats
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
 
+from typing import TYPE_CHECKING
+
+from helpers import misc_helpers
+
+if TYPE_CHECKING:
+    import numpy as np
+
 
 def train_random_forest(
-        X_train,
-        y_train,
+        X_train: 'np.ndarray',
+        y_train: 'np.ndarray',
+        X_val: 'np.ndarray',
+        y_val: 'np.ndarray',
         cv_n_iter=100,
         cv_n_splits=10,
         model_param_distributions=None,
@@ -13,6 +22,9 @@ def train_random_forest(
         n_jobs=-1,
         verbose=1,
 ):
+    # todo: use validation data better(?)
+    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
+
     if model_param_distributions is None:
         model_param_distributions = {
             "max_depth": stats.randint(2, 100),

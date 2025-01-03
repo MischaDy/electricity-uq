@@ -4,8 +4,11 @@ from scipy import stats
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
-DATA_FILEPATH = 'data/data.pkl'
-N_POINTS_PER_GROUP = None
+DATA_FILEPATH = 'data/data_2015_2018.pkl'  # 'data/data_1600.pkl'
+N_POINTS_PER_GROUP = None  # 800
+TRAIN_YEARS = (2016, 2017)  # todo: simplify
+VAL_YEARS = (2017, 2018)  # todo: simplify
+TEST_YEARS = (2018, 2019)  # todo: simplify
 STANDARDIZE_DATA = True
 
 PLOT_DATA = False
@@ -16,6 +19,7 @@ SAVE_PLOTS = True
 
 SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
+USE_FILESAVE_PREFIX = True
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -70,7 +74,6 @@ METHODS_KWARGS = {
     "native_gpytorch": {
         'skip_training': False,
         'n_iter': 300,
-        'val_frac': 0.1,
         'lr': 1e-2,
         'use_scheduler': True,
         'lr_patience': 30,

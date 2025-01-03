@@ -1,13 +1,18 @@
 import logging
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from typing import TYPE_CHECKING
 from tqdm import tqdm
 import gpytorch
-import numpy as np
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from helpers import misc_helpers
 
+if TYPE_CHECKING:
+    import numpy as np
+
+
 torch.set_default_device(misc_helpers.get_device())
+torch.set_default_dtype(torch.float32)
 
 
 # noinspection PyPep8Naming
@@ -57,7 +62,7 @@ def train_gpytorch(
 
     # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
     train_losses, val_losses = [], []
-    epochs = np.arange(n_iter) + 1
+    epochs = range(1, n_iter+1)
     if show_progress:
         epochs = tqdm(epochs)
     for _ in epochs:
@@ -108,13 +113,13 @@ def evaluate(model, likelihood, X_test, y_test):
 
 
 def prepare_data(
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        X_pred: np.ndarray,
-        val_frac=0.1,
+        X_train: 'np.ndarray',
+        y_train: 'np.ndarray',
+        X_val: 'np.ndarray',
+        y_val: 'np.ndarray',
+        X_pred: 'np.ndarray',
 ):
     logging.info('preparing data..')
-    X_train, y_train, X_val, y_val = misc_helpers.train_val_split(X_train, y_train, val_frac=val_frac)
     X_train, y_train, X_val, y_val, X_pred = misc_helpers.np_arrays_to_tensors(
         X_train, y_train, X_val, y_val, X_pred
     )
@@ -129,15 +134,13 @@ def prepare_data(
 
 
 def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
-    # noinspection PyUnboundLocalVariable
     model.eval()
-    # noinspection PyUnboundLocalVariable
     likelihood.eval()
     # todo: via gpytorch.settings, use fast_pred_var, fast_pred_samples, memory_efficient, fast_computations?
     with torch.no_grad():
-        f_preds = model(X_pred)
-    y_preds = f_preds.mean
-    y_std = f_preds.stddev
-    y_preds, y_std = misc_helpers.tensors_to_np_arrays(y_preds, y_std)
-    y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_preds, y_std)
-    return y_preds, y_quantiles, y_std
+        f_pred = model(X_pred)
+    y_pred = f_pred.mean
+    y_std = f_pred.stddev
+    y_pred, y_std = misc_helpers.tensors_to_np_arrays(y_pred, y_std)
+    y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
+    return y_pred, y_quantiles, y_std

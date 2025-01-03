@@ -49,15 +49,20 @@ from helpers import misc_helpers
 
 
 def train_conformal_prediction(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    base_model,
-    n_estimators=10,
-    bootstrap_n_blocks=10,
-    bootstrap_overlapping_blocks=False,
-    random_seed=42,
-    verbose=1,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_val: np.ndarray,
+        y_val: np.ndarray,
+        base_model,
+        n_estimators=10,
+        bootstrap_n_blocks=10,
+        bootstrap_overlapping_blocks=False,
+        random_seed=42,
+        verbose=1,
 ):
+    # todo: use validation data better(?)
+    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
+
     cv = BlockBootstrap(
         n_resamplings=n_estimators,
         n_blocks=bootstrap_n_blocks,

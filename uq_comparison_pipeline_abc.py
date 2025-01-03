@@ -1,5 +1,6 @@
 import logging
 import os
+
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
 
@@ -7,28 +8,34 @@ from abc import ABC, abstractmethod
 import numpy as np
 import copy
 from functools import partial
-from typing import Any, Generator, Callable
+from typing import Any, Generator, Callable, TYPE_CHECKING
 
 from helpers.io_helper import IO_Helper
 from helpers import misc_helpers
 
+if TYPE_CHECKING:
+    from helpers.typing_ import UQ_Output
 
-# todo: add type hints
+
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline_ABC(ABC):
-    # todo: After these required inputs, they may accept any args or kwargs you wish.
     # todo: update usage guide!
     """
     Usage:
     1. Inherit from this class.
-    2. Override get_data, compute_metrics, and train_base_model.
-    3. Define all desired posthoc and native UQ methods. The required signature is:
-            (X_train, y_train, X_test, quantiles) -> (y_pred, y_quantiles, y_std)
-       Posthoc methods receive an additional base_model parameter, so their signature looks like:
-            (..., quantiles, base_model, *args, **kwargs) -> (y_pred, ...)
-       All posthoc and native UQ method names should start with 'posthoc_' and 'native_', respectively. They should
-       all be instance methods, not class or static methods.
-    4. Call compare_methods from the child class
+    2. Override the get_data and compute_metrics methods.
+    3. Define all desired point estimator ('deterministic') methods. The required signature is:
+            (X_train, y_train, X_val, y_val, ...) -> trained_model
+       The methods' names should start with 'base_model_' and they should be instance methods.
+    4. Define all desired native UQ methods. The required signature is:
+            (X_train, y_train, X_val, y_val, X_test, quantiles, ...) -> (y_pred, y_quantiles, y_std)
+       y_quantiles is ... . y_std is ... .
+       The methods' names should start with 'native_' and they should be instance methods.
+    5. Define all desired posthoc UQ methods. The required signature is:
+            (X_train, y_train, X_val, y_val, X_test, quantiles, base_model, ...) -> (y_pred, y_quantiles, y_std)
+       y_quantiles and y_std are the same as for native methods.
+       The methods' names should start with 'posthoc_' and they should be instance methods.
+    6. Call compare_methods from the child class.
     """
 
     # todo: for child classes to override
@@ -40,24 +47,22 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             data_path,
             methods_kwargs,
             filename_parts,
-            n_samples,
             method_whitelist=None,
-            standardize_data=True,
+            do_standardize_data=True,
     ):
         """
         :param storage_path:
         :param data_path:
         :param filename_parts: see IO_Helper.filename_parts definition
         :param method_whitelist:
-        :param standardize_data: True if both X and y should be standardized, False if neither.
+        :param do_standardize_data: True if both X and y should be standardized, False if neither.
         """
         # todo: store train and test data once loaded?
         self.data_path = data_path
         self.methods_kwargs = methods_kwargs
-        self.io_helper = IO_Helper(storage_path, methods_kwargs=methods_kwargs, filename_parts=filename_parts,
-                                   n_samples=n_samples)
+        self.io_helper = IO_Helper(storage_path, methods_kwargs=methods_kwargs, filename_parts=filename_parts)
         self.method_whitelist = method_whitelist
-        self.standardize_data = standardize_data
+        self.do_standardize_data = do_standardize_data
 
     def compare_methods(
             self,
@@ -70,10 +75,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             should_show_plots=True,
             should_save_plots=True,
             skip_base_model_copy=False,
+            use_filesave_prefix=True,
     ) -> tuple[dict, dict] | dict[str, dict[str, dict[str, Any]]]:
         """
-        Output is produced over the whole of X
+        ...
+        Output is produced over the whole of X!
 
+        :param use_filesave_prefix: if True, save files with prefix "n{number of samples}"
         :param should_save_results:
         :param should_plot_base_results:
         :param should_show_plots:
@@ -86,18 +94,22 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         # todo: bring back return_results?
         #  :param return_results: return native and posthoc results in addition to the native and posthoc metrics?
+        logging.info("loading data...")
 
         assert 0.5 in quantiles
+        X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = self.get_data()
+        if use_filesave_prefix:
+            self.io_helper.filesave_prefix = f'n{X_train.shape[0]}'
 
-        logging.info("loading data...")
-        X_train, X_test, y_train, y_test, X, y, scaler_y = self.get_data()
-
-        logging.info(f"data shapes: {X_train.shape}, {X_test.shape}, {y_train.shape}, {y_test.shape}")
+        logging.info(f"data shapes: {X_train.shape}, {X_val.shape}, {X_test.shape};"
+                     f"  {y_train.shape}, {y_val.shape}, {y_test.shape}")
         if should_plot_data:
             logging.info("plotting data...")
             self.plot_data(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 X_test,
                 y_test,
                 scaler_y=scaler_y,
@@ -109,7 +121,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         X_pred, y_true = X, y
         y_true_orig_scale = misc_helpers.inverse_transform_y(scaler_y, y_true)
 
-        base_models = self.train_base_models(X_train, y_train)  # todo: what to do if empty?
+        base_models = self.train_base_models(X_train, y_train, X_val, y_val)  # todo: what to do if empty?
         y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y=scaler_y)
         if should_save_results:
             logging.info('saving base model results...')
@@ -123,6 +135,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 self.plot_base_results(
                     X_train,
                     y_train,
+                    X_val,
+                    y_val,
                     X_test,
                     y_test,
                     y_pred_base_model,
@@ -144,6 +158,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         posthoc_results = self.run_posthoc_methods(
             X_train,
             y_train,
+            X_val,
+            y_val,
             X_pred,
             base_models,
             quantiles=quantiles,
@@ -160,6 +176,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self.plot_uq_results,
             X_train=X_train,
             y_train=y_train,
+            X_val=X_val,
+            y_val=y_val,
             X_test=X_test,
             y_test=y_test,
             quantiles=quantiles,
@@ -172,7 +190,15 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             plot_uq_results(uq_results=posthoc_results)
 
         logging.info("running native UQ methods...")
-        native_results = self.run_native_methods(X_train, y_train, X_pred, quantiles=quantiles, scaler_y=scaler_y)
+        native_results = self.run_native_methods(
+            X_train,
+            y_train,
+            X_val,
+            y_val,
+            X_pred,
+            quantiles=quantiles,
+            scaler_y=scaler_y,
+        )
 
         if should_save_results:
             logging.info('saving native UQ results...')
@@ -198,7 +224,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     def get_data(self):
         """
 
-        :return: tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). y_scaler may be None.
+        :return: tuple (X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y). y_scaler may be None.
         """
         raise NotImplementedError
 
@@ -263,14 +289,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
     def compute_all_metrics(
             self,
-            uq_results: dict[
-                str,
-                tuple[
-                    np.ndarray,
-                    np.ndarray | None,
-                    np.ndarray | None
-                ],
-            ],
+            uq_results: dict[str, 'UQ_Output'],
             y_true,
             quantiles=None,
     ) -> dict[str, dict[str, float]]:
@@ -287,9 +306,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             for method_name, (y_pred, y_quantiles, y_std) in uq_results.items()
         }
 
-    def train_base_models(self, X_train, y_train) -> dict[str, Any]:
+    def train_base_models(self, X_train, y_train, X_val, y_val) -> dict[str, Any]:
         """
 
+        :param y_val:
+        :param X_val:
         :param X_train:
         :param y_train:
         :return: dict of (base_model_name, base_model)
@@ -297,10 +318,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         base_models_methods = self.get_base_model_methods()
         base_models = {}
         for method_name, method in base_models_methods:
+            logging.info(f'training {method_name}...')
             if self.method_whitelist is not None and method_name not in self.method_whitelist:
                 continue
             base_model_kwargs = self.methods_kwargs[method_name]
-            base_model = method(X_train, y_train, **base_model_kwargs)
+            base_model = method(X_train, y_train, X_val, y_val, **base_model_kwargs)
             base_models[method_name] = base_model
         return base_models
 
@@ -339,14 +361,18 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self,
             X_train,
             y_train,
+            X_val,
+            y_val,
             X_pred,
             base_models: dict[str, Any],
             quantiles,
             scaler_y=None,
             skip_base_model_copy=False,
-    ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    ) -> dict[str, 'UQ_Output']:
         """
 
+        :param y_val:
+        :param X_val:
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
         :param quantiles:
         :param base_models:
@@ -385,6 +411,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 y_pred, y_quantiles, y_std = posthoc_method(
                     X_train,
                     y_train,
+                    X_val,
+                    y_val,
                     X_pred,
                     quantiles,
                     base_model_copy,
@@ -404,12 +432,16 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self,
             X_train,
             y_train,
+            X_val,
+            y_val,
             X_pred,
             quantiles,
             scaler_y=None,
-    ) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    ) -> dict[str, 'UQ_Output']:
         """
 
+        :param y_val:
+        :param X_val:
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
         :param quantiles:
         :param X_train:
@@ -433,6 +465,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_pred, y_quantiles, y_std = native_method(
                 X_train,
                 y_train,
+                X_val,
+                y_val,
                 X_pred,
                 quantiles=quantiles,
                 **method_kwargs
@@ -452,18 +486,22 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self,
             X_train,
             y_train,
+            X_val,
+            y_val,
             X_test,
             y_test,
             scaler_y=None,
             filename="data",
             figsize=(16, 5),
-            ylabel="energy data",
+            ylabel="energy demand",
             show_plot=True,
             save_plot=True,
     ):
         """
         visualize training and test sets
 
+        :param y_val:
+        :param X_val:
         :param X_train:
         :param y_train:
         :param X_test:
@@ -478,33 +516,48 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         from matplotlib import pyplot as plt
 
-        num_train_steps = X_train.shape[0]
-        num_test_steps = X_test.shape[0]
-
-        x_plot_train = np.arange(num_train_steps)
-        x_plot_test = x_plot_train + num_test_steps
-
-        if scaler_y is not None:
-            y_train, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_test)
-
         fig, ax = plt.subplots(figsize=figsize)
-        ax.plot(x_plot_train, y_train)
-        ax.plot(x_plot_test, y_test)
+        self._plot_data_worker(X_test, X_train, X_val, y_test, y_train, y_val, ax, scaler_y=scaler_y)
         ax.set_ylabel(ylabel)
-        ax.legend(["Training data", "Test data"])
+        ax.legend()
         if save_plot:
             self.io_helper.save_plot(filename=filename)
         if show_plot:
             plt.show(block=True)
         plt.close(fig)
 
+    @staticmethod
+    def _plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=None, linestyle="dashed"):
+        num_train_steps = X_train.shape[0]
+        num_val_steps = X_val.shape[0]
+        num_test_steps = X_test.shape[0]
+        x_plot_train = np.arange(num_train_steps)
+        x_plot_val = x_plot_train + num_val_steps
+        x_plot_test = x_plot_val + num_test_steps
+        if scaler_y is not None:
+            y_train, y_val, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_val, y_test)
+
+        ax.plot(x_plot_train, y_train, label='train data', color="black", linestyle=linestyle)
+        ax.plot(x_plot_val, y_val, label='val data', color="purple", linestyle=linestyle)  # todo: violet?
+        ax.plot(x_plot_test, y_test, label='test data', color="blue", linestyle=linestyle)
+
+    @staticmethod
+    def _get_x_plot_full(X_train, X_val, X_test):
+        num_train_steps = X_train.shape[0]
+        num_val_steps = X_val.shape[0]
+        num_test_steps = X_test.shape[0]
+        num_steps = num_train_steps + num_val_steps + num_test_steps
+        return np.arange(num_steps)
+
     def plot_uq_results(
             self,
             X_train,
             y_train,
+            X_val,
+            y_val,
             X_test,
             y_test,
-            uq_results: dict[str, tuple[Any, Any, Any]],
+            uq_results: dict[str, 'UQ_Output'],
             quantiles,
             scaler_y=None,
             show_plots=True,
@@ -513,6 +566,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     ):
         """
 
+        :param y_val:
+        :param X_val:
         :param X_train:
         :param y_train:
         :param X_test:
@@ -525,16 +580,18 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param n_stds:
         :return:
         """
-        for method_name, (y_preds, y_quantiles, y_std) in uq_results.items():
+        for method_name, (y_pred, y_quantiles, y_std) in uq_results.items():
             if y_quantiles is None and y_std is None:
                 logging.warning(f"cannot plot method {method_name}, because both y_quantiles and y_std are None")
                 continue
             self.plot_uq_result(
                 X_train=X_train,
                 y_train=y_train,
+                X_val=X_val,
+                y_val=y_val,
                 X_test=X_test,
                 y_test=y_test,
-                y_preds=y_preds,
+                y_pred=y_pred,
                 y_quantiles=y_quantiles,
                 y_std=y_std,
                 quantiles=quantiles,
@@ -549,9 +606,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self,
             X_train,
             y_train,
+            X_val,
+            y_val,
             X_test,
             y_test,
-            y_preds,
+            y_pred,
             y_quantiles,
             y_std,
             quantiles,
@@ -563,11 +622,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     ):
         """
 
+        :param y_val:
+        :param X_val:
         :param X_train:
         :param y_train:
         :param X_test:
         :param y_test:
-        :param y_preds:
+        :param y_pred:
         :param y_quantiles:
         :param y_std:
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
@@ -579,14 +640,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :return:
         """
         from matplotlib import pyplot as plt
-        num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
-
-        x_plot_train = np.arange(num_train_steps)
-        x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-        x_plot_full = np.arange(num_train_steps + num_test_steps)
-
-        if scaler_y is not None:
-            y_train, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_test)
 
         drawing_quantiles = y_quantiles is not None
         if drawing_quantiles:
@@ -596,17 +649,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             )
             drawn_quantile = round(max(quantiles) - min(quantiles), 2)
         else:
-            ci_low, ci_high = y_preds - n_stds * y_std, y_preds + n_stds * y_std
+            ci_low, ci_high = y_pred - n_stds * y_std, y_pred + n_stds * y_std
 
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-        ax.plot(
-            x_plot_full,
-            y_preds,
-            label="point prediction",  # todo: mean or median?
-            color="green",
-        )
+        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax=ax, scaler_y=scaler_y)
+        x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
+        ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
         # noinspection PyUnboundLocalVariable
         label = rf'{100 * drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'
         ax.fill_between(
@@ -631,9 +679,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self,
             X_train,
             y_train,
+            X_val,
+            y_val,
             X_test,
             y_test,
-            y_preds,
+            y_pred,
             base_model_name,
             scaler_y=None,
             show_plots=True,
@@ -641,11 +691,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
     ):
         """
 
+        :param y_val:
+        :param X_val:
         :param X_train:
         :param y_train:
         :param X_test:
         :param y_test:
-        :param y_preds:
+        :param y_pred:
         :param scaler_y: sklearn-like scaler fitted on y_train with an inverse_transform method
         :param base_model_name:
         :param show_plots:
@@ -653,24 +705,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :return:
         """
         from matplotlib import pyplot as plt
-        num_train_steps, num_test_steps = X_train.shape[0], X_test.shape[0]
-
-        x_plot_train = np.arange(num_train_steps)
-        x_plot_full = np.arange(num_train_steps + num_test_steps)
-        x_plot_test = np.arange(num_train_steps, num_train_steps + num_test_steps)
-
-        if scaler_y is not None:
-            y_train, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_test)
 
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        ax.plot(x_plot_train, y_train, label='y_train', linestyle="dashed", color="black")
-        ax.plot(x_plot_test, y_test, label='y_test', linestyle="dashed", color="blue")
-        ax.plot(
-            x_plot_full,
-            y_preds,
-            label="point prediction",  # todo: mean or median?
-            color="green",
-        )
+        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=scaler_y)
+        x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
+        ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
         ax.legend()
         ax.set_xlabel("data")
         ax.set_ylabel("target")
@@ -693,7 +732,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             print()
         if print_optimal:
             self.print_optimal_det_metrics(y_true_orig_scale)
-            self.print_optimal_uq_metrics(y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=1e-2)
+            self.print_optimal_uq_metrics(y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=eps_std)
 
     def print_optimal_uq_metrics(self, y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=1e-2):
         print('\toptimal uq metrics:')
@@ -724,7 +763,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         for base_model_name, y_pred in y_preds_dict.items():
             self.io_helper.save_array(y_pred, method_name=base_model_name)
 
-    def save_outputs_uq_models(self, outputs_uq_models: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]):
+    def save_outputs_uq_models(self, outputs_uq_models: dict[str, 'UQ_Output']):
         for model_name, outputs_uq_model in outputs_uq_models.items():
             for output_type, output in zip(['y_pred', 'y_quantiles', 'y_std'], outputs_uq_model):
                 self.io_helper.save_array(output, method_name=model_name, infix=output_type)

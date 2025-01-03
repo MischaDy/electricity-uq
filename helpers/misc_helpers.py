@@ -1,36 +1,166 @@
-import logging
-from typing import Generator, Any
+from typing import Generator, Any, TYPE_CHECKING
 
 import numpy as np
-import pandas as pd
-import torch
+import logging
 
-from helpers.io_helper import IO_Helper
+if TYPE_CHECKING:
+    import pandas as pd
+    import torch
+    from helpers.io_helper import IO_Helper
+    from helpers.typing_ import TrainValTestDataFrames
 
 
 def get_data(
-    filepath,
-    n_points_per_group=None,
-    input_cols=None,
-    output_cols=None,
-    standardize_data=True,
+        filepath,
+        train_years: tuple[int, int] = None,
+        val_years: tuple[int, int] = None,
+        test_years: tuple[int, int] = None,
+        n_points_per_group=None,
+        input_cols=None,
+        output_cols=None,
+        do_standardize_data=True,
 ):
     """
     load and prepare data
 
-    :param standardize_data:
+    :param test_years:
+    :param val_years:
+    :param train_years:
+    :param do_standardize_data:
     :param n_points_per_group:
     :param filepath:
     :param input_cols:
     :param output_cols:
     :return:
-    A tuple (X_train, X_test, y_train, y_test, X, y, y_scaler). If standardize_data=False, y_scaler is None.
-    All variables except for the scaler are 2D np arrays.
+    A tuple (X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y).
+    If standardize_data=False, y_scaler is None. All variables except for the scaler are 2D np arrays.
     """
-    import pandas as pd
-    from sklearn.model_selection import train_test_split
+    X, y, numerical_cols = load_data(
+        filepath,
+        input_cols=input_cols,
+        output_cols=output_cols,
+        do_output_numerical_col_names=True,
+        n_points_per_group=n_points_per_group,
+        return_ts_col=True,
+    )
+    X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(
+        X, y, train_years=train_years, val_years=val_years, test_years=test_years
+    )
+    if do_standardize_data:
+        X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = standardize_data(
+            X_train, y_train, X_val, y_val, X_test, y_test, X, y, numerical_cols=numerical_cols
+        )
+    else:
+        scaler_y = None
+
+    # todo: where does casting to arrays happen? can make it happen earlier?
+    # to float arrays
+    X_train, y_train, X_val, y_val, X_test, y_test, X, y = set_dtype_float(
+        X_train, y_train, X_val, y_val, X_test, y_test, X, y
+    )
+    return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
+
+
+def standardize_data(X_train, y_train, X_val, y_val, X_test, y_test, X, y, numerical_cols=None):
     from sklearn.preprocessing import StandardScaler
     from sklearn.compose import make_column_transformer
+
+    if numerical_cols is None:
+        numerical_cols = []
+
+    # standardize X
+    scaler_X = make_column_transformer(
+        (StandardScaler(), numerical_cols),
+        remainder='passthrough',
+        force_int_remainder_cols=False,
+    )
+    scaler_X.fit(X_train)
+    X_train, X_val, X_test, X = map(scaler_X.transform, [X_train, X_val, X_test, X])
+
+    # standardize y
+    scaler_y = StandardScaler()
+    scaler_y.fit(y_train)
+    y_train, y_val, y_test, y = map(scaler_y.transform, [y_train, y_val, y_test, y])
+    return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
+
+
+def train_val_test_split(
+        X: 'pd.DataFrame',
+        y: 'pd.DataFrame',
+        train_years: tuple[int, int] = None,
+        val_years: tuple[int, int] = None,
+        test_years: tuple[int, int] = None,
+        train_size: float = 0.4,
+        val_size: float = 0.1,
+):
+    """
+    split data into train/val/test sets. Any ts cols present in X will be dropped.
+
+    :param X:
+    :param y:
+    :param train_years:
+    :param val_years:
+    :param test_years:
+    :param train_size: size of train set as proportion of total data (excluding validation set)
+    :param val_size: size of validation set as proportion of total data
+    :return: tuple (X_train, y_train, X_val, y_val, X_test, y_test)
+    """
+    years_ranges = [train_years, val_years, test_years]
+    if None not in years_ranges:
+        X_train, X_val, X_test, y_train, y_val, y_test = _train_val_test_split_by_year(X, y, years_ranges)
+    else:
+        X_train, X_val, X_test, y_train, y_val, y_test = _train_val_test_split_by_size(X, y, train_size, val_size)
+    for arr in [X_train, X_test, y_train, y_test]:
+        ts_cols = [col for col in arr.columns if col.startswith('ts_')]
+        arr.drop(columns=ts_cols, inplace=True)
+    return X_train, y_train, X_val, y_val, X_test, y_test
+
+
+def _train_val_test_split_by_size(
+        X: 'pd.DataFrame', y: 'pd.DataFrame', train_size: float = 0.5, val_size: float = 0.1
+) -> 'TrainValTestDataFrames':
+    n_samples = X.shape[0]
+    cutoff_train_val = round(train_size * n_samples)
+    cutoff_val_test = cutoff_train_val + round(val_size * n_samples)
+    cutoffs = [0, cutoff_train_val, cutoff_val_test, None]
+    (X_train, X_val, X_test), (y_train, y_val, y_test) = (
+        [arr[from_:to]
+         for from_, to in zip(cutoffs, cutoffs[1:])]
+        for arr in (X, y)
+    )
+    # noinspection PyTypeChecker
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def _train_val_test_split_by_year(
+        X: 'pd.DataFrame', y: 'pd.DataFrame', years_ranges: list[tuple[int, int]]
+) -> 'TrainValTestDataFrames':
+    assert len(years_ranges) == 3
+    X_years = X.ts_pred.map(lambda ts: ts.year)
+    years_indices_all = (_get_years_indices(X_years, years_range)
+                         for years_range in years_ranges)
+    (X_train, y_train), (X_val, y_val), (X_test, y_test) = (
+        (X[years_indices], y[years_indices])
+        for years_indices in years_indices_all
+    )
+    # noinspection PyTypeChecker
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+
+def _get_years_indices(X_years: 'pd.Series', years_range: tuple[int, int]) -> 'pd.Series':
+    """
+
+    :param X_years:
+    :param years_range:
+    :return: indices of X_years where each year is in years_range, excluding endpoint
+    """
+    # noinspection PyTypeChecker
+    return (years_range[0] <= X_years) & (X_years < years_range[1])
+
+
+def load_data(filepath, input_cols=None, output_cols=None, do_output_numerical_col_names=True, n_points_per_group=None,
+              return_ts_col=False):
+    import pandas as pd
 
     df = pd.read_pickle(filepath)
     if output_cols is None:
@@ -39,35 +169,17 @@ def get_data(
         # input_cols = ["load_last_week", "load_last_hour", "load_now", "cat_is_workday",
         # "cat_is_saturday_and_not_holiday", "cat_is_sunday_or_holiday", "cat_is_heating_period"]
         input_cols = [col for col in df.columns
-                      if col not in output_cols and not col.startswith('ts_')]
-    numerical_cols = [col for col in input_cols if not col.startswith('cat_')]
-
+                      if col not in output_cols]
+        if not return_ts_col:
+            input_cols = [col for col in input_cols if not col.startswith('ts_')]
+    numerical_col_names = [col for col in input_cols
+                           if not col.startswith('cat_') and not col.startswith('ts_')]
     lim = 2 * n_points_per_group if n_points_per_group is not None else None
     X = df[input_cols].iloc[:lim]
     y = df[output_cols].iloc[:lim]
-
-    # todo: allow different train/test split?
-    # todo: use train/val/test split by years!
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
-
-    scaler_y = None
-    if standardize_data:
-        # transform X
-        scaler_X = make_column_transformer(
-            (StandardScaler(), numerical_cols),
-            remainder='passthrough',
-            force_int_remainder_cols=False,
-        )
-        scaler_X.fit(X_train)
-        X_train, X_test, X = map(scaler_X.transform, [X_train, X_test, X])
-        # transform y
-        scaler_y = StandardScaler()
-        scaler_y.fit(y_train)
-        y_train, y_test, y = map(scaler_y.transform, [y_train, y_test, y])
-
-    # to float arrays
-    X_train, X_test, y_train, y_test, X, y = set_dtype_float(X_train, X_test, y_train, y_test, X, y)
-    return X_train, X_test, y_train, y_test, X, y, scaler_y
+    if do_output_numerical_col_names:
+        return X, y, numerical_col_names
+    return X, y
 
 
 def inverse_transform_y(scaler_y, y: np.ndarray):
@@ -95,7 +207,7 @@ def set_dtype_float(*arrs: list[np.ndarray]) -> Generator[np.ndarray, None, None
     yield from map(lambda arr: arr.astype('float32'), arrs)
 
 
-def plot_data(X_train, X_test, y_train, y_test, io_helper=None, filename="data", do_save_figure=False):
+def plot_data(X_train, X_test, y_train, y_test, io_helper: 'IO_Helper' = None, filename="data", do_save_figure=False):
     """visualize training and test sets"""
     from matplotlib import pyplot as plt
 
@@ -157,15 +269,15 @@ def is_ascending(*arrays):
     return all(a <= b for a, b in zip(arr, arr[1:]))
 
 
-def df_to_np_array(df: pd.DataFrame) -> np.ndarray:
+def df_to_np_array(df: 'pd.DataFrame') -> np.ndarray:
     return df.to_numpy(dtype=float)
 
 
-def dfs_to_np_arrays(*dfs: pd.DataFrame):
+def dfs_to_np_arrays(*dfs: 'pd.DataFrame'):
     return map(df_to_np_array, dfs)
 
 
-def df_to_tensor(df: pd.DataFrame) -> torch.Tensor:
+def df_to_tensor(df: 'pd.DataFrame') -> 'torch.Tensor':
     return np_array_to_tensor(df_to_np_array(df))
 
 
@@ -173,7 +285,8 @@ def dfs_to_tensors(*dfs):
     return map(df_to_tensor, dfs)
 
 
-def np_array_to_tensor(arr: np.ndarray) -> torch.Tensor:
+def np_array_to_tensor(arr: np.ndarray) -> 'torch.Tensor':
+    import torch
     return torch.Tensor(arr).float()
 
 
@@ -181,7 +294,7 @@ def np_arrays_to_tensors(*arrays):
     return map(np_array_to_tensor, arrays)
 
 
-def tensor_to_np_array(tensor: torch.Tensor) -> np.ndarray:
+def tensor_to_np_array(tensor: 'torch.Tensor') -> np.ndarray:
     return tensor.numpy(force=True).astype('float32')
 
 
@@ -190,6 +303,7 @@ def tensors_to_np_arrays(*tensors):
 
 
 def get_device():
+    import torch
     return 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 
@@ -199,6 +313,7 @@ def object_to_cuda(obj):
 
 
 def objects_to_cuda(*objs: Any) -> Generator[Any, None, None]:
+    import torch
     if not torch.cuda.is_available():
         yield from objs
     else:
@@ -221,7 +336,7 @@ def make_ys_1d(*ys):
     return map(make_y_1d, ys)
 
 
-def make_tensor_contiguous(tensor: torch.Tensor):
+def make_tensor_contiguous(tensor: 'torch.Tensor'):
     return tensor.contiguous()
 
 
@@ -240,7 +355,7 @@ def preprocess_arrays(*arrays: np.ndarray):
     return map(preprocess_array, arrays)
 
 
-def get_train_loader(X_train: torch.Tensor, y_train: torch.Tensor, batch_size: int):
+def get_train_loader(X_train: 'torch.Tensor', y_train: 'torch.Tensor', batch_size: int):
     from torch.utils.data import TensorDataset, DataLoader
 
     train_dataset = TensorDataset(X_train, y_train)
@@ -253,21 +368,6 @@ def timestamped_filename(prefix, ext):
     timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
     filename = f'{prefix}_{timestamp}.{ext}'
     return filename
-
-
-def train_val_split(
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        val_frac: float
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    assert 0 < val_frac <= 1
-    n_samples = X_train.shape[0]
-    val_size = max(1, round(val_frac * n_samples))
-    train_size = max(1, n_samples - val_size)
-    X_val, y_val = X_train[-val_size:], y_train[-val_size:]
-    X_train, y_train = X_train[:train_size], y_train[:train_size]
-    assert X_train.shape[0] > 0 and X_val.shape[0] > 0
-    return X_train, y_train, X_val, y_val
 
 
 def quantiles_gaussian(quantiles: list, y_pred: np.ndarray, y_std: np.ndarray):
@@ -322,6 +422,7 @@ def measure_runtime(func):
         t2 = default_timer()
         logging.info(f'function {func_name} is done. [took {t2 - t1}s]')
         return result
+
     return wrapper
 
 
@@ -330,7 +431,7 @@ def plot_nn_losses(
         test_losses=None,
         show_plot=True,
         save_plot=False,
-        io_helper: IO_Helper = None,
+        io_helper: 'IO_Helper' = None,
         method_name=None,
         filename=None,
         postfix='losses',
@@ -378,3 +479,9 @@ def plot_nn_losses(
 
 def _contains_neg(losses):
     return any(map(lambda x: x < 0, losses))
+
+
+def add_val_to_train(X_train: np.ndarray, X_val: np.ndarray, y_train: np.ndarray, y_val: np.ndarray):
+    X_train = np.vstack([X_train, X_val])
+    y_train = np.vstack([y_train, y_val])
+    return X_train, y_train
