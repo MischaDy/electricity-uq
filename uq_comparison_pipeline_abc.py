@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline_ABC(ABC):
-    # todo: After these required inputs, they may accept any args or kwargs you wish.
     # todo: update usage guide!
     """
     Usage:
