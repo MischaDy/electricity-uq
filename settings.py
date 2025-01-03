@@ -4,8 +4,11 @@ from scipy import stats
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
-DATA_FILEPATH = 'data/data_1600.pkl'
-N_POINTS_PER_GROUP = 800
+DATA_FILEPATH = 'data/data_2015_2018.pkl'  # 'data/data_1600.pkl'
+N_POINTS_PER_GROUP = None  # 800
+TRAIN_YEARS = (2016, 2017)  # todo: simplify
+VAL_YEARS = (2017, 2018)  # todo: simplify
+TEST_YEARS = (2018, 2019)  # todo: simplify
 STANDARDIZE_DATA = True
 
 PLOT_DATA = False

@@ -12,6 +12,9 @@ if TYPE_CHECKING:
 
 def get_data(
         filepath,
+        train_years: tuple[int, int] = None,
+        val_years: tuple[int, int] = None,
+        test_years: tuple[int, int] = None,
         n_points_per_group=None,
         input_cols=None,
         output_cols=None,
@@ -20,6 +23,9 @@ def get_data(
     """
     load and prepare data
 
+    :param test_years:
+    :param val_years:
+    :param train_years:
     :param do_standardize_data:
     :param n_points_per_group:
     :param filepath:
@@ -37,7 +43,9 @@ def get_data(
         n_points_per_group=n_points_per_group,
         return_ts_col=True,
     )
-    X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(X, y)
+    X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(
+        X, y, train_years=train_years, val_years=val_years, test_years=test_years
+    )
     if do_standardize_data:
         X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = standardize_data(
             X_train, y_train, X_val, y_val, X_test, y_test, X, y, numerical_cols=numerical_cols

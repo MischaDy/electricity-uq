@@ -50,6 +50,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             do_standardize_data=do_standardize_data,
         )
         self.n_points_per_group = n_points_per_group
+        self.train_years = settings.TRAIN_YEARS
+        self.val_years = settings.VAL_YEARS
+        self.test_years = settings.TEST_YEARS
 
     def get_data(self):
         """
@@ -61,6 +64,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         """
         return misc_helpers.get_data(
             filepath=self.data_path,
+            train_years=self.train_years,
+            val_years=self.val_years,
+            test_years=self.test_years,
             n_points_per_group=self.n_points_per_group,
             do_standardize_data=self.do_standardize_data,
         )
