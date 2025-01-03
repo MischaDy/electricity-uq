@@ -27,9 +27,7 @@ def train_laplace_approximation(
     torch.set_default_device(misc_helpers.get_device())
 
     # todo: use validation data better(?)
-    X_train = np.vstack([X_train, X_val])
-    y_train = np.vstack([y_train, y_val])
-
+    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     X_train, y_train = misc_helpers.preprocess_arrays(X_train, y_train)
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     model = la_instantiator(base_model_nn)

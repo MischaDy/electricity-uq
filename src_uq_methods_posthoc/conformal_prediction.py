@@ -61,8 +61,7 @@ def train_conformal_prediction(
         verbose=1,
 ):
     # todo: use validation data better(?)
-    X_train = np.vstack([X_train, X_val])
-    y_train = np.vstack([y_train, y_val])
+    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
 
     cv = BlockBootstrap(
         n_resamplings=n_estimators,
