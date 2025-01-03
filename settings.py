@@ -21,7 +21,7 @@ SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
 USE_FILESAVE_PREFIX = True
 
-DO_TRAIN_ALL = True
+DO_TRAIN_ALL = False
 SKIP_TRAINING_ALL = False
 
 LOGGING_LEVEL = logging.INFO
@@ -30,7 +30,7 @@ STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
     'base_model_linreg',
-    'base_model_nn',
+#    'base_model_nn',
     'base_model_rf',
     'native_gpytorch',
     'native_mvnn',
@@ -42,7 +42,7 @@ METHOD_WHITELIST = [
 METHODS_KWARGS = {
     "native_mvnn": {
         'skip_training': False,
-        "n_iter": 300,
+        "n_iter": 100,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
@@ -57,7 +57,7 @@ METHODS_KWARGS = {
     },
     "native_quantile_regression_nn": {
         'skip_training': False,
-        'n_iter': 300,
+        'n_iter': 100,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
@@ -73,7 +73,7 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 300,
+        'n_iter': 100,
         'lr': 1e-2,
         'use_scheduler': True,
         'lr_patience': 30,
@@ -85,14 +85,14 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "posthoc_conformal_prediction": {
-        "skip_training": True,
-        "n_estimators": 10,
+        "skip_training": False,
+        "n_estimators": 5,
         "verbose": 1,
         "save_model": True,
     },
     "posthoc_laplace_approximation": {
         'skip_training': False,
-        "n_iter": 300,
+        "n_iter": 100,
         'save_model': True,
     },
     "base_model_linreg": {
@@ -115,7 +115,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": True,
-        "n_iter": 300,
+        "n_iter": 100,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
