@@ -8,7 +8,7 @@ from helpers import misc_helpers
 
 FILEPATH = './data/data_1600.pkl'
 PLOT = True
-OUTPUT_DIM = 1
+OUTPUT_DIMS = [1, 2]
 
 
 class Wrapper:
@@ -47,12 +47,13 @@ def posthoc_conformal_prediction(
         quantiles: list,
         base_model_wrapped,
         n_estimators=3,
+        output_dim=2,
 ):
     from src_uq_methods_posthoc.conformal_prediction import (
         train_conformal_prediction,
         predict_with_conformal_prediction,
     )
-    base_model_wrapped.set_output_dim(1)
+    base_model_wrapped.set_output_dim(output_dim)
     model = train_conformal_prediction(
         X_train,
         y_train,
@@ -82,28 +83,31 @@ def main():
     base_model_wrapped = Wrapper(linear_model.LinearRegression())
     base_model_wrapped.fit(X_train, y_train)
     print('posthoc CP')
-    y_pred, y_quantiles, y_std = posthoc_conformal_prediction(
-        X_train,
-        y_train,
-        X_val,
-        y_val,
-        X,
-        quantiles,
-        base_model_wrapped,
-    )
-    arrs = {
-        'X_train': X_train,
-        'y_train': y_train,
-        'y_pred': y_pred,
-        'y_quantiles': y_quantiles,
-        'y_std': y_std,
-    }
-    for arr_name, arr in arrs.items():
-        print(arr_name)
-        print('\tshape:', arr.shape)
-        print('\tcontent', arr[:5])
-    if PLOT:
-        plot(X, y, y_pred)
+    for output_dim in OUTPUT_DIMS:
+        print(f'running for output_dim={output_dim}...')
+        y_pred, y_quantiles, y_std = posthoc_conformal_prediction(
+            X_train,
+            y_train,
+            X_val,
+            y_val,
+            X,
+            quantiles,
+            base_model_wrapped,
+        )
+        arrs = {
+            'X_train': X_train,
+            'y_train': y_train,
+            'y_pred': y_pred,
+            'y_quantiles': y_quantiles,
+            'y_std': y_std,
+        }
+        for arr_name, arr in arrs.items():
+            print(arr_name)
+            print('\tshape:', arr.shape)
+            print('\tcontent', arr[:5])
+        if PLOT:
+            plot(X, y, y_pred)
+        print(f'done with output_dim={output_dim}.')
     print('end')
 
 
