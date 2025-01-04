@@ -8,3 +8,6 @@ data_2018_2019.pkl filter=lfs diff=lfs merge=lfs -text
 data_2022_2023.pkl filter=lfs diff=lfs merge=lfs -text
 data_1600.pkl filter=lfs diff=lfs merge=lfs -text
 data_2015_2018.pkl filter=lfs diff=lfs merge=lfs -text
+*.npy filter=lfs diff=lfs merge=lfs -text
+*.model filter=lfs diff=lfs merge=lfs -text
+*.pth filter=lfs diff=lfs merge=lfs -text
