@@ -164,4 +164,5 @@ cython_debug/
 # my stuff
 ._misc/
 /.data_Energy_Germany/
-#/logs/
+/logs/
+/comparison_storage/models/
