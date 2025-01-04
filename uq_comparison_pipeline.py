@@ -13,6 +13,7 @@ import settings
 if TYPE_CHECKING:
     from src_base_models.nn_estimator import NN_Estimator
     import numpy as np
+    from helpers.model_wrapper import ModelWrapper
 
 
 # noinspection PyPep8Naming
@@ -105,17 +106,23 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             n_jobs=-1,
             skip_training=True,
             save_model=True,
-    ):
+    ) -> 'ModelWrapper':
         from src_base_models.linear_regression import train_linreg
+        from helpers.model_wrapper import ModelWrapper
+
         method_name = 'base_model_linreg'
         if skip_training:
             model = self.try_skipping_training(method_name)
-            if model is not None:
-                return model
-        model = train_linreg(X_train, y_train, X_val, y_val, n_jobs=n_jobs)
-        if save_model:
-            self.save_model(model, method_name=method_name)
-        return model
+            if model is None:
+                skip_training = False
+        if not skip_training:
+            model = train_linreg(X_train, y_train, X_val, y_val, n_jobs=n_jobs)
+            if save_model:
+                self.save_model(model, method_name=method_name)
+        # noinspection PyUnboundLocalVariable
+        y_pred_temp = model.predict(X_train[:1])
+        model_wrapped = ModelWrapper(model, output_dim=len(y_pred_temp.shape))
+        return model_wrapped
 
     def base_model_rf(
             self,
@@ -131,31 +138,33 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             skip_training=True,
             save_model=True,
             verbose=1,
-    ):
+    ) -> 'ModelWrapper':
         from src_base_models.random_forest import train_random_forest
         method_name = 'base_model_rf'
         if skip_training:
             model = self.try_skipping_training(method_name)
-            if model is not None:
-                return model
-
-        assert all(item is not None for item in [X_train, y_train, model_param_distributions])
-        model = train_random_forest(
-            X_train,
-            y_train,
-            X_val,
-            y_val,
-            cv_n_iter=cv_n_iter,
-            cv_n_splits=cv_n_splits,
-            model_param_distributions=model_param_distributions,
-            random_seed=random_seed,
-            n_jobs=n_jobs,
-            verbose=verbose,
-        )
-        logging.info("done.")
-        if save_model:
-            self.save_model(model, method_name=method_name)
-        return model
+            if model is None:
+                skip_training = False
+        if not skip_training:
+            assert all(item is not None for item in [X_train, y_train, model_param_distributions])
+            model = train_random_forest(
+                X_train,
+                y_train,
+                X_val,
+                y_val,
+                cv_n_iter=cv_n_iter,
+                cv_n_splits=cv_n_splits,
+                model_param_distributions=model_param_distributions,
+                random_seed=random_seed,
+                n_jobs=n_jobs,
+                verbose=verbose,
+            )
+            if save_model:
+                self.save_model(model, method_name=method_name)
+        # noinspection PyUnboundLocalVariable
+        y_pred_temp = model.predict(X_train[:1])
+        model_wrapped = ModelWrapper(model, output_dim=len(y_pred_temp.shape))
+        return model_wrapped
 
     def base_model_nn(
             self,
@@ -178,7 +187,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             skip_training=True,
             save_model=True,
             verbose: int = 1,
-    ):
+    ) -> 'NN_Estimator':
         """
 
         :param y_val:
@@ -235,9 +244,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_losses_plot=save_losses_plot,
             io_helper=self.io_helper,
         )
+        with torch.no_grad():
+            y_pred_temp = model.predict(X_train[:1], as_np=False)
+        model.set_output_dim(len(y_pred_temp.shape), orig=True)
         if save_model:
             self.save_model(model, method_name=method_name)
-
         # noinspection PyTypeChecker
         model.set_params(verbose=False)
         return model
@@ -250,7 +261,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             y_val: 'np.ndarray',
             X_pred: 'np.ndarray',
             quantiles: list,
-            base_model,
+            base_model: Union['ModelWrapper', 'NN_Estimator'],
             n_estimators=10,
             bootstrap_n_blocks=10,
             bootstrap_overlapping_blocks=False,
@@ -287,6 +298,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             if model is None:
                 skip_training = False
         if not skip_training:
+            base_model.set_output_dim(1)
             model = train_conformal_prediction(
                 X_train,
                 y_train,
@@ -303,6 +315,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 self.save_model(model, method_name=method_name)
         # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
+        base_model.reset_output_dim()
         return y_pred, y_quantiles, y_std
 
     def posthoc_laplace_approximation(
