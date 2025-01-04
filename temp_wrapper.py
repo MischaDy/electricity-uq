@@ -8,6 +8,8 @@ from helpers import misc_helpers
 
 FILEPATH = './data/data_1600.pkl'
 PLOT = True
+SHOW_PLOTS = True
+SAVE_PLOTS = True
 OUTPUT_DIMS = [1, 2]
 
 
@@ -135,8 +137,12 @@ def plot(X, y, y_pred, y_quantiles, filename):
         label='quantiles',
     )
     ax.legend()
-    plt.savefig(filename)
-    plt.show(block=True)
+    if SAVE_PLOTS:
+        plt.savefig(filename)
+    if SHOW_PLOTS:
+        plt.show(block=True)
+    else:
+        plt.close()
 
 
 if __name__ == '__main__':
