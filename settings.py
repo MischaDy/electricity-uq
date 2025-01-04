@@ -62,6 +62,7 @@ METHODS_KWARGS = {
         "frozen_var_value": 0.1,
         'show_losses_plot': False,
         'save_losses_plot': True,
+        'show_progress': False,
         'save_model': True,
     },
     "native_quantile_regression_nn": {
@@ -104,7 +105,7 @@ METHODS_KWARGS = {
         "n_iter": 100,
         'save_model': True,
         'verbose': True,
-        'show_progress': True,
+        'show_progress': False,
     },
     "base_model_linreg": {
         "skip_training": False,

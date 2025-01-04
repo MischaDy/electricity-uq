@@ -476,6 +476,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             frozen_var_value=0.1,
             show_losses_plot=True,
             save_losses_plot=True,
+            show_progress=True,
             skip_training=True,
             save_model=True,
     ):
@@ -520,6 +521,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "lr": lr,
                 "lr_patience": lr_patience,
                 "weight_decay": regularization,
+                'show_progress': show_progress,
                 "use_scheduler": True,
             }
             model = None
