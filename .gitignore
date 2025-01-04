@@ -165,4 +165,6 @@ cython_debug/
 ._misc/
 /.data_Energy_Germany/
 /logs/
-/comparison_storage/models/
+/comparison_storage/models/*
+/comparison_storage/arrays/*
+/data/*.pkl
