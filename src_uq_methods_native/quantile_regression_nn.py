@@ -183,11 +183,13 @@ def train_qr_nn(
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
-    iterable = range(1, n_iter+1)
+    epochs = range(1, n_iter+1)
     if show_progress:
-        iterable = tqdm(iterable)
+        epochs = tqdm(epochs)
     logging.info('training...')
-    for _ in iterable:
+    for epoch in epochs:
+        if not show_progress:
+            logging.info(f'epoch {epoch}/{n_iter}')
         model.train()
         for X_train, y_train in train_loader:
             optimizer.zero_grad()

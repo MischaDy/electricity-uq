@@ -1,3 +1,5 @@
+import logging
+
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -107,10 +109,12 @@ def train_mean_var_nn(
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     train_losses, val_losses = [], []
-    iterable = range(1, n_iter+1)
+    epochs = range(1, n_iter+1)
     if show_progress:
-        iterable = tqdm(iterable)
-    for _ in iterable:
+        epochs = tqdm(epochs)
+    for epoch in epochs:
+        if not show_progress:
+            logging.info(f'epoch {epoch}/{n_iter}')
         model.train()
         for X_train, y_train in train_loader:
             optimizer.zero_grad()

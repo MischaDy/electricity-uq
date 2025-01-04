@@ -1,3 +1,4 @@
+import logging
 from typing import TYPE_CHECKING
 from more_itertools import collapse
 
@@ -161,7 +162,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
         train_losses, val_losses = [], []
         epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
-        for _ in epochs:
+        for epoch in epochs:
+            if not self.show_progress_bar:
+                logging.info(f'epoch {epoch}/{self.n_iter}')
             model.train()
             for X, y in train_loader:
                 optimizer.zero_grad()
