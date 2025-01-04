@@ -38,19 +38,70 @@ class Wrapper:
         self.__dict__[key] = value
 
 
+def posthoc_conformal_prediction(
+        X_train: 'np.ndarray',
+        y_train: 'np.ndarray',
+        X_val: 'np.ndarray',
+        y_val: 'np.ndarray',
+        X_pred: 'np.ndarray',
+        quantiles: list,
+        base_model_wrapped,
+        n_estimators=3,
+):
+    from src_uq_methods_posthoc.conformal_prediction import (
+        train_conformal_prediction,
+        predict_with_conformal_prediction,
+    )
+    base_model_wrapped.set_output_dim(1)
+    model = train_conformal_prediction(
+        X_train,
+        y_train,
+        X_val,
+        y_val,
+        base_model_wrapped,
+        n_estimators=n_estimators,
+        bootstrap_n_blocks=10,
+        bootstrap_overlapping_blocks=False,
+        random_seed=42,
+        verbose=1,
+    )
+    # noinspection PyUnboundLocalVariable
+    y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
+    base_model_wrapped.set_output_dim(2)
+    return y_pred, y_quantiles, y_std
+
+
 def main():
     print('start')
+    quantiles = [0.1, 0.5, 0.9]
     print('load data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
         FILEPATH, n_points_per_group=800
     )
     print('fit model')
-    wrapper = Wrapper(linear_model.LinearRegression())
-    wrapper.fit(X_train, y_train)
-    print('predict')
-    wrapper.set_output_dim(OUTPUT_DIM)
-    y_pred = wrapper.predict(X)
-    print('shapes:', X_train.shape, y_train.shape, y_pred.shape)
+    base_model_wrapped = Wrapper(linear_model.LinearRegression())
+    base_model_wrapped.fit(X_train, y_train)
+    print('posthoc CP')
+    y_pred, y_quantiles, y_std = posthoc_conformal_prediction(
+        X_train,
+        y_train,
+        X_val,
+        y_val,
+        X,
+        quantiles,
+        base_model_wrapped,
+    )
+    arrs = {
+        'X_train': X_train,
+        'y_train': y_train,
+        'y_pred': y_pred,
+        'y_quantiles': y_quantiles,
+        'y_std': y_std,
+    }
+    for arr_name, arr in arrs.items():
+        print(arr_name)
+        print('\tshape:', arr.shape)
+        print('\tcontent', arr[:5])
     if PLOT:
         plot(X, y, y_pred)
     print('end')
