@@ -140,6 +140,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             verbose=1,
     ) -> 'ModelWrapper':
         from src_base_models.random_forest import train_random_forest
+        from helpers.model_wrapper import ModelWrapper
         method_name = 'base_model_rf'
         if skip_training:
             model = self.try_skipping_training(method_name)
