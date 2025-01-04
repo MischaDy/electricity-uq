@@ -1,18 +1,13 @@
 {
-    "base_model": {
-        "base_model_linreg": {
-            "rmse": 552.0161743164062,
-            "smape_scaled": 0.028878772631287575
+    "base_model": {},
+    "posthoc": {},
+    "native": {
+        "native_gpytorch": {
+            "rmse": 1553.593505859375,
+            "smape_scaled": 0.06269752234220505,
+            "crps": 556.4621915135086,
+            "nll_gaussian": 8.334541480598734,
+            "mean_pinball": 125.14302632356831
         }
-    },
-    "posthoc": {
-        "posthoc_conformal_prediction__base_model_linreg": {
-            "rmse": 552.0161743164062,
-            "smape_scaled": 0.028878772631287575,
-            "crps": 305.1794556914164,
-            "nll_gaussian": 9.259381749645215,
-            "mean_pinball": 12.192399978637695
-        }
-    },
-    "native": {}
+    }
 }
