@@ -1,5 +1,8 @@
 import logging
 from typing import TYPE_CHECKING
+
+from gpytorch.variational import CholeskyVariationalDistribution, VariationalStrategy
+from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 import gpytorch
 import torch
@@ -16,9 +19,12 @@ torch.set_default_dtype(torch.float32)
 
 
 # noinspection PyPep8Naming
-class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, X_train, y_train, likelihood):
-        super(ExactGPModel, self).__init__(X_train, y_train, likelihood)
+class ApproximateGP(gpytorch.models.ApproximateGP):
+    def __init__(self, inducing_points):
+        variational_distribution = CholeskyVariationalDistribution(inducing_points.size(0))
+        variational_strategy = VariationalStrategy(self, inducing_points, variational_distribution,
+                                                   learn_inducing_locations=True)
+        super(ApproximateGP, self).__init__(variational_strategy)
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.keops.RBFKernel())
 
@@ -44,47 +50,59 @@ def train_gpytorch(
         show_losses_plot=True,
         save_losses_plot=True,
         io_helper=None,
+        n_inducing_points=500,
+        batch_size=1024,
 ):
     n_devices = torch.cuda.device_count()
     logging.info('Planning to run on {} GPUs.'.format(n_devices))
 
+    logging.info('setup dataset')
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+
+    logging.info('setup models')
+    inducing_points = X_train[:n_inducing_points, :]
+    model = ApproximateGP(inducing_points=inducing_points)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = ExactGPModel(X_train, y_train, likelihood)
     model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
     model.train()
     likelihood.train()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    logging.info('setup meta-models')
+    mll = gpytorch.mlls.VariationalELBO(likelihood, model, num_data=y_train.size(0))
+    optimizer = torch.optim.Adam([
+        {'params': model.parameters()},
+        {'params': likelihood.parameters()},
+    ], lr=lr)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
-    # "Loss" for GPs - the marginal log likelihood
-    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-
+    logging.info('start proper training...')
     # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
     train_losses, val_losses = [], []
     epochs = range(1, n_iter+1)
     if show_progress:
         epochs = tqdm(epochs)
     for epoch in epochs:
-        if not show_progress:
-            logging.info(f'epoch {epoch}/{n_iter}')
-        model.train()
-        likelihood.train()
-        optimizer.zero_grad()
-        y_pred = model(X_train)
-        loss = -mll(y_pred, y_train).sum()
-        train_losses.append(loss.item())
-        loss.backward()
-        optimizer.step()
-
-        if use_scheduler or show_losses_plot:
-            model.eval()
-            likelihood.eval()
-            with torch.no_grad(), gpytorch.settings.memory_efficient(True):
-                y_pred = model.likelihood(model(X_val))
-                val_loss = -mll(y_pred, y_val).sum()
-                val_losses.append(val_loss.item())
-            scheduler.step(val_loss)
+        for X_train_batch, y_train_batch in train_loader:
+            if not show_progress:
+                logging.info(f'epoch {epoch}/{n_iter}')
+            model.train()
+            likelihood.train()
+            optimizer.zero_grad()
+            y_pred_batch = model(X_train_batch)
+            loss = -mll(y_pred_batch, y_train_batch).sum()
+            train_losses.append(loss.item())
+            loss.backward()
+            optimizer.step()
+    
+            if use_scheduler or show_losses_plot:
+                model.eval()
+                likelihood.eval()
+                with torch.no_grad(), gpytorch.settings.memory_efficient(True):
+                    y_pred_batch = model(X_val)
+                    val_loss = -mll(y_pred_batch, y_val).sum()
+                    val_losses.append(val_loss.item())
+                scheduler.step(val_loss)
 
     misc_helpers.plot_nn_losses(
         train_losses,
@@ -138,11 +156,22 @@ def prepare_data(
 def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
     model.eval()
     likelihood.eval()
+
+    test_dataset = TensorDataset(X_pred)
+    test_loader = DataLoader(test_dataset, batch_size=1024, shuffle=False)
+
+    y_preds_all, y_stds_all, y_quantiles_all = [], [], []
     # todo: via gpytorch.settings, use fast_pred_samples, fast_computations?
     with torch.no_grad(), gpytorch.settings.memory_efficient(True):
-        f_pred = model(X_pred)
-    y_pred = f_pred.mean
-    y_std = f_pred.stddev
-    y_pred, y_std = misc_helpers.tensors_to_np_arrays(y_pred, y_std)
-    y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
-    return y_pred, y_quantiles, y_std
+        for X_test_batch, y_test_batch in test_loader:
+            f_pred = model(X_test_batch)
+            y_pred = f_pred.mean
+            y_std = f_pred.stddev
+            y_pred, y_std = misc_helpers.tensors_to_np_arrays(y_pred, y_std)
+            y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
+
+            y_preds_all.append(y_pred)
+            y_stds_all.append(y_std)
+            y_quantiles_all.append(y_quantiles)
+    # return y_pred, y_quantiles, y_std
+    return y_preds_all, y_stds_all, y_quantiles_all  # todo: how to stack output correctly?
