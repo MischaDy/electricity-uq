@@ -22,7 +22,7 @@ class Wrapper:
     def predict(self, input_):
         output = self.model_.predict(input_)
         if self.output_dim == 1:
-            output = misc_helpers.make_y_1d(output)
+            output = misc_helpers.make_arr_1d(output)
         else:
             output = misc_helpers.make_arr_2d(output)
         return output

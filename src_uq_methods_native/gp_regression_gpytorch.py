@@ -123,7 +123,7 @@ def prepare_data(
     X_train, y_train, X_val, y_val, X_pred = misc_helpers.np_arrays_to_tensors(
         X_train, y_train, X_val, y_val, X_pred
     )
-    y_train, y_val = misc_helpers.make_ys_1d(y_train, y_val)
+    y_train, y_val = misc_helpers.make_arrs_1d(y_train, y_val)
 
     logging.info('mapping data to device and making it contiguous...')
     X_train, y_train, X_val, y_val, X_pred = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val, X_pred)

@@ -152,7 +152,7 @@ def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.nda
     # todo: use torch.nn.NLLLoss instead!
     from uncertainty_toolbox import nll_gaussian
     y_pred_std = np.sqrt(y_pred_var)
-    y_pred_mean, y_pred_std, y_test = misc_helpers.make_ys_1d(y_pred_mean, y_pred_std, y_test)
+    y_pred_mean, y_pred_std, y_test = misc_helpers.make_arrs_1d(y_pred_mean, y_pred_std, y_test)
     return nll_gaussian(y_pred_mean, y_pred_std, y_test)
 
 

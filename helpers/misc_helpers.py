@@ -188,7 +188,7 @@ def inverse_transform_y(scaler_y, y: np.ndarray):
         y = make_arr_2d(y)
     y = scaler_y.inverse_transform(y)
     if n_dim < 2:
-        y = make_y_1d(y)
+        y = make_arr_1d(y)
     return y
 
 
@@ -328,12 +328,12 @@ def make_arrs_2d(*arrs):
     return map(make_arr_2d, arrs)
 
 
-def make_y_1d(y: np.ndarray):
-    return y.squeeze()
+def make_arr_1d(arr: np.ndarray):
+    return arr.squeeze()
 
 
-def make_ys_1d(*ys):
-    return map(make_y_1d, ys)
+def make_arrs_1d(*arrs):
+    return map(make_arr_1d, arrs)
 
 
 def make_tensor_contiguous(tensor: 'torch.Tensor'):
