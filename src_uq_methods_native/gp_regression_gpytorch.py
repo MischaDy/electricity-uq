@@ -1,5 +1,4 @@
 import logging
-from typing import TYPE_CHECKING
 
 from gpytorch.variational import CholeskyVariationalDistribution, VariationalStrategy
 from torch.utils.data import TensorDataset, DataLoader
@@ -10,8 +9,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from helpers import misc_helpers
 
-if TYPE_CHECKING:
-    import numpy as np
+import numpy as np
 
 
 torch.set_default_device(misc_helpers.get_device())
