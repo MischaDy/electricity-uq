@@ -15,6 +15,7 @@ class Wrapper:
     def __init__(self, model, output_dim: Literal[1, 2] = 2):
         self.model_ = model
         self.output_dim = output_dim
+        self._output_dim_old = None
 
     def predict(self, input_):
         output = self.model_.predict(input_)
@@ -25,7 +26,12 @@ class Wrapper:
         return output
 
     def set_output_dim(self, output_dim):
+        self._output_dim_old = self.output_dim
         self.output_dim = output_dim
+
+    def reset_output_dim(self):
+        # switch values around
+        self._output_dim_old, self.output_dim = self.output_dim, self._output_dim_old
 
     def __call__(self, input_):
         return self.predict(input_)
@@ -66,6 +72,7 @@ def posthoc_conformal_prediction(
         random_seed=42,
         verbose=1,
     )
+    base_model_wrapped.reset_output_dim()
     # noinspection PyUnboundLocalVariable
     y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
     base_model_wrapped.set_output_dim(2)
