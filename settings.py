@@ -7,7 +7,7 @@ from scipy import stats
 DO_BIG_RUN = True
 DO_SMALL_RUN = False
 
-DO_TRAIN_ALL = True
+DO_TRAIN_ALL = False
 SKIP_TRAINING_ALL = False
 
 
@@ -39,13 +39,13 @@ STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
     'base_model_linreg',
-    'base_model_nn',
-    'base_model_rf',
+    # 'base_model_nn',
+    # 'base_model_rf',
     # 'native_gpytorch',
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
     'posthoc_conformal_prediction',
-    'posthoc_laplace_approximation',
+    # 'posthoc_laplace_approximation',
 ]
 
 METHODS_KWARGS = {
@@ -95,7 +95,7 @@ METHODS_KWARGS = {
     },
     "posthoc_conformal_prediction": {
         "skip_training": False,
-        "n_estimators": 5,
+        "n_estimators": 2,
         "verbose": 1,
         "save_model": True,
     },
@@ -105,7 +105,7 @@ METHODS_KWARGS = {
         'save_model': True,
     },
     "base_model_linreg": {
-        "skip_training": True,
+        "skip_training": False,
         "n_jobs": -1,
         "save_model": True,
     },
