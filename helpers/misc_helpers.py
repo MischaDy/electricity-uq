@@ -119,6 +119,9 @@ def train_val_test_split(
 def _train_val_test_split_by_size(
         X: 'pd.DataFrame', y: 'pd.DataFrame', train_size: float = 0.5, val_size: float = 0.1
 ) -> 'TrainValTestDataFrames':
+    import pandas as pd
+    pd.options.mode.copy_on_write = True
+
     n_samples = X.shape[0]
     cutoff_train_val = round(train_size * n_samples)
     cutoff_val_test = cutoff_train_val + round(val_size * n_samples)
