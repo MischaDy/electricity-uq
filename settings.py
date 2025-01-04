@@ -4,11 +4,11 @@ from scipy import stats
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
-DATA_FILEPATH = 'data/data_2015_2018.pkl'  # 'data/data_1600.pkl'
-N_POINTS_PER_GROUP = None  # 800
-TRAIN_YEARS = (2016, 2017)  # todo: simplify
-VAL_YEARS = (2017, 2018)  # todo: simplify
-TEST_YEARS = (2018, 2019)  # todo: simplify
+DATA_FILEPATH = 'data/data_1600.pkl'  # 'data/data_2015_2018.pkl'
+N_POINTS_PER_GROUP = 800  # None
+TRAIN_YEARS = None  # (2016, 2017)  # todo: simplify
+VAL_YEARS = None  # (2017, 2018)  # todo: simplify
+TEST_YEARS = None  # (2018, 2019)  # todo: simplify
 STANDARDIZE_DATA = True
 
 PLOT_DATA = False
@@ -21,7 +21,7 @@ SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
 USE_FILESAVE_PREFIX = True
 
-DO_TRAIN_ALL = False
+DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
 
 LOGGING_LEVEL = logging.INFO
@@ -30,11 +30,11 @@ STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
     'base_model_linreg',
-#    'base_model_nn',
+    'base_model_nn',
     'base_model_rf',
-    'native_gpytorch',
-    'native_mvnn',
-    'native_quantile_regression_nn',
+    # 'native_gpytorch',
+    # 'native_mvnn',
+    # 'native_quantile_regression_nn',
     'posthoc_conformal_prediction',
     'posthoc_laplace_approximation',
 ]
