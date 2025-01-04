@@ -1,13 +1,18 @@
 {
-    "base_model": {},
-    "posthoc": {},
-    "native": {
-        "native_quantile_regression_nn": {
-            "rmse": 15446.012941876792,
-            "smape_scaled": 1.9998799551805424,
-            "crps": 15057.20169064331,
-            "nll_gaussian": 2420.009079198215,
-            "mean_pinball": 18.912565818079774
+    "base_model": {
+        "base_model_linreg": {
+            "rmse": 552.0161743164062,
+            "smape_scaled": 0.028878772631287575
         }
-    }
+    },
+    "posthoc": {
+        "posthoc_conformal_prediction__base_model_linreg": {
+            "rmse": 552.0161743164062,
+            "smape_scaled": 0.028878772631287575,
+            "crps": 305.1794556914164,
+            "nll_gaussian": 9.259381749645215,
+            "mean_pinball": 12.192399978637695
+        }
+    },
+    "native": {}
 }
