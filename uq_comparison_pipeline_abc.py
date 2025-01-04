@@ -216,7 +216,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         for uq_type, uq_results in uq_results_all.items():
             logging.info(f'{uq_type}...')
             uq_metrics_all[uq_type] = self.compute_all_metrics(uq_results, y_true_orig_scale, quantiles=quantiles)
-        self.print_uq_metrics(uq_metrics_all, print_optimal=True)
+        self.print_uq_metrics(uq_metrics_all, print_optimal=True, y_true_orig_scale=y_true_orig_scale)
         self.io_helper.save_metrics(uq_metrics_all, filename='uq_metrics')
         return base_models_metrics, uq_metrics_all
 
