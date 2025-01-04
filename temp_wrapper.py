@@ -106,17 +106,28 @@ def main():
             print('\tshape:', arr.shape)
             print('\tcontent', arr[:5])
         if PLOT:
-            plot(X, y, y_pred)
+            plot(X, y, y_pred, y_quantiles)
         print(f'done with output_dim={output_dim}.')
     print('end')
 
 
-def plot(X, y, y_pred):
+def plot(X, y, y_pred, y_quantiles):
     print('plot')
     x_plot = np.arange(X.shape[0])
-    plt.plot(x_plot, y, label='y true')
-    plt.plot(x_plot, y_pred, label='y pred')
-    plt.legend()
+    ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1]
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot, y, label='y true')
+    ax.plot(x_plot, y_pred, label='y pred')
+    ax.fill_between(
+        x_plot.ravel(),
+        ci_low,
+        ci_high,
+        color="green",
+        alpha=0.2,
+        label='quantiles',
+    )
+    ax.legend()
     plt.show(block=True)
 
 
