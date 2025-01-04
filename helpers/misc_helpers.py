@@ -457,7 +457,7 @@ def plot_nn_losses(
     import matplotlib.pyplot as plt
 
     if not show_plot and not save_plot:
-        logging.warning('nn loss plot to be neither show nor saved. skipping entirely.')
+        logging.warning('nn loss plot to be neither shown nor saved. skipping entirely.')
         return
 
     if save_plot and io_helper is None:
