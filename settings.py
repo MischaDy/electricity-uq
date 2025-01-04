@@ -118,7 +118,7 @@ METHODS_KWARGS = {
             "n_estimators": stats.randint(10, 200),
         },
         'cv_n_iter': 5,
-        'cv_n_splits': 5,
+        'cv_n_splits': 2,
         "random_seed": 42,
         "verbose": 4,
         'n_jobs': -1,
