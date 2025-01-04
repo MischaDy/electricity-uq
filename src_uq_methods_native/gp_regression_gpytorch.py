@@ -80,7 +80,7 @@ def train_gpytorch(
         if use_scheduler or show_losses_plot:
             model.eval()
             likelihood.eval()
-            with torch.no_grad():
+            with torch.no_grad(), gpytorch.settings.memory_efficient(True):
                 y_pred = model.likelihood(model(X_val))
                 val_loss = -mll(y_pred, y_val).sum()
                 val_losses.append(val_loss.item())
@@ -105,7 +105,7 @@ def evaluate(model, likelihood, X_test, y_test):
     model.eval()
     likelihood.eval()
 
-    with torch.no_grad():
+    with torch.no_grad(), gpytorch.settings.memory_efficient(True):
         y_pred = model.likelihood(model(X_test))
 
     logging.info('computing loss...')
@@ -138,8 +138,8 @@ def prepare_data(
 def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
     model.eval()
     likelihood.eval()
-    # todo: via gpytorch.settings, use fast_pred_samples, memory_efficient, fast_computations?
-    with torch.no_grad():
+    # todo: via gpytorch.settings, use fast_pred_samples, fast_computations?
+    with torch.no_grad(), gpytorch.settings.memory_efficient(True):
         f_pred = model(X_pred)
     y_pred = f_pred.mean
     y_std = f_pred.stddev
