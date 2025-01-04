@@ -159,11 +159,12 @@ def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
 
     test_dataset = TensorDataset(X_pred)
     test_loader = DataLoader(test_dataset, batch_size=1024, shuffle=False)
+    test_loader = map(lambda list_with_tensor: list_with_tensor[0], test_loader)
 
     y_preds_all, y_stds_all, y_quantiles_all = [], [], []
     # todo: via gpytorch.settings, use fast_pred_samples, fast_computations?
     with torch.no_grad(), gpytorch.settings.memory_efficient(True):
-        for X_test_batch, y_test_batch in test_loader:
+        for X_test_batch in test_loader:
             f_pred = model(X_test_batch)
             y_pred = f_pred.mean
             y_std = f_pred.stddev
