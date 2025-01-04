@@ -44,7 +44,7 @@ def get_data(
         return_ts_col=True,
     )
     X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(
-        X, y, train_years=train_years, val_years=val_years, test_years=test_years
+        X, y, train_years=train_years, val_years=val_years, test_years=test_years, val_size=0.1,
     )
     if do_standardize_data:
         X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = standardize_data(
