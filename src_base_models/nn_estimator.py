@@ -95,6 +95,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.io_helper = io_helper
         self.is_fitted_ = False
         self.output_dim = output_dim
+        self.output_dim_orig = output_dim
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: 'np.ndarray', y: 'np.ndarray'):
@@ -127,7 +128,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             self.activation = torch.nn.LeakyReLU
 
         y = misc_helpers.make_arr_2d(y)
-
         try:
             X_train, y_train = misc_helpers.np_arrays_to_tensors(X, y)
         except TypeError:
@@ -232,7 +232,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     def _mse_torch(y_pred, y_test):
         return torch.mean((y_pred - y_test) ** 2)
 
-    def predict(self, X, as_np=True):
+    def predict(self, X: 'np.ndarray', as_np=True):
         """A reference implementation of a predicting function.
 
         Parameters
@@ -256,14 +256,17 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         # `feature_names_in_` but only check that the shape is consistent.
         X = self._validate_data(X, accept_sparse=False, reset=False)
         X = misc_helpers.np_array_to_tensor(X)
-        X = misc_helpers.object_to_cuda(X)
-        X = misc_helpers.make_tensor_contiguous(X)
-
-        with torch.no_grad():
-            res = self.model_(X)
+        res = self.predict_on_tensor(X)
         res = misc_helpers.make_arr_1d(res) if self.output_dim == 1 else misc_helpers.make_arr_2d(res)
         if as_np:
             res = misc_helpers.tensor_to_np_array(res)
+        return res
+
+    def predict_on_tensor(self, X: torch.Tensor):
+        X = misc_helpers.object_to_cuda(X)
+        X = misc_helpers.make_tensor_contiguous(X)
+        with torch.no_grad():
+            res = self.model_(X)
         return res
 
     def get_nn(self, to_device=True) -> torch.nn.Module:
@@ -290,15 +293,21 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
                 msg += ', or only has it is after fitting'
             raise AttributeError(msg)
 
-    def __call__(self, tensor: torch.Tensor):
+    def __call__(self, X: torch.Tensor):
         if not self.__getattribute__('is_fitted_'):
             raise TypeError('NN_Estimator is only callable after fitting')
-        tensor = misc_helpers.object_to_cuda(tensor)
-        tensor = misc_helpers.make_tensor_contiguous(tensor)
-        return self.model_(tensor)
+        return self.predict_on_tensor(X)
 
     def __setattr__(self, key, value):
         self.__dict__[key] = value
+
+    def set_output_dim(self, output_dim, orig=False):
+        self.output_dim = output_dim
+        if orig:
+            self.output_dim_orig = output_dim
+
+    def reset_output_dim(self):
+        self.output_dim = self.output_dim_orig
 
 
 def train_nn(
@@ -320,7 +329,7 @@ def train_nn(
         save_losses_plot=True,
         io_helper=None,
         verbose: int = 1,
-):
+) -> NN_Estimator:
     train_size_orig = X_train.shape[0]
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)  # todo: temp solution
     model = NN_Estimator(
