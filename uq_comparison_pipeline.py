@@ -570,13 +570,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_plots=True,
             show_losses_plot=True,
             save_losses_plot=True,
+            n_inducing_points=500,
             skip_training=True,
             save_model=True,
     ):
         import gpytorch
         import torch
         from src_uq_methods_native.gp_regression_gpytorch import (
-            ExactGPModel,
+            ApproximateGP,
             train_gpytorch,
             prepare_data,
             predict_with_gpytorch,
@@ -597,10 +598,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     method_name=method_name,
                     infix=infix,
                 )
+                inducing_points = X_train[:n_inducing_points, :]
                 model = self.io_helper.load_torch_model_statedict(
-                    ExactGPModel,
+                    ApproximateGP,
                     method_name=method_name,
-                    model_kwargs={'X_train': X_train, 'y_train': y_train, 'likelihood': likelihood},  # no val!
+                    model_kwargs={'inducing_points': inducing_points},
                 )
                 model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
             except FileNotFoundError as error:
@@ -624,6 +626,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
                 io_helper=self.io_helper,
+                n_inducing_points=n_inducing_points,
             )
             if save_model:
                 logging.info('saving model...')
