@@ -735,12 +735,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             print()
         if print_optimal:
             self.print_optimal_det_metrics(y_true_orig_scale)
-            self.print_optimal_uq_metrics(y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=eps_std)
+            self.print_optimal_uq_metrics(y_true_orig_scale, quantiles, y_quantiles=y_quantiles, y_std=y_std,
+                                          eps_std=eps_std)
 
-    def print_optimal_uq_metrics(self, y_true_orig_scale, y_quantiles, y_std, quantiles, eps_std=1e-2):
+    def print_optimal_uq_metrics(self, y_true_orig_scale, quantiles, y_quantiles=None, y_std=None, eps_std=1e-2):
         print('\toptimal uq metrics:')
-        y_quantiles_opt = np.hstack([y_true_orig_scale] * y_quantiles.shape[1])
-        y_std_opt = np.ones_like(y_std) * eps_std
+        y_quantiles_opt = np.hstack([y_true_orig_scale] * y_quantiles.shape[1]) if y_quantiles is not None else None
+        y_std_opt = np.ones_like(y_std) * eps_std if y_std is not None else None
         optimal_uq_metrics = self.compute_metrics_uq(y_true_orig_scale, y_quantiles_opt, y_std_opt, y_true_orig_scale,
                                                      quantiles=quantiles)
         for metric, value in optimal_uq_metrics.items():
