@@ -54,6 +54,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         'show_progress_bar': [bool],
         'show_losses_plot': [bool],
         'save_losses_plot': [bool],
+        'output_dim': [int],
     }
 
     def __init__(
@@ -74,6 +75,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             show_losses_plot=True,
             save_losses_plot=True,
             io_helper=None,
+            output_dim=2,
     ):
         self.train_size_orig = train_size_orig  # todo: temp solution
         self.use_scheduler = use_scheduler
@@ -92,6 +94,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.save_losses_plot = save_losses_plot
         self.io_helper = io_helper
         self.is_fitted_ = False
+        self.output_dim = output_dim
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: 'np.ndarray', y: 'np.ndarray'):
@@ -123,9 +126,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         if self.activation is None:
             self.activation = torch.nn.LeakyReLU
 
-        self.is_y_2d_ = len(y.shape) == 2
-        if len(y.shape) < 2:
-            y = y.reshape(-1, 1)
+        y = misc_helpers.make_arr_2d(y)
 
         try:
             X_train, y_train = misc_helpers.np_arrays_to_tensors(X, y)
@@ -258,10 +259,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         X = misc_helpers.object_to_cuda(X)
         X = misc_helpers.make_tensor_contiguous(X)
 
-        # self.model_.eval()
         with torch.no_grad():
             res = self.model_(X)
-        res = res.reshape(-1, 1) if self.is_y_2d_ else res.squeeze()
+        res = misc_helpers.make_arr_1d(res) if self.output_dim == 1 else misc_helpers.make_arr_2d(res)
         if as_np:
             res = misc_helpers.tensor_to_np_array(res)
         return res
@@ -282,7 +282,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def __getattr__(self, item):
         try:
-            return getattr(self.__getattribute__('model_'), item)
+            model = self.__getattribute__('model_')  # workaround bcdirect attr access doesn't work
+            return getattr(model, item)
         except AttributeError:
             msg = f'NN_Estimator has no attribute "{item}"'
             if not self.__getattribute__('is_fitted_'):
