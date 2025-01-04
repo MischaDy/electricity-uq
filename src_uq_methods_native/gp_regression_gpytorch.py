@@ -177,4 +177,4 @@ def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
     y_pred = np.vstack(y_preds_all).squeeze()
     y_std = np.vstack(y_stds_all).squeeze()
     y_quantiles = np.vstack(y_quantiles_all)
-    return y_pred, y_std, y_quantiles  # todo: how to stack output correctly?
+    return y_pred, y_quantiles, y_std
