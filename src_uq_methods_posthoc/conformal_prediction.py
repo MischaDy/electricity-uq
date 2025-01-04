@@ -69,8 +69,21 @@ def train_conformal_prediction(
     #     overlapping=bootstrap_overlapping_blocks,
     #     random_state=random_seed,
     # )
+
+    # bugfix weird consistency error, solution taken from here:
+    # https://github.com/scikit-learn-contrib/MAPIE/issues/321#issuecomment-1617601314
+    from mapie.conformity_scores import AbsoluteConformityScore
+    conformity_score = AbsoluteConformityScore()
+    conformity_score.consistency_check = False
+
     model = MapieTimeSeriesRegressor(
-        base_model, method="enbpi", cv='prefit', agg_function='mean', n_jobs=-1, verbose=verbose,
+        base_model,
+        method="enbpi",
+        cv='prefit',
+        agg_function='mean',
+        n_jobs=-1,
+        verbose=verbose,
+        conformity_score=conformity_score
     )
     model = model.fit(X_val, y_val)
     return model
