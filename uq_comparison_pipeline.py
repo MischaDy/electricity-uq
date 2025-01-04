@@ -334,6 +334,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             skip_training=True,
             save_model=True,
             verbose=True,
+            show_progress=True,
     ):
         from src_uq_methods_posthoc.laplace_approximation import (
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
@@ -364,6 +365,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 batch_size=batch_size,
                 random_seed=random_seed,
                 verbose=verbose,
+                show_progress=show_progress,
             )
             if save_model:
                 logging.info('saving model...')

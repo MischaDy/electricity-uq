@@ -103,6 +103,8 @@ METHODS_KWARGS = {
         'skip_training': False,
         "n_iter": 100,
         'save_model': True,
+        'verbose': True,
+        'show_progress': True,
     },
     "base_model_linreg": {
         "skip_training": False,

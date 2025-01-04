@@ -20,6 +20,7 @@ def train_laplace_approximation(
         batch_size=20,
         random_seed=42,
         verbose=True,
+        show_progress=True,
 ):
     # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
     #  script)?
@@ -35,8 +36,10 @@ def train_laplace_approximation(
 
     log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
     hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
-    iterable = tqdm(range(n_iter)) if verbose else range(n_iter)
-    for _ in iterable:
+    epochs = tqdm(range(n_iter)) if show_progress else range(n_iter)
+    for epoch in epochs:
+        if verbose and not show_progress:
+            logging.info(f'epoch {epoch}/{n_iter}')
         hyper_optimizer.zero_grad()
         neg_marglik = -model.log_marginal_likelihood(log_prior.exp(), log_sigma.exp())
         neg_marglik.backward()
