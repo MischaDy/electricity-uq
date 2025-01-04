@@ -343,19 +343,19 @@ def make_tensor_contiguous(tensor: 'torch.Tensor'):
     return tensor.contiguous()
 
 
-def make_tensors_contiguous(*tensors):
+def make_tensors_contiguous(*tensors: 'torch.Tensor'):
     return map(make_tensor_contiguous, tensors)
 
 
-def preprocess_array(array: np.ndarray):
+def preprocess_array_to_tensor(array: np.ndarray) -> 'torch.Tensor':
     array = np_array_to_tensor(array)
     array = object_to_cuda(array)
     array = make_tensor_contiguous(array)
     return array
 
 
-def preprocess_arrays(*arrays: np.ndarray):
-    return map(preprocess_array, arrays)
+def preprocess_arrays_to_tensors(*arrays: np.ndarray):
+    return map(preprocess_array_to_tensor, arrays)
 
 
 def get_train_loader(X_train: 'torch.Tensor', y_train: 'torch.Tensor', batch_size: int):

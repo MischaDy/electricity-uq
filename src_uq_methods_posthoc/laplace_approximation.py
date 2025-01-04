@@ -29,7 +29,7 @@ def train_laplace_approximation(
 
     # todo: use validation data better(?)
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
-    X_train, y_train = misc_helpers.preprocess_arrays(X_train, y_train)
+    X_train, y_train = misc_helpers.preprocess_arrays_to_tensors(X_train, y_train)
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     model = la_instantiator(base_model_nn)
     model.fit(train_loader)
@@ -49,7 +49,7 @@ def train_laplace_approximation(
 
 def predict_with_laplace_approximation(model, X_pred: np.ndarray, quantiles: list):
     logging.info('predicting...')
-    X_pred = misc_helpers.preprocess_array(X_pred)
+    X_pred = misc_helpers.preprocess_array_to_tensor(X_pred)
     f_mu, f_var = model(X_pred)
     f_mu = misc_helpers.tensor_to_np_array(f_mu.squeeze())
     f_sigma = misc_helpers.tensor_to_np_array(f_var.squeeze().sqrt())

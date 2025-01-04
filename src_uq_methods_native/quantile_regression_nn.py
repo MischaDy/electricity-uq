@@ -45,7 +45,7 @@ class QR_NN(torch.nn.Module):
         ])
         self.layer_stack = torch.nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor, as_dict=False):
+    def forward(self, x: torch.Tensor, as_dict=False) -> torch.Tensor | dict[float, torch.Tensor]:
         result = self.layer_stack(x)
         if as_dict:
             result = {quantile: result[:, i]
@@ -160,7 +160,7 @@ def train_qr_nn(
     logging.info('setup')
     torch.manual_seed(random_seed)
 
-    X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays(X_train, y_train, X_val, y_val)
+    X_train, y_train, X_val, y_val = misc_helpers.preprocess_arrays_to_tensors(X_train, y_train, X_val, y_val)
 
     dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
     quantiles = sorted(quantiles)
@@ -219,8 +219,8 @@ def train_qr_nn(
     return model
 
 
-def predict_with_qr_nn(model, X_pred):
-    X_pred = misc_helpers.preprocess_array(X_pred)
+def predict_with_qr_nn(model: QR_NN, X_pred: np.array):
+    X_pred = misc_helpers.preprocess_array_to_tensor(X_pred)
     with torch.no_grad():
         y_quantiles_dict = model(X_pred, as_dict=True)
     y_quantiles = np.array(list(y_quantiles_dict.values())).T

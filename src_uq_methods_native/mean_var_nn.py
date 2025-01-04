@@ -161,7 +161,7 @@ def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.nda
 
 
 def predict_with_mvnn(model, X_pred, quantiles):
-    X_pred = misc_helpers.preprocess_array(X_pred)
+    X_pred = misc_helpers.preprocess_array_to_tensor(X_pred)
     with torch.no_grad():
         y_pred, y_var = model(X_pred)
     y_pred, y_var = misc_helpers.tensors_to_np_arrays(y_pred, y_var)
