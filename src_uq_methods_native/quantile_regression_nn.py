@@ -223,6 +223,10 @@ def predict_with_qr_nn(model: QR_NN, X_pred: np.array):
     X_pred = misc_helpers.preprocess_array_to_tensor(X_pred)
     with torch.no_grad():
         y_quantiles_dict = model(X_pred, as_dict=True)
+        y_quantiles_dict = {
+            quantile: misc_helpers.tensor_to_np_array(tensor)
+            for quantile, tensor in y_quantiles_dict.items()
+        }
     y_quantiles = np.array(list(y_quantiles_dict.values())).T
     y_pred = y_quantiles_dict[0.5]
     y_std = misc_helpers.stds_from_quantiles(y_quantiles)
