@@ -106,12 +106,12 @@ def main():
             print('\tshape:', arr.shape)
             print('\tcontent', arr[:5])
         if PLOT:
-            plot(X, y, y_pred, y_quantiles)
+            plot(X, y, y_pred, y_quantiles, filename=f'temp_plot_od{output_dim}.png')
         print(f'done with output_dim={output_dim}.')
     print('end')
 
 
-def plot(X, y, y_pred, y_quantiles):
+def plot(X, y, y_pred, y_quantiles, filename):
     print('plot')
     x_plot = np.arange(X.shape[0])
     ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1]
@@ -128,6 +128,7 @@ def plot(X, y, y_pred, y_quantiles):
         label='quantiles',
     )
     ax.legend()
+    plt.savefig(filename)
     plt.show(block=True)
 
 
