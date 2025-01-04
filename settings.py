@@ -42,8 +42,8 @@ METHOD_WHITELIST = [
     # 'base_model_nn',
     # 'base_model_rf',
     'native_gpytorch',
-    'native_mvnn',
-    'native_quantile_regression_nn',
+    # 'native_mvnn',
+    # 'native_quantile_regression_nn',
     # 'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
 ]
