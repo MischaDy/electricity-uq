@@ -169,10 +169,14 @@ def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
             y_pred = f_pred.mean
             y_std = f_pred.stddev
             y_pred, y_std = misc_helpers.tensors_to_np_arrays(y_pred, y_std)
+            y_pred, y_std = misc_helpers.make_arrs_2d(y_pred, y_std)
             y_quantiles = misc_helpers.quantiles_gaussian(quantiles, y_pred, y_std)
 
             y_preds_all.append(y_pred)
             y_stds_all.append(y_std)
             y_quantiles_all.append(y_quantiles)
-    # return y_pred, y_quantiles, y_std
-    return y_preds_all, y_stds_all, y_quantiles_all  # todo: how to stack output correctly?
+
+    y_pred = np.vstack(y_preds_all).squeeze()
+    y_std = np.vstack(y_stds_all).squeeze()
+    y_quantiles = np.vstack(y_quantiles_all)
+    return y_pred, y_std, y_quantiles  # todo: how to stack output correctly?
