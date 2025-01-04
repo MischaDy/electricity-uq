@@ -673,6 +673,23 @@ def update_training_flags():
             method_kwargs['skip_training'] = True
 
 
+def update_run_size_setup():
+    assert not (settings.DO_BIG_RUN and settings.DO_SMALL_RUN)
+
+    if settings.DO_BIG_RUN:
+        settings.DATA_FILEPATH = 'data/data_2015_2018.pkl'  # 'data/data_1600.pkl'
+        settings.N_POINTS_PER_GROUP = None
+        settings.TRAIN_YEARS = (2016, 2017)
+        settings.VAL_YEARS = (2017, 2018)
+        settings.TEST_YEARS = (2018, 2019)
+    elif settings.DO_SMALL_RUN:
+        settings.DATA_FILEPATH = 'data/data_1600.pkl'
+        settings.N_POINTS_PER_GROUP = 800
+        settings.TRAIN_YEARS = None
+        settings.VAL_YEARS = None
+        settings.TEST_YEARS = None
+
+
 def check_method_kwargs_dict(class_, method_kwargs_dict):
     logging.info('checking kwargs dict...')
     from inspect import signature
@@ -694,6 +711,7 @@ def main():
     logging.info('running main pipeline...')
     logging.info('running preliminary checks/setup...')
     check_method_kwargs_dict(UQ_Comparison_Pipeline, settings.METHODS_KWARGS)
+    update_run_size_setup()
     update_training_flags()
     # todo: check filename parts dict!
 
