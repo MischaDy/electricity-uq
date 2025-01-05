@@ -189,7 +189,7 @@ class IO_Helper:
         else:
             ext = os.path.splitext(filename)[-1]
             if ext not in {'png', 'jpeg', 'jpg'}:
-                logging.info(f'filename {filename} had no extension. saving as PNG')
+                logging.info(f"filename '{filename}' had no extension. saving as PNG")
                 filename += '.png'
         path = self._get_plot_savepath(filename)
         plt.savefig(path)
