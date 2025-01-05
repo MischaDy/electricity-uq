@@ -4,8 +4,8 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-DO_BIG_RUN = False
-DO_SMALL_RUN = True
+DO_BIG_RUN = True
+DO_SMALL_RUN = False
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -129,7 +129,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": True,
-        "n_iter": 10,
+        "n_iter": 100,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
