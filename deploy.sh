@@ -6,8 +6,8 @@
 #SBATCH --partition=2080-galvani  # Partition to submit to
 #SBATCH --gres=gpu:1              # optionally type and number of gpus
 #SBATCH --mem=1G                  # Memory pool for all cores (see also --mem-per-cpu)
-#SBATCH --output=logs/job_%j.out  # File to which STDOUT will be written
-#SBATCH --error=logs/job_%j.err   # File to which STDERR will be written
+#SBATCH --output=logs/job.out     # File to which STDOUT will be written
+#SBATCH --error=logs/job.err      # File to which STDERR will be written
 #SBATCH --mail-type=END,FAIL      # Type of email notification- BEGIN,END,FAIL,ALL
 #SBATCH --mail-user=mikhail.dubovoy@student.uni-tuebingen.de  # Email to which notifications will be sent
 
