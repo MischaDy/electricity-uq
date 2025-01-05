@@ -83,7 +83,7 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 20,
+        'n_iter': 300,
         'lr': 1e-2,
         'use_scheduler': True,
         'lr_patience': 30,
