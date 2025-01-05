@@ -736,7 +736,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         logging.info('plotting full plot...')
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=scaler_y)
+        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=None)
         x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
         ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
         ax.legend()
