@@ -147,6 +147,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
+        logging.info(f'saving model in path {path}')
         with open(path, "wb") as file:
             # noinspection PyTypeChecker
             pickle.dump(model, file, protocol=pickle.HIGHEST_PROTOCOL)
