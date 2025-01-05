@@ -94,14 +94,14 @@ def train_gpytorch(
             loss.backward()
             optimizer.step()
     
-            if use_scheduler or show_losses_plot:
-                model.eval()
-                likelihood.eval()
-                with torch.no_grad(), gpytorch.settings.memory_efficient(True):
-                    y_pred_batch = model(X_val)
-                    val_loss = -mll(y_pred_batch, y_val).sum()
-                    val_losses.append(val_loss.item())
-                scheduler.step(val_loss)
+        if use_scheduler or show_losses_plot:
+            model.eval()
+            likelihood.eval()
+            with torch.no_grad(), gpytorch.settings.memory_efficient(True):
+                y_pred_batch = model(X_val)
+                val_loss = -mll(y_pred_batch, y_val).sum()
+                val_losses.append(val_loss.item())
+            scheduler.step(val_loss)
 
     misc_helpers.plot_nn_losses(
         train_losses,
