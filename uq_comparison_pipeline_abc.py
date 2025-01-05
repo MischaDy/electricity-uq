@@ -73,6 +73,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             should_plot_base_results=True,
             should_plot_uq_results=True,
             should_plot_base_results_partial=True,
+            should_plot_uq_results_partial=True,
             should_show_plots=True,
             should_save_plots=True,
             skip_base_model_copy=False,
@@ -83,6 +84,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         Output is produced over the whole of X!
 
         :param should_plot_base_results_partial:
+        :param should_plot_uq_results_partial:
         :param use_filesave_prefix: if True, save files with prefix "n{number of samples}"
         :param should_save_results:
         :param should_plot_base_results:
@@ -185,6 +187,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_test=y_test,
             quantiles=quantiles,
             scaler_y=scaler_y,
+            partial_plots=should_plot_uq_results_partial,
             show_plots=should_show_plots,
             save_plots=should_save_plots,
         )
@@ -570,9 +573,11 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             show_plots=True,
             save_plots=True,
             n_stds=2,
+            partial_plots=True,
     ):
         """
 
+        :param partial_plots:
         :param y_val:
         :param X_val:
         :param X_train:
@@ -605,6 +610,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 method_name=method_name,
                 scaler_y=scaler_y,
                 n_stds=n_stds,
+                partial_plots=partial_plots,
                 show_plots=show_plots,
                 save_plot=save_plots,
             )
@@ -624,11 +630,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             method_name,
             scaler_y=None,
             n_stds=2,
+            partial_plots=True,
             show_plots=True,
             save_plot=True,
     ):
         """
 
+        :param partial_plots:
         :param y_val:
         :param X_val:
         :param X_train:
@@ -648,6 +656,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         """
         from matplotlib import pyplot as plt
 
+        if scaler_y is not None:
+            y_train, y_val, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_val, y_test)
+
         drawing_quantiles = y_quantiles is not None
         if drawing_quantiles:
             ci_low, ci_high = (
@@ -658,8 +669,62 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         else:
             ci_low, ci_high = y_pred - n_stds * y_std, y_pred + n_stds * y_std
 
+        n_samples_to_plot = 1600  # about 2 weeks
+        n_samples_train, n_samples_test = X_train.shape[0], X_test.shape[0]
+        if n_samples_train < n_samples_to_plot or n_samples_test < n_samples_to_plot:
+            logging.info(f'not enough train ({n_samples_train}) and/or test ({n_samples_test}) samples for'
+                         f' partial plots (must be >= {n_samples_to_plot} each) - skipping.')
+            partial_plots = False
+        if partial_plots:
+            logging.info('plotting partial plots...')
+            y_pred_train = y_pred[:n_samples_to_plot]
+            start_test = y_train.shape[0] + y_val.shape[0]
+            y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
+            self._plot_base_partial(y_train, y_pred_train, 'train', base_model_name,
+                                    n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
+            self._plot_base_partial(y_train, y_pred_test, 'test', base_model_name,
+                                    n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
+
+
+        if partial_plots:
+            fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+
+            start_train, end_train = 0, X_train.shape[0]
+            start_val, end_val = end_train, end_train + X_val.shape[0]
+            start_test, end_test = end_val, end_val + X_test.shape[0]
+
+            x_plot_train = np.arange(start_train, end_train)
+            x_plot_val = np.arange(start_val, end_val)
+            x_plot_test = np.arange(start_test, end_test)
+
+            ax.plot(x_plot_train, y_train, label='train data', color="black", linestyle='dashed')
+            ax.plot(x_plot_val, y_val, label='val data', color="purple", linestyle='dashed')
+            ax.plot(x_plot_test, y_test, label='test data', color="blue", linestyle='dashed')
+
+            x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
+            ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
+            # noinspection PyUnboundLocalVariable
+            label = rf'{100 * drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'
+            ax.fill_between(
+                x_plot_full.ravel(),
+                ci_low,
+                ci_high,
+                color="green",
+                alpha=0.2,
+                label=label,
+            )
+            ax.legend()
+            ax.set_xlabel("data")
+            ax.set_ylabel("target")
+            ax.set_title(method_name)
+            if save_plot:
+                self.io_helper.save_plot(method_name=method_name)
+            if show_plots:
+                plt.show(block=True)
+            plt.close(fig)
+
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax=ax, scaler_y=scaler_y)
+        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax=ax, scaler_y=None)
         x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
         ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
         # noinspection PyUnboundLocalVariable

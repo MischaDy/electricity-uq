@@ -750,6 +750,7 @@ def main():
         should_plot_base_results=settings.PLOT_BASE_RESULTS,
         should_plot_uq_results=settings.PLOT_UQ_RESULTS,
         should_plot_base_results_partial=settings.PLOT_BASE_RESULTS_PARTIAL,
+        should_plot_uq_results_partial=settings.PLOT_UQ_RESULTS_PARTIAL,
         should_show_plots=settings.SHOW_PLOTS,
         should_save_plots=settings.SAVE_PLOTS,
         should_save_results=settings.SHOULD_SAVE_RESULTS,
