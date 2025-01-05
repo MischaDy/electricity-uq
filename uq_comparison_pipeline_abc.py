@@ -693,11 +693,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             show_plots=True,
             save_plot=True,
             partial_plots=True,
-            full_plot=True,
     ):
         """
 
-        :param full_plot:
         :param partial_plots:
         :param y_val:
         :param X_val:
@@ -712,10 +710,6 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param save_plot:
         :return:
         """
-        if not full_plot and not partial_plots:
-            logging.warning('neither full nor partial plots selected for base resutls - skipping entirely.')
-            return
-
         from matplotlib import pyplot as plt
 
         if scaler_y is not None:
@@ -733,24 +727,24 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             start_test = y_train.shape[0] + y_val.shape[0]
             y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
             self._plot_base_partial(y_train, y_pred_train, 'train', base_model_name,
-                                    n_samples_to_plot=n_samples_to_plot)
+                                    n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
             self._plot_base_partial(y_train, y_pred_test, 'test', base_model_name,
-                                    n_samples_to_plot=n_samples_to_plot)
+                                    n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
 
-        if full_plot:
-            fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-            self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=scaler_y)
-            x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
-            ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
-            ax.legend()
-            ax.set_xlabel("data")
-            ax.set_ylabel("target")
-            ax.set_title(base_model_name)
-            if save_plot:
-                self.io_helper.save_plot(method_name=base_model_name)
-            if show_plots:
-                plt.show(block=True)
-            plt.close(fig)
+        logging.info('plotting full plot...')
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=scaler_y)
+        x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
+        ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
+        ax.legend()
+        ax.set_xlabel("data")
+        ax.set_ylabel("target")
+        ax.set_title(base_model_name)
+        if save_plot:
+            self.io_helper.save_plot(method_name=base_model_name)
+        if show_plots:
+            plt.show(block=True)
+        plt.close(fig)
 
     def _plot_base_partial(self, y_true, y_pred, y_true_label: Literal['train', 'test'], base_model_name,
                            n_samples_to_plot=1600, save_plot=True, show_plot=True):
