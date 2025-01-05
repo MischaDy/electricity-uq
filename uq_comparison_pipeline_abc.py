@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import copy
 from functools import partial
-from typing import Any, Generator, Callable, TYPE_CHECKING
+from typing import Any, Generator, Callable, TYPE_CHECKING, Literal
 
 from helpers.io_helper import IO_Helper
 from helpers import misc_helpers
@@ -692,9 +692,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             scaler_y=None,
             show_plots=True,
             save_plot=True,
+            partial_plots=True,
+            full_plot=True,
     ):
         """
 
+        :param full_plot:
+        :param partial_plots:
         :param y_val:
         :param X_val:
         :param X_train:
@@ -708,19 +712,71 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param save_plot:
         :return:
         """
+        if not full_plot and not partial_plots:
+            logging.warning('neither full nor partial plots selected for base resutls - skipping entirely.')
+            return
+
         from matplotlib import pyplot as plt
 
+        if scaler_y is not None:
+            y_train, y_val, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_val, y_test)
+
+        n_samples_to_plot = 1600  # about 2 weeks
+        if X_train.shape[0] < n_samples_to_plot or X_test.shape[0] < n_samples_to_plot:
+            partial_plots = False
+        if partial_plots:
+            y_pred_train = y_pred[:n_samples_to_plot]
+            start_test = y_train.shape[0] + y_val.shape[0]
+            y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
+            self._plot_base_partial(y_train, y_pred_train, 'train', base_model_name,
+                                    n_samples_to_plot=n_samples_to_plot)
+            self._plot_base_partial(y_train, y_pred_test, 'test', base_model_name,
+                                    n_samples_to_plot=n_samples_to_plot)
+
+        if full_plot:
+            fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+            self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=scaler_y)
+            x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
+            ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
+            ax.legend()
+            ax.set_xlabel("data")
+            ax.set_ylabel("target")
+            ax.set_title(base_model_name)
+            if save_plot:
+                self.io_helper.save_plot(method_name=base_model_name)
+            if show_plots:
+                plt.show(block=True)
+            plt.close(fig)
+
+    def _plot_base_partial(self, y_true, y_pred, y_true_label: Literal['train', 'test'], base_model_name,
+                           n_samples_to_plot=1600, save_plot=True, show_plot=True):
+        """
+        plot first two weeks (by default) of training/test data
+
+        :param y_true:
+        :param y_pred:
+        :param y_true_label:
+        :param base_model_name:
+        :param n_samples_to_plot:
+        :param save_plot:
+        :param show_plot:
+        :return:
+        """
+        from matplotlib import pyplot as plt
+
+        x_plot = np.arange(n_samples_to_plot)
+        color = "black" if y_true_label == 'train' else 'blue'
+
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
-        self._plot_data_worker(X_train, y_train, X_val, y_val, X_test, y_test, ax, scaler_y=scaler_y)
-        x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
-        ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
+        ax.plot(x_plot, y_true[:n_samples_to_plot], label=f'{y_true_label} data', color=color, linestyle='dashed')
+        ax.plot(x_plot, y_pred, label="point prediction", color="green")
         ax.legend()
         ax.set_xlabel("data")
         ax.set_ylabel("target")
-        ax.set_title(base_model_name)
+        ax.set_title(f'{base_model_name} ({n_samples_to_plot} points)')
         if save_plot:
-            self.io_helper.save_plot(method_name=base_model_name)
-        if show_plots:
+            self.io_helper.save_plot(method_name=base_model_name, infix=f'p{n_samples_to_plot}_{y_true_label}')
+        if show_plot:
             plt.show(block=True)
         plt.close(fig)
 
