@@ -1,0 +1,361 @@
+INFO:root:running main pipeline...
+INFO:root:running preliminary checks/setup...
+INFO:root:checking kwargs dict...
+INFO:root:updating training flags...
+INFO:root:loading data...
+INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO:numexpr.utils:NumExpr defaulting to 16 threads.
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)
+INFO:root:data shapes: (35136, 8), (35040, 8), (35040, 8);  (35136, 1), (35040, 1), (35040, 1)
+INFO:root:training base models...
+INFO:root:training base_model_linreg...
+INFO:root:training base_model_rf...
+INFO:root:training base_model_nn...
+INFO:root:saving base model results...
+INFO:root:plotting base model results...
+INFO:root:computing base model metrics...
+INFO:root:running posthoc UQ methods...
+INFO:root:No posthoc methods found and/or whitelisted. Skipping...
+INFO:root:saving posthoc UQ results...
+INFO:root:plotting posthoc results...
+INFO:root:running native UQ methods...
+INFO:root:running native methods...
+INFO:root:running native_gpytorch...
+INFO:root:preparing data..
+INFO:root:mapping data to device and making it contiguous...
+INFO:root:training from scratch...
+INFO:root:running function train_gpytorch (with timing)...
+INFO:root:Planning to run on 2 GPUs.
+INFO:root:setup dataset
+INFO:root:setup models
+INFO:root:setup meta-models
+INFO:root:start proper training...
+INFO:root:epoch 1/300
+INFO:root:epoch 2/300
+INFO:root:epoch 3/300
+INFO:root:epoch 4/300
+INFO:root:epoch 5/300
+INFO:root:epoch 6/300
+INFO:root:epoch 7/300
+INFO:root:epoch 8/300
+INFO:root:epoch 9/300
+INFO:root:epoch 10/300
+INFO:root:epoch 11/300
+INFO:root:epoch 12/300
+INFO:root:epoch 13/300
+INFO:root:epoch 14/300
+INFO:root:epoch 15/300
+INFO:root:epoch 16/300
+INFO:root:epoch 17/300
+INFO:root:epoch 18/300
+INFO:root:epoch 19/300
+INFO:root:epoch 20/300
+INFO:root:epoch 21/300
+INFO:root:epoch 22/300
+INFO:root:epoch 23/300
+INFO:root:epoch 24/300
+INFO:root:epoch 25/300
+INFO:root:epoch 26/300
+INFO:root:epoch 27/300
+INFO:root:epoch 28/300
+INFO:root:epoch 29/300
+INFO:root:epoch 30/300
+INFO:root:epoch 31/300
+INFO:root:epoch 32/300
+INFO:root:epoch 33/300
+INFO:root:epoch 34/300
+INFO:root:epoch 35/300
+INFO:root:epoch 36/300
+INFO:root:epoch 37/300
+INFO:root:epoch 38/300
+INFO:root:epoch 39/300
+INFO:root:epoch 40/300
+INFO:root:epoch 41/300
+INFO:root:epoch 42/300
+INFO:root:epoch 43/300
+INFO:root:epoch 44/300
+INFO:root:epoch 45/300
+INFO:root:epoch 46/300
+INFO:root:epoch 47/300
+INFO:root:epoch 48/300
+INFO:root:epoch 49/300
+INFO:root:epoch 50/300
+INFO:root:epoch 51/300
+INFO:root:epoch 52/300
+INFO:root:epoch 53/300
+INFO:root:epoch 54/300
+INFO:root:epoch 55/300
+INFO:root:epoch 56/300
+INFO:root:epoch 57/300
+INFO:root:epoch 58/300
+INFO:root:epoch 59/300
+INFO:root:epoch 60/300
+INFO:root:epoch 61/300
+INFO:root:epoch 62/300
+INFO:root:epoch 63/300
+INFO:root:epoch 64/300
+INFO:root:epoch 65/300
+INFO:root:epoch 66/300
+INFO:root:epoch 67/300
+INFO:root:epoch 68/300
+INFO:root:epoch 69/300
+INFO:root:epoch 70/300
+INFO:root:epoch 71/300
+INFO:root:epoch 72/300
+INFO:root:epoch 73/300
+INFO:root:epoch 74/300
+INFO:root:epoch 75/300
+INFO:root:epoch 76/300
+INFO:root:epoch 77/300
+INFO:root:epoch 78/300
+INFO:root:epoch 79/300
+INFO:root:epoch 80/300
+INFO:root:epoch 81/300
+INFO:root:epoch 82/300
+INFO:root:epoch 83/300
+INFO:root:epoch 84/300
+INFO:root:epoch 85/300
+INFO:root:epoch 86/300
+INFO:root:epoch 87/300
+INFO:root:epoch 88/300
+INFO:root:epoch 89/300
+INFO:root:epoch 90/300
+INFO:root:epoch 91/300
+INFO:root:epoch 92/300
+INFO:root:epoch 93/300
+INFO:root:epoch 94/300
+INFO:root:epoch 95/300
+INFO:root:epoch 96/300
+INFO:root:epoch 97/300
+INFO:root:epoch 98/300
+INFO:root:epoch 99/300
+INFO:root:epoch 100/300
+INFO:root:epoch 101/300
+INFO:root:epoch 102/300
+INFO:root:epoch 103/300
+INFO:root:epoch 104/300
+INFO:root:epoch 105/300
+INFO:root:epoch 106/300
+INFO:root:epoch 107/300
+INFO:root:epoch 108/300
+INFO:root:epoch 109/300
+INFO:root:epoch 110/300
+INFO:root:epoch 111/300
+INFO:root:epoch 112/300
+INFO:root:epoch 113/300
+INFO:root:epoch 114/300
+INFO:root:epoch 115/300
+INFO:root:epoch 116/300
+INFO:root:epoch 117/300
+INFO:root:epoch 118/300
+INFO:root:epoch 119/300
+INFO:root:epoch 120/300
+INFO:root:epoch 121/300
+INFO:root:epoch 122/300
+INFO:root:epoch 123/300
+INFO:root:epoch 124/300
+INFO:root:epoch 125/300
+INFO:root:epoch 126/300
+INFO:root:epoch 127/300
+INFO:root:epoch 128/300
+INFO:root:epoch 129/300
+INFO:root:epoch 130/300
+INFO:root:epoch 131/300
+INFO:root:epoch 132/300
+INFO:root:epoch 133/300
+INFO:root:epoch 134/300
+INFO:root:epoch 135/300
+INFO:root:epoch 136/300
+INFO:root:epoch 137/300
+INFO:root:epoch 138/300
+INFO:root:epoch 139/300
+INFO:root:epoch 140/300
+INFO:root:epoch 141/300
+INFO:root:epoch 142/300
+INFO:root:epoch 143/300
+INFO:root:epoch 144/300
+INFO:root:epoch 145/300
+INFO:root:epoch 146/300
+INFO:root:epoch 147/300
+INFO:root:epoch 148/300
+INFO:root:epoch 149/300
+INFO:root:epoch 150/300
+INFO:root:epoch 151/300
+INFO:root:epoch 152/300
+INFO:root:epoch 153/300
+INFO:root:epoch 154/300
+INFO:root:epoch 155/300
+INFO:root:epoch 156/300
+INFO:root:epoch 157/300
+INFO:root:epoch 158/300
+INFO:root:epoch 159/300
+INFO:root:epoch 160/300
+INFO:root:epoch 161/300
+INFO:root:epoch 162/300
+INFO:root:epoch 163/300
+INFO:root:epoch 164/300
+INFO:root:epoch 165/300
+INFO:root:epoch 166/300
+INFO:root:epoch 167/300
+INFO:root:epoch 168/300
+INFO:root:epoch 169/300
+INFO:root:epoch 170/300
+INFO:root:epoch 171/300
+INFO:root:epoch 172/300
+INFO:root:epoch 173/300
+INFO:root:epoch 174/300
+INFO:root:epoch 175/300
+INFO:root:epoch 176/300
+INFO:root:epoch 177/300
+INFO:root:epoch 178/300
+INFO:root:epoch 179/300
+INFO:root:epoch 180/300
+INFO:root:epoch 181/300
+INFO:root:epoch 182/300
+INFO:root:epoch 183/300
+INFO:root:epoch 184/300
+INFO:root:epoch 185/300
+INFO:root:epoch 186/300
+INFO:root:epoch 187/300
+INFO:root:epoch 188/300
+INFO:root:epoch 189/300
+INFO:root:epoch 190/300
+INFO:root:epoch 191/300
+INFO:root:epoch 192/300
+INFO:root:epoch 193/300
+INFO:root:epoch 194/300
+INFO:root:epoch 195/300
+INFO:root:epoch 196/300
+INFO:root:epoch 197/300
+INFO:root:epoch 198/300
+INFO:root:epoch 199/300
+INFO:root:epoch 200/300
+INFO:root:epoch 201/300
+INFO:root:epoch 202/300
+INFO:root:epoch 203/300
+INFO:root:epoch 204/300
+INFO:root:epoch 205/300
+INFO:root:epoch 206/300
+INFO:root:epoch 207/300
+INFO:root:epoch 208/300
+INFO:root:epoch 209/300
+INFO:root:epoch 210/300
+INFO:root:epoch 211/300
+INFO:root:epoch 212/300
+INFO:root:epoch 213/300
+INFO:root:epoch 214/300
+INFO:root:epoch 215/300
+INFO:root:epoch 216/300
+INFO:root:epoch 217/300
+INFO:root:epoch 218/300
+INFO:root:epoch 219/300
+INFO:root:epoch 220/300
+INFO:root:epoch 221/300
+INFO:root:epoch 222/300
+INFO:root:epoch 223/300
+INFO:root:epoch 224/300
+INFO:root:epoch 225/300
+INFO:root:epoch 226/300
+INFO:root:epoch 227/300
+INFO:root:epoch 228/300
+INFO:root:epoch 229/300
+INFO:root:epoch 230/300
+INFO:root:epoch 231/300
+INFO:root:epoch 232/300
+INFO:root:epoch 233/300
+INFO:root:epoch 234/300
+INFO:root:epoch 235/300
+INFO:root:epoch 236/300
+INFO:root:epoch 237/300
+INFO:root:epoch 238/300
+INFO:root:epoch 239/300
+INFO:root:epoch 240/300
+INFO:root:epoch 241/300
+INFO:root:epoch 242/300
+INFO:root:epoch 243/300
+INFO:root:epoch 244/300
+INFO:root:epoch 245/300
+INFO:root:epoch 246/300
+INFO:root:epoch 247/300
+INFO:root:epoch 248/300
+INFO:root:epoch 249/300
+INFO:root:epoch 250/300
+INFO:root:epoch 251/300
+INFO:root:epoch 252/300
+INFO:root:epoch 253/300
+INFO:root:epoch 254/300
+INFO:root:epoch 255/300
+INFO:root:epoch 256/300
+INFO:root:epoch 257/300
+INFO:root:epoch 258/300
+INFO:root:epoch 259/300
+INFO:root:epoch 260/300
+INFO:root:epoch 261/300
+INFO:root:epoch 262/300
+INFO:root:epoch 263/300
+INFO:root:epoch 264/300
+INFO:root:epoch 265/300
+INFO:root:epoch 266/300
+INFO:root:epoch 267/300
+INFO:root:epoch 268/300
+INFO:root:epoch 269/300
+INFO:root:epoch 270/300
+INFO:root:epoch 271/300
+INFO:root:epoch 272/300
+INFO:root:epoch 273/300
+INFO:root:epoch 274/300
+INFO:root:epoch 275/300
+INFO:root:epoch 276/300
+INFO:root:epoch 277/300
+INFO:root:epoch 278/300
+INFO:root:epoch 279/300
+INFO:root:epoch 280/300
+INFO:root:epoch 281/300
+INFO:root:epoch 282/300
+INFO:root:epoch 283/300
+INFO:root:epoch 284/300
+INFO:root:epoch 285/300
+INFO:root:epoch 286/300
+INFO:root:epoch 287/300
+INFO:root:epoch 288/300
+INFO:root:epoch 289/300
+INFO:root:epoch 290/300
+INFO:root:epoch 291/300
+INFO:root:epoch 292/300
+INFO:root:epoch 293/300
+INFO:root:epoch 294/300
+INFO:root:epoch 295/300
+INFO:root:epoch 296/300
+INFO:root:epoch 297/300
+INFO:root:epoch 298/300
+INFO:root:epoch 299/300
+INFO:root:epoch 300/300
+INFO:root:filename train_gpytorch_losses had no extension. saving as PNG
+INFO:root:Finished training on 35136 data points using 2 GPUs.
+INFO:root:function train_gpytorch is done. [took 348.1386871621944s]
+INFO:root:saving model...
+INFO:root:saving native UQ results...
+INFO:root:plotting native results...
+INFO:root:computing and saving UQ metrics...
+INFO:root:posthoc...
+INFO:root:native...
