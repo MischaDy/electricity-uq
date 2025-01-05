@@ -4,8 +4,8 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-DO_BIG_RUN = False
-DO_SMALL_RUN = True
+DO_BIG_RUN = True
+DO_SMALL_RUN = False
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -83,7 +83,7 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 100,
+        'n_iter': 20,
         'lr': 1e-2,
         'use_scheduler': True,
         'lr_patience': 30,
