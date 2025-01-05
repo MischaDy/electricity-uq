@@ -81,9 +81,9 @@ def train_gpytorch(
     if show_progress:
         epochs = tqdm(epochs)
     for epoch in epochs:
+        if not show_progress:
+            logging.info(f'epoch {epoch}/{n_iter}')
         for X_train_batch, y_train_batch in train_loader:
-            if not show_progress:
-                logging.info(f'epoch {epoch}/{n_iter}')
             model.train()
             likelihood.train()
             optimizer.zero_grad()
