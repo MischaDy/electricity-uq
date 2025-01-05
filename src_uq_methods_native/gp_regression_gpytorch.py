@@ -80,6 +80,7 @@ def train_gpytorch(
     epochs = range(1, n_iter+1)
     if show_progress:
         epochs = tqdm(epochs)
+        train_loader = tqdm(train_loader)
     for epoch in epochs:
         if not show_progress:
             logging.info(f'epoch {epoch}/{n_iter}')
