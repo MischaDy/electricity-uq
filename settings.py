@@ -86,7 +86,7 @@ METHODS_KWARGS = {
         'n_iter': 300,
         'lr': 1e-2,
         'use_scheduler': True,
-        'lr_patience': 30,
+        'lr_patience': 15,
         'lr_reduction_factor': 0.5,
         'show_progress': False,
         'show_plots': True,
