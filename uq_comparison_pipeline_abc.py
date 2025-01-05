@@ -70,8 +70,9 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             *,
             should_save_results=True,
             should_plot_data=True,
-            should_plot_uq_results=True,
             should_plot_base_results=True,
+            should_plot_uq_results=True,
+            should_plot_base_results_partial=True,
             should_show_plots=True,
             should_save_plots=True,
             skip_base_model_copy=False,
@@ -81,6 +82,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         ...
         Output is produced over the whole of X!
 
+        :param should_plot_base_results_partial:
         :param use_filesave_prefix: if True, save files with prefix "n{number of samples}"
         :param should_save_results:
         :param should_plot_base_results:
@@ -144,6 +146,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                     base_model_name=base_model_name,
                     show_plots=should_show_plots,
                     save_plot=should_save_plots,
+                    partial_plots=should_plot_base_results_partial,
                 )
 
         logging.info("computing base model metrics...")
