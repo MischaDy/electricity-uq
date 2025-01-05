@@ -14,8 +14,8 @@ class IO_Helper:
     def __init__(
             self,
             base_folder,
-            methods_kwargs,
-            filename_parts: dict[tuple[list[tuple[str, str]], str]],  # todo: make optional?
+            methods_kwargs=None,
+            filename_parts: dict[tuple[list[tuple[str, str]], str]] = None,  # todo: make optional?
             filesave_prefix=None,
             arrays_folder="arrays",
             models_folder="models",
@@ -42,10 +42,15 @@ class IO_Helper:
         :param sep:
         :param filesave_prefix:
         """
-        self.filesave_prefix = filesave_prefix
+        warn_msg = 'IO_Helper param {} is None, so not all functionality will be available!'
+        if filename_parts is None:
+            logging.warning(warn_msg.format('filename_parts'))
+        if methods_kwargs is None:
+            logging.warning(warn_msg.format('methods_kwargs'))
         self.filename_parts = filename_parts
-        self.sep = sep
         self.methods_kwargs = methods_kwargs
+        self.filesave_prefix = filesave_prefix
+        self.sep = sep
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
         self.plots_folder = os.path.join(base_folder, plots_folder)
