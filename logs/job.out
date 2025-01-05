@@ -1,8 +1,8 @@
 -------- PYTHON OUTPUT ----------
 
 base_model_nn:
-	rmse: 5095.5537109375
-	smape_scaled: 0.05959214270114899
+	rmse: 1111.5126953125
+	smape_scaled: 0.06046774983406067
 
 optimal deterministic metrics:
 		rmse: 0.0
@@ -10,8 +10,8 @@ optimal deterministic metrics:
 
 base_model metrics:
 	base_model_nn:
-		rmse: 5095.5537109375
-		smape_scaled: 0.05959214270114899
+		rmse: 1111.5126953125
+		smape_scaled: 0.06046774983406067
 
 posthoc metrics:
 
