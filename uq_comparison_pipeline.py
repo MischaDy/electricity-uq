@@ -686,7 +686,7 @@ def update_run_size_setup():
     assert not (settings.DO_BIG_RUN and settings.DO_SMALL_RUN)
 
     if settings.DO_BIG_RUN:
-        settings.DATA_FILEPATH = 'data/data_2015_2018.pkl'  # 'data/data_1600.pkl'
+        settings.DATA_FILEPATH = 'data/data_2015_2018.pkl'
         settings.N_POINTS_PER_GROUP = None
         settings.TRAIN_YEARS = (2016, 2017)
         settings.VAL_YEARS = (2017, 2018)
@@ -697,6 +697,14 @@ def update_run_size_setup():
         settings.TRAIN_YEARS = None
         settings.VAL_YEARS = None
         settings.TEST_YEARS = None
+
+
+def update_progress_bar_settings():
+    if settings.SHOW_PROGRESS_BARS is not None:
+        for _, method_kwargs in settings.METHODS_KWARGS.items():
+            if 'show_progress_bar' not in method_kwargs:
+                continue
+            method_kwargs['show_progress_bar'] = settings.SHOW_PROGRESS_BARS
 
 
 def check_method_kwargs_dict(class_, method_kwargs_dict):
@@ -722,6 +730,7 @@ def main():
     check_method_kwargs_dict(UQ_Comparison_Pipeline, settings.METHODS_KWARGS)
     update_run_size_setup()
     update_training_flags()
+    update_progress_bar_settings()
     # todo: check filename parts dict!
 
     uq_comparer = UQ_Comparison_Pipeline(

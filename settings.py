@@ -29,6 +29,8 @@ PLOT_BASE_RESULTS = True
 SHOW_PLOTS = False
 SAVE_PLOTS = True
 
+SHOW_PROGRESS_BARS = False  # bool or None
+
 SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
 USE_FILESAVE_PREFIX = True
@@ -62,7 +64,7 @@ METHODS_KWARGS = {
         "frozen_var_value": 0.1,
         'show_losses_plot': False,
         'save_losses_plot': True,
-        'show_progress': False,
+        'show_progress_bar': False,
         'save_model': True,
     },
     "native_quantile_regression_nn": {
@@ -76,7 +78,7 @@ METHODS_KWARGS = {
         'use_scheduler': True,
         'lr_patience': 30,
         'regularization': 0,
-        'show_progress': False,
+        'show_progress_bar': False,
         'show_losses_plot': False,
         'save_losses_plot': True,
         'save_model': True,
@@ -88,7 +90,7 @@ METHODS_KWARGS = {
         'use_scheduler': True,
         'lr_patience': 15,
         'lr_reduction_factor': 0.5,
-        'show_progress': False,
+        'show_progress_bar': False,
         'show_plots': True,
         'show_losses_plot': False,
         'save_losses_plot': True,
@@ -105,7 +107,7 @@ METHODS_KWARGS = {
         "n_iter": 100,
         'save_model': True,
         'verbose': True,
-        'show_progress': False,
+        'show_progress_bar': False,
     },
     "base_model_linreg": {
         "skip_training": False,
