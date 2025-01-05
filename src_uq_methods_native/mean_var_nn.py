@@ -70,7 +70,7 @@ def train_mean_var_nn(
     train_var=True,
     frozen_var_value=0.5,
     loss_skip=10,
-    show_progress=True,
+    show_progress_bar=True,
     show_losses_plot=True,
     save_losses_plot=True,
     io_helper=None,
@@ -110,10 +110,10 @@ def train_mean_var_nn(
 
     train_losses, val_losses = [], []
     epochs = range(1, n_iter+1)
-    if show_progress:
+    if show_progress_bar:
         epochs = tqdm(epochs)
     for epoch in epochs:
-        if not show_progress:
+        if not show_progress_bar:
             logging.info(f'epoch {epoch}/{n_iter}')
         model.train()
         for X_train, y_train in train_loader:

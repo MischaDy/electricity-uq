@@ -336,7 +336,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             skip_training=True,
             save_model=True,
             verbose=True,
-            show_progress=True,
+            show_progress_bar=True,
     ):
         from src_uq_methods_posthoc.laplace_approximation import (
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
@@ -367,7 +367,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 batch_size=batch_size,
                 random_seed=random_seed,
                 verbose=verbose,
-                show_progress=show_progress,
+                show_progress_bar=show_progress_bar,
             )
             if save_model:
                 logging.info('saving model...')
@@ -393,7 +393,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             use_scheduler=True,
             lr_patience=30,
             regularization=0,
-            show_progress=True,
+            show_progress_bar=True,
             show_losses_plot=True,
             save_losses_plot=True,
             skip_training=True,
@@ -449,7 +449,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
                 io_helper=self.io_helper,
-                show_progress=show_progress,
+                show_progress_bar=show_progress_bar,
             )
             if save_model:
                 logging.info('saving model...')
@@ -478,7 +478,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             frozen_var_value=0.1,
             show_losses_plot=True,
             save_losses_plot=True,
-            show_progress=True,
+            show_progress_bar=True,
             skip_training=True,
             save_model=True,
     ):
@@ -523,7 +523,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "lr": lr,
                 "lr_patience": lr_patience,
                 "weight_decay": regularization,
-                'show_progress': show_progress,
+                'show_progress_bar': show_progress_bar,
                 "use_scheduler": True,
             }
             model = None
@@ -568,7 +568,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             use_scheduler=True,
             lr_patience=30,
             lr_reduction_factor=0.5,
-            show_progress=True,
+            show_progress_bar=True,
             show_plots=True,
             show_losses_plot=True,
             save_losses_plot=True,
@@ -623,7 +623,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 use_scheduler=use_scheduler,
                 lr_patience=lr_patience,
                 lr_reduction_factor=lr_reduction_factor,
-                show_progress=show_progress,
+                show_progress_bar=show_progress_bar,
                 show_plots=show_plots,
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,

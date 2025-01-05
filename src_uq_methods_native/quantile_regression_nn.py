@@ -127,7 +127,7 @@ def train_qr_nn(
     lr_patience=30,
     lr_reduction_factor=0.5,
     weight_decay=0.0,
-    show_progress=True,
+    show_progress_bar=True,
     show_plots=True,
     show_losses_plot=True,
     save_losses_plot=True,
@@ -151,7 +151,7 @@ def train_qr_nn(
     :param lr_patience:
     :param lr_reduction_factor:
     :param weight_decay:
-    :param show_progress:
+    :param show_progress_bar:
     :param save_losses_plot:
     :param loss_skip:
     :param use_scheduler:
@@ -184,11 +184,11 @@ def train_qr_nn(
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
     epochs = range(1, n_iter+1)
-    if show_progress:
+    if show_progress_bar:
         epochs = tqdm(epochs)
     logging.info('training...')
     for epoch in epochs:
-        if not show_progress:
+        if not show_progress_bar:
             logging.info(f'epoch {epoch}/{n_iter}')
         model.train()
         for X_train, y_train in train_loader:

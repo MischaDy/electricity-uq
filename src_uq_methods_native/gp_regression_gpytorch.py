@@ -43,7 +43,7 @@ def train_gpytorch(
         lr=1e-2,
         lr_patience=30,
         lr_reduction_factor=0.5,
-        show_progress=True,
+        show_progress_bar=True,
         show_plots=True,
         show_losses_plot=True,
         save_losses_plot=True,
@@ -78,11 +78,11 @@ def train_gpytorch(
     # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
     train_losses, val_losses = [], []
     epochs = range(1, n_iter+1)
-    if show_progress:
+    if show_progress_bar:
         epochs = tqdm(epochs)
         train_loader = tqdm(train_loader)
     for epoch in epochs:
-        if not show_progress:
+        if not show_progress_bar:
             logging.info(f'epoch {epoch}/{n_iter}')
         for X_train_batch, y_train_batch in train_loader:
             model.train()
