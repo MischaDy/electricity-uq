@@ -722,9 +722,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_train, y_val, y_test = misc_helpers.inverse_transform_ys(scaler_y, y_train, y_val, y_test)
 
         n_samples_to_plot = 1600  # about 2 weeks
-        if X_train.shape[0] < n_samples_to_plot or X_test.shape[0] < n_samples_to_plot:
+        n_samples_train, n_samples_test = X_train.shape[0], X_test.shape[0]
+        if n_samples_train < n_samples_to_plot or n_samples_test < n_samples_to_plot:
+            logging.info(f'not enough train ({n_samples_train}) and/or test ({n_samples_test}) samples for'
+                         f' partial plots (must be >= {n_samples_to_plot} each) - skipping.')
             partial_plots = False
         if partial_plots:
+            logging.info('plotting partial plots...')
             y_pred_train = y_pred[:n_samples_to_plot]
             start_test = y_train.shape[0] + y_val.shape[0]
             y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
