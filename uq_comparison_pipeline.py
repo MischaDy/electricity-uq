@@ -249,7 +249,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             y_pred_temp = model.predict(X_train[:1], as_np=False)
         model.set_output_dim(len(y_pred_temp.shape), orig=True)
         if save_model:
+            model.to('cpu')  # temp
             self.save_model(model, method_name=method_name)
+            misc_helpers.object_to_cuda(model)  # temp
         # noinspection PyTypeChecker
         model.set_params(verbose=False)
         return model
