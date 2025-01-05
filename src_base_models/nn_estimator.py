@@ -56,6 +56,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         'show_losses_plot': [bool],
         'save_losses_plot': [bool],
         'output_dim': [int],
+        'weight_decay': [float],
     }
 
     def __init__(
@@ -67,6 +68,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=None,
+            weight_decay=0,
             use_scheduler=True,
             lr=None,
             lr_patience=5,
@@ -86,6 +88,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.num_hidden_layers = num_hidden_layers
         self.hidden_layer_size = hidden_layer_size
         self.activation = activation
+        self.weight_decay = weight_decay
         self.lr = lr
         self.lr_patience = lr_patience
         self.lr_reduction_factor = lr_reduction_factor
@@ -155,7 +158,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         if self.lr is None:
             self.lr = 1e-2 if self.use_scheduler else 1e-4
 
-        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
         scheduler = ReduceLROnPlateau(optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor)
         criterion = torch.nn.MSELoss()
         criterion = misc_helpers.object_to_cuda(criterion)
@@ -324,6 +327,7 @@ def train_nn(
         num_hidden_layers=2,
         hidden_layer_size=50,
         activation=None,
+        weight_decay=0,
         lr=0.1,
         lr_patience=30,
         lr_reduction_factor=0.5,
@@ -343,6 +347,7 @@ def train_nn(
         num_hidden_layers=num_hidden_layers,
         hidden_layer_size=hidden_layer_size,
         activation=activation,
+        weight_decay=weight_decay,
         lr=lr,
         lr_patience=lr_patience,
         lr_reduction_factor=lr_reduction_factor,

@@ -179,6 +179,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=None,
+            weight_decay=0,
             lr=0.1,
             lr_patience=30,
             lr_reduction_factor=0.5,
@@ -191,6 +192,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ) -> 'NN_Estimator':
         """
 
+        :param weight_decay:
         :param y_val:
         :param X_val:
         :param activation:
@@ -236,6 +238,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             num_hidden_layers=num_hidden_layers,
             hidden_layer_size=hidden_layer_size,
             activation=activation,
+            weight_decay=weight_decay,
             lr=lr,
             lr_patience=lr_patience,
             lr_reduction_factor=lr_reduction_factor,
@@ -392,7 +395,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             lr=1e-4,
             use_scheduler=True,
             lr_patience=30,
-            regularization=0,
+            weight_decay=0,
             show_progress_bar=True,
             show_losses_plot=True,
             save_losses_plot=True,
@@ -445,7 +448,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 lr=lr,
                 use_scheduler=use_scheduler,
                 lr_patience=lr_patience,
-                weight_decay=regularization,
+                weight_decay=weight_decay,
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
                 io_helper=self.io_helper,
@@ -473,7 +476,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             activation=None,
             lr=1e-4,
             lr_patience=30,
-            regularization=0,  # 1e-2,
+            weight_decay=0,  # 1e-2,
             warmup_period=50,
             frozen_var_value=0.1,
             show_losses_plot=True,
@@ -522,7 +525,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "y_val": y_val,
                 "lr": lr,
                 "lr_patience": lr_patience,
-                "weight_decay": regularization,
+                "weight_decay": weight_decay,
                 'show_progress_bar': show_progress_bar,
                 "use_scheduler": True,
             }
