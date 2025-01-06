@@ -4,8 +4,8 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-DO_BIG_RUN = True
-DO_SMALL_RUN = False
+DO_BIG_RUN = False
+DO_SMALL_RUN = True
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
