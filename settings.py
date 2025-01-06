@@ -4,7 +4,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-DO_BIG_RUN = True
+DO_BIG_RUN = False
 DO_SMALL_RUN = False
 
 DO_TRAIN_ALL = True
@@ -15,8 +15,8 @@ SKIP_TRAINING_ALL = False
 
 QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
 
-DATA_FILEPATH = 'data/data_1600.pkl'  # 'data/data_2015_2018.pkl'
-N_POINTS_PER_GROUP = 800  # None
+DATA_FILEPATH = 'data/data_2015_2018.pkl'
+N_POINTS_PER_GROUP = 4000  # None
 TRAIN_YEARS = None  # (2016, 2017)  # todo: simplify
 VAL_YEARS = None  # (2017, 2018)  # todo: simplify
 TEST_YEARS = None  # (2018, 2019)  # todo: simplify
@@ -132,7 +132,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": True,
-        "n_iter": 100,
+        "n_iter": 10,
         'num_hidden_layers': 2,
         'hidden_layer_size': 50,
         'activation': None,
