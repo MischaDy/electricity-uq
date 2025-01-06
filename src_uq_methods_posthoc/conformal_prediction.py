@@ -60,48 +60,52 @@ def train_conformal_prediction(
         random_seed=42,
         verbose=1,
 ):
-    # todo: use validation data better(?)
-    # X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
-
-    # cv = BlockBootstrap(
-    #     n_resamplings=n_estimators,
-    #     n_blocks=bootstrap_n_blocks,
-    #     overlapping=bootstrap_overlapping_blocks,
-    #     random_state=random_seed,
-    # )
-
     # bugfix weird consistency error, solution taken from here:
     # https://github.com/scikit-learn-contrib/MAPIE/issues/321#issuecomment-1617601314
     from mapie.conformity_scores import AbsoluteConformityScore
     conformity_score = AbsoluteConformityScore()
     conformity_score.consistency_check = False
 
+    cv = BlockBootstrap(
+        n_resamplings=n_estimators,
+        n_blocks=bootstrap_n_blocks,
+        overlapping=bootstrap_overlapping_blocks,
+        random_state=random_seed,
+    )
     model = MapieTimeSeriesRegressor(
         base_model,
         method="enbpi",
-        cv='prefit',
+        cv=cv,
         agg_function='mean',
         n_jobs=-1,
         verbose=verbose,
-        conformity_score=conformity_score
+        conformity_score=conformity_score,
     )
-    model = model.fit(X_val, y_val)
+    X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
+    model = model.fit(X_train, y_train)
     return model
 
 
-def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list):
+def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list, batch_size=5000):
     alpha = misc_helpers.pis_from_quantiles(quantiles)
     try:
         alpha = list(alpha)
     except TypeError:
         pass
 
-    # y_pis is of shape (n_samples, 2, n_alpha), with:
-    # [:, 0, alpha]: Lower bound of the prediction interval corresp. to confidence level alpha.
-    # [:, 1, alpha]: Upper bound of the prediction interval corresp. to confidence level alpha.
-    y_pred, y_pis = model.predict(
-        X_pred, alpha=alpha, ensemble=False, optimize_beta=False, allow_infinite_bounds=True,
-    )
+    # predict in batches to avoid memory overflow, see https://github.com/scikit-learn-contrib/MAPIE/issues/326
+    y_preds, y_pis = [], []
+    for i in np.arange(0, X_pred.shape[0], batch_size):
+        X_pred_batch = X_pred[i:i + batch_size]
+        with np.errstate(divide='ignore'):
+            y_pred, y_pis = model.predict(
+                X_pred_batch, alpha=alpha, ensemble=False, optimize_beta=False, allow_infinite_bounds=True,
+            )
+        y_preds.append(y_pred)
+        y_pis.append(y_pis)
+    y_pred = np.hstack(y_preds)
+    y_pis = np.vstack(y_pis)
+
     y_quantiles = misc_helpers.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
     if 0.5 in quantiles:
         num_quantiles = y_quantiles.shape[-1]
