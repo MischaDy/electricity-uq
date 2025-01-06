@@ -54,7 +54,7 @@ def train_conformal_prediction(
         X_val: np.ndarray,
         y_val: np.ndarray,
         base_model,
-        n_estimators=10,
+        n_estimators=5,
         bootstrap_n_blocks=10,
         bootstrap_overlapping_blocks=False,
         random_seed=42,

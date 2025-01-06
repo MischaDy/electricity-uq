@@ -43,14 +43,14 @@ LOGGING_LEVEL = logging.INFO
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    'base_model_linreg',
-    'base_model_nn',
-    'base_model_hgbr'
+    # 'base_model_linreg',
+    # 'base_model_nn',
+    # 'base_model_hgbr'
     # 'native_gpytorch',
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
-    # 'posthoc_conformal_prediction',
-    # 'posthoc_laplace_approximation',
+    'posthoc_conformal_prediction',
+    'posthoc_laplace_approximation',
 ]
 
 METHODS_KWARGS = {
@@ -101,7 +101,7 @@ METHODS_KWARGS = {
     },
     "posthoc_conformal_prediction": {
         "skip_training": False,
-        "n_estimators": 2,
+        "n_estimators": 3,
         "verbose": 1,
         "save_model": True,
     },
@@ -130,7 +130,7 @@ METHODS_KWARGS = {
         'cv_n_iter': 15,
         'cv_n_splits': 3,
         "random_seed": 42,
-        "verbose": 2,
+        "verbose": 1,
         'n_jobs': -1,
         "save_model": True,
     },
