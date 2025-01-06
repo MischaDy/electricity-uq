@@ -5,7 +5,7 @@
 #SBATCH --time=0-03:00            # Runtime in D-HH:MM
 #SBATCH --partition=2080-galvani  # Partition to submit to
 #SBATCH --gres=gpu:8              # optionally type and number of gpus
-#SBATCH --mem=12G                 # Memory pool for all cores (see also --mem-per-cpu)
+#SBATCH --mem=8G                  # Memory pool for all cores (see also --mem-per-cpu)
 #SBATCH --output=logs/job_base.out     # File to which STDOUT will be written
 #SBATCH --error=logs/job_base.err      # File to which STDERR will be written
 #SBATCH --mail-type=END,FAIL      # Type of email notification- BEGIN,END,FAIL,ALL
