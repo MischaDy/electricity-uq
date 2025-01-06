@@ -45,7 +45,7 @@ STORAGE_PATH = "comparison_storage"
 METHOD_WHITELIST = [
     # 'base_model_linreg',
     'base_model_nn',
-    # 'base_model_rf',
+    'base_model_hgbr'
     # 'native_gpytorch',
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
@@ -117,11 +117,15 @@ METHODS_KWARGS = {
         "n_jobs": -1,
         "save_model": True,
     },
-    "base_model_rf": {
+    "base_model_hgbr": {
         "skip_training": True,
         'model_param_distributions': {
-            "max_depth": stats.randint(2, 50),
-            "n_estimators": stats.randint(10, 200),
+            # 'max_features': stats.randint(1, X_train.shape[1]),
+            "max_iter": stats.randint(10, 1000),
+            'learning_rate': stats.loguniform(0.015, 0.15),
+            'max_leaf_nodes': stats.randint(10, 100),
+            'min_samples_leaf': stats.randint(15, 100),
+            'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
         },
         'cv_n_iter': 5,
         'cv_n_splits': 2,
@@ -197,7 +201,7 @@ FILENAME_PARTS = {
         ],
         'pth'
     ),
-    "base_model_rf": (
+    "base_model_hgbr": (
         [
             ('it', 'cv_n_iter'),
             ('its', 'cv_n_splits'),

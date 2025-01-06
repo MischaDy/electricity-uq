@@ -21,7 +21,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     posthoc_base_blacklist = {
         'posthoc_laplace_approximation': {
             'base_model_linreg',
-            'base_model_rf',
+            'base_model_hgbr',
         },
     }
 
@@ -124,7 +124,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model_wrapped = ModelWrapper(model, output_dim=len(y_pred_temp.shape))
         return model_wrapped
 
-    def base_model_rf(
+    def base_model_hgbr(
             self,
             X_train: 'np.ndarray',
             y_train: 'np.ndarray',
@@ -139,16 +139,16 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
             verbose=1,
     ) -> 'ModelWrapper':
-        from src_base_models.random_forest import train_random_forest
+        from src_base_models.gradient_boost import train_hgbr
         from helpers.model_wrapper import ModelWrapper
-        method_name = 'base_model_rf'
+        method_name = 'base_model_hgbr'
         if skip_training:
             model = self.try_skipping_training(method_name)
             if model is None:
                 skip_training = False
         if not skip_training:
             assert all(item is not None for item in [X_train, y_train, model_param_distributions])
-            model = train_random_forest(
+            model = train_hgbr(
                 X_train,
                 y_train,
                 X_val,
@@ -156,6 +156,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 cv_n_iter=cv_n_iter,
                 cv_n_splits=cv_n_splits,
                 model_param_distributions=model_param_distributions,
+                categorical_features=None,
+                monotonic_cst=None,
                 random_seed=random_seed,
                 n_jobs=n_jobs,
                 verbose=verbose,
