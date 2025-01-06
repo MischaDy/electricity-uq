@@ -94,17 +94,17 @@ def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list
         pass
 
     # predict in batches to avoid memory overflow, see https://github.com/scikit-learn-contrib/MAPIE/issues/326
-    y_preds, y_pis = [], []
+    y_preds_all, y_pis_all = [], []
     for i in np.arange(0, X_pred.shape[0], batch_size):
         X_pred_batch = X_pred[i:i + batch_size]
         with np.errstate(divide='ignore'):
             y_pred, y_pis = model.predict(
                 X_pred_batch, alpha=alpha, ensemble=False, optimize_beta=False, allow_infinite_bounds=True,
             )
-        y_preds.append(y_pred)
-        y_pis.append(y_pis)
-    y_pred = np.hstack(y_preds)
-    y_pis = np.vstack(y_pis)
+        y_preds_all.append(y_pred)
+        y_pis_all.append(y_pis)
+    y_pred = np.hstack(y_preds_all)
+    y_pis = np.vstack(y_pis_all)
 
     y_quantiles = misc_helpers.quantiles_from_pis(y_pis)  # (n_samples, 2 * n_intervals)
     if 0.5 in quantiles:
