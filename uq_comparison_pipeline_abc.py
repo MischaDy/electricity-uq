@@ -774,7 +774,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         ax.legend()
         ax.set_xlabel("data")
         ax.set_ylabel("target")
-        ax.set_title(f'{base_model_name} ({n_samples_to_plot} points)')
+        ax.set_title(f'{base_model_name} on {y_true_label} data ({n_samples_to_plot} points)')
         if save_plot:
             self.io_helper.save_plot(method_name=base_model_name, infix=f'p{n_samples_to_plot}_{y_true_label}')
         if show_plot:
