@@ -50,7 +50,7 @@ METHOD_WHITELIST = [
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
     'posthoc_conformal_prediction',
-    'posthoc_laplace_approximation',
+    # 'posthoc_laplace_approximation',
 ]
 
 METHODS_KWARGS = {
