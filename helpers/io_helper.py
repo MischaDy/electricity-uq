@@ -223,7 +223,12 @@ class IO_Helper:
         """
         # todo: docstring
         # todo: better handling!
-        method_name = method_name.split(2 * self.sep)[0]  # take care of posthoc_model__base_model naming
+        method_name_parts = method_name.split(2 * self.sep)  # take care of posthoc_model__base_model naming
+        if len(method_name_parts) == 2:
+            method_name, base_suffix = method_name_parts
+        else:
+            method_name = method_name_parts
+            base_suffix = None
         kwargs = self.methods_kwargs[method_name]
         suffixes, model_ext = self.filename_parts[method_name]
 
@@ -244,7 +249,7 @@ class IO_Helper:
             joined_suffixes.append(joined_suffix)
         suffix_str = self.sep.join(joined_suffixes)
 
-        filename = method_name
+        filename = f'{method_name}_{base_suffix}' if base_suffix is not None else method_name
         if infix is not None:
             filename += f'{self.sep}{infix}'
         filename += f'{self.sep}{suffix_str}.{ext}'
