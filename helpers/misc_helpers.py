@@ -113,7 +113,7 @@ def train_val_test_split(
         X_train, X_val, X_test, y_train, y_val, y_test = _train_val_test_split_by_size(X, y, train_size, val_size)
     for arr in [X_train, X_test, y_train, y_test]:
         ts_cols = [col for col in arr.columns if col.startswith('ts_')]
-        arr.drop(columns=ts_cols, inplace=True)
+        arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
