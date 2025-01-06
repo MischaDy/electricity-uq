@@ -287,7 +287,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     # noinspection PyUnusedLocal
     def to(self, device):
         # self.model_ = misc_helpers.object_to_cuda(self.model_)
-        return self.model_.to(device)
+        self.model_ = self.model_.to(device)
+        return self
 
     def __getattr__(self, item):
         try:
