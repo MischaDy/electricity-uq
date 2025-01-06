@@ -1,29 +1,27 @@
 {
-    "base_model": {
-        "base_model_linreg": {
-            "rmse": 360.6310119628906,
-            "smape_scaled": 0.01826603338122368
+    "base_model": {},
+    "posthoc": {},
+    "native": {
+        "native_quantile_regression_nn": {
+            "rmse": 253.44158935546875,
+            "smape_scaled": 0.012040981091558933,
+            "crps": 110.60853515758514,
+            "nll_gaussian": 6.877577074212476,
+            "mean_pinball": 17.998470306396484
         },
-        "base_model_hgbr": {
-            "rmse": 192.48819491950226,
-            "smape_scaled": 0.008353557392833687
-        }
-    },
-    "posthoc": {
-        "posthoc_conformal_prediction__base_model_linreg": {
-            "rmse": 360.63104248046875,
-            "smape_scaled": 0.01826603338122368,
-            "crps": 188.22180578634732,
-            "nll_gaussian": 7.897846246383707,
-            "mean_pinball": 10.212810100803742
+        "native_mvnn": {
+            "rmse": 256.4833068847656,
+            "smape_scaled": 0.011860950849950314,
+            "crps": 108.80021928974153,
+            "nll_gaussian": 6.997313698447838,
+            "mean_pinball": 16.66904535945461
         },
-        "posthoc_conformal_prediction__base_model_hgbr": {
-            "rmse": 192.48819491950226,
-            "smape_scaled": 0.008353557392833687,
-            "crps": 87.63863641745206,
-            "nll_gaussian": 7.1093286730858765,
-            "mean_pinball": 5.969282994455053
+        "native_gpytorch": {
+            "rmse": 242.21719360351562,
+            "smape_scaled": 0.01014078687876463,
+            "crps": 108.84373779077535,
+            "nll_gaussian": 8.614240048195828,
+            "mean_pinball": 8.171049810500994
         }
-    },
-    "native": {}
+    }
 }
