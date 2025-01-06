@@ -90,11 +90,12 @@ def train_gpytorch(
             optimizer.zero_grad()
             y_pred_batch = model(X_train_batch)
             loss = -mll(y_pred_batch, y_train_batch).sum()
-            train_losses.append(loss.item())
             loss.backward()
             optimizer.step()
     
         if use_scheduler or show_losses_plot:
+            # noinspection PyUnboundLocalVariable
+            train_losses.append(loss.item())  # don't append more often than needed
             model.eval()
             likelihood.eval()
             with torch.no_grad(), gpytorch.settings.memory_efficient(True):
