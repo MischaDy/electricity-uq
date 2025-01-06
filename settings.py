@@ -31,6 +31,8 @@ PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS_PARTIAL = True
 
 SHOW_PROGRESS_BARS = False  # bool or None
+SHOW_LOSSES_PLOTS = False  # bool or None
+SAVE_LOSSES_PLOTS = True  # bool or None
 
 SKIP_BASE_MODEL_COPY = True
 SHOULD_SAVE_RESULTS = True
@@ -139,7 +141,7 @@ METHODS_KWARGS = {
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
         "show_progress_bar": False,
-        "show_losses_plot": True,
+        "show_losses_plot": False,
         "save_losses_plot": True,
         "random_seed": 42,
         "verbose": 1,

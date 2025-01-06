@@ -710,6 +710,19 @@ def update_progress_bar_settings():
             method_kwargs['show_progress_bar'] = settings.SHOW_PROGRESS_BARS
 
 
+def update_losses_plots_settings():
+    if settings.SHOW_LOSSES_PLOTS is not None:
+        for _, method_kwargs in settings.METHODS_KWARGS.items():
+            if 'show_losses_plot' not in method_kwargs:
+                continue
+            method_kwargs['show_losses_plot'] = settings.SHOW_LOSSES_PLOTS
+    if settings.SAVE_LOSSES_PLOTS is not None:
+        for _, method_kwargs in settings.METHODS_KWARGS.items():
+            if 'save_losses_plot' not in method_kwargs:
+                continue
+            method_kwargs['save_losses_plot'] = settings.SAVE_LOSSES_PLOTS
+
+
 def check_method_kwargs_dict(class_, method_kwargs_dict):
     logging.info('checking kwargs dict...')
     from inspect import signature
@@ -734,6 +747,7 @@ def main():
     update_run_size_setup()
     update_training_flags()
     update_progress_bar_settings()
+    update_losses_plots_settings()
     # todo: check filename parts dict!
 
     uq_comparer = UQ_Comparison_Pipeline(
