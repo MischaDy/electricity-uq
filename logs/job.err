@@ -13,17 +13,124 @@ INFO:root:skipping model training in method base_model_linreg
 INFO:root:skipping training base_model_hgbr.
 INFO:root:training base_model_nn...
 INFO:root:skipping model training in method base_model_nn
-Traceback (most recent call last):
-  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline.py", line 779, in <module>
-    main()
-  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline.py", line 764, in main
-    uq_comparer.compare_methods(
-  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline_abc.py", line 127, in compare_methods
-    y_preds_base_models = self.predict_base_models(base_models, X_pred, scaler_y=scaler_y)
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline_abc.py", line 337, in predict_base_models
-    y_pred = base_model.predict(X_pred)
-             ^^^^^^^^^^^^^^^^^^
-  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1931, in __getattr__
-    raise AttributeError(
-AttributeError: 'Sequential' object has no attribute 'predict'
+INFO:root:saving base model results...
+INFO:root:plotting base model results...
+INFO:root:plotting partial plots...
+INFO:root:plotting full plot...
+INFO:root:plotting partial plots...
+INFO:root:plotting full plot...
+INFO:root:computing base model metrics...
+INFO:root:running posthoc UQ methods...
+INFO:root:running posthoc methods...
+INFO:root:running posthoc_laplace_approximation on base_model_nn...
+INFO:root:epoch 0/100
+INFO:root:epoch 1/100
+INFO:root:epoch 2/100
+INFO:root:epoch 3/100
+INFO:root:epoch 4/100
+INFO:root:epoch 5/100
+INFO:root:epoch 6/100
+INFO:root:epoch 7/100
+INFO:root:epoch 8/100
+INFO:root:epoch 9/100
+INFO:root:epoch 10/100
+INFO:root:epoch 11/100
+INFO:root:epoch 12/100
+INFO:root:epoch 13/100
+INFO:root:epoch 14/100
+INFO:root:epoch 15/100
+INFO:root:epoch 16/100
+INFO:root:epoch 17/100
+INFO:root:epoch 18/100
+INFO:root:epoch 19/100
+INFO:root:epoch 20/100
+INFO:root:epoch 21/100
+INFO:root:epoch 22/100
+INFO:root:epoch 23/100
+INFO:root:epoch 24/100
+INFO:root:epoch 25/100
+INFO:root:epoch 26/100
+INFO:root:epoch 27/100
+INFO:root:epoch 28/100
+INFO:root:epoch 29/100
+INFO:root:epoch 30/100
+INFO:root:epoch 31/100
+INFO:root:epoch 32/100
+INFO:root:epoch 33/100
+INFO:root:epoch 34/100
+INFO:root:epoch 35/100
+INFO:root:epoch 36/100
+INFO:root:epoch 37/100
+INFO:root:epoch 38/100
+INFO:root:epoch 39/100
+INFO:root:epoch 40/100
+INFO:root:epoch 41/100
+INFO:root:epoch 42/100
+INFO:root:epoch 43/100
+INFO:root:epoch 44/100
+INFO:root:epoch 45/100
+INFO:root:epoch 46/100
+INFO:root:epoch 47/100
+INFO:root:epoch 48/100
+INFO:root:epoch 49/100
+INFO:root:epoch 50/100
+INFO:root:epoch 51/100
+INFO:root:epoch 52/100
+INFO:root:epoch 53/100
+INFO:root:epoch 54/100
+INFO:root:epoch 55/100
+INFO:root:epoch 56/100
+INFO:root:epoch 57/100
+INFO:root:epoch 58/100
+INFO:root:epoch 59/100
+INFO:root:epoch 60/100
+INFO:root:epoch 61/100
+INFO:root:epoch 62/100
+INFO:root:epoch 63/100
+INFO:root:epoch 64/100
+INFO:root:epoch 65/100
+INFO:root:epoch 66/100
+INFO:root:epoch 67/100
+INFO:root:epoch 68/100
+INFO:root:epoch 69/100
+INFO:root:epoch 70/100
+INFO:root:epoch 71/100
+INFO:root:epoch 72/100
+INFO:root:epoch 73/100
+INFO:root:epoch 74/100
+INFO:root:epoch 75/100
+INFO:root:epoch 76/100
+INFO:root:epoch 77/100
+INFO:root:epoch 78/100
+INFO:root:epoch 79/100
+INFO:root:epoch 80/100
+INFO:root:epoch 81/100
+INFO:root:epoch 82/100
+INFO:root:epoch 83/100
+INFO:root:epoch 84/100
+INFO:root:epoch 85/100
+INFO:root:epoch 86/100
+INFO:root:epoch 87/100
+INFO:root:epoch 88/100
+INFO:root:epoch 89/100
+INFO:root:epoch 90/100
+INFO:root:epoch 91/100
+INFO:root:epoch 92/100
+INFO:root:epoch 93/100
+INFO:root:epoch 94/100
+INFO:root:epoch 95/100
+INFO:root:epoch 96/100
+INFO:root:epoch 97/100
+INFO:root:epoch 98/100
+INFO:root:epoch 99/100
+INFO:root:saving model...
+INFO:root:predicting...
+INFO:root:saving posthoc UQ results...
+INFO:root:plotting posthoc results...
+INFO:root:running native UQ methods...
+INFO:root:No native methods found and/or whitelisted. Skipping...
+INFO:root:saving native UQ results...
+INFO:root:plotting native results...
+INFO:root:computing and saving UQ metrics...
+INFO:root:posthoc...
+INFO:root:native...
