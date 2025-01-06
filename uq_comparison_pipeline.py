@@ -227,6 +227,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         if skip_training:
             model = self.try_skipping_training(method_name)
             if model is not None:
+                model = misc_helpers.object_to_cuda(model)
                 return model
 
         model = train_nn(
