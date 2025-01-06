@@ -731,7 +731,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
             self._plot_base_partial(y_train, y_pred_train, 'train', base_model_name,
                                     n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
-            self._plot_base_partial(y_train, y_pred_test, 'test', base_model_name,
+            self._plot_base_partial(y_test, y_pred_test, 'test', base_model_name,
                                     n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
 
         logging.info('plotting full plot...')
