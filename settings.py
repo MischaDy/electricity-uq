@@ -4,7 +4,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-DO_BIG_RUN = True
+DO_BIG_RUN = False
 DO_SMALL_RUN = False
 
 DO_TRAIN_ALL = True
@@ -43,8 +43,8 @@ LOGGING_LEVEL = logging.INFO
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    # 'base_model_linreg',
-    # 'base_model_nn',
+    'base_model_linreg',
+    'base_model_nn',
     'base_model_hgbr'
     # 'native_gpytorch',
     # 'native_mvnn',
@@ -127,10 +127,10 @@ METHODS_KWARGS = {
             'min_samples_leaf': stats.randint(15, 100),
             'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
         },
-        'cv_n_iter': 100,
-        'cv_n_splits': 5,
+        'cv_n_iter': 15,
+        'cv_n_splits': 3,
         "random_seed": 42,
-        "verbose": 3,
+        "verbose": 2,
         'n_jobs': -1,
         "save_model": True,
     },
