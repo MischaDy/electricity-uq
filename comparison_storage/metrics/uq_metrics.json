@@ -1,8 +1,8 @@
 {
     "base_model": {
         "base_model_nn": {
-            "rmse": 571.2215576171875,
-            "smape_scaled": 0.031388796865940094
+            "rmse": 1221.146484375,
+            "smape_scaled": 0.06449893116950989
         }
     },
     "posthoc": {},

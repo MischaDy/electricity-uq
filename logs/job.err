@@ -26,7 +26,7 @@ A value is trying to be set on a copy of a slice from a DataFrame
 
 See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
   arr.drop(columns=ts_cols, inplace=True)
-INFO:root:data shapes: (35136, 8), (35040, 8), (35040, 8);  (35136, 1), (35040, 1), (35040, 1)
+INFO:root:data shapes: (35136, 16), (35040, 16), (35040, 16);  (35136, 1), (35040, 1), (35040, 1)
 INFO:root:training base models...
 INFO:root:skipping training base_model_linreg.
 INFO:root:skipping training base_model_rf.
