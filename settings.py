@@ -130,7 +130,7 @@ METHODS_KWARGS = {
         'cv_n_iter': 100,
         'cv_n_splits': 5,
         "random_seed": 42,
-        "verbose": 4,
+        "verbose": 3,
         'n_jobs': -1,
         "save_model": True,
     },
