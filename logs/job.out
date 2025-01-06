@@ -1,432 +1,30 @@
 -------- PYTHON OUTPUT ----------
-Fitting 5 folds for each of 100 candidates, totalling 500 fits
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75;, score=-0.087 total time=   1.4s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75;, score=-0.073 total time=   1.9s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75;, score=-0.071 total time=   2.6s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89;, score=-0.088 total time=   7.6s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89;, score=-0.052 total time=  10.3s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17;, score=-0.083 total time=   0.7s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17;, score=-0.090 total time=   1.0s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17;, score=-0.077 total time=   1.1s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17;, score=-0.056 total time=   1.3s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17;, score=-0.077 total time=   1.5s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52;, score=-0.085 total time=   3.4s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52;, score=-0.073 total time=   4.3s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52;, score=-0.071 total time=   5.5s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90;, score=-0.080 total time=   3.6s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90;, score=-0.078 total time=   4.8s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63;, score=-0.087 total time=  11.6s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63;, score=-0.052 total time=  13.5s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94;, score=-0.085 total time=   7.5s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94;, score=-0.086 total time=   8.6s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94;, score=-0.052 total time=  10.2s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17;, score=-0.084 total time=   2.7s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17;, score=-0.087 total time=   3.4s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17;, score=-0.053 total time=   4.7s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53;, score=-0.197 total time=   0.4s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53;, score=-0.198 total time=   0.5s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53;, score=-0.191 total time=   0.6s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53;, score=-0.171 total time=   0.8s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53;, score=-0.183 total time=   0.9s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23;, score=-0.088 total time=   1.9s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23;, score=-0.053 total time=   2.8s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85;, score=-0.088 total time=   3.5s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85;, score=-0.076 total time=   5.5s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85;, score=-0.074 total time=   7.3s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92;, score=-0.086 total time=   8.3s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92;, score=-0.052 total time=  10.8s
-[CV 1/5] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16;, score=-0.079 total time=   3.2s
-[CV 2/5] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16;, score=-0.090 total time=   4.2s
-[CV 4/5] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16;, score=-0.055 total time=   6.2s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32;, score=-0.083 total time=   5.0s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32;, score=-0.072 total time=   6.2s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32;, score=-0.070 total time=   7.8s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28;, score=-0.087 total time=   2.8s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28;, score=-0.053 total time=   4.0s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.01664633184165465, max_iter=305, max_leaf_nodes=94, min_samples_leaf=94;, score=-0.091 total time=   3.4s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.01664633184165465, max_iter=305, max_leaf_nodes=94, min_samples_leaf=94;, score=-0.078 total time=   6.1s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.01664633184165465, max_iter=305, max_leaf_nodes=94, min_samples_leaf=94;, score=-0.075 total time=   7.9s
-[CV 2/5] END l2_regularization=0, learning_rate=0.02864347920156805, max_iter=389, max_leaf_nodes=50, min_samples_leaf=43;, score=-0.087 total time=   4.1s
-[CV 4/5] END l2_regularization=0, learning_rate=0.02864347920156805, max_iter=389, max_leaf_nodes=50, min_samples_leaf=43;, score=-0.053 total time=   5.6s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.017809097138003837, max_iter=848, max_leaf_nodes=18, min_samples_leaf=15;, score=-0.078 total time=   3.8s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.017809097138003837, max_iter=848, max_leaf_nodes=18, min_samples_leaf=15;, score=-0.090 total time=   5.0s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.017809097138003837, max_iter=848, max_leaf_nodes=18, min_samples_leaf=15;, score=-0.057 total time=   7.1s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.029483526899137257, max_iter=72, max_leaf_nodes=20, min_samples_leaf=95;, score=-0.177 total time=   0.4s[CV 2/5] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75;, score=-0.087 total time=   1.7s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75;, score=-0.053 total time=   2.1s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89;, score=-0.085 total time=   5.8s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89;, score=-0.072 total time=   9.0s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89;, score=-0.071 total time=  11.4s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52;, score=-0.087 total time=   3.9s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52;, score=-0.052 total time=   5.1s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90;, score=-0.087 total time=   2.2s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90;, score=-0.091 total time=   2.9s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90;, score=-0.057 total time=   4.3s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63;, score=-0.085 total time=  10.5s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63;, score=-0.072 total time=  12.7s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63;, score=-0.070 total time=  14.5s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94;, score=-0.071 total time=   9.4s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94;, score=-0.070 total time=  11.1s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17;, score=-0.074 total time=   4.1s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17;, score=-0.072 total time=   5.3s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23;, score=-0.080 total time=   1.5s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23;, score=-0.074 total time=   2.2s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23;, score=-0.072 total time=   3.0s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85;, score=-0.089 total time=   4.6s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85;, score=-0.055 total time=   6.5s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92;, score=-0.084 total time=   7.4s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92;, score=-0.071 total time=   9.5s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92;, score=-0.069 total time=  11.9s
-[CV 3/5] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16;, score=-0.079 total time=   5.3s
-[CV 5/5] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16;, score=-0.077 total time=   7.1s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32;, score=-0.087 total time=   5.5s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32;, score=-0.052 total time=   7.1s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28;, score=-0.084 total time=   2.2s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28;, score=-0.074 total time=   3.3s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28;, score=-0.072 total time=   4.3s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.01664633184165465, max_iter=305, max_leaf_nodes=94, min_samples_leaf=94;, score=-0.093 total time=   5.0s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.01664633184165465, max_iter=305, max_leaf_nodes=94, min_samples_leaf=94;, score=-0.056 total time=   7.1s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.028018203856606017, max_iter=62, max_leaf_nodes=33, min_samples_leaf=40;, score=-0.218 total time=   0.5s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.028018203856606017, max_iter=62, max_leaf_nodes=33, min_samples_leaf=40;, score=-0.227 total time=   0.6s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.028018203856606017, max_iter=62, max_leaf_nodes=33, min_samples_leaf=40;, score=-0.224 total time=   0.8s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.028018203856606017, max_iter=62, max_leaf_nodes=33, min_samples_leaf=40;, score=-0.197 total time=   0.9s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.028018203856606017, max_iter=62, max_leaf_nodes=33, min_samples_leaf=40;, score=-0.214 total time=   1.1s
-[CV 1/5] END l2_regularization=0, learning_rate=0.02864347920156805, max_iter=389, max_leaf_nodes=50, min_samples_leaf=43;, score=-0.084 total time=   3.3s
-[CV 3/5] END l2_regularization=0, learning_rate=0.02864347920156805, max_iter=389, max_leaf_nodes=50, min_samples_leaf=43;, score=-0.074 total time=   4.8s
-[CV 5/5] END l2_regularization=0, learning_rate=0.02864347920156805, max_iter=389, max_leaf_nodes=50, min_samples_leaf=43;, score=-0.073 total time=   6.4s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.017809097138003837, max_iter=848, max_leaf_nodes=18, min_samples_leaf=15;, score=-0.080 total time=   6.1s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.017809097138003837, max_iter=848, max_leaf_nodes=18, min_samples_leaf=15;, score=-0.078 total time=   8.4s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.0925266417139206, max_iter=388, max_leaf_nodes=14, min_samples_leaf=55;, score=-0.078 total time=   1.5s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.0925266417139206, max_iter=388, max_leaf_nodes=14, min_samples_leaf=55;, score=-0.076 total time=   2.3s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.0925266417139206, max_iter=388, max_leaf_nodes=14, min_samples_leaf=55;, score=-0.074 total time=   3.2s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.10944468734566729, max_iter=849, max_leaf_nodes=21, min_samples_leaf=48;, score=-0.087 total time=   4.5s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.10944468734566729, max_iter=849, max_leaf_nodes=21, min_samples_leaf=48;, score=-0.052 total time=   6.1s
-[CV 1/5] END l2_regularization=0, learning_rate=0.017363993290009157, max_iter=416, max_leaf_nodes=71, min_samples_leaf=51;, score=-0.086 total time=   4.5s
-[CV 3/5] END l2_regularization=0, learning_rate=0.017363993290009157, max_iter=416, max_leaf_nodes=71, min_samples_leaf=51;, score=-0.075 total time=   6.8s
-[CV 5/5] END l2_regularization=0, learning_rate=0.017363993290009157, max_iter=416, max_leaf_nodes=71, min_samples_leaf=51;, score=-0.073 total time=   8.9s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.029483526899137257, max_iter=72, max_leaf_nodes=20, min_samples_leaf=95;, score=-0.187 total time=   0.6s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.029483526899137257, max_iter=72, max_leaf_nodes=20, min_samples_leaf=95;, score=-0.186 total time=   0.7s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.029483526899137257, max_iter=72, max_leaf_nodes=20, min_samples_leaf=95;, score=-0.153 total time=   0.9s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.029483526899137257, max_iter=72, max_leaf_nodes=20, min_samples_leaf=95;, score=-0.175 total time=   1.0s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.0925266417139206, max_iter=388, max_leaf_nodes=14, min_samples_leaf=55;, score=-0.088 total time=   1.9s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.0925266417139206, max_iter=388, max_leaf_nodes=14, min_samples_leaf=55;, score=-0.054 total time=   2.8s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.10944468734566729, max_iter=849, max_leaf_nodes=21, min_samples_leaf=48;, score=-0.081 total time=   3.5s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.10944468734566729, max_iter=849, max_leaf_nodes=21, min_samples_leaf=48;, score=-0.072 total time=   5.3s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.10944468734566729, max_iter=849, max_leaf_nodes=21, min_samples_leaf=48;, score=-0.070 total time=   6.9s
-[CV 2/5] END l2_regularization=0, learning_rate=0.017363993290009157, max_iter=416, max_leaf_nodes=71, min_samples_leaf=51;, score=-0.088 total time=   5.7s
-[CV 4/5] END l2_regularization=0, learning_rate=0.017363993290009157, max_iter=416, max_leaf_nodes=71, min_samples_leaf=51;, score=-0.054 total time=   8.0s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.058531418157831444, max_iter=735, max_leaf_nodes=44, min_samples_leaf=79;, score=-0.083 total time=   5.7s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.058531418157831444, max_iter=735, max_leaf_nodes=44, min_samples_leaf=79;, score=-0.072 total time=   7.2s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.058531418157831444, max_iter=735, max_leaf_nodes=44, min_samples_leaf=79;, score=-0.070 total time=   9.1s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.019755385327882645, max_iter=471, max_leaf_nodes=12, min_samples_leaf=15;, score=-0.093 total time=   3.1s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.019755385327882645, max_iter=471, max_leaf_nodes=12, min_samples_leaf=15;, score=-0.090 total time=   4.4s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.054622108002224896, max_iter=776, max_leaf_nodes=23, min_samples_leaf=41;, score=-0.072 total time=   5.4s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.054622108002224896, max_iter=776, max_leaf_nodes=23, min_samples_leaf=41;, score=-0.071 total time=   7.2s
-[CV 2/5] END l2_regularization=0, learning_rate=0.07704671891646621, max_iter=867, max_leaf_nodes=51, min_samples_leaf=91;, score=-0.087 total time=   8.6s
-[CV 4/5] END l2_regularization=0, learning_rate=0.07704671891646621, max_iter=867, max_leaf_nodes=51, min_samples_leaf=91;, score=-0.052 total time=  10.5s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.016125769388344605, max_iter=752, max_leaf_nodes=61, min_samples_leaf=18;, score=-0.083 total time=   7.1s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.016125769388344605, max_iter=752, max_leaf_nodes=61, min_samples_leaf=18;, score=-0.086 total time=   8.8s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.016125769388344605, max_iter=752, max_leaf_nodes=61, min_samples_leaf=18;, score=-0.052 total time=  11.8s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.026630755554783357, max_iter=758, max_leaf_nodes=24, min_samples_leaf=57;, score=-0.081 total time=   3.9s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.026630755554783357, max_iter=758, max_leaf_nodes=24, min_samples_leaf=57;, score=-0.075 total time=   6.0s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.026630755554783357, max_iter=758, max_leaf_nodes=24, min_samples_leaf=57;, score=-0.075 total time=   8.1s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.025403258323946878, max_iter=169, max_leaf_nodes=80, min_samples_leaf=73;, score=-0.082 total time=   3.3s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.025403258323946878, max_iter=169, max_leaf_nodes=80, min_samples_leaf=73;, score=-0.079 total time=   4.8s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.021742653574882014, max_iter=587, max_leaf_nodes=51, min_samples_leaf=59;, score=-0.087 total time=   6.1s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.021742653574882014, max_iter=587, max_leaf_nodes=51, min_samples_leaf=59;, score=-0.053 total time=   8.5s
-[CV 1/5] END l2_regularization=0, learning_rate=0.019124298727244714, max_iter=805, max_leaf_nodes=37, min_samples_leaf=58;, score=-0.082 total time=   5.6s
-[CV 3/5] END l2_regularization=0, learning_rate=0.019124298727244714, max_iter=805, max_leaf_nodes=37, min_samples_leaf=58;, score=-0.075 total time=   8.1s
-[CV 5/5] END l2_regularization=0, learning_rate=0.019124298727244714, max_iter=805, max_leaf_nodes=37, min_samples_leaf=58;, score=-0.073 total time=  10.5s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.11712517628313615, max_iter=340, max_leaf_nodes=98, min_samples_leaf=76;, score=-0.087 total time=   5.2s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.11712517628313615, max_iter=340, max_leaf_nodes=98, min_samples_leaf=76;, score=-0.053 total time=   6.3s
-[CV 1/5] END l2_regularization=0, learning_rate=0.028068778181159784, max_iter=292, max_leaf_nodes=71, min_samples_leaf=91;, score=-0.087 total time=   3.0s
-[CV 3/5] END l2_regularization=0, learning_rate=0.028068778181159784, max_iter=292, max_leaf_nodes=71, min_samples_leaf=91;, score=-0.074 total time=   4.7s
-[CV 5/5] END l2_regularization=0, learning_rate=0.028068778181159784, max_iter=292, max_leaf_nodes=71, min_samples_leaf=91;, score=-0.073 total time=   6.1s
-[CV 2/5] END l2_regularization=0, learning_rate=0.030260250384399487, max_iter=719, max_leaf_nodes=81, min_samples_leaf=41;, score=-0.086 total time=   9.2s
-[CV 4/5] END l2_regularization=0, learning_rate=0.030260250384399487, max_iter=719, max_leaf_nodes=81, min_samples_leaf=41;, score=-0.052 total time=  11.8s
-[CV 1/5] END l2_regularization=0, learning_rate=0.04580587993729523, max_iter=234, max_leaf_nodes=60, min_samples_leaf=58;, score=-0.085 total time=   2.2s
-[CV 2/5] END l2_regularization=0, learning_rate=0.04580587993729523, max_iter=234, max_leaf_nodes=60, min_samples_leaf=58;, score=-0.087 total time=   2.8s
-[CV 3/5] END l2_regularization=0, learning_rate=0.04580587993729523, max_iter=234, max_leaf_nodes=60, min_samples_leaf=58;, score=-0.074 total time=   3.3s
-[CV 4/5] END l2_regularization=0, learning_rate=0.04580587993729523, max_iter=234, max_leaf_nodes=60, min_samples_leaf=58;, score=-0.053 total time=   3.8s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.03157142547498918, max_iter=617, max_leaf_nodes=97, min_samples_leaf=66;, score=-0.086 total time=   8.2s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.03157142547498918, max_iter=617, max_leaf_nodes=97, min_samples_leaf=66;, score=-0.071 total time=  10.8s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.03157142547498918, max_iter=617, max_leaf_nodes=97, min_samples_leaf=66;, score=-0.070 total time=  13.1s
-[CV 3/5] END l2_regularization=0, learning_rate=0.01741740723506179, max_iter=451, max_leaf_nodes=61, min_samples_leaf=26;, score=-0.075 total time=   6.8s
-[CV 5/5] END l2_regularization=0, learning_rate=0.01741740723506179, max_iter=451, max_leaf_nodes=61, min_samples_leaf=26;, score=-0.073 total time=   8.9s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.07733246416120725, max_iter=622, max_leaf_nodes=65, min_samples_leaf=95;, score=-0.071 total time=   8.3s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.07733246416120725, max_iter=622, max_leaf_nodes=65, min_samples_leaf=95;, score=-0.070 total time=   9.7s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.06104577238433952, max_iter=651, max_leaf_nodes=63, min_samples_leaf=15;, score=-0.086 total time=   6.5s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.058531418157831444, max_iter=735, max_leaf_nodes=44, min_samples_leaf=79;, score=-0.085 total time=   6.4s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.058531418157831444, max_iter=735, max_leaf_nodes=44, min_samples_leaf=79;, score=-0.052 total time=   8.1s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.019755385327882645, max_iter=471, max_leaf_nodes=12, min_samples_leaf=15;, score=-0.086 total time=   1.8s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.019755385327882645, max_iter=471, max_leaf_nodes=12, min_samples_leaf=15;, score=-0.101 total time=   2.5s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.019755385327882645, max_iter=471, max_leaf_nodes=12, min_samples_leaf=15;, score=-0.064 total time=   3.8s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.054622108002224896, max_iter=776, max_leaf_nodes=23, min_samples_leaf=41;, score=-0.079 total time=   3.7s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.054622108002224896, max_iter=776, max_leaf_nodes=23, min_samples_leaf=41;, score=-0.087 total time=   4.6s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.054622108002224896, max_iter=776, max_leaf_nodes=23, min_samples_leaf=41;, score=-0.052 total time=   6.3s
-[CV 1/5] END l2_regularization=0, learning_rate=0.07704671891646621, max_iter=867, max_leaf_nodes=51, min_samples_leaf=91;, score=-0.087 total time=   7.7s
-[CV 3/5] END l2_regularization=0, learning_rate=0.07704671891646621, max_iter=867, max_leaf_nodes=51, min_samples_leaf=91;, score=-0.071 total time=   9.6s
-[CV 5/5] END l2_regularization=0, learning_rate=0.07704671891646621, max_iter=867, max_leaf_nodes=51, min_samples_leaf=91;, score=-0.070 total time=  11.4s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.016125769388344605, max_iter=752, max_leaf_nodes=61, min_samples_leaf=18;, score=-0.073 total time=  10.3s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.016125769388344605, max_iter=752, max_leaf_nodes=61, min_samples_leaf=18;, score=-0.072 total time=  13.3s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.026630755554783357, max_iter=758, max_leaf_nodes=24, min_samples_leaf=57;, score=-0.087 total time=   5.0s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.026630755554783357, max_iter=758, max_leaf_nodes=24, min_samples_leaf=57;, score=-0.054 total time=   7.0s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.025403258323946878, max_iter=169, max_leaf_nodes=80, min_samples_leaf=73;, score=-0.093 total time=   2.0s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.025403258323946878, max_iter=169, max_leaf_nodes=80, min_samples_leaf=73;, score=-0.095 total time=   2.6s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.025403258323946878, max_iter=169, max_leaf_nodes=80, min_samples_leaf=73;, score=-0.059 total time=   3.6s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.021742653574882014, max_iter=587, max_leaf_nodes=51, min_samples_leaf=59;, score=-0.085 total time=   5.1s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.021742653574882014, max_iter=587, max_leaf_nodes=51, min_samples_leaf=59;, score=-0.074 total time=   7.3s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.021742653574882014, max_iter=587, max_leaf_nodes=51, min_samples_leaf=59;, score=-0.072 total time=   9.6s
-[CV 2/5] END l2_regularization=0, learning_rate=0.019124298727244714, max_iter=805, max_leaf_nodes=37, min_samples_leaf=58;, score=-0.087 total time=   6.8s
-[CV 4/5] END l2_regularization=0, learning_rate=0.019124298727244714, max_iter=805, max_leaf_nodes=37, min_samples_leaf=58;, score=-0.053 total time=   9.3s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.11712517628313615, max_iter=340, max_leaf_nodes=98, min_samples_leaf=76;, score=-0.085 total time=   4.6s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.11712517628313615, max_iter=340, max_leaf_nodes=98, min_samples_leaf=76;, score=-0.072 total time=   5.9s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.11712517628313615, max_iter=340, max_leaf_nodes=98, min_samples_leaf=76;, score=-0.071 total time=   6.7s
-[CV 2/5] END l2_regularization=0, learning_rate=0.028068778181159784, max_iter=292, max_leaf_nodes=71, min_samples_leaf=91;, score=-0.088 total time=   4.0s
-[CV 4/5] END l2_regularization=0, learning_rate=0.028068778181159784, max_iter=292, max_leaf_nodes=71, min_samples_leaf=91;, score=-0.054 total time=   5.5s
-[CV 1/5] END l2_regularization=0, learning_rate=0.030260250384399487, max_iter=719, max_leaf_nodes=81, min_samples_leaf=41;, score=-0.085 total time=   8.4s
-[CV 3/5] END l2_regularization=0, learning_rate=0.030260250384399487, max_iter=719, max_leaf_nodes=81, min_samples_leaf=41;, score=-0.072 total time=  10.5s
-[CV 5/5] END l2_regularization=0, learning_rate=0.030260250384399487, max_iter=719, max_leaf_nodes=81, min_samples_leaf=41;, score=-0.070 total time=  13.0s
-[CV 5/5] END l2_regularization=0, learning_rate=0.04580587993729523, max_iter=234, max_leaf_nodes=60, min_samples_leaf=58;, score=-0.072 total time=   4.3s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.03157142547498918, max_iter=617, max_leaf_nodes=97, min_samples_leaf=66;, score=-0.086 total time=   9.6s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.03157142547498918, max_iter=617, max_leaf_nodes=97, min_samples_leaf=66;, score=-0.052 total time=  11.8s
-[CV 1/5] END l2_regularization=0, learning_rate=0.01741740723506179, max_iter=451, max_leaf_nodes=61, min_samples_leaf=26;, score=-0.084 total time=   4.6s
-[CV 2/5] END l2_regularization=0, learning_rate=0.01741740723506179, max_iter=451, max_leaf_nodes=61, min_samples_leaf=26;, score=-0.087 total time=   5.6s
-[CV 4/5] END l2_regularization=0, learning_rate=0.01741740723506179, max_iter=451, max_leaf_nodes=61, min_samples_leaf=26;, score=-0.054 total time=   7.8s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.07733246416120725, max_iter=622, max_leaf_nodes=65, min_samples_leaf=95;, score=-0.085 total time=   6.5s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.07733246416120725, max_iter=622, max_leaf_nodes=65, min_samples_leaf=95;, score=-0.087 total time=   7.5s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.07733246416120725, max_iter=622, max_leaf_nodes=65, min_samples_leaf=95;, score=-0.052 total time=   8.9s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.06104577238433952, max_iter=651, max_leaf_nodes=63, min_samples_leaf=15;, score=-0.085 total time=   5.6s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.06104577238433952, max_iter=651, max_leaf_nodes=63, min_samples_leaf=15;, score=-0.071 total time=   7.4s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.06104577238433952, max_iter=651, max_leaf_nodes=63, min_samples_leaf=15;, score=-0.070 total time=   9.2s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.018069435509801193, max_iter=193, max_leaf_nodes=26, min_samples_leaf=52;, score=-0.113 total time=   1.6s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.018069435509801193, max_iter=193, max_leaf_nodes=26, min_samples_leaf=52;, score=-0.079 total time=   2.4s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.06432756164440732, max_iter=207, max_leaf_nodes=95, min_samples_leaf=25;, score=-0.086 total time=   2.7s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.06432756164440732, max_iter=207, max_leaf_nodes=95, min_samples_leaf=25;, score=-0.073 total time=   3.6s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.06432756164440732, max_iter=207, max_leaf_nodes=95, min_samples_leaf=25;, score=-0.071 total time=   4.5s
-[CV 2/5] END l2_regularization=0, learning_rate=0.02122309915061082, max_iter=196, max_leaf_nodes=79, min_samples_leaf=94;, score=-0.097 total time=   2.9s
-[CV 4/5] END l2_regularization=0, learning_rate=0.02122309915061082, max_iter=196, max_leaf_nodes=79, min_samples_leaf=94;, score=-0.060 total time=   4.1s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.10825552333994017, max_iter=773, max_leaf_nodes=68, min_samples_leaf=50;, score=-0.087 total time=   8.0s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.10825552333994017, max_iter=773, max_leaf_nodes=68, min_samples_leaf=50;, score=-0.073 total time=   9.1s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.06104577238433952, max_iter=651, max_leaf_nodes=63, min_samples_leaf=15;, score=-0.052 total time=   8.7s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.07191122891339627, max_iter=62, max_leaf_nodes=53, min_samples_leaf=46;, score=-0.091 total time=   0.6s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.07191122891339627, max_iter=62, max_leaf_nodes=53, min_samples_leaf=46;, score=-0.094 total time=   0.8s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.07191122891339627, max_iter=62, max_leaf_nodes=53, min_samples_leaf=46;, score=-0.085 total time=   1.0s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.07191122891339627, max_iter=62, max_leaf_nodes=53, min_samples_leaf=46;, score=-0.061 total time=   1.1s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.07191122891339627, max_iter=62, max_leaf_nodes=53, min_samples_leaf=46;, score=-0.082 total time=   1.3s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.018069435509801193, max_iter=193, max_leaf_nodes=26, min_samples_leaf=52;, score=-0.103 total time=   1.2s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.018069435509801193, max_iter=193, max_leaf_nodes=26, min_samples_leaf=52;, score=-0.108 total time=   2.0s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.018069435509801193, max_iter=193, max_leaf_nodes=26, min_samples_leaf=52;, score=-0.102 total time=   2.8s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.06432756164440732, max_iter=207, max_leaf_nodes=95, min_samples_leaf=25;, score=-0.087 total time=   3.1s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.06432756164440732, max_iter=207, max_leaf_nodes=95, min_samples_leaf=25;, score=-0.052 total time=   4.1s
-[CV 1/5] END l2_regularization=0, learning_rate=0.02122309915061082, max_iter=196, max_leaf_nodes=79, min_samples_leaf=94;, score=-0.094 total time=   2.1s
-[CV 3/5] END l2_regularization=0, learning_rate=0.02122309915061082, max_iter=196, max_leaf_nodes=79, min_samples_leaf=94;, score=-0.083 total time=   3.5s
-[CV 5/5] END l2_regularization=0, learning_rate=0.02122309915061082, max_iter=196, max_leaf_nodes=79, min_samples_leaf=94;, score=-0.080 total time=   4.6s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.10825552333994017, max_iter=773, max_leaf_nodes=68, min_samples_leaf=50;, score=-0.087 total time=   8.4s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.10825552333994017, max_iter=773, max_leaf_nodes=68, min_samples_leaf=50;, score=-0.053 total time=   9.9s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.07713310095348909, max_iter=520, max_leaf_nodes=28, min_samples_leaf=34;, score=-0.079 total time=   2.7s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.07713310095348909, max_iter=520, max_leaf_nodes=28, min_samples_leaf=34;, score=-0.087 total time=   3.3s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.07713310095348909, max_iter=520, max_leaf_nodes=28, min_samples_leaf=34;, score=-0.073 total time=   3.9s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.07713310095348909, max_iter=520, max_leaf_nodes=28, min_samples_leaf=34;, score=-0.071 total time=   5.2s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.13080204187024894, max_iter=945, max_leaf_nodes=48, min_samples_leaf=96;, score=-0.088 total time=   8.9s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.13080204187024894, max_iter=945, max_leaf_nodes=48, min_samples_leaf=96;, score=-0.053 total time=  10.8s
-[CV 1/5] END l2_regularization=0, learning_rate=0.07108555787674295, max_iter=962, max_leaf_nodes=98, min_samples_leaf=64;, score=-0.086 total time=  13.4s
-[CV 3/5] END l2_regularization=0, learning_rate=0.07108555787674295, max_iter=962, max_leaf_nodes=98, min_samples_leaf=64;, score=-0.072 total time=  15.9s
-[CV 5/5] END l2_regularization=0, learning_rate=0.07108555787674295, max_iter=962, max_leaf_nodes=98, min_samples_leaf=64;, score=-0.071 total time=  17.8s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.027166449778728348, max_iter=773, max_leaf_nodes=25, min_samples_leaf=74;, score=-0.075 total time=   6.3s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.027166449778728348, max_iter=773, max_leaf_nodes=25, min_samples_leaf=74;, score=-0.074 total time=   8.6s
-[CV 5/5] END l2_regularization=0, learning_rate=0.026178427162123704, max_iter=313, max_leaf_nodes=21, min_samples_leaf=83;, score=-0.083 total time=   3.8s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.11447946792298883, max_iter=18, max_leaf_nodes=28, min_samples_leaf=62;, score=-0.165 total time=   0.4s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.10774957130298875, max_iter=63, max_leaf_nodes=42, min_samples_leaf=38;, score=-0.090 total time=   0.7s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.10774957130298875, max_iter=63, max_leaf_nodes=42, min_samples_leaf=38;, score=-0.058 total time=   1.0s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.018206699490537936, max_iter=977, max_leaf_nodes=45, min_samples_leaf=52;, score=-0.082 total time=   7.4s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.018206699490537936, max_iter=977, max_leaf_nodes=45, min_samples_leaf=52;, score=-0.073 total time=  10.5s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.018206699490537936, max_iter=977, max_leaf_nodes=45, min_samples_leaf=52;, score=-0.071 total time=  13.7s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.028841127455629195, max_iter=887, max_leaf_nodes=91, min_samples_leaf=80;, score=-0.084 total time=  11.3s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.028841127455629195, max_iter=887, max_leaf_nodes=91, min_samples_leaf=80;, score=-0.071 total time=  14.5s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.028841127455629195, max_iter=887, max_leaf_nodes=91, min_samples_leaf=80;, score=-0.069 total time=  17.4s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.06730580432287474, max_iter=690, max_leaf_nodes=42, min_samples_leaf=82;, score=-0.052 total time=   8.0s
-[CV 1/5] END l2_regularization=0, learning_rate=0.04677189588232126, max_iter=825, max_leaf_nodes=29, min_samples_leaf=22;, score=-0.078 total time=   4.3s
-[CV 2/5] END l2_regularization=0, learning_rate=0.04677189588232126, max_iter=825, max_leaf_nodes=29, min_samples_leaf=22;, score=-0.086 total time=   5.4s
-[CV 4/5] END l2_regularization=0, learning_rate=0.04677189588232126, max_iter=825, max_leaf_nodes=29, min_samples_leaf=22;, score=-0.052 total time=   7.3s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.0681874031929378, max_iter=42, max_leaf_nodes=57, min_samples_leaf=90;, score=-0.116 total time=   0.4s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.0681874031929378, max_iter=42, max_leaf_nodes=57, min_samples_leaf=90;, score=-0.119 total time=   0.6s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.0681874031929378, max_iter=42, max_leaf_nodes=57, min_samples_leaf=90;, score=-0.110 total time=   0.7s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.0681874031929378, max_iter=42, max_leaf_nodes=57, min_samples_leaf=90;, score=-0.086 total time=   0.8s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.0681874031929378, max_iter=42, max_leaf_nodes=57, min_samples_leaf=90;, score=-0.103 total time=   1.0s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.034978973635211824, max_iter=384, max_leaf_nodes=31, min_samples_leaf=44;, score=-0.082 total time=   2.4s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.034978973635211824, max_iter=384, max_leaf_nodes=31, min_samples_leaf=44;, score=-0.076 total time=   3.8s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.034978973635211824, max_iter=384, max_leaf_nodes=31, min_samples_leaf=44;, score=-0.075 total time=   4.9s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.04600800608350142, max_iter=785, max_leaf_nodes=36, min_samples_leaf=41;, score=-0.086 total time=   5.8s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.04600800608350142, max_iter=785, max_leaf_nodes=36, min_samples_leaf=41;, score=-0.052 total time=   7.9s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.03358688031961472, max_iter=618, max_leaf_nodes=37, min_samples_leaf=78;, score=-0.083 total time=   4.2s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.10825552333994017, max_iter=773, max_leaf_nodes=68, min_samples_leaf=50;, score=-0.071 total time=  10.8s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.07713310095348909, max_iter=520, max_leaf_nodes=28, min_samples_leaf=34;, score=-0.052 total time=   4.6s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.13080204187024894, max_iter=945, max_leaf_nodes=48, min_samples_leaf=96;, score=-0.087 total time=   7.2s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.13080204187024894, max_iter=945, max_leaf_nodes=48, min_samples_leaf=96;, score=-0.072 total time=   9.9s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.13080204187024894, max_iter=945, max_leaf_nodes=48, min_samples_leaf=96;, score=-0.071 total time=  11.6s
-[CV 2/5] END l2_regularization=0, learning_rate=0.07108555787674295, max_iter=962, max_leaf_nodes=98, min_samples_leaf=64;, score=-0.087 total time=  15.0s
-[CV 4/5] END l2_regularization=0, learning_rate=0.07108555787674295, max_iter=962, max_leaf_nodes=98, min_samples_leaf=64;, score=-0.053 total time=  16.8s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.027166449778728348, max_iter=773, max_leaf_nodes=25, min_samples_leaf=74;, score=-0.081 total time=   4.1s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.027166449778728348, max_iter=773, max_leaf_nodes=25, min_samples_leaf=74;, score=-0.086 total time=   5.1s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.027166449778728348, max_iter=773, max_leaf_nodes=25, min_samples_leaf=74;, score=-0.053 total time=   7.3s
-[CV 1/5] END l2_regularization=0, learning_rate=0.026178427162123704, max_iter=313, max_leaf_nodes=21, min_samples_leaf=83;, score=-0.084 total time=   1.6s
-[CV 2/5] END l2_regularization=0, learning_rate=0.026178427162123704, max_iter=313, max_leaf_nodes=21, min_samples_leaf=83;, score=-0.093 total time=   2.2s
-[CV 3/5] END l2_regularization=0, learning_rate=0.026178427162123704, max_iter=313, max_leaf_nodes=21, min_samples_leaf=83;, score=-0.085 total time=   2.7s
-[CV 4/5] END l2_regularization=0, learning_rate=0.026178427162123704, max_iter=313, max_leaf_nodes=21, min_samples_leaf=83;, score=-0.060 total time=   3.2s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.11447946792298883, max_iter=18, max_leaf_nodes=28, min_samples_leaf=62;, score=-0.168 total time=   0.1s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.11447946792298883, max_iter=18, max_leaf_nodes=28, min_samples_leaf=62;, score=-0.178 total time=   0.2s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.11447946792298883, max_iter=18, max_leaf_nodes=28, min_samples_leaf=62;, score=-0.176 total time=   0.3s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.11447946792298883, max_iter=18, max_leaf_nodes=28, min_samples_leaf=62;, score=-0.145 total time=   0.3s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.10774957130298875, max_iter=63, max_leaf_nodes=42, min_samples_leaf=38;, score=-0.086 total time=   0.5s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.10774957130298875, max_iter=63, max_leaf_nodes=42, min_samples_leaf=38;, score=-0.080 total time=   0.8s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.10774957130298875, max_iter=63, max_leaf_nodes=42, min_samples_leaf=38;, score=-0.078 total time=   1.1s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.018206699490537936, max_iter=977, max_leaf_nodes=45, min_samples_leaf=52;, score=-0.087 total time=   8.9s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.018206699490537936, max_iter=977, max_leaf_nodes=45, min_samples_leaf=52;, score=-0.052 total time=  12.1s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.05711864291869396, max_iter=121, max_leaf_nodes=98, min_samples_leaf=39;, score=-0.087 total time=   1.7s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.05711864291869396, max_iter=121, max_leaf_nodes=98, min_samples_leaf=39;, score=-0.088 total time=   2.1s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.05711864291869396, max_iter=121, max_leaf_nodes=98, min_samples_leaf=39;, score=-0.075 total time=   2.5s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.05711864291869396, max_iter=121, max_leaf_nodes=98, min_samples_leaf=39;, score=-0.053 total time=   2.8s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.05711864291869396, max_iter=121, max_leaf_nodes=98, min_samples_leaf=39;, score=-0.073 total time=   3.2s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.028841127455629195, max_iter=887, max_leaf_nodes=91, min_samples_leaf=80;, score=-0.086 total time=  13.3s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.028841127455629195, max_iter=887, max_leaf_nodes=91, min_samples_leaf=80;, score=-0.052 total time=  16.1s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.06730580432287474, max_iter=690, max_leaf_nodes=42, min_samples_leaf=82;, score=-0.083 total time=   5.2s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.06730580432287474, max_iter=690, max_leaf_nodes=42, min_samples_leaf=82;, score=-0.086 total time=   6.0s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.06730580432287474, max_iter=690, max_leaf_nodes=42, min_samples_leaf=82;, score=-0.071 total time=   6.7s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.06730580432287474, max_iter=690, max_leaf_nodes=42, min_samples_leaf=82;, score=-0.070 total time=   8.5s
-[CV 3/5] END l2_regularization=0, learning_rate=0.04677189588232126, max_iter=825, max_leaf_nodes=29, min_samples_leaf=22;, score=-0.072 total time=   6.4s
-[CV 5/5] END l2_regularization=0, learning_rate=0.04677189588232126, max_iter=825, max_leaf_nodes=29, min_samples_leaf=22;, score=-0.070 total time=   8.5s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.034978973635211824, max_iter=384, max_leaf_nodes=31, min_samples_leaf=44;, score=-0.088 total time=   3.0s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.034978973635211824, max_iter=384, max_leaf_nodes=31, min_samples_leaf=44;, score=-0.055 total time=   4.3s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.04600800608350142, max_iter=785, max_leaf_nodes=36, min_samples_leaf=41;, score=-0.080 total time=   4.9s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.04600800608350142, max_iter=785, max_leaf_nodes=36, min_samples_leaf=41;, score=-0.072 total time=   6.9s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.04600800608350142, max_iter=785, max_leaf_nodes=36, min_samples_leaf=41;, score=-0.070 total time=   8.8s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.03358688031961472, max_iter=618, max_leaf_nodes=37, min_samples_leaf=78;, score=-0.073 total time=   6.1s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.03358688031961472, max_iter=618, max_leaf_nodes=37, min_samples_leaf=78;, score=-0.072 total time=   8.0s
-[CV 2/5] END l2_regularization=0, learning_rate=0.0235144186910031, max_iter=838, max_leaf_nodes=57, min_samples_leaf=33;, score=-0.086 total time=   8.7s
-[CV 4/5] END l2_regularization=0, learning_rate=0.0235144186910031, max_iter=838, max_leaf_nodes=57, min_samples_leaf=33;, score=-0.052 total time=  11.5s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.01586379998337256, max_iter=58, max_leaf_nodes=26, min_samples_leaf=58;, score=-0.438 total time=   0.4s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.01586379998337256, max_iter=58, max_leaf_nodes=26, min_samples_leaf=58;, score=-0.448 total time=   0.5s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.01586379998337256, max_iter=58, max_leaf_nodes=26, min_samples_leaf=58;, score=-0.447 total time=   0.7s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.01586379998337256, max_iter=58, max_leaf_nodes=26, min_samples_leaf=58;, score=-0.413 total time=   0.8s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.01586379998337256, max_iter=58, max_leaf_nodes=26, min_samples_leaf=58;, score=-0.433 total time=   1.0s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.044262483008252064, max_iter=55, max_leaf_nodes=15, min_samples_leaf=51;, score=-0.158 total time=   0.3s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.044262483008252064, max_iter=55, max_leaf_nodes=15, min_samples_leaf=51;, score=-0.168 total time=   0.4s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.03358688031961472, max_iter=618, max_leaf_nodes=37, min_samples_leaf=78;, score=-0.086 total time=   5.1s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.03358688031961472, max_iter=618, max_leaf_nodes=37, min_samples_leaf=78;, score=-0.053 total time=   7.0s
-[CV 1/5] END l2_regularization=0, learning_rate=0.0235144186910031, max_iter=838, max_leaf_nodes=57, min_samples_leaf=33;, score=-0.082 total time=   7.4s
-[CV 3/5] END l2_regularization=0, learning_rate=0.0235144186910031, max_iter=838, max_leaf_nodes=57, min_samples_leaf=33;, score=-0.072 total time=  10.1s
-[CV 5/5] END l2_regularization=0, learning_rate=0.0235144186910031, max_iter=838, max_leaf_nodes=57, min_samples_leaf=33;, score=-0.070 total time=  12.7s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.0402045686860446, max_iter=190, max_leaf_nodes=69, min_samples_leaf=77;, score=-0.088 total time=   2.5s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.0402045686860446, max_iter=190, max_leaf_nodes=69, min_samples_leaf=77;, score=-0.054 total time=   3.6s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.0364073431914975, max_iter=992, max_leaf_nodes=42, min_samples_leaf=81;, score=-0.084 total time=   7.4s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.0364073431914975, max_iter=992, max_leaf_nodes=42, min_samples_leaf=81;, score=-0.071 total time=   9.5s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.0364073431914975, max_iter=992, max_leaf_nodes=42, min_samples_leaf=81;, score=-0.070 total time=  12.0s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.05406205145108159, max_iter=744, max_leaf_nodes=63, min_samples_leaf=72;, score=-0.071 total time=   9.1s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.05406205145108159, max_iter=744, max_leaf_nodes=63, min_samples_leaf=72;, score=-0.070 total time=  11.0s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.05573813449094821, max_iter=801, max_leaf_nodes=41, min_samples_leaf=61;, score=-0.086 total time=   6.4s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.05573813449094821, max_iter=801, max_leaf_nodes=41, min_samples_leaf=61;, score=-0.051 total time=   8.2s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.02693115057671843, max_iter=499, max_leaf_nodes=11, min_samples_leaf=31;, score=-0.083 total time=   1.8s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.02693115057671843, max_iter=499, max_leaf_nodes=11, min_samples_leaf=31;, score=-0.097 total time=   2.4s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.02693115057671843, max_iter=499, max_leaf_nodes=11, min_samples_leaf=31;, score=-0.089 total time=   3.0s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.02693115057671843, max_iter=499, max_leaf_nodes=11, min_samples_leaf=31;, score=-0.086 total time=   4.3s
-[CV 3/5] END l2_regularization=0, learning_rate=0.020545304888629264, max_iter=255, max_leaf_nodes=57, min_samples_leaf=53;, score=-0.080 total time=   3.9s
-[CV 5/5] END l2_regularization=0, learning_rate=0.020545304888629264, max_iter=255, max_leaf_nodes=57, min_samples_leaf=53;, score=-0.078 total time=   5.1s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.029689398754238937, max_iter=547, max_leaf_nodes=59, min_samples_leaf=39;, score=-0.086 total time=   5.9s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.029689398754238937, max_iter=547, max_leaf_nodes=59, min_samples_leaf=39;, score=-0.052 total time=   8.2s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.018100286096202182, max_iter=912, max_leaf_nodes=66, min_samples_leaf=50;, score=-0.086 total time=   9.1s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.018100286096202182, max_iter=912, max_leaf_nodes=66, min_samples_leaf=50;, score=-0.072 total time=  12.4s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.018100286096202182, max_iter=912, max_leaf_nodes=66, min_samples_leaf=50;, score=-0.070 total time=  15.6s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.02346200983838184, max_iter=785, max_leaf_nodes=25, min_samples_leaf=28;, score=-0.076 total time=   6.4s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.02346200983838184, max_iter=785, max_leaf_nodes=25, min_samples_leaf=28;, score=-0.074 total time=   8.5s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.11553362711827721, max_iter=152, max_leaf_nodes=75, min_samples_leaf=46;, score=-0.052 total time=   2.8s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.0438217056309148, max_iter=584, max_leaf_nodes=71, min_samples_leaf=36;, score=-0.082 total time=   6.1s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.0438217056309148, max_iter=584, max_leaf_nodes=71, min_samples_leaf=36;, score=-0.072 total time=   7.5s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.0438217056309148, max_iter=584, max_leaf_nodes=71, min_samples_leaf=36;, score=-0.070 total time=   9.3s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.10876668126736791, max_iter=314, max_leaf_nodes=61, min_samples_leaf=56;, score=-0.052 total time=   4.3s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.020097950474888052, max_iter=273, max_leaf_nodes=62, min_samples_leaf=74;, score=-0.089 total time=   2.6s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.020097950474888052, max_iter=273, max_leaf_nodes=62, min_samples_leaf=74;, score=-0.091 total time=   3.4s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.020097950474888052, max_iter=273, max_leaf_nodes=62, min_samples_leaf=74;, score=-0.057 total time=   4.9s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.13846598180825453, max_iter=112, max_leaf_nodes=77, min_samples_leaf=20;, score=-0.087 total time=   1.2s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.13846598180825453, max_iter=112, max_leaf_nodes=77, min_samples_leaf=20;, score=-0.088 total time=   1.4s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.13846598180825453, max_iter=112, max_leaf_nodes=77, min_samples_leaf=20;, score=-0.053 total time=   1.9s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.023467741353342578, max_iter=359, max_leaf_nodes=56, min_samples_leaf=69;, score=-0.086 total time=   3.3s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.023467741353342578, max_iter=359, max_leaf_nodes=56, min_samples_leaf=69;, score=-0.075 total time=   5.0s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.023467741353342578, max_iter=359, max_leaf_nodes=56, min_samples_leaf=69;, score=-0.074 total time=   6.6s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.02036276181443912, max_iter=379, max_leaf_nodes=39, min_samples_leaf=33;, score=-0.078 total time=   4.5s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.02036276181443912, max_iter=379, max_leaf_nodes=39, min_samples_leaf=33;, score=-0.077 total time=   6.2s
-[CV 2/5] END l2_regularization=0, learning_rate=0.03757613958828851, max_iter=796, max_leaf_nodes=67, min_samples_leaf=69;, score=-0.086 total time=   9.1s
-[CV 4/5] END l2_regularization=0, learning_rate=0.03757613958828851, max_iter=796, max_leaf_nodes=67, min_samples_leaf=69;, score=-0.052 total time=  11.4s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.01590164312349154, max_iter=126, max_leaf_nodes=71, min_samples_leaf=37;, score=-0.178 total time=   1.5s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.01590164312349154, max_iter=126, max_leaf_nodes=71, min_samples_leaf=37;, score=-0.180 total time=   1.9s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.01590164312349154, max_iter=126, max_leaf_nodes=71, min_samples_leaf=37;, score=-0.174 total time=   2.3s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.01590164312349154, max_iter=126, max_leaf_nodes=71, min_samples_leaf=37;, score=-0.153 total time=   2.6s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.01590164312349154, max_iter=126, max_leaf_nodes=71, min_samples_leaf=37;, score=-0.166 total time=   3.0s
-[CV 2/5] END l2_regularization=0, learning_rate=0.07321349845812918, max_iter=650, max_leaf_nodes=67, min_samples_leaf=15;, score=-0.086 total time=   6.5s
-[CV 4/5] END l2_regularization=0, learning_rate=0.07321349845812918, max_iter=650, max_leaf_nodes=67, min_samples_leaf=15;, score=-0.052 total time=   8.2s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.044262483008252064, max_iter=55, max_leaf_nodes=15, min_samples_leaf=51;, score=-0.168 total time=   0.5s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.044262483008252064, max_iter=55, max_leaf_nodes=15, min_samples_leaf=51;, score=-0.130 total time=   0.6s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.044262483008252064, max_iter=55, max_leaf_nodes=15, min_samples_leaf=51;, score=-0.157 total time=   0.7s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.0402045686860446, max_iter=190, max_leaf_nodes=69, min_samples_leaf=77;, score=-0.086 total time=   1.9s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.0402045686860446, max_iter=190, max_leaf_nodes=69, min_samples_leaf=77;, score=-0.075 total time=   3.0s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.0402045686860446, max_iter=190, max_leaf_nodes=69, min_samples_leaf=77;, score=-0.073 total time=   4.0s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.0364073431914975, max_iter=992, max_leaf_nodes=42, min_samples_leaf=81;, score=-0.085 total time=   8.3s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.0364073431914975, max_iter=992, max_leaf_nodes=42, min_samples_leaf=81;, score=-0.051 total time=  10.8s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.05406205145108159, max_iter=744, max_leaf_nodes=63, min_samples_leaf=72;, score=-0.084 total time=   7.5s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.05406205145108159, max_iter=744, max_leaf_nodes=63, min_samples_leaf=72;, score=-0.086 total time=   8.3s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.05406205145108159, max_iter=744, max_leaf_nodes=63, min_samples_leaf=72;, score=-0.052 total time=  10.0s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.05573813449094821, max_iter=801, max_leaf_nodes=41, min_samples_leaf=61;, score=-0.082 total time=   5.7s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.05573813449094821, max_iter=801, max_leaf_nodes=41, min_samples_leaf=61;, score=-0.071 total time=   7.4s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.05573813449094821, max_iter=801, max_leaf_nodes=41, min_samples_leaf=61;, score=-0.070 total time=   9.4s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.02693115057671843, max_iter=499, max_leaf_nodes=11, min_samples_leaf=31;, score=-0.061 total time=   3.6s
-[CV 1/5] END l2_regularization=0, learning_rate=0.020545304888629264, max_iter=255, max_leaf_nodes=57, min_samples_leaf=53;, score=-0.088 total time=   2.4s
-[CV 2/5] END l2_regularization=0, learning_rate=0.020545304888629264, max_iter=255, max_leaf_nodes=57, min_samples_leaf=53;, score=-0.091 total time=   3.2s
-[CV 4/5] END l2_regularization=0, learning_rate=0.020545304888629264, max_iter=255, max_leaf_nodes=57, min_samples_leaf=53;, score=-0.058 total time=   4.6s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.029689398754238937, max_iter=547, max_leaf_nodes=59, min_samples_leaf=39;, score=-0.082 total time=   5.1s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.029689398754238937, max_iter=547, max_leaf_nodes=59, min_samples_leaf=39;, score=-0.072 total time=   6.9s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.029689398754238937, max_iter=547, max_leaf_nodes=59, min_samples_leaf=39;, score=-0.071 total time=   8.9s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.018100286096202182, max_iter=912, max_leaf_nodes=66, min_samples_leaf=50;, score=-0.086 total time=  10.7s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.018100286096202182, max_iter=912, max_leaf_nodes=66, min_samples_leaf=50;, score=-0.052 total time=  14.1s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.02346200983838184, max_iter=785, max_leaf_nodes=25, min_samples_leaf=28;, score=-0.079 total time=   4.1s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.02346200983838184, max_iter=785, max_leaf_nodes=25, min_samples_leaf=28;, score=-0.087 total time=   5.2s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.02346200983838184, max_iter=785, max_leaf_nodes=25, min_samples_leaf=28;, score=-0.054 total time=   7.4s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.11553362711827721, max_iter=152, max_leaf_nodes=75, min_samples_leaf=46;, score=-0.086 total time=   1.7s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.11553362711827721, max_iter=152, max_leaf_nodes=75, min_samples_leaf=46;, score=-0.087 total time=   2.0s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.11553362711827721, max_iter=152, max_leaf_nodes=75, min_samples_leaf=46;, score=-0.073 total time=   2.2s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.11553362711827721, max_iter=152, max_leaf_nodes=75, min_samples_leaf=46;, score=-0.071 total time=   2.9s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.0438217056309148, max_iter=584, max_leaf_nodes=71, min_samples_leaf=36;, score=-0.086 total time=   6.8s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.0438217056309148, max_iter=584, max_leaf_nodes=71, min_samples_leaf=36;, score=-0.051 total time=   8.5s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.10876668126736791, max_iter=314, max_leaf_nodes=61, min_samples_leaf=56;, score=-0.085 total time=   3.0s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.10876668126736791, max_iter=314, max_leaf_nodes=61, min_samples_leaf=56;, score=-0.086 total time=   3.3s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.10876668126736791, max_iter=314, max_leaf_nodes=61, min_samples_leaf=56;, score=-0.072 total time=   3.7s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.10876668126736791, max_iter=314, max_leaf_nodes=61, min_samples_leaf=56;, score=-0.070 total time=   4.6s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.020097950474888052, max_iter=273, max_leaf_nodes=62, min_samples_leaf=74;, score=-0.079 total time=   4.2s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.020097950474888052, max_iter=273, max_leaf_nodes=62, min_samples_leaf=74;, score=-0.077 total time=   5.5s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.13846598180825453, max_iter=112, max_leaf_nodes=77, min_samples_leaf=20;, score=-0.075 total time=   1.7s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.13846598180825453, max_iter=112, max_leaf_nodes=77, min_samples_leaf=20;, score=-0.072 total time=   2.2s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.023467741353342578, max_iter=359, max_leaf_nodes=56, min_samples_leaf=69;, score=-0.088 total time=   4.1s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.023467741353342578, max_iter=359, max_leaf_nodes=56, min_samples_leaf=69;, score=-0.054 total time=   5.8s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.02036276181443912, max_iter=379, max_leaf_nodes=39, min_samples_leaf=33;, score=-0.082 total time=   2.8s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.02036276181443912, max_iter=379, max_leaf_nodes=39, min_samples_leaf=33;, score=-0.089 total time=   3.6s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.02036276181443912, max_iter=379, max_leaf_nodes=39, min_samples_leaf=33;, score=-0.056 total time=   5.2s
-[CV 1/5] END l2_regularization=0, learning_rate=0.03757613958828851, max_iter=796, max_leaf_nodes=67, min_samples_leaf=69;, score=-0.085 total time=   8.3s
-[CV 3/5] END l2_regularization=0, learning_rate=0.03757613958828851, max_iter=796, max_leaf_nodes=67, min_samples_leaf=69;, score=-0.071 total time=  10.3s
-[CV 5/5] END l2_regularization=0, learning_rate=0.03757613958828851, max_iter=796, max_leaf_nodes=67, min_samples_leaf=69;, score=-0.070 total time=  12.7s
-[CV 1/5] END l2_regularization=0, learning_rate=0.07321349845812918, max_iter=650, max_leaf_nodes=67, min_samples_leaf=15;, score=-0.086 total time=   5.8s
-[CV 3/5] END l2_regularization=0, learning_rate=0.07321349845812918, max_iter=650, max_leaf_nodes=67, min_samples_leaf=15;, score=-0.071 total time=   7.4s
-[CV 5/5] END l2_regularization=0, learning_rate=0.07321349845812918, max_iter=650, max_leaf_nodes=67, min_samples_leaf=15;, score=-0.070 total time=   9.1s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.02605425252990759, max_iter=127, max_leaf_nodes=57, min_samples_leaf=15;, score=-0.074 total time=   2.3s
+Fitting 3 folds for each of 15 candidates, totalling 45 fits
+
+base_model_linreg:
+	rmse: 360.6310119628906
+	smape_scaled: 0.01826603338122368
 base_model_hgbr:
-	rmse: 141.18192350021386
-	smape_scaled: 0.007262918204131581
+	rmse: 192.48819491950226
+	smape_scaled: 0.008353557392833687
+base_model_nn:
+	rmse: 326.14410400390625
+	smape_scaled: 0.016472227871418
 
 optimal deterministic metrics:
 		rmse: 0.0
 		smape_scaled: 0.0
 
 base_model metrics:
+	base_model_linreg:
+		rmse: 360.6310119628906
+		smape_scaled: 0.01826603338122368
 	base_model_hgbr:
-		rmse: 141.18192350021386
-		smape_scaled: 0.007262918204131581
+		rmse: 192.48819491950226
+		smape_scaled: 0.008353557392833687
+	base_model_nn:
+		rmse: 326.14410400390625
+		smape_scaled: 0.016472227871418
 
 posthoc metrics:
 
@@ -439,90 +37,49 @@ optimal deterministic metrics:
 		crps: None
 		nll_gaussian: None
 		mean_pinball: None
-
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.02605425252990759, max_iter=127, max_leaf_nodes=57, min_samples_leaf=15;, score=-0.102 total time=   1.3s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.02605425252990759, max_iter=127, max_leaf_nodes=57, min_samples_leaf=15;, score=-0.106 total time=   1.7s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.02605425252990759, max_iter=127, max_leaf_nodes=57, min_samples_leaf=15;, score=-0.098 total time=   2.0s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.02605425252990759, max_iter=127, max_leaf_nodes=57, min_samples_leaf=15;, score=-0.093 total time=   2.8s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.08203292094650758, max_iter=456, max_leaf_nodes=78, min_samples_leaf=36;, score=-0.087 total time=   5.4s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.08203292094650758, max_iter=456, max_leaf_nodes=78, min_samples_leaf=36;, score=-0.052 total time=   6.8s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.03941770377868658, max_iter=85, max_leaf_nodes=35, min_samples_leaf=30;, score=-0.101 total time=   0.6s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.03941770377868658, max_iter=85, max_leaf_nodes=35, min_samples_leaf=30;, score=-0.110 total time=   0.8s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.03941770377868658, max_iter=85, max_leaf_nodes=35, min_samples_leaf=30;, score=-0.104 total time=   1.1s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.03941770377868658, max_iter=85, max_leaf_nodes=35, min_samples_leaf=30;, score=-0.077 total time=   1.3s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.03941770377868658, max_iter=85, max_leaf_nodes=35, min_samples_leaf=30;, score=-0.099 total time=   1.5s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.085888965037134, max_iter=706, max_leaf_nodes=38, min_samples_leaf=92;, score=-0.084 total time=   5.0s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.085888965037134, max_iter=706, max_leaf_nodes=38, min_samples_leaf=92;, score=-0.071 total time=   6.4s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.085888965037134, max_iter=706, max_leaf_nodes=38, min_samples_leaf=92;, score=-0.070 total time=   7.9s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.016676077357496755, max_iter=103, max_leaf_nodes=71, min_samples_leaf=83;, score=-0.207 total time=   3.0s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.01560458994713185, max_iter=483, max_leaf_nodes=57, min_samples_leaf=99;, score=-0.089 total time=   5.7s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.01560458994713185, max_iter=483, max_leaf_nodes=57, min_samples_leaf=99;, score=-0.055 total time=   8.1s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.02235080291081815, max_iter=743, max_leaf_nodes=32, min_samples_leaf=24;, score=-0.079 total time=   4.5s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.02235080291081815, max_iter=743, max_leaf_nodes=32, min_samples_leaf=24;, score=-0.075 total time=   6.7s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.02235080291081815, max_iter=743, max_leaf_nodes=32, min_samples_leaf=24;, score=-0.074 total time=   8.9s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.11555045138823165, max_iter=189, max_leaf_nodes=19, min_samples_leaf=33;, score=-0.056 total time=   1.8s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.047547878357278674, max_iter=334, max_leaf_nodes=13, min_samples_leaf=30;, score=-0.082 total time=   1.3s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.047547878357278674, max_iter=334, max_leaf_nodes=13, min_samples_leaf=30;, score=-0.083 total time=   2.1s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.047547878357278674, max_iter=334, max_leaf_nodes=13, min_samples_leaf=30;, score=-0.082 total time=   3.0s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.015944193986097657, max_iter=905, max_leaf_nodes=41, min_samples_leaf=98;, score=-0.087 total time=   8.2s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.015944193986097657, max_iter=905, max_leaf_nodes=41, min_samples_leaf=98;, score=-0.053 total time=  11.4s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.03666580169588932, max_iter=389, max_leaf_nodes=42, min_samples_leaf=47;, score=-0.083 total time=   2.8s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.03666580169588932, max_iter=389, max_leaf_nodes=42, min_samples_leaf=47;, score=-0.088 total time=   3.5s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.03666580169588932, max_iter=389, max_leaf_nodes=42, min_samples_leaf=47;, score=-0.074 total time=   4.3s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.03666580169588932, max_iter=389, max_leaf_nodes=42, min_samples_leaf=47;, score=-0.073 total time=   5.6s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.05268755536965375, max_iter=622, max_leaf_nodes=21, min_samples_leaf=81;, score=-0.087 total time=   3.7s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.05268755536965375, max_iter=622, max_leaf_nodes=21, min_samples_leaf=81;, score=-0.053 total time=   5.3s
-[CV 1/5] END l2_regularization=0, learning_rate=0.1371771649053416, max_iter=851, max_leaf_nodes=52, min_samples_leaf=58;, score=-0.086 total time=   7.1s
-[CV 3/5] END l2_regularization=0, learning_rate=0.1371771649053416, max_iter=851, max_leaf_nodes=52, min_samples_leaf=58;, score=-0.073 total time=   8.4s
-[CV 5/5] END l2_regularization=0, learning_rate=0.1371771649053416, max_iter=851, max_leaf_nodes=52, min_samples_leaf=58;, score=-0.071 total time=  10.1s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.01759756426667817, max_iter=616, max_leaf_nodes=55, min_samples_leaf=16;, score=-0.074 total time=   8.1s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.01759756426667817, max_iter=616, max_leaf_nodes=55, min_samples_leaf=16;, score=-0.072 total time=  10.4s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.03126560878005276, max_iter=931, max_leaf_nodes=83, min_samples_leaf=48;, score=-0.086 total time=  11.1s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.03126560878005276, max_iter=931, max_leaf_nodes=83, min_samples_leaf=48;, score=-0.072 total time=  13.5s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.03126560878005276, max_iter=931, max_leaf_nodes=83, min_samples_leaf=48;, score=-0.070 total time=  16.2s
-
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.08203292094650758, max_iter=456, max_leaf_nodes=78, min_samples_leaf=36;, score=-0.084 total time=   5.1s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.08203292094650758, max_iter=456, max_leaf_nodes=78, min_samples_leaf=36;, score=-0.072 total time=   6.1s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.08203292094650758, max_iter=456, max_leaf_nodes=78, min_samples_leaf=36;, score=-0.070 total time=   7.4s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.085888965037134, max_iter=706, max_leaf_nodes=38, min_samples_leaf=92;, score=-0.086 total time=   5.6s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.085888965037134, max_iter=706, max_leaf_nodes=38, min_samples_leaf=92;, score=-0.052 total time=   7.1s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.016676077357496755, max_iter=103, max_leaf_nodes=71, min_samples_leaf=83;, score=-0.218 total time=   1.1s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.016676077357496755, max_iter=103, max_leaf_nodes=71, min_samples_leaf=83;, score=-0.222 total time=   1.5s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.016676077357496755, max_iter=103, max_leaf_nodes=71, min_samples_leaf=83;, score=-0.215 total time=   1.8s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.016676077357496755, max_iter=103, max_leaf_nodes=71, min_samples_leaf=83;, score=-0.194 total time=   2.1s
-[CV 1/5] END l2_regularization=0.01, learning_rate=0.01560458994713185, max_iter=483, max_leaf_nodes=57, min_samples_leaf=99;, score=-0.088 total time=   4.4s
-[CV 3/5] END l2_regularization=0.01, learning_rate=0.01560458994713185, max_iter=483, max_leaf_nodes=57, min_samples_leaf=99;, score=-0.076 total time=   6.8s
-[CV 5/5] END l2_regularization=0.01, learning_rate=0.01560458994713185, max_iter=483, max_leaf_nodes=57, min_samples_leaf=99;, score=-0.074 total time=   9.2s
-[CV 2/5] END l2_regularization=0.01, learning_rate=0.02235080291081815, max_iter=743, max_leaf_nodes=32, min_samples_leaf=24;, score=-0.087 total time=   5.7s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.02235080291081815, max_iter=743, max_leaf_nodes=32, min_samples_leaf=24;, score=-0.053 total time=   7.8s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.11555045138823165, max_iter=189, max_leaf_nodes=19, min_samples_leaf=33;, score=-0.079 total time=   0.9s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.11555045138823165, max_iter=189, max_leaf_nodes=19, min_samples_leaf=33;, score=-0.090 total time=   1.1s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.11555045138823165, max_iter=189, max_leaf_nodes=19, min_samples_leaf=33;, score=-0.078 total time=   1.3s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.11555045138823165, max_iter=189, max_leaf_nodes=19, min_samples_leaf=33;, score=-0.076 total time=   1.9s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.047547878357278674, max_iter=334, max_leaf_nodes=13, min_samples_leaf=30;, score=-0.094 total time=   1.7s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.047547878357278674, max_iter=334, max_leaf_nodes=13, min_samples_leaf=30;, score=-0.058 total time=   2.5s
-[CV 1/5] END l2_regularization=0.0001, learning_rate=0.015944193986097657, max_iter=905, max_leaf_nodes=41, min_samples_leaf=98;, score=-0.086 total time=   6.9s
-[CV 3/5] END l2_regularization=0.0001, learning_rate=0.015944193986097657, max_iter=905, max_leaf_nodes=41, min_samples_leaf=98;, score=-0.074 total time=   9.8s
-[CV 5/5] END l2_regularization=0.0001, learning_rate=0.015944193986097657, max_iter=905, max_leaf_nodes=41, min_samples_leaf=98;, score=-0.073 total time=  12.9s
-[CV 4/5] END l2_regularization=0.01, learning_rate=0.03666580169588932, max_iter=389, max_leaf_nodes=42, min_samples_leaf=47;, score=-0.053 total time=   5.0s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.05268755536965375, max_iter=622, max_leaf_nodes=21, min_samples_leaf=81;, score=-0.080 total time=   3.0s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.05268755536965375, max_iter=622, max_leaf_nodes=21, min_samples_leaf=81;, score=-0.073 total time=   4.4s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.05268755536965375, max_iter=622, max_leaf_nodes=21, min_samples_leaf=81;, score=-0.072 total time=   6.0s
-[CV 2/5] END l2_regularization=0, learning_rate=0.1371771649053416, max_iter=851, max_leaf_nodes=52, min_samples_leaf=58;, score=-0.087 total time=   7.8s
-[CV 4/5] END l2_regularization=0, learning_rate=0.1371771649053416, max_iter=851, max_leaf_nodes=52, min_samples_leaf=58;, score=-0.053 total time=   9.2s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.01759756426667817, max_iter=616, max_leaf_nodes=55, min_samples_leaf=16;, score=-0.083 total time=   5.4s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.01759756426667817, max_iter=616, max_leaf_nodes=55, min_samples_leaf=16;, score=-0.086 total time=   6.8s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.01759756426667817, max_iter=616, max_leaf_nodes=55, min_samples_leaf=16;, score=-0.053 total time=   9.3s
-[CV 1/5] END l2_regularization=0.1, learning_rate=0.01864379074402326, max_iter=44, max_leaf_nodes=96, min_samples_leaf=95;, score=-0.473 total time=   0.5s
-[CV 2/5] END l2_regularization=0.1, learning_rate=0.01864379074402326, max_iter=44, max_leaf_nodes=96, min_samples_leaf=95;, score=-0.476 total time=   0.8s
-[CV 3/5] END l2_regularization=0.1, learning_rate=0.01864379074402326, max_iter=44, max_leaf_nodes=96, min_samples_leaf=95;, score=-0.470 total time=   1.0s
-[CV 4/5] END l2_regularization=0.1, learning_rate=0.01864379074402326, max_iter=44, max_leaf_nodes=96, min_samples_leaf=95;, score=-0.444 total time=   1.1s
-[CV 5/5] END l2_regularization=0.1, learning_rate=0.01864379074402326, max_iter=44, max_leaf_nodes=96, min_samples_leaf=95;, score=-0.459 total time=   1.3s
-[CV 2/5] END l2_regularization=0.0001, learning_rate=0.03126560878005276, max_iter=931, max_leaf_nodes=83, min_samples_leaf=48;, score=-0.086 total time=  12.1s
-[CV 4/5] END l2_regularization=0.0001, learning_rate=0.03126560878005276, max_iter=931, max_leaf_nodes=83, min_samples_leaf=48;, score=-0.052 total time=  15.0s
-[CV 1/5] END l2_regularization=0.001, learning_rate=0.028704238761101793, max_iter=205, max_leaf_nodes=67, min_samples_leaf=89;, score=-0.088 total time=   2.1s
-[CV 2/5] END l2_regularization=0.001, learning_rate=0.028704238761101793, max_iter=205, max_leaf_nodes=67, min_samples_leaf=89;, score=-0.091 total time=   2.7s
-[CV 3/5] END l2_regularization=0.001, learning_rate=0.028704238761101793, max_iter=205, max_leaf_nodes=67, min_samples_leaf=89;, score=-0.077 total time=   3.3s
-[CV 4/5] END l2_regularization=0.001, learning_rate=0.028704238761101793, max_iter=205, max_leaf_nodes=67, min_samples_leaf=89;, score=-0.056 total time=   3.8s
-[CV 5/5] END l2_regularization=0.001, learning_rate=0.028704238761101793, max_iter=205, max_leaf_nodes=67, min_samples_leaf=89;, score=-0.075 total time=   3.2s
+[CV] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75; total time=   0.2s
+[CV] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75; total time=   0.4s
+[CV] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89; total time=   1.0s
+[CV] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17; total time=   0.4s
+[CV] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17; total time=   0.4s
+[CV] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52; total time=   0.6s
+[CV] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52; total time=   2.2s
+[CV] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63; total time=   1.1s
+[CV] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63; total time=   2.9s
+[CV] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94; total time=   2.0s
+[CV] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17; total time=   1.8s
+[CV] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53; total time=   0.1s
+[CV] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53; total time=   0.1s
+[CV] END l2_regularization=0.1, learning_rate=0.06076256671994511, max_iter=30, max_leaf_nodes=82, min_samples_leaf=53; total time=   0.1s
+[CV] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23; total time=   0.9s
+[CV] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85; total time=   0.4s
+[CV] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85; total time=   0.7s
+[CV] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92; total time=   1.1s
+[CV] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92; total time=   2.8s
+[CV] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16; total time=   1.7s
+[CV] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32; total time=   1.1s
+[CV] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32; total time=   3.2s
+[CV] END l2_regularization=0.01, learning_rate=0.13390770456530438, max_iter=116, max_leaf_nodes=81, min_samples_leaf=75; total time=   0.3s
+[CV] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89; total time=   0.6s
+[CV] END l2_regularization=0.1, learning_rate=0.021483740577345367, max_iter=476, max_leaf_nodes=96, min_samples_leaf=89; total time=   1.4s
+[CV] END l2_regularization=0.001, learning_rate=0.11022177607905671, max_iter=109, max_leaf_nodes=33, min_samples_leaf=17; total time=   0.5s
+[CV] END l2_regularization=0.1, learning_rate=0.139959090366385, max_iter=501, max_leaf_nodes=39, min_samples_leaf=52; total time=   1.5s
+[CV] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90; total time=   0.3s
+[CV] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90; total time=   0.6s
+[CV] END l2_regularization=0.0001, learning_rate=0.022799022451964707, max_iter=286, max_leaf_nodes=42, min_samples_leaf=90; total time=   0.9s
+[CV] END l2_regularization=0.0001, learning_rate=0.050216644627738984, max_iter=757, max_leaf_nodes=98, min_samples_leaf=63; total time=   2.0s
+[CV] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94; total time=   0.8s
+[CV] END l2_regularization=0.001, learning_rate=0.06136830861665677, max_iter=691, max_leaf_nodes=69, min_samples_leaf=94; total time=   1.4s
+[CV] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17; total time=   1.0s
+[CV] END l2_regularization=0.001, learning_rate=0.036187055819169874, max_iter=253, max_leaf_nodes=73, min_samples_leaf=17; total time=   1.9s
+[CV] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23; total time=   0.9s
+[CV] END l2_regularization=0.0001, learning_rate=0.13334501860528392, max_iter=325, max_leaf_nodes=23, min_samples_leaf=23; total time=   1.0s
+[CV] END l2_regularization=0.0001, learning_rate=0.018782931430590583, max_iter=349, max_leaf_nodes=69, min_samples_leaf=85; total time=   1.1s
+[CV] END l2_regularization=0.01, learning_rate=0.04691029555170554, max_iter=952, max_leaf_nodes=44, min_samples_leaf=92; total time=   1.9s
+[CV] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16; total time=   1.6s
+[CV] END l2_regularization=0, learning_rate=0.027218942030235366, max_iter=881, max_leaf_nodes=13, min_samples_leaf=16; total time=   1.8s
+[CV] END l2_regularization=0.0001, learning_rate=0.05543596180581761, max_iter=486, max_leaf_nodes=72, min_samples_leaf=32; total time=   2.2s
+[CV] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28; total time=   0.6s
+[CV] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28; total time=   1.0s
+[CV] END l2_regularization=0.0001, learning_rate=0.042251817224622214, max_iter=211, max_leaf_nodes=71, min_samples_leaf=28; total time=   0.9s
 ---------------------------------
