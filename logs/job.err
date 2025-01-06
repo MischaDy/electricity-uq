@@ -6,22 +6,22 @@ INFO:root:loading data...
 INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
 INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
 INFO:numexpr.utils:NumExpr defaulting to 16 threads.
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
 A value is trying to be set on a copy of a slice from a DataFrame
 
 See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
   arr.drop(columns=ts_cols, inplace=True)
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
 A value is trying to be set on a copy of a slice from a DataFrame
 
 See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
   arr.drop(columns=ts_cols, inplace=True)
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
 A value is trying to be set on a copy of a slice from a DataFrame
 
 See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
   arr.drop(columns=ts_cols, inplace=True)
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:115: SettingWithCopyWarning: 
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
 A value is trying to be set on a copy of a slice from a DataFrame
 
 See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
@@ -29,113 +29,10 @@ See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stab
 INFO:root:data shapes: (35136, 16), (35040, 16), (35040, 16);  (35136, 1), (35040, 1), (35040, 1)
 INFO:root:training base models...
 INFO:root:skipping training base_model_linreg.
-INFO:root:skipping training base_model_rf.
-INFO:root:training base_model_nn...
-/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/sklearn/utils/validation.py:1339: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
-  y = column_or_1d(y, warn=True)
-INFO:root:epoch 0/100
-INFO:root:epoch 1/100
-INFO:root:epoch 2/100
-INFO:root:epoch 3/100
-INFO:root:epoch 4/100
-INFO:root:epoch 5/100
-INFO:root:epoch 6/100
-INFO:root:epoch 7/100
-INFO:root:epoch 8/100
-INFO:root:epoch 9/100
-INFO:root:epoch 10/100
-INFO:root:epoch 11/100
-INFO:root:epoch 12/100
-INFO:root:epoch 13/100
-INFO:root:epoch 14/100
-INFO:root:epoch 15/100
-INFO:root:epoch 16/100
-INFO:root:epoch 17/100
-INFO:root:epoch 18/100
-INFO:root:epoch 19/100
-INFO:root:epoch 20/100
-INFO:root:epoch 21/100
-INFO:root:epoch 22/100
-INFO:root:epoch 23/100
-INFO:root:epoch 24/100
-INFO:root:epoch 25/100
-INFO:root:epoch 26/100
-INFO:root:epoch 27/100
-INFO:root:epoch 28/100
-INFO:root:epoch 29/100
-INFO:root:epoch 30/100
-INFO:root:epoch 31/100
-INFO:root:epoch 32/100
-INFO:root:epoch 33/100
-INFO:root:epoch 34/100
-INFO:root:epoch 35/100
-INFO:root:epoch 36/100
-INFO:root:epoch 37/100
-INFO:root:epoch 38/100
-INFO:root:epoch 39/100
-INFO:root:epoch 40/100
-INFO:root:epoch 41/100
-INFO:root:epoch 42/100
-INFO:root:epoch 43/100
-INFO:root:epoch 44/100
-INFO:root:epoch 45/100
-INFO:root:epoch 46/100
-INFO:root:epoch 47/100
-INFO:root:epoch 48/100
-INFO:root:epoch 49/100
-INFO:root:epoch 50/100
-INFO:root:epoch 51/100
-INFO:root:epoch 52/100
-INFO:root:epoch 53/100
-INFO:root:epoch 54/100
-INFO:root:epoch 55/100
-INFO:root:epoch 56/100
-INFO:root:epoch 57/100
-INFO:root:epoch 58/100
-INFO:root:epoch 59/100
-INFO:root:epoch 60/100
-INFO:root:epoch 61/100
-INFO:root:epoch 62/100
-INFO:root:epoch 63/100
-INFO:root:epoch 64/100
-INFO:root:epoch 65/100
-INFO:root:epoch 66/100
-INFO:root:epoch 67/100
-INFO:root:epoch 68/100
-INFO:root:epoch 69/100
-INFO:root:epoch 70/100
-INFO:root:epoch 71/100
-INFO:root:epoch 72/100
-INFO:root:epoch 73/100
-INFO:root:epoch 74/100
-INFO:root:epoch 75/100
-INFO:root:epoch 76/100
-INFO:root:epoch 77/100
-INFO:root:epoch 78/100
-INFO:root:epoch 79/100
-INFO:root:epoch 80/100
-INFO:root:epoch 81/100
-INFO:root:epoch 82/100
-INFO:root:epoch 83/100
-INFO:root:epoch 84/100
-INFO:root:epoch 85/100
-INFO:root:epoch 86/100
-INFO:root:epoch 87/100
-INFO:root:epoch 88/100
-INFO:root:epoch 89/100
-INFO:root:epoch 90/100
-INFO:root:epoch 91/100
-INFO:root:epoch 92/100
-INFO:root:epoch 93/100
-INFO:root:epoch 94/100
-INFO:root:epoch 95/100
-INFO:root:epoch 96/100
-INFO:root:epoch 97/100
-INFO:root:epoch 98/100
-INFO:root:epoch 99/100
-INFO:root:filename 'nn_estimator_fit_losses' had no extension. saving as PNG
-INFO:root:saving model in method base_model_nn...
-INFO:root:saving model in path comparison_storage/models/base_model_nn_n35136_it100_nh2_hs50.pth
+INFO:root:training base_model_hgbr...
+INFO:root:saving model in method base_model_hgbr...
+INFO:root:saving model in path comparison_storage/models/base_model_hgbr_n35136_it100_its5.model
+INFO:root:skipping training base_model_nn.
 INFO:root:saving base model results...
 INFO:root:plotting base model results...
 INFO:root:plotting partial plots...
