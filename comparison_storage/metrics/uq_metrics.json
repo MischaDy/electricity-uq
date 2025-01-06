@@ -4,18 +4,36 @@
             "rmse": 360.6310119628906,
             "smape_scaled": 0.01826603338122368
         },
+        "base_model_hgbr": {
+            "rmse": 192.48819491950226,
+            "smape_scaled": 0.008353557392833687
+        },
         "base_model_nn": {
             "rmse": 326.14410400390625,
             "smape_scaled": 0.016472227871418
         }
     },
     "posthoc": {
-        "posthoc_laplace_approximation__base_model_nn": {
-            "rmse": 326.14410400390625,
+        "posthoc_conformal_prediction__base_model_linreg": {
+            "rmse": 360.63104248046875,
+            "smape_scaled": 0.01826603338122368,
+            "crps": 188.22180578634732,
+            "nll_gaussian": 7.897846246383707,
+            "mean_pinball": 10.212810100803742
+        },
+        "posthoc_conformal_prediction__base_model_hgbr": {
+            "rmse": 192.48819491950226,
+            "smape_scaled": 0.008353557392833687,
+            "crps": 87.63863641745206,
+            "nll_gaussian": 7.1093286730858765,
+            "mean_pinball": 5.969282994455053
+        },
+        "posthoc_conformal_prediction__base_model_nn": {
+            "rmse": 326.1440734863281,
             "smape_scaled": 0.016472227871418,
-            "crps": 140.7720983340697,
-            "nll_gaussian": 7.2258472399400455,
-            "mean_pinball": 28.628574509007915
+            "crps": 178.74331974905076,
+            "nll_gaussian": 8.120197821761037,
+            "mean_pinball": 8.197820621238048
         }
     },
     "native": {}

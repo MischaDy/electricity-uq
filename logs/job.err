@@ -10,7 +10,8 @@ INFO:root:data shapes: (3200, 16), (800, 16), (4000, 16);  (3200, 1), (800, 1), 
 INFO:root:training base models...
 INFO:root:training base_model_linreg...
 INFO:root:skipping model training in method base_model_linreg
-INFO:root:skipping training base_model_hgbr.
+INFO:root:training base_model_hgbr...
+INFO:root:skipping model training in method base_model_hgbr
 INFO:root:training base_model_nn...
 INFO:root:skipping model training in method base_model_nn
 INFO:root:saving base model results...
@@ -19,10 +20,52 @@ INFO:root:plotting partial plots...
 INFO:root:plotting full plot...
 INFO:root:plotting partial plots...
 INFO:root:plotting full plot...
+INFO:root:plotting partial plots...
+INFO:root:plotting full plot...
 INFO:root:computing base model metrics...
 INFO:root:running posthoc UQ methods...
 INFO:root:running posthoc methods...
-INFO:root:running posthoc_laplace_approximation on base_model_nn...
+INFO:root:running posthoc_conformal_prediction on base_model_linreg...
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/sklearn/utils/validation.py:1339: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+  y = column_or_1d(y, warn=True)
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 2 concurrent workers.
+[Parallel(n_jobs=-1)]: Done   3 out of   3 | elapsed:   55.4s finished
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 2 concurrent workers.
+[Parallel(n_jobs=-1)]: Done   3 out of   3 | elapsed:    0.0s finished
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/utils.py:564: UserWarning: WARNING: at least one point of training set belongs to every resamplings.
+Increase the number of resamplings
+  warnings.warn(
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/aggregation_functions.py:118: RuntimeWarning: Mean of empty slice
+  return np.nanmean(X, axis=1)
+INFO:root:saving model in method posthoc_conformal_prediction...
+INFO:root:saving model in path comparison_storage/models/posthoc_conformal_prediction_n3200_it3.model
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/estimator/regressor.py:309: RuntimeWarning: invalid value encountered in divide
+  return np.matmul(x, (K / (K.sum(axis=1, keepdims=True))).T)
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/estimator/regressor.py:309: RuntimeWarning: invalid value encountered in divide
+  return np.matmul(x, (K / (K.sum(axis=1, keepdims=True))).T)
+WARNING:root:5 quantiles are too few to compute a reliable std from (should be about 100)
+INFO:root:running posthoc_conformal_prediction on base_model_hgbr...
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/sklearn/utils/validation.py:1339: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+  y = column_or_1d(y, warn=True)
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 2 concurrent workers.
+[Parallel(n_jobs=-1)]: Done   3 out of   3 | elapsed:    3.5s finished
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 2 concurrent workers.
+[Parallel(n_jobs=-1)]: Done   3 out of   3 | elapsed:    1.0s finished
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/utils.py:564: UserWarning: WARNING: at least one point of training set belongs to every resamplings.
+Increase the number of resamplings
+  warnings.warn(
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/aggregation_functions.py:118: RuntimeWarning: Mean of empty slice
+  return np.nanmean(X, axis=1)
+INFO:root:saving model in method posthoc_conformal_prediction...
+INFO:root:saving model in path comparison_storage/models/posthoc_conformal_prediction_n3200_it3.model
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/estimator/regressor.py:309: RuntimeWarning: invalid value encountered in divide
+  return np.matmul(x, (K / (K.sum(axis=1, keepdims=True))).T)
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/estimator/regressor.py:309: RuntimeWarning: invalid value encountered in divide
+  return np.matmul(x, (K / (K.sum(axis=1, keepdims=True))).T)
+WARNING:root:5 quantiles are too few to compute a reliable std from (should be about 100)
+INFO:root:running posthoc_conformal_prediction on base_model_nn...
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/sklearn/utils/validation.py:1339: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+  y = column_or_1d(y, warn=True)
 INFO:root:epoch 0/100
 INFO:root:epoch 1/100
 INFO:root:epoch 2/100
@@ -123,8 +166,23 @@ INFO:root:epoch 96/100
 INFO:root:epoch 97/100
 INFO:root:epoch 98/100
 INFO:root:epoch 99/100
-INFO:root:saving model...
-INFO:root:predicting...
+INFO:root:filename 'nn_estimator_fit_losses' had no extension. saving as PNG
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 2 concurrent workers.
+[Parallel(n_jobs=-1)]: Done   3 out of   3 | elapsed:  1.7min finished
+[Parallel(n_jobs=-1)]: Using backend LokyBackend with 2 concurrent workers.
+[Parallel(n_jobs=-1)]: Done   3 out of   3 | elapsed:    0.2s finished
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/utils.py:564: UserWarning: WARNING: at least one point of training set belongs to every resamplings.
+Increase the number of resamplings
+  warnings.warn(
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/aggregation_functions.py:118: RuntimeWarning: Mean of empty slice
+  return np.nanmean(X, axis=1)
+INFO:root:saving model in method posthoc_conformal_prediction...
+INFO:root:saving model in path comparison_storage/models/posthoc_conformal_prediction_n3200_it3.model
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/estimator/regressor.py:309: RuntimeWarning: invalid value encountered in divide
+  return np.matmul(x, (K / (K.sum(axis=1, keepdims=True))).T)
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/mapie/estimator/regressor.py:309: RuntimeWarning: invalid value encountered in divide
+  return np.matmul(x, (K / (K.sum(axis=1, keepdims=True))).T)
+WARNING:root:5 quantiles are too few to compute a reliable std from (should be about 100)
 INFO:root:saving posthoc UQ results...
 INFO:root:plotting posthoc results...
 INFO:root:running native UQ methods...
