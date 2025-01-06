@@ -58,6 +58,7 @@ def get_data(
     X_train, y_train, X_val, y_val, X_test, y_test, X, y = set_dtype_float(
         X_train, y_train, X_val, y_val, X_test, y_test, X, y
     )
+
     return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
 
 
@@ -488,3 +489,8 @@ def add_val_to_train(X_train: np.ndarray, X_val: np.ndarray, y_train: np.ndarray
     X_train = np.vstack([X_train, X_val])
     y_train = np.vstack([y_train, y_val])
     return X_train, y_train
+
+
+def build_unif_distr(start: float, end: float):
+    from scipy import stats
+    return stats.distributions.uniform(loc=start, scale=end - start)
