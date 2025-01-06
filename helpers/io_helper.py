@@ -227,7 +227,7 @@ class IO_Helper:
         if len(method_name_parts) == 2:
             method_name, base_suffix = method_name_parts
         else:
-            method_name = method_name_parts
+            method_name = method_name_parts[0]
             base_suffix = None
         kwargs = self.methods_kwargs[method_name]
         suffixes, model_ext = self.filename_parts[method_name]
