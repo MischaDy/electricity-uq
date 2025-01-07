@@ -16,6 +16,13 @@ if TYPE_CHECKING:
     from helpers.model_wrapper import ModelWrapper
 
 
+settings.METHOD_WHITELIST = [
+    'native_gpytorch',
+    'native_mvnn',
+    'native_quantile_regression_nn',
+]
+
+
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     posthoc_base_blacklist = {
