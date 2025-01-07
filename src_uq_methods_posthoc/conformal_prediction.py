@@ -87,6 +87,8 @@ def train_conformal_prediction(
 
 
 def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list, batch_size=500):
+    import warnings
+
     alpha = misc_helpers.pis_from_quantiles(quantiles)
     try:
         alpha = list(alpha)
@@ -97,9 +99,10 @@ def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list
     y_preds_all, y_pis_all = [], []
     for i in np.arange(0, X_pred.shape[0], batch_size):
         X_pred_batch = X_pred[i:i + batch_size]
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide='ignore'), warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="invalid value encountered in divide")
             y_pred, y_pis = model.predict(
-                X_pred_batch, alpha=alpha, ensemble=False, optimize_beta=False, allow_infinite_bounds=True,
+                X_pred_batch, alpha=alpha, ensemble=False, optimize_beta=False, allow_infinite_bounds=True
             )
         y_preds_all.append(y_pred)
         y_pis_all.append(y_pis)
