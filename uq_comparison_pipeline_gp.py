@@ -18,8 +18,8 @@ if TYPE_CHECKING:
 
 settings.METHOD_WHITELIST = [
     'native_gpytorch',
-    'native_mvnn',
-    'native_quantile_regression_nn',
+    # 'native_mvnn',
+    # 'native_quantile_regression_nn',
 ]
 
 

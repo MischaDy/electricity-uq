@@ -6,8 +6,8 @@
 #SBATCH --partition=2080-galvani  # Partition to submit to
 #SBATCH --gres=gpu:8              # optionally type and number of gpus
 #SBATCH --mem=8G                 # Memory pool for all cores (see also --mem-per-cpu)
-#SBATCH --output=logs/job.out     # File to which STDOUT will be written
-#SBATCH --error=logs/job.err      # File to which STDERR will be written
+#SBATCH --output=logs/job_native_gp.out     # File to which STDOUT will be written
+#SBATCH --error=logs/job_native_gp.err      # File to which STDERR will be written
 #SBATCH --mail-type=END,FAIL      # Type of email notification- BEGIN,END,FAIL,ALL
 #SBATCH --mail-user=mikhail.dubovoy@student.uni-tuebingen.de  # Email to which notifications will be sent
 
@@ -24,7 +24,7 @@ conda activate masterarbeit
 
 # Run our code
 echo "-------- PYTHON OUTPUT ----------"
-python3 uq_comparison_pipeline.py
+python3 uq_comparison_pipeline_gp.py
 echo "---------------------------------"
 
 # Deactivate environment again
