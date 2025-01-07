@@ -102,7 +102,7 @@ def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, n_samples_to_pl
 
     # plot test
     start_test = y_train.shape[0] + y_val.shape[0]
-    y_test_plot = y_test[start_test: start_test + n_samples_to_plot]
+    y_test_plot = y_test[:n_samples_to_plot]
     y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
     ci_low_test = ci_low[start_test: start_test + n_samples_to_plot]
     ci_high_test = ci_high[start_test: start_test + n_samples_to_plot]
