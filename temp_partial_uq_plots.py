@@ -11,13 +11,10 @@ from helpers.misc_helpers import get_data
 SAVE_PLOT = True
 SHOW_PLOT = True
 
+IO_HELPER = IO_Helper('comparison_storage')
+
 
 def main():
-    io_helper = IO_Helper('comparison_storage')
-
-    def to_arrs(filenames):
-        return [io_helper.load_array(filename=filename) for filename in filenames]
-
     data = get_data(
         filepath=settings.DATA_FILEPATH,
         train_years=settings.TRAIN_YEARS,
@@ -78,6 +75,8 @@ def main():
         method = method_name_arrs.rstrip('_arrs')
         y_pred, y_quantiles, y_std = arrs
         plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method)
+def to_arrs(filenames):
+    return [IO_HELPER.load_array(filename=filename) for filename in filenames]
 
 
 def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, n_samples_to_plot=1600):
@@ -126,7 +125,7 @@ def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, train_or
     ax.set_ylabel("target")
     ax.set_title(f'{base_title} ({train_or_test})')
     if SAVE_PLOT:
-        io_helper.save_plot(filename=f'{base_filename}_{train_or_test}')
+        IO_HELPER.save_plot(filename=f'{base_filename}_{train_or_test}')
     if SHOW_PLOT:
         plt.show(block=True)
     plt.close(fig)
