@@ -25,7 +25,14 @@ def main():
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = data
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
-    # arr orders: pred, quantiles, std
+    all_arrs = get_arrays()
+    for method_name_arrs, arrs in all_arrs.items():
+        method = method_name_arrs.rstrip('_arrs')
+        y_pred, y_quantiles, y_std = arrs
+        plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method)
+
+
+def get_arrays():
     gp_arrs = to_arrs([
         'native_gpytorch_y_pred_n210432_it200.npy',
         'native_gpytorch_y_quantiles_n210432_it200.npy',
@@ -71,11 +78,9 @@ def main():
         'cp_nn_arrs': cp_nn_arrs,
         'la_nn_arrs': la_nn_arrs,
     }
+    return all_arrs
 
-    for method_name_arrs, arrs in all_arrs.items():
-        method = method_name_arrs.rstrip('_arrs')
-        y_pred, y_quantiles, y_std = arrs
-        plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method)
+
 def to_arrs(filenames):
     return [IO_HELPER.load_array(filename=filename) for filename in filenames]
 
