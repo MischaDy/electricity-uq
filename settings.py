@@ -56,7 +56,7 @@ METHOD_WHITELIST = [
 METHODS_KWARGS = {
     "native_mvnn": {
         'skip_training': False,
-        "n_iter": 150,
+        "n_iter": 100,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
@@ -72,7 +72,7 @@ METHODS_KWARGS = {
     },
     "native_quantile_regression_nn": {
         'skip_training': False,
-        "n_iter": 150,
+        "n_iter": 100,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,
@@ -88,7 +88,7 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 300,
+        'n_iter': 200,
         'lr': 1e-2,
         'use_scheduler': True,
         'lr_patience': 30,
