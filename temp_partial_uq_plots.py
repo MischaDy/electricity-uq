@@ -130,3 +130,7 @@ def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, train_or
     if SHOW_PLOT:
         plt.show(block=True)
     plt.close(fig)
+
+
+if __name__ == '__main__':
+    main()
