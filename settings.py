@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 from scipy import stats
 
 ### CONVENIENCE FLAGS ###
@@ -13,7 +14,7 @@ SKIP_TRAINING_ALL = False
 
 ### NORMAL SETTINGS ###
 
-QUANTILES = [0.05, 0.25, 0.5, 0.75, 0.95]
+QUANTILES = list(map(lambda x: round(x, 2), np.linspace(0.01, 0.99, 99)))
 
 DATA_FILEPATH = 'data/data.pkl'
 N_POINTS_PER_GROUP = None
