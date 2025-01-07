@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from helpers.model_wrapper import ModelWrapper
 
 
+settings.QUANTILES = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
 settings.METHOD_WHITELIST = [
     # 'native_gpytorch',
     # 'native_mvnn',
