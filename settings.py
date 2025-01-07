@@ -75,7 +75,7 @@ METHODS_KWARGS = {
         'skip_training': False,
         "n_iter": 100,
         "num_hidden_layers": 2,
-        "hidden_layer_size": 50,
+        "hidden_layer_size": 20,
         'activation': None,
         'random_seed': 42,
         'lr': 1e-4,
