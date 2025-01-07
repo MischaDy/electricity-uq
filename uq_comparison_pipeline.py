@@ -16,6 +16,15 @@ if TYPE_CHECKING:
     from helpers.model_wrapper import ModelWrapper
 
 
+settings.METHOD_WHITELIST = [
+    'base_model_linreg',
+    'base_model_nn',
+    'base_model_hgbr',
+    'posthoc_conformal_prediction',
+    'posthoc_laplace_approximation',
+]
+
+
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     posthoc_base_blacklist = {
