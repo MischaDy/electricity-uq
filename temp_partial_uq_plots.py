@@ -23,6 +23,7 @@ def main():
         do_standardize_data=True,
     )
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = data
+    y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
     # arr orders: pred, quantiles, std
     gp_arrs = to_arrs([
