@@ -367,10 +367,12 @@ def get_train_loader(X_train: 'torch.Tensor', y_train: 'torch.Tensor', batch_siz
     return train_loader
 
 
-def timestamped_filename(prefix, ext):
+def timestamped_filename(prefix, ext=None):
     from datetime import datetime
     timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
-    filename = f'{prefix}_{timestamp}.{ext}'
+    filename = f'{prefix}_{timestamp}'
+    if ext is not None:
+        filename = f'{filename}.{ext}'
     return filename
 
 
