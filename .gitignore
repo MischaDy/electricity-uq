@@ -170,3 +170,5 @@ cython_debug/
 /data/*.pkl
 /remote_arrays_base/
 /remote_models_base/
+/remote_arrays_1/
+/remote_models_1/
