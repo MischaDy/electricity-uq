@@ -1,0 +1,261 @@
+INFO:root:running main pipeline...
+INFO:root:running preliminary checks/setup...
+INFO:root:checking kwargs dict...
+INFO:root:updating training flags...
+INFO:root:loading data...
+INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO:numexpr.utils:NumExpr defaulting to 16 threads.
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+INFO:root:data shapes: (210432, 16), (35040, 16), (35040, 16);  (210432, 1), (35040, 1), (35040, 1)
+INFO:root:training base models...
+INFO:root:skipping training base_model_linreg.
+INFO:root:skipping training base_model_hgbr.
+INFO:root:skipping training base_model_nn.
+INFO:root:saving base model results...
+INFO:root:plotting base model results...
+INFO:root:computing base model metrics...
+INFO:root:running posthoc UQ methods...
+INFO:root:No posthoc methods found and/or whitelisted. Skipping...
+INFO:root:saving posthoc UQ results...
+INFO:root:plotting posthoc results...
+INFO:root:running native UQ methods...
+INFO:root:running native methods...
+INFO:root:running native_gpytorch...
+INFO:root:preparing data..
+INFO:root:mapping data to device and making it contiguous...
+INFO:root:training from scratch...
+INFO:root:running function train_gpytorch (with timing)...
+INFO:root:Planning to run on 8 GPUs.
+INFO:root:setup dataset
+INFO:root:setup models
+INFO:root:setup meta-models
+INFO:root:start proper training...
+INFO:root:epoch 1/200
+INFO:root:epoch 2/200
+INFO:root:epoch 3/200
+INFO:root:epoch 4/200
+INFO:root:epoch 5/200
+INFO:root:epoch 6/200
+INFO:root:epoch 7/200
+INFO:root:epoch 8/200
+INFO:root:epoch 9/200
+INFO:root:epoch 10/200
+INFO:root:epoch 11/200
+INFO:root:epoch 12/200
+INFO:root:epoch 13/200
+INFO:root:epoch 14/200
+INFO:root:epoch 15/200
+INFO:root:epoch 16/200
+INFO:root:epoch 17/200
+INFO:root:epoch 18/200
+INFO:root:epoch 19/200
+INFO:root:epoch 20/200
+INFO:root:epoch 21/200
+INFO:root:epoch 22/200
+INFO:root:epoch 23/200
+INFO:root:epoch 24/200
+INFO:root:epoch 25/200
+INFO:root:epoch 26/200
+INFO:root:epoch 27/200
+INFO:root:epoch 28/200
+INFO:root:epoch 29/200
+INFO:root:epoch 30/200
+INFO:root:epoch 31/200
+INFO:root:epoch 32/200
+INFO:root:epoch 33/200
+INFO:root:epoch 34/200
+INFO:root:epoch 35/200
+INFO:root:epoch 36/200
+INFO:root:epoch 37/200
+INFO:root:epoch 38/200
+INFO:root:epoch 39/200
+INFO:root:epoch 40/200
+INFO:root:epoch 41/200
+INFO:root:epoch 42/200
+INFO:root:epoch 43/200
+INFO:root:epoch 44/200
+INFO:root:epoch 45/200
+INFO:root:epoch 46/200
+INFO:root:epoch 47/200
+INFO:root:epoch 48/200
+INFO:root:epoch 49/200
+INFO:root:epoch 50/200
+INFO:root:epoch 51/200
+INFO:root:epoch 52/200
+INFO:root:epoch 53/200
+INFO:root:epoch 54/200
+INFO:root:epoch 55/200
+INFO:root:epoch 56/200
+INFO:root:epoch 57/200
+INFO:root:epoch 58/200
+INFO:root:epoch 59/200
+INFO:root:epoch 60/200
+INFO:root:epoch 61/200
+INFO:root:epoch 62/200
+INFO:root:epoch 63/200
+INFO:root:epoch 64/200
+INFO:root:epoch 65/200
+INFO:root:epoch 66/200
+INFO:root:epoch 67/200
+INFO:root:epoch 68/200
+INFO:root:epoch 69/200
+INFO:root:epoch 70/200
+INFO:root:epoch 71/200
+INFO:root:epoch 72/200
+INFO:root:epoch 73/200
+INFO:root:epoch 74/200
+INFO:root:epoch 75/200
+INFO:root:epoch 76/200
+INFO:root:epoch 77/200
+INFO:root:epoch 78/200
+INFO:root:epoch 79/200
+INFO:root:epoch 80/200
+INFO:root:epoch 81/200
+INFO:root:epoch 82/200
+INFO:root:epoch 83/200
+INFO:root:epoch 84/200
+INFO:root:epoch 85/200
+INFO:root:epoch 86/200
+INFO:root:epoch 87/200
+INFO:root:epoch 88/200
+INFO:root:epoch 89/200
+INFO:root:epoch 90/200
+INFO:root:epoch 91/200
+INFO:root:epoch 92/200
+INFO:root:epoch 93/200
+INFO:root:epoch 94/200
+INFO:root:epoch 95/200
+INFO:root:epoch 96/200
+INFO:root:epoch 97/200
+INFO:root:epoch 98/200
+INFO:root:epoch 99/200
+INFO:root:epoch 100/200
+INFO:root:epoch 101/200
+INFO:root:epoch 102/200
+INFO:root:epoch 103/200
+INFO:root:epoch 104/200
+INFO:root:epoch 105/200
+INFO:root:epoch 106/200
+INFO:root:epoch 107/200
+INFO:root:epoch 108/200
+INFO:root:epoch 109/200
+INFO:root:epoch 110/200
+INFO:root:epoch 111/200
+INFO:root:epoch 112/200
+INFO:root:epoch 113/200
+INFO:root:epoch 114/200
+INFO:root:epoch 115/200
+INFO:root:epoch 116/200
+INFO:root:epoch 117/200
+INFO:root:epoch 118/200
+INFO:root:epoch 119/200
+INFO:root:epoch 120/200
+INFO:root:epoch 121/200
+INFO:root:epoch 122/200
+INFO:root:epoch 123/200
+INFO:root:epoch 124/200
+INFO:root:epoch 125/200
+INFO:root:epoch 126/200
+INFO:root:epoch 127/200
+INFO:root:epoch 128/200
+INFO:root:epoch 129/200
+INFO:root:epoch 130/200
+INFO:root:epoch 131/200
+INFO:root:epoch 132/200
+INFO:root:epoch 133/200
+INFO:root:epoch 134/200
+INFO:root:epoch 135/200
+INFO:root:epoch 136/200
+INFO:root:epoch 137/200
+INFO:root:epoch 138/200
+INFO:root:epoch 139/200
+INFO:root:epoch 140/200
+INFO:root:epoch 141/200
+INFO:root:epoch 142/200
+INFO:root:epoch 143/200
+INFO:root:epoch 144/200
+INFO:root:epoch 145/200
+INFO:root:epoch 146/200
+INFO:root:epoch 147/200
+INFO:root:epoch 148/200
+INFO:root:epoch 149/200
+INFO:root:epoch 150/200
+INFO:root:epoch 151/200
+INFO:root:epoch 152/200
+INFO:root:epoch 153/200
+INFO:root:epoch 154/200
+INFO:root:epoch 155/200
+INFO:root:epoch 156/200
+INFO:root:epoch 157/200
+INFO:root:epoch 158/200
+INFO:root:epoch 159/200
+INFO:root:epoch 160/200
+INFO:root:epoch 161/200
+INFO:root:epoch 162/200
+INFO:root:epoch 163/200
+INFO:root:epoch 164/200
+INFO:root:epoch 165/200
+INFO:root:epoch 166/200
+INFO:root:epoch 167/200
+INFO:root:epoch 168/200
+INFO:root:epoch 169/200
+INFO:root:epoch 170/200
+INFO:root:epoch 171/200
+INFO:root:epoch 172/200
+INFO:root:epoch 173/200
+INFO:root:epoch 174/200
+INFO:root:epoch 175/200
+INFO:root:epoch 176/200
+INFO:root:epoch 177/200
+INFO:root:epoch 178/200
+INFO:root:epoch 179/200
+INFO:root:epoch 180/200
+INFO:root:epoch 181/200
+INFO:root:epoch 182/200
+INFO:root:epoch 183/200
+INFO:root:epoch 184/200
+INFO:root:epoch 185/200
+INFO:root:epoch 186/200
+INFO:root:epoch 187/200
+INFO:root:epoch 188/200
+INFO:root:epoch 189/200
+INFO:root:epoch 190/200
+INFO:root:epoch 191/200
+INFO:root:epoch 192/200
+INFO:root:epoch 193/200
+INFO:root:epoch 194/200
+INFO:root:epoch 195/200
+INFO:root:epoch 196/200
+INFO:root:epoch 197/200
+INFO:root:epoch 198/200
+INFO:root:epoch 199/200
+INFO:root:epoch 200/200
+INFO:root:filename 'train_gpytorch_losses' had no extension. saving as PNG
+INFO:root:Finished training on 210432 data points using 8 GPUs.
+INFO:root:function train_gpytorch is done. [took 1764.4558091852814s]
+INFO:root:saving model...
+INFO:root:saving native UQ results...
+INFO:root:plotting native results...
+INFO:root:computing and saving UQ metrics...
+INFO:root:posthoc...
+INFO:root:native...
