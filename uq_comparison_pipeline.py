@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     import numpy as np
     from helpers.model_wrapper import ModelWrapper
 
+
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     posthoc_base_blacklist = {
