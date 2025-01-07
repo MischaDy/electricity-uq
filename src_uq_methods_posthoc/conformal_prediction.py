@@ -86,7 +86,7 @@ def train_conformal_prediction(
     return model
 
 
-def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list, batch_size=5000):
+def predict_with_conformal_prediction(model, X_pred: np.ndarray, quantiles: list, batch_size=500):
     alpha = misc_helpers.pis_from_quantiles(quantiles)
     try:
         alpha = list(alpha)
