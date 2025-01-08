@@ -501,3 +501,7 @@ def add_val_to_train(X_train: np.ndarray, X_val: np.ndarray, y_train: np.ndarray
 def build_unif_distr(start: float, end: float):
     from scipy import stats
     return stats.distributions.uniform(loc=start, scale=end - start)
+
+
+def get_device_of_nn(nn):
+    return next(nn.parameters()).device
