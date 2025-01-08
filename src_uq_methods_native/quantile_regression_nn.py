@@ -252,7 +252,7 @@ def test_qr():
     quantiles = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
 
     X = np.arange(n_samples * dim).reshape(n_samples, dim)
-    y = np.sin(X.sum(axis=1) / n_samples / 3)
+    y = np.sin(X.sum(axis=1) / n_samples / 3).reshape(-1, 1)
 
     if plot_data:
         plt.plot(y)
