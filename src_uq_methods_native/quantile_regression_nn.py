@@ -71,6 +71,24 @@ class MultiPinballLoss:
         for i, pinball_loss in enumerate(self.pinball_losses):
             loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
         loss = _reduce_loss(loss, self.reduction)
+
+        self.temp_check_loss_quality(loss, y_pred_quantiles, y_true)
+        return loss
+
+    def temp_check_loss_quality(self, loss, y_pred_quantiles, y_true, eps=1e-6):
+        old_loss = self.old_call(y_pred_quantiles, y_true)
+        if abs(loss - old_loss) >= eps:
+            raise RuntimeError(
+                f'abs diff between old loss {old_loss} and new loss {loss} exceeded eps={eps} (was {loss - old_loss}')
+
+    def old_call(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
+        # todo: optimize (with torch.vmap?)
+        # todo: treat losses individually?
+        assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
+        loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
+        for i, pinball_loss in enumerate(self.pinball_losses):
+            loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
+        loss = _reduce_loss(loss, self.reduction)
         return loss
 
 
