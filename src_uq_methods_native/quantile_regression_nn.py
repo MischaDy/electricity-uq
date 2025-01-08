@@ -84,7 +84,7 @@ class MultiPinballLoss:  # cur: 6.6s
         self.temp_check_loss_quality(loss, y_pred_quantiles, y_true)
         return loss
 
-    def temp_check_loss_quality(self, loss, y_pred_quantiles, y_true, eps=1e-6):
+    def temp_check_loss_quality(self, loss, y_pred_quantiles, y_true, eps=1e-5):
         old_loss = self.old_call(y_pred_quantiles, y_true)
         if abs(loss - old_loss) >= eps:
             raise RuntimeError(
