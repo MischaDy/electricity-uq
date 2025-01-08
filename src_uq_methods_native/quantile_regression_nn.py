@@ -54,7 +54,7 @@ class QR_NN(torch.nn.Module):
         return result
 
 
-class MultiPinballLoss:  # cur: 6.6s
+class MultiPinballLoss:  # cur: 6.6s -> 3s
     def __init__(self, quantiles, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         if list(quantiles) != sorted(quantiles):
             raise ValueError(f'Quantiles must be sorted: {quantiles}')
@@ -81,7 +81,7 @@ class MultiPinballLoss:  # cur: 6.6s
         loss = self._quantiles_torch * err_alpha + self._1_m_quantiles_torch * err_1_m_alpha
         loss = _reduce_loss(loss, self.reduction)  # todo: 2 times reduction == 1 time reduction?
 
-        self.temp_check_loss_quality(loss, y_pred_quantiles, y_true)
+        # self.temp_check_loss_quality(loss, y_pred_quantiles, y_true)
         return loss
 
     def temp_check_loss_quality(self, loss, y_pred_quantiles, y_true, eps=1e-5):
