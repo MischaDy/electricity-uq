@@ -15,6 +15,9 @@ IO_HELPER = IO_Helper('comparison_storage')
 
 
 def main():
+    from uq_comparison_pipeline import update_run_size_setup
+
+    update_run_size_setup()
     data = get_data(
         filepath=settings.DATA_FILEPATH,
         train_years=settings.TRAIN_YEARS,

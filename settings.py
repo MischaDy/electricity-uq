@@ -1,12 +1,12 @@
 import logging
+from typing import Literal
 
 import numpy as np
 from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-DO_BIG_RUN = True
-DO_SMALL_RUN = False
+RUN_SIZE: Literal['full', 'big', 'small'] = 'big'
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
