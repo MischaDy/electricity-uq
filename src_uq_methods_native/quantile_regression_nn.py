@@ -243,9 +243,11 @@ def predict_with_qr_nn(model: QR_NN, X_pred: np.array):
 def test_qr():
     logging.basicConfig(level=logging.INFO)
 
+    logging.info('importing...')
     from matplotlib import pyplot as plt
     from timeit import default_timer
 
+    logging.info('data setup...')
     plot_data = False
     n_iter = 10
     dim = 10
