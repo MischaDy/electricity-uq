@@ -14,7 +14,7 @@ SKIP_TRAINING_ALL = False
 
 ### NORMAL SETTINGS ###
 
-QUANTILES = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]  # list(map(lambda x: round(x, 2), np.linspace(0.01, 0.99, 99)))
+QUANTILES = list(map(lambda x: round(x, 2), np.linspace(0.01, 0.99, 99)))
 
 DATA_FILEPATH = 'data/data.pkl'
 N_POINTS_PER_GROUP = None
