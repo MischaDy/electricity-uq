@@ -549,6 +549,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     frozen_var_value=frozen_var_value,
                     show_losses_plot=False,  # never show for warmup
                     save_losses_plot=False,  # never save for warmup
+                    num_hidden_layers=num_hidden_layers,
+                    hidden_layer_size=hidden_layer_size,
+                    activation=activation,
                     **common_params
                 )
             logging.info('running main training run...')

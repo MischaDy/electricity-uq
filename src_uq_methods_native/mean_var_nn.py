@@ -61,6 +61,9 @@ def train_mean_var_nn(
     model: MeanVarNN = None,
     n_iter=200,
     batch_size=20,
+    num_hidden_layers=2,
+    hidden_layer_size=50,
+    activation=torch.nn.LeakyReLU,
     random_seed=42,
     lr=0.1,
     use_scheduler=True,
@@ -88,8 +91,9 @@ def train_mean_var_nn(
     if model is None:
         model = MeanVarNN(
             dim_in,
-            num_hidden_layers=2,
-            hidden_layer_size=50,
+            num_hidden_layers=num_hidden_layers,
+            hidden_layer_size=hidden_layer_size,
+            activation=activation,
         )
     model = misc_helpers.object_to_cuda(model)
 
