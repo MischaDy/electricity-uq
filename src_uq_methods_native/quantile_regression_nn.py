@@ -238,3 +238,59 @@ def predict_with_qr_nn(model: QR_NN, X_pred: np.array):
     y_pred = y_quantiles_dict[0.5]
     y_std = misc_helpers.stds_from_quantiles(y_quantiles)
     return y_pred, y_quantiles, y_std
+
+
+def test_qr():
+    from matplotlib import pyplot as plt
+    from timeit import default_timer
+
+    plot_data = False
+    n_iter = 10
+    dim = 10
+    n_samples = 1000
+    n_train_samples = round(n_samples * 0.8)
+    quantiles = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
+
+    X = np.arange(n_samples * dim).reshape(n_samples, dim)
+    y = np.sin(X.sum(axis=1) / n_samples / 3)
+
+    if plot_data:
+        plt.plot(y)
+        plt.show(block=True)
+
+    X_train = X[:n_train_samples]
+    y_train = y[:n_train_samples]
+    X_val = X[n_train_samples:]
+    y_val = X[n_train_samples:]
+
+    kwargs = {
+        "n_iter": n_iter,
+        "num_hidden_layers": 2,
+        "hidden_layer_size": 50,
+        'activation': None,
+        'random_seed': 42,
+        'lr': 1e-4,
+        'use_scheduler': False,
+        'lr_patience': 30,
+        "weight_decay": 1e-3,
+        'show_progress_bar': True,
+        'show_losses_plot': True,
+        'save_losses_plot': False,
+    }
+
+    logging.info('start test run...')
+    t1 = default_timer()
+    train_qr_nn(
+        X_train,
+        y_train,
+        X_val,
+        y_val,
+        quantiles,
+        **kwargs
+    )
+    t2 = default_timer()
+    logging.info(f'done. took {t2 - t1}s')
+
+
+if __name__ == '__main__':
+    test_qr()
