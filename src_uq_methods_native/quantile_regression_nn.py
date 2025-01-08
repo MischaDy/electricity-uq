@@ -121,6 +121,9 @@ def train_qr_nn(
     quantiles: list,
     n_iter=200,
     batch_size=20,
+    num_hidden_layers=2,
+    hidden_layer_size=50,
+    activation=None,
     random_seed=42,
     lr=0.1,
     use_scheduler=True,
@@ -136,6 +139,9 @@ def train_qr_nn(
 ):
     """
 
+    :param num_hidden_layers:
+    :param hidden_layer_size:
+    :param activation:
     :param y_val:
     :param X_val:
     :param io_helper:
@@ -169,8 +175,9 @@ def train_qr_nn(
     model = QR_NN(
         dim_in,
         quantiles,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
+        num_hidden_layers=num_hidden_layers,
+        hidden_layer_size=hidden_layer_size,
+        activation=activation,
     )
     model = misc_helpers.object_to_cuda(model)
 
