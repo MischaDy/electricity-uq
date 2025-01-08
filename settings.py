@@ -6,15 +6,15 @@ from scipy import stats
 ### CONVENIENCE FLAGS ###
 
 DO_BIG_RUN = False
-DO_SMALL_RUN = False
+DO_SMALL_RUN = True
 
-DO_TRAIN_ALL = False
+DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
 
 
 ### NORMAL SETTINGS ###
 
-QUANTILES = list(map(lambda x: round(x, 2), np.linspace(0.01, 0.99, 99)))
+QUANTILES = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]  # list(map(lambda x: round(x, 2), np.linspace(0.01, 0.99, 99)))
 
 DATA_FILEPATH = 'data/data.pkl'
 N_POINTS_PER_GROUP = None
@@ -24,15 +24,15 @@ TEST_YEARS = (2023, 2024)  # todo: simplify
 
 STANDARDIZE_DATA = True
 
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 SAVE_PLOTS = True
 PLOT_DATA = False
 PLOT_BASE_RESULTS = True
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS_PARTIAL = True
 
-SHOW_PROGRESS_BARS = False  # bool or None
-SHOW_LOSSES_PLOTS = False  # bool or None
+SHOW_PROGRESS_BARS = True  # bool or None
+SHOW_LOSSES_PLOTS = True  # bool or None
 SAVE_LOSSES_PLOTS = True  # bool or None
 
 SKIP_BASE_MODEL_COPY = True
@@ -44,14 +44,14 @@ LOGGING_LEVEL = logging.INFO
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    'base_model_linreg',
-    'base_model_nn',
-    'base_model_hgbr',
-    'native_gpytorch',
-    'native_mvnn',
+    # 'base_model_linreg',
+    # 'base_model_nn',
+    # 'base_model_hgbr',
+    # 'native_gpytorch',
+    # 'native_mvnn',
     'native_quantile_regression_nn',
-    'posthoc_conformal_prediction',
-    'posthoc_laplace_approximation',
+    # 'posthoc_conformal_prediction',
+    # 'posthoc_laplace_approximation',
 ]
 
 METHODS_KWARGS = {
@@ -75,14 +75,14 @@ METHODS_KWARGS = {
         'skip_training': False,
         "n_iter": 100,
         "num_hidden_layers": 2,
-        "hidden_layer_size": 20,
+        "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
         'random_seed': 42,
-        'lr': 1e-4,
-        'use_scheduler': True,
-        'lr_patience': 30,
+        'lr': 1e-2,
+        'use_scheduler': True,  # if disabling this, remember to reduce lr
+        'lr_patience': 10,
         "weight_decay": 1e-3,
-        'show_progress_bar': False,
+        'show_progress_bar': True,
         'show_losses_plot': False,
         'save_losses_plot': True,
         'save_model': True,
