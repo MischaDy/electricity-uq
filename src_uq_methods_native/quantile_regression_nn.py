@@ -15,7 +15,7 @@ from helpers.io_helper import IO_Helper
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
-USE_NEW_LOSS = True
+USE_NEW_LOSS = False
 IO_HELPER = IO_Helper('comparison_storage')
 
 
