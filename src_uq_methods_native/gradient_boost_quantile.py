@@ -74,13 +74,13 @@ class HGBR_Quantile:
             verbose=self.verbose,
             n_jobs=n_jobs,
         )
-        cv_objs = [cv_maker(model) for model in self.models]
+        cv_objs = {quantile: cv_maker(model) for quantile, model in self.models.items()}
         y_train = y_train.ravel()
 
         # todo: parallelize!
-        for cv_obj in cv_objs:
+        for cv_obj in cv_objs.values():
             cv_obj.fit(X_train, y_train)
-        self.models = [cv_obj.best_estimator_ for cv_obj in cv_objs]
+        self.models = {quantile: cv_obj.best_estimator_ for quantile, cv_obj in cv_objs.items()}
 
     def predict(self, X_pred, as_dict=True):
         pass
