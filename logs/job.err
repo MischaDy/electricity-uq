@@ -26,7 +26,7 @@ A value is trying to be set on a copy of a slice from a DataFrame
 
 See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
   arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
-INFO:root:data shapes: (35136, 16), (35040, 16), (35040, 16);  (35136, 1), (35040, 1), (35040, 1)
+INFO:root:data shapes: (210432, 16), (35040, 16), (35040, 16);  (210432, 1), (35040, 1), (35040, 1)
 INFO:root:training base models...
 INFO:root:skipping training base_model_linreg.
 INFO:root:skipping training base_model_hgbr.
@@ -47,8 +47,307 @@ INFO:root:setup model
 INFO:root:setup meta-models
 INFO:root:map to cuda
 INFO:root:setup training
-  0%|          | 0/200 [00:00<?, ?it/s]INFO:root:training...
-  0%|          | 1/200 [00:05<18:49,  5.68s/it]  1%|          | 2/200 [00:10<16:26,  4.98s/it]  2%|▏         | 3/200 [00:14<15:33,  4.74s/it]  2%|▏         | 4/200 [00:19<15:16,  4.68s/it]  2%|▎         | 5/200 [00:24<15:27,  4.76s/it]  3%|▎         | 6/200 [00:28<15:11,  4.70s/it]  4%|▎         | 7/200 [00:33<14:59,  4.66s/it]  4%|▍         | 8/200 [00:37<14:51,  4.64s/it]  4%|▍         | 9/200 [00:42<14:50,  4.66s/it]  5%|▌         | 10/200 [00:47<14:36,  4.61s/it]  6%|▌         | 11/200 [00:51<14:28,  4.59s/it]  6%|▌         | 12/200 [00:56<14:25,  4.60s/it]  6%|▋         | 13/200 [01:00<14:21,  4.61s/it]  7%|▋         | 14/200 [01:05<14:04,  4.54s/it]  8%|▊         | 15/200 [01:09<14:05,  4.57s/it]  8%|▊         | 16/200 [01:14<13:59,  4.56s/it]  8%|▊         | 17/200 [01:19<13:57,  4.57s/it]  9%|▉         | 18/200 [01:23<13:45,  4.54s/it] 10%|▉         | 19/200 [01:28<13:44,  4.56s/it] 10%|█         | 20/200 [01:32<13:48,  4.60s/it] 10%|█         | 21/200 [01:37<13:48,  4.63s/it] 11%|█         | 22/200 [01:41<13:35,  4.58s/it] 12%|█▏        | 23/200 [01:46<13:34,  4.60s/it] 12%|█▏        | 24/200 [01:51<13:33,  4.62s/it] 12%|█▎        | 25/200 [01:55<13:28,  4.62s/it] 13%|█▎        | 26/200 [02:00<13:09,  4.54s/it] 14%|█▎        | 27/200 [02:04<13:09,  4.56s/it] 14%|█▍        | 28/200 [02:09<13:09,  4.59s/it] 14%|█▍        | 29/200 [02:14<13:04,  4.59s/it] 15%|█▌        | 30/200 [02:18<12:49,  4.53s/it] 16%|█▌        | 31/200 [02:23<12:55,  4.59s/it] 16%|█▌        | 32/200 [02:27<12:57,  4.63s/it] 16%|█▋        | 33/200 [02:32<12:51,  4.62s/it] 17%|█▋        | 34/200 [02:36<12:37,  4.56s/it] 18%|█▊        | 35/200 [02:41<12:42,  4.62s/it] 18%|█▊        | 36/200 [02:46<12:38,  4.63s/it] 18%|█▊        | 37/200 [02:50<12:31,  4.61s/it] 19%|█▉        | 38/200 [02:55<12:17,  4.55s/it] 20%|█▉        | 39/200 [02:59<12:16,  4.58s/it] 20%|██        | 40/200 [03:04<12:12,  4.58s/it] 20%|██        | 41/200 [03:09<12:04,  4.56s/it] 21%|██        | 42/200 [03:13<11:50,  4.50s/it] 22%|██▏       | 43/200 [03:17<11:48,  4.51s/it] 22%|██▏       | 44/200 [03:22<11:49,  4.55s/it] 22%|██▎       | 45/200 [03:27<11:44,  4.55s/it] 23%|██▎       | 46/200 [03:31<11:35,  4.52s/it] 24%|██▎       | 47/200 [03:36<11:31,  4.52s/it] 24%|██▍       | 48/200 [03:40<11:32,  4.56s/it] 24%|██▍       | 49/200 [03:45<11:32,  4.58s/it] 25%|██▌       | 50/200 [03:49<11:24,  4.56s/it] 26%|██▌       | 51/200 [03:54<11:11,  4.51s/it] 26%|██▌       | 52/200 [03:58<11:05,  4.49s/it] 26%|██▋       | 53/200 [04:03<11:00,  4.49s/it] 27%|██▋       | 54/200 [04:07<10:59,  4.52s/it] 28%|██▊       | 55/200 [04:12<10:47,  4.47s/it] 28%|██▊       | 56/200 [04:16<10:48,  4.50s/it] 28%|██▊       | 57/200 [04:21<10:44,  4.51s/it] 29%|██▉       | 58/200 [04:25<10:39,  4.51s/it] 30%|██▉       | 59/200 [04:30<10:34,  4.50s/it] 30%|███       | 60/200 [04:34<10:28,  4.49s/it] 30%|███       | 61/200 [04:39<10:26,  4.51s/it] 31%|███       | 62/200 [04:43<10:27,  4.54s/it] 32%|███▏      | 63/200 [04:48<10:25,  4.57s/it] 32%|███▏      | 64/200 [04:52<10:10,  4.49s/it] 32%|███▎      | 65/200 [04:57<10:07,  4.50s/it] 33%|███▎      | 66/200 [05:01<10:03,  4.51s/it] 34%|███▎      | 67/200 [05:06<09:59,  4.51s/it] 34%|███▍      | 68/200 [05:10<09:49,  4.47s/it] 34%|███▍      | 69/200 [05:15<09:45,  4.47s/it] 35%|███▌      | 70/200 [05:19<09:43,  4.49s/it] 36%|███▌      | 71/200 [05:24<09:43,  4.52s/it] 36%|███▌      | 72/200 [05:29<09:46,  4.58s/it] 36%|███▋      | 73/200 [05:33<09:34,  4.53s/it] 37%|███▋      | 74/200 [05:38<09:31,  4.53s/it] 38%|███▊      | 75/200 [05:42<09:25,  4.53s/it] 38%|███▊      | 76/200 [05:47<09:21,  4.53s/it] 38%|███▊      | 77/200 [05:51<09:12,  4.49s/it] 39%|███▉      | 78/200 [05:55<09:04,  4.47s/it] 40%|███▉      | 79/200 [06:00<08:59,  4.46s/it] 40%|████      | 80/200 [06:04<08:57,  4.48s/it] 40%|████      | 81/200 [06:09<08:53,  4.48s/it] 41%|████      | 82/200 [06:13<08:44,  4.44s/it] 42%|████▏     | 83/200 [06:18<08:38,  4.43s/it] 42%|████▏     | 84/200 [06:22<08:38,  4.47s/it] 42%|████▎     | 85/200 [06:27<08:34,  4.47s/it] 43%|████▎     | 86/200 [06:31<08:27,  4.45s/it] 44%|████▎     | 87/200 [06:35<08:18,  4.41s/it] 44%|████▍     | 88/200 [06:40<08:17,  4.44s/it] 44%|████▍     | 89/200 [06:44<08:14,  4.46s/it] 45%|████▌     | 90/200 [06:49<08:12,  4.47s/it] 46%|████▌     | 91/200 [06:53<08:05,  4.45s/it] 46%|████▌     | 92/200 [06:58<07:55,  4.41s/it] 46%|████▋     | 93/200 [07:02<07:52,  4.41s/it] 47%|████▋     | 94/200 [07:07<07:50,  4.44s/it] 48%|████▊     | 95/200 [07:11<07:46,  4.45s/it] 48%|████▊     | 96/200 [07:15<07:41,  4.44s/it] 48%|████▊     | 97/200 [07:20<07:37,  4.44s/it] 49%|████▉     | 98/200 [07:24<07:36,  4.47s/it] 50%|████▉     | 99/200 [07:29<07:32,  4.48s/it] 50%|█████     | 100/200 [07:33<07:29,  4.50s/it] 50%|█████     | 101/200 [07:38<07:22,  4.47s/it] 51%|█████     | 102/200 [07:42<07:17,  4.46s/it] 52%|█████▏    | 103/200 [07:47<07:13,  4.47s/it] 52%|█████▏    | 104/200 [07:51<07:06,  4.45s/it] 52%|█████▎    | 105/200 [07:56<07:02,  4.44s/it] 53%|█████▎    | 106/200 [08:00<06:56,  4.43s/it] 54%|█████▎    | 107/200 [08:04<06:52,  4.44s/it] 54%|█████▍    | 108/200 [08:09<06:47,  4.43s/it] 55%|█████▍    | 109/200 [08:13<06:43,  4.43s/it] 55%|█████▌    | 110/200 [08:18<06:38,  4.43s/it] 56%|█████▌    | 111/200 [08:22<06:35,  4.44s/it] 56%|█████▌    | 112/200 [08:27<06:29,  4.43s/it] 56%|█████▋    | 113/200 [08:31<06:26,  4.45s/it] 57%|█████▋    | 114/200 [08:36<06:21,  4.44s/it] 57%|█████▊    | 115/200 [08:40<06:18,  4.46s/it] 58%|█████▊    | 116/200 [08:44<06:14,  4.46s/it] 58%|█████▊    | 117/200 [08:49<06:06,  4.42s/it] 59%|█████▉    | 118/200 [08:53<06:02,  4.42s/it] 60%|█████▉    | 119/200 [08:58<05:57,  4.42s/it] 60%|██████    | 120/200 [09:02<05:53,  4.42s/it] 60%|██████    | 121/200 [09:06<05:49,  4.42s/it] 61%|██████    | 122/200 [09:11<05:41,  4.38s/it] 62%|██████▏   | 123/200 [09:15<05:38,  4.39s/it] 62%|██████▏   | 124/200 [09:20<05:34,  4.41s/it] 62%|██████▎   | 125/200 [09:24<05:32,  4.44s/it] 63%|██████▎   | 126/200 [09:29<05:29,  4.46s/it] 64%|██████▎   | 127/200 [09:33<05:23,  4.43s/it] 64%|██████▍   | 128/200 [09:37<05:18,  4.42s/it] 64%|██████▍   | 129/200 [09:42<05:13,  4.42s/it] 65%|██████▌   | 130/200 [09:46<05:10,  4.43s/it] 66%|██████▌   | 131/200 [09:51<05:05,  4.43s/it] 66%|██████▌   | 132/200 [09:55<05:00,  4.42s/it] 66%|██████▋   | 133/200 [09:59<04:53,  4.38s/it] 67%|██████▋   | 134/200 [10:04<04:51,  4.42s/it] 68%|██████▊   | 135/200 [10:08<04:47,  4.42s/it] 68%|██████▊   | 136/200 [10:13<04:42,  4.42s/it] 68%|██████▊   | 137/200 [10:17<04:38,  4.42s/it] 69%|██████▉   | 138/200 [10:21<04:32,  4.39s/it] 70%|██████▉   | 139/200 [10:26<04:29,  4.42s/it] 70%|███████   | 140/200 [10:30<04:25,  4.42s/it] 70%|███████   | 141/200 [10:35<04:21,  4.44s/it] 71%|███████   | 142/200 [10:39<04:17,  4.44s/it] 72%|███████▏  | 143/200 [10:44<04:12,  4.43s/it] 72%|███████▏  | 144/200 [10:48<04:07,  4.41s/it] 72%|███████▎  | 145/200 [10:52<04:01,  4.39s/it] 73%|███████▎  | 146/200 [10:57<03:57,  4.39s/it] 74%|███████▎  | 147/200 [11:01<03:53,  4.40s/it] 74%|███████▍  | 148/200 [11:06<03:49,  4.41s/it] 74%|███████▍  | 149/200 [11:10<03:43,  4.38s/it] 75%|███████▌  | 150/200 [11:14<03:39,  4.40s/it] 76%|███████▌  | 151/200 [11:19<03:35,  4.40s/it] 76%|███████▌  | 152/200 [11:23<03:32,  4.43s/it] 76%|███████▋  | 153/200 [11:28<03:28,  4.44s/it] 77%|███████▋  | 154/200 [11:32<03:24,  4.43s/it] 78%|███████▊  | 155/200 [11:37<03:18,  4.41s/it] 78%|███████▊  | 156/200 [11:41<03:14,  4.41s/it] 78%|███████▊  | 157/200 [11:45<03:10,  4.43s/it] 79%|███████▉  | 158/200 [11:50<03:06,  4.44s/it] 80%|███████▉  | 159/200 [11:54<03:01,  4.43s/it] 80%|████████  | 160/200 [11:59<02:56,  4.40s/it] 80%|████████  | 161/200 [12:03<02:50,  4.38s/it] 81%|████████  | 162/200 [12:07<02:46,  4.38s/it] 82%|████████▏ | 163/200 [12:12<02:42,  4.39s/it] 82%|████████▏ | 164/200 [12:16<02:37,  4.38s/it] 82%|████████▎ | 165/200 [12:21<02:34,  4.40s/it] 83%|████████▎ | 166/200 [12:25<02:29,  4.39s/it] 84%|████████▎ | 167/200 [12:29<02:25,  4.40s/it] 84%|████████▍ | 168/200 [12:34<02:20,  4.40s/it] 84%|████████▍ | 169/200 [12:38<02:16,  4.41s/it] 85%|████████▌ | 170/200 [12:43<02:12,  4.42s/it] 86%|████████▌ | 171/200 [12:47<02:08,  4.43s/it] 86%|████████▌ | 172/200 [12:51<02:02,  4.39s/it] 86%|████████▋ | 173/200 [12:56<01:58,  4.37s/it] 87%|████████▋ | 174/200 [13:00<01:53,  4.37s/it] 88%|████████▊ | 175/200 [13:04<01:49,  4.37s/it] 88%|████████▊ | 176/200 [13:09<01:44,  4.35s/it] 88%|████████▊ | 177/200 [13:13<01:40,  4.36s/it] 89%|████████▉ | 178/200 [13:17<01:35,  4.33s/it] 90%|████████▉ | 179/200 [13:22<01:31,  4.37s/it] 90%|█████████ | 180/200 [13:26<01:27,  4.39s/it] 90%|█████████ | 181/200 [13:31<01:23,  4.40s/it] 91%|█████████ | 182/200 [13:35<01:19,  4.42s/it] 92%|█████████▏| 183/200 [13:40<01:15,  4.42s/it] 92%|█████████▏| 184/200 [13:44<01:10,  4.40s/it] 92%|█████████▎| 185/200 [13:48<01:06,  4.42s/it] 93%|█████████▎| 186/200 [13:53<01:01,  4.39s/it] 94%|█████████▎| 187/200 [13:57<00:57,  4.39s/it] 94%|█████████▍| 188/200 [14:02<00:52,  4.39s/it] 94%|█████████▍| 189/200 [14:06<00:48,  4.40s/it] 95%|█████████▌| 190/200 [14:10<00:43,  4.35s/it] 96%|█████████▌| 191/200 [14:15<00:39,  4.36s/it] 96%|█████████▌| 192/200 [14:19<00:34,  4.35s/it] 96%|█████████▋| 193/200 [14:23<00:30,  4.39s/it] 97%|█████████▋| 194/200 [14:28<00:26,  4.40s/it] 98%|█████████▊| 195/200 [14:32<00:22,  4.43s/it] 98%|█████████▊| 196/200 [14:37<00:17,  4.38s/it] 98%|█████████▊| 197/200 [14:41<00:13,  4.41s/it] 99%|█████████▉| 198/200 [14:45<00:08,  4.41s/it]100%|█████████▉| 199/200 [14:50<00:04,  4.42s/it]100%|██████████| 200/200 [14:54<00:00,  4.41s/it]100%|██████████| 200/200 [14:54<00:00,  4.47s/it]
+INFO:root:training...
+INFO:root:epoch 1/300
+INFO:root:epoch 2/300
+INFO:root:epoch 3/300
+INFO:root:epoch 4/300
+INFO:root:epoch 5/300
+INFO:root:epoch 6/300
+INFO:root:epoch 7/300
+INFO:root:epoch 8/300
+INFO:root:epoch 9/300
+INFO:root:epoch 10/300
+INFO:root:epoch 11/300
+INFO:root:epoch 12/300
+INFO:root:epoch 13/300
+INFO:root:epoch 14/300
+INFO:root:epoch 15/300
+INFO:root:epoch 16/300
+INFO:root:epoch 17/300
+INFO:root:epoch 18/300
+INFO:root:epoch 19/300
+INFO:root:epoch 20/300
+INFO:root:epoch 21/300
+INFO:root:epoch 22/300
+INFO:root:epoch 23/300
+INFO:root:epoch 24/300
+INFO:root:epoch 25/300
+INFO:root:epoch 26/300
+INFO:root:epoch 27/300
+INFO:root:epoch 28/300
+INFO:root:epoch 29/300
+INFO:root:epoch 30/300
+INFO:root:epoch 31/300
+INFO:root:epoch 32/300
+INFO:root:epoch 33/300
+INFO:root:epoch 34/300
+INFO:root:epoch 35/300
+INFO:root:epoch 36/300
+INFO:root:epoch 37/300
+INFO:root:epoch 38/300
+INFO:root:epoch 39/300
+INFO:root:epoch 40/300
+INFO:root:epoch 41/300
+INFO:root:epoch 42/300
+INFO:root:epoch 43/300
+INFO:root:epoch 44/300
+INFO:root:epoch 45/300
+INFO:root:epoch 46/300
+INFO:root:epoch 47/300
+INFO:root:epoch 48/300
+INFO:root:epoch 49/300
+INFO:root:epoch 50/300
+INFO:root:epoch 51/300
+INFO:root:epoch 52/300
+INFO:root:epoch 53/300
+INFO:root:epoch 54/300
+INFO:root:epoch 55/300
+INFO:root:epoch 56/300
+INFO:root:epoch 57/300
+INFO:root:epoch 58/300
+INFO:root:epoch 59/300
+INFO:root:epoch 60/300
+INFO:root:epoch 61/300
+INFO:root:epoch 62/300
+INFO:root:epoch 63/300
+INFO:root:epoch 64/300
+INFO:root:epoch 65/300
+INFO:root:epoch 66/300
+INFO:root:epoch 67/300
+INFO:root:epoch 68/300
+INFO:root:epoch 69/300
+INFO:root:epoch 70/300
+INFO:root:epoch 71/300
+INFO:root:epoch 72/300
+INFO:root:epoch 73/300
+INFO:root:epoch 74/300
+INFO:root:epoch 75/300
+INFO:root:epoch 76/300
+INFO:root:epoch 77/300
+INFO:root:epoch 78/300
+INFO:root:epoch 79/300
+INFO:root:epoch 80/300
+INFO:root:epoch 81/300
+INFO:root:epoch 82/300
+INFO:root:epoch 83/300
+INFO:root:epoch 84/300
+INFO:root:epoch 85/300
+INFO:root:epoch 86/300
+INFO:root:epoch 87/300
+INFO:root:epoch 88/300
+INFO:root:epoch 89/300
+INFO:root:epoch 90/300
+INFO:root:epoch 91/300
+INFO:root:epoch 92/300
+INFO:root:epoch 93/300
+INFO:root:epoch 94/300
+INFO:root:epoch 95/300
+INFO:root:epoch 96/300
+INFO:root:epoch 97/300
+INFO:root:epoch 98/300
+INFO:root:epoch 99/300
+INFO:root:epoch 100/300
+INFO:root:epoch 101/300
+INFO:root:epoch 102/300
+INFO:root:epoch 103/300
+INFO:root:epoch 104/300
+INFO:root:epoch 105/300
+INFO:root:epoch 106/300
+INFO:root:epoch 107/300
+INFO:root:epoch 108/300
+INFO:root:epoch 109/300
+INFO:root:epoch 110/300
+INFO:root:epoch 111/300
+INFO:root:epoch 112/300
+INFO:root:epoch 113/300
+INFO:root:epoch 114/300
+INFO:root:epoch 115/300
+INFO:root:epoch 116/300
+INFO:root:epoch 117/300
+INFO:root:epoch 118/300
+INFO:root:epoch 119/300
+INFO:root:epoch 120/300
+INFO:root:epoch 121/300
+INFO:root:epoch 122/300
+INFO:root:epoch 123/300
+INFO:root:epoch 124/300
+INFO:root:epoch 125/300
+INFO:root:epoch 126/300
+INFO:root:epoch 127/300
+INFO:root:epoch 128/300
+INFO:root:epoch 129/300
+INFO:root:epoch 130/300
+INFO:root:epoch 131/300
+INFO:root:epoch 132/300
+INFO:root:epoch 133/300
+INFO:root:epoch 134/300
+INFO:root:epoch 135/300
+INFO:root:epoch 136/300
+INFO:root:epoch 137/300
+INFO:root:epoch 138/300
+INFO:root:epoch 139/300
+INFO:root:epoch 140/300
+INFO:root:epoch 141/300
+INFO:root:epoch 142/300
+INFO:root:epoch 143/300
+INFO:root:epoch 144/300
+INFO:root:epoch 145/300
+INFO:root:epoch 146/300
+INFO:root:epoch 147/300
+INFO:root:epoch 148/300
+INFO:root:epoch 149/300
+INFO:root:epoch 150/300
+INFO:root:epoch 151/300
+INFO:root:epoch 152/300
+INFO:root:epoch 153/300
+INFO:root:epoch 154/300
+INFO:root:epoch 155/300
+INFO:root:epoch 156/300
+INFO:root:epoch 157/300
+INFO:root:epoch 158/300
+INFO:root:epoch 159/300
+INFO:root:epoch 160/300
+INFO:root:epoch 161/300
+INFO:root:epoch 162/300
+INFO:root:epoch 163/300
+INFO:root:epoch 164/300
+INFO:root:epoch 165/300
+INFO:root:epoch 166/300
+INFO:root:epoch 167/300
+INFO:root:epoch 168/300
+INFO:root:epoch 169/300
+INFO:root:epoch 170/300
+INFO:root:epoch 171/300
+INFO:root:epoch 172/300
+INFO:root:epoch 173/300
+INFO:root:epoch 174/300
+INFO:root:epoch 175/300
+INFO:root:epoch 176/300
+INFO:root:epoch 177/300
+INFO:root:epoch 178/300
+INFO:root:epoch 179/300
+INFO:root:epoch 180/300
+INFO:root:epoch 181/300
+INFO:root:epoch 182/300
+INFO:root:epoch 183/300
+INFO:root:epoch 184/300
+INFO:root:epoch 185/300
+INFO:root:epoch 186/300
+INFO:root:epoch 187/300
+INFO:root:epoch 188/300
+INFO:root:epoch 189/300
+INFO:root:epoch 190/300
+INFO:root:epoch 191/300
+INFO:root:epoch 192/300
+INFO:root:epoch 193/300
+INFO:root:epoch 194/300
+INFO:root:epoch 195/300
+INFO:root:epoch 196/300
+INFO:root:epoch 197/300
+INFO:root:epoch 198/300
+INFO:root:epoch 199/300
+INFO:root:epoch 200/300
+INFO:root:epoch 201/300
+INFO:root:epoch 202/300
+INFO:root:epoch 203/300
+INFO:root:epoch 204/300
+INFO:root:epoch 205/300
+INFO:root:epoch 206/300
+INFO:root:epoch 207/300
+INFO:root:epoch 208/300
+INFO:root:epoch 209/300
+INFO:root:epoch 210/300
+INFO:root:epoch 211/300
+INFO:root:epoch 212/300
+INFO:root:epoch 213/300
+INFO:root:epoch 214/300
+INFO:root:epoch 215/300
+INFO:root:epoch 216/300
+INFO:root:epoch 217/300
+INFO:root:epoch 218/300
+INFO:root:epoch 219/300
+INFO:root:epoch 220/300
+INFO:root:epoch 221/300
+INFO:root:epoch 222/300
+INFO:root:epoch 223/300
+INFO:root:epoch 224/300
+INFO:root:epoch 225/300
+INFO:root:epoch 226/300
+INFO:root:epoch 227/300
+INFO:root:epoch 228/300
+INFO:root:epoch 229/300
+INFO:root:epoch 230/300
+INFO:root:epoch 231/300
+INFO:root:epoch 232/300
+INFO:root:epoch 233/300
+INFO:root:epoch 234/300
+INFO:root:epoch 235/300
+INFO:root:epoch 236/300
+INFO:root:epoch 237/300
+INFO:root:epoch 238/300
+INFO:root:epoch 239/300
+INFO:root:epoch 240/300
+INFO:root:epoch 241/300
+INFO:root:epoch 242/300
+INFO:root:epoch 243/300
+INFO:root:epoch 244/300
+INFO:root:epoch 245/300
+INFO:root:epoch 246/300
+INFO:root:epoch 247/300
+INFO:root:epoch 248/300
+INFO:root:epoch 249/300
+INFO:root:epoch 250/300
+INFO:root:epoch 251/300
+INFO:root:epoch 252/300
+INFO:root:epoch 253/300
+INFO:root:epoch 254/300
+INFO:root:epoch 255/300
+INFO:root:epoch 256/300
+INFO:root:epoch 257/300
+INFO:root:epoch 258/300
+INFO:root:epoch 259/300
+INFO:root:epoch 260/300
+INFO:root:epoch 261/300
+INFO:root:epoch 262/300
+INFO:root:epoch 263/300
+INFO:root:epoch 264/300
+INFO:root:epoch 265/300
+INFO:root:epoch 266/300
+INFO:root:epoch 267/300
+INFO:root:epoch 268/300
+INFO:root:epoch 269/300
+INFO:root:epoch 270/300
+INFO:root:epoch 271/300
+INFO:root:epoch 272/300
+INFO:root:epoch 273/300
+INFO:root:epoch 274/300
+INFO:root:epoch 275/300
+INFO:root:epoch 276/300
+INFO:root:epoch 277/300
+INFO:root:epoch 278/300
+INFO:root:epoch 279/300
+INFO:root:epoch 280/300
+INFO:root:epoch 281/300
+INFO:root:epoch 282/300
+INFO:root:epoch 283/300
+INFO:root:epoch 284/300
+INFO:root:epoch 285/300
+INFO:root:epoch 286/300
+INFO:root:epoch 287/300
+INFO:root:epoch 288/300
+INFO:root:epoch 289/300
+INFO:root:epoch 290/300
+INFO:root:epoch 291/300
+INFO:root:epoch 292/300
+INFO:root:epoch 293/300
+INFO:root:epoch 294/300
+INFO:root:epoch 295/300
+INFO:root:epoch 296/300
+INFO:root:epoch 297/300
+INFO:root:epoch 298/300
+INFO:root:epoch 299/300
+INFO:root:epoch 300/300
 INFO:root:done training.
 INFO:root:filename 'train_qr_nn_losses' had no extension. saving as PNG
 INFO:root:saving model...
