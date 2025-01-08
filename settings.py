@@ -6,7 +6,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-RUN_SIZE: Literal['full', 'big', 'small'] = 'big'
+RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -24,14 +24,14 @@ TEST_YEARS = (2023, 2024)  # todo: simplify
 
 STANDARDIZE_DATA = True
 
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 SAVE_PLOTS = True
 PLOT_DATA = False
 PLOT_BASE_RESULTS = True
 PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS_PARTIAL = True
 
-SHOW_PROGRESS_BARS = True  # bool or None
+SHOW_PROGRESS_BARS = False  # bool or None
 SHOW_LOSSES_PLOTS = True  # bool or None
 SAVE_LOSSES_PLOTS = True  # bool or None
 
@@ -73,7 +73,7 @@ METHODS_KWARGS = {
     },
     "native_quantile_regression_nn": {
         'skip_training': False,
-        "n_iter": 200,
+        "n_iter": 300,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
