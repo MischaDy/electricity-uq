@@ -54,7 +54,10 @@ class QR_NN(torch.nn.Module):
         return result
 
 
-class MultiPinballLoss:  # cur: 6.6s -> 3s
+class MultiPinballLoss:
+    # NN: 28s (1.8it/s) for n=50
+    # QR: 30s (1.7it/s) for n=50, qs=7
+    # QR: 38s (1.4it/s) for n=50, qs=99
     def __init__(self, quantiles, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         if list(quantiles) != sorted(quantiles):
             raise ValueError(f'Quantiles must be sorted: {quantiles}')
@@ -273,15 +276,17 @@ def predict_with_qr_nn(model: QR_NN, X_pred: np.array):
 
 
 def test_qr():
+    import settings
+
     logging.basicConfig(level=logging.INFO)
     logging.info('data setup...')
 
     plot_data = False
-    n_iter = 5
+    n_iter = 50
     dim = 10
     n_samples = 1000
     n_train_samples = round(n_samples * 0.8)
-    quantiles = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
+    quantiles = settings.QUANTILES  # [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
     io_helper = IO_Helper('comparison_storage')
 
     X = np.arange(n_samples * dim).reshape(n_samples, dim)
