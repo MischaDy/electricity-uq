@@ -73,7 +73,7 @@ class MultiPinballLoss:
         assert y_pred_quantiles.shape[0] == y_true.shape[0]
 
         # try to compute as in https://scikit-learn.org/stable/modules/model_evaluation.html#pinball-loss
-        zeros = torch.zeros_like(y_pred_quantiles, requires_grad=False)
+        zeros = torch.zeros_like(y_pred_quantiles, requires_grad=False).to(misc_helpers.get_device())
         y_minus_q = y_true - y_pred_quantiles
         err_alpha = torch.max(zeros, y_minus_q)
         q_minus_y = -y_minus_q
@@ -82,6 +82,10 @@ class MultiPinballLoss:
         loss = self._quantiles_torch * err_alpha + self._1_m_quantiles_torch * err_1_m_alpha
         loss = _reduce_loss(loss, self.reduction)
         return loss
+
+    def to(self, device):
+        self._quantiles_torch.to(device)
+        self._1_m_quantiles_torch.to(device)
 
 
 def _reduce_loss(loss, reduction):
@@ -168,12 +172,14 @@ def train_qr_nn(
         hidden_layer_size=hidden_layer_size,
         activation=activation,
     )
-    model = misc_helpers.object_to_cuda(model)
 
     logging.info('setup meta-models')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
     criterion = MultiPinballLoss(quantiles, reduction='mean')
+
+    logging.info('map to cuda')
+    model, criterion = misc_helpers.objects_to_cuda(model, criterion)
 
     logging.info('setup training')
     # noinspection PyTypeChecker
