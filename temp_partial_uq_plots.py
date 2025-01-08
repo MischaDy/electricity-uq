@@ -47,9 +47,9 @@ def get_arrays():
         'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
     ])
     qr_arrs = to_arrs([
-        'native_quantile_regression_nn_y_pred_n35136_it200_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_quantiles_n35136_it200_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_std_n35136_it200_nh2_hs50.npy',
+        'native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy',
+        'native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy',
+        'native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy',
     ])
     cp_hgbr_arrs = to_arrs([
         'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
