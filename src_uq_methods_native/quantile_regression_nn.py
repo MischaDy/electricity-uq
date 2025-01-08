@@ -15,8 +15,8 @@ from helpers.io_helper import IO_Helper
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
-
 USE_NEW_LOSS = True
+IO_HELPER = IO_Helper('comparison_storage')
 
 
 class QR_NN(torch.nn.Module):
@@ -291,18 +291,34 @@ def test_qr():
     logging.basicConfig(level=logging.INFO)
     logging.info('data setup...')
 
-    plot_data = False
+    SHOW_PLOT = True
+    SAVE_PLOT = True
+    PLOT_DATA = False
+    USE_REAL_DATA = True
+
     n_iter = 50
-    dim = 10
-    n_samples = 1000
-    n_train_samples = round(n_samples * 0.8)
+    n_samples = 1600
+    train_frac = 0.4
+    val_frac = 0.1
+    test_frac = 0.5
+
     quantiles = settings.QUANTILES  # [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
-    io_helper = IO_Helper('comparison_storage')
 
-    X = np.arange(n_samples * dim).reshape(n_samples, dim)
-    y = np.sin(X.sum(axis=1) / n_samples / 3).reshape(-1, 1)
+    n_train_samples = round(train_frac * n_samples)
+    n_val_samples = round(val_frac * n_samples)
+    n_test_samples = round(test_frac * n_samples)
 
-    if plot_data:
+    if USE_REAL_DATA:
+        X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
+            '../data/data_1600.pkl',
+            n_points_per_group=n_samples,
+        )
+    else:
+        dim = 10
+        X = np.arange(n_samples * dim).reshape(n_samples, dim)
+        y = np.sin(X.sum(axis=1) / n_samples / 3).reshape(-1, 1)
+
+    if PLOT_DATA:
         logging.info('plotting data')
         from matplotlib import pyplot as plt
         plt.plot(y)
@@ -310,8 +326,13 @@ def test_qr():
 
     X_train = X[:n_train_samples]
     y_train = y[:n_train_samples]
-    X_val = X[n_train_samples:]
-    y_val = y[n_train_samples:]
+    X_val = X[n_train_samples:n_train_samples + n_val_samples]
+    y_val = y[n_train_samples:n_train_samples + n_val_samples]
+    X_test = X[-n_test_samples:]
+    y_test = y[-n_test_samples:]
+
+    X_pred = X
+    y_true = y
 
     kwargs = {
         "n_iter": n_iter,
@@ -325,7 +346,7 @@ def test_qr():
         'show_progress_bar': True,
         'show_losses_plot': False,
         'save_losses_plot': False,
-        'io_helper': io_helper,
+        'io_helper': IO_HELPER,
         'activation': torch.nn.LeakyReLU,
     }
 
@@ -337,6 +358,42 @@ def test_qr():
         quantiles,
         **kwargs
     )
+    y_pred, y_quantiles, y_std = predict_with_qr_nn(model, X_pred)
+    ci_low, ci_high = (
+        y_quantiles[:, 0],
+        y_quantiles[:, -1],
+    )
+    n_quantiles = y_quantiles.shape[1]
+    plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qr', n_quantiles, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
+
+
+def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, label_part,
+                   method, n_quantiles=None, show_plot=True, save_plot=True):
+    from matplotlib import pyplot as plt
+    base_title = method
+    base_filename = method
+    label = f'outermost 2/{n_quantiles} quantiles' if n_quantiles is not None else 'outermost 2 quantiles'
+    x_plot = np.arange(y_true_plot.shape[0])
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    ax.plot(x_plot, y_true_plot, label=f'{label_part} data', color="black", linestyle='dashed')
+    ax.plot(x_plot, y_pred_plot, label="point prediction", color="green")
+    ax.fill_between(
+        x_plot,
+        ci_low_plot,
+        ci_high_plot,
+        color="green",
+        alpha=0.2,
+        label=label,
+    )
+    ax.legend()
+    ax.set_xlabel("data")
+    ax.set_ylabel("target")
+    ax.set_title(f'{base_title} ({label_part})')
+    if save_plot:
+        IO_HELPER.save_plot(filename=f'{base_filename}_{label_part}')
+    if show_plot:
+        plt.show(block=True)
+    plt.close(fig)
 
 
 if __name__ == '__main__':
