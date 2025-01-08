@@ -54,7 +54,7 @@ class QR_NN(torch.nn.Module):
         return result
 
 
-class MultiPinballLoss:
+class MultiPinballLoss:  # cur: 6.6s
     def __init__(self, quantiles, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         if list(quantiles) != sorted(quantiles):
             raise ValueError(f'Quantiles must be sorted: {quantiles}')
@@ -303,7 +303,7 @@ def test_qr():
         "weight_decay": 1e-3,
         'show_progress_bar': True,
         'show_losses_plot': False,
-        'save_losses_plot': True,
+        'save_losses_plot': False,
         'io_helper': io_helper,
     }
 
