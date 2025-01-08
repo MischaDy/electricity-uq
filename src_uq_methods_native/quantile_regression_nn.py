@@ -61,6 +61,8 @@ class MultiPinballLoss:  # cur: 6.6s
         assert all(map(lambda q: 0 < q < 1, quantiles))
 
         self.quantiles = quantiles
+        self._quantiles_torch = torch.Tensor(quantiles).requires_grad_(False).reshape(1, -1)
+        self._1_m_quantiles_torch = 1 - self._quantiles_torch
         self.reduction = reduction
         self.pinball_losses = [PinballLoss(quantile, reduction)
                                for quantile in self.quantiles]
@@ -68,10 +70,16 @@ class MultiPinballLoss:  # cur: 6.6s
     def __call__(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
         assert y_pred_quantiles.shape[1] == len(self.pinball_losses)  # does this cost a lot of time?
         assert y_pred_quantiles[0].shape == y_true.shape
-        loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
-        for i, pinball_loss in enumerate(self.pinball_losses):
-            loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
-        loss = _reduce_loss(loss, self.reduction)
+
+        # try to compute as in https://scikit-learn.org/stable/modules/model_evaluation.html#pinball-loss
+        zeros = torch.zeros_like(y_pred_quantiles, requires_grad=False)
+        y_minus_q = y_true - y_pred_quantiles
+        err_alpha = torch.max(zeros, y_minus_q)
+        q_minus_y = -y_minus_q
+        err_1_m_alpha = torch.max(zeros, q_minus_y)
+
+        loss = self._quantiles_torch * err_alpha + self._1_m_quantiles_torch * err_1_m_alpha
+        loss = _reduce_loss(loss, self.reduction)  # todo: 2 times reduction == 1 time reduction?
 
         self.temp_check_loss_quality(loss, y_pred_quantiles, y_true)
         return loss
