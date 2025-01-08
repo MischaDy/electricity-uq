@@ -64,9 +64,7 @@ class MultiPinballLoss:  # cur: 6.6s
                                for quantile in self.quantiles]
 
     def __call__(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
-        # todo: optimize (with torch.vmap?)
-        # todo: treat losses individually?
-        assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
+        assert y_pred_quantiles.shape[1] == len(self.pinball_losses)  # does this cost a lot of time?
         loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
             loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
@@ -82,8 +80,6 @@ class MultiPinballLoss:  # cur: 6.6s
                 f'abs diff between old loss {old_loss} and new loss {loss} exceeded eps={eps} (was {loss - old_loss}')
 
     def old_call(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
-        # todo: optimize (with torch.vmap?)
-        # todo: treat losses individually?
         assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
         loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
