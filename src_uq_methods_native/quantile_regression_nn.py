@@ -73,7 +73,9 @@ class MultiPinballLoss:
         assert y_pred_quantiles.shape[0] == y_true.shape[0]
 
         # try to compute as in https://scikit-learn.org/stable/modules/model_evaluation.html#pinball-loss
-        zeros = torch.zeros_like(y_pred_quantiles, requires_grad=False).to(misc_helpers.get_device())
+        zeros = torch.zeros_like(y_pred_quantiles, requires_grad=False)
+        zeros = misc_helpers.object_to_cuda(zeros)
+
         y_minus_q = y_true - y_pred_quantiles
         err_alpha = torch.max(zeros, y_minus_q)
         q_minus_y = -y_minus_q
