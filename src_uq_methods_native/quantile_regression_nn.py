@@ -58,6 +58,8 @@ class MultiPinballLoss:  # cur: 6.6s
     def __init__(self, quantiles, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         if list(quantiles) != sorted(quantiles):
             raise ValueError(f'Quantiles must be sorted: {quantiles}')
+        assert all(map(lambda q: 0 < q < 1, quantiles))
+
         self.quantiles = quantiles
         self.reduction = reduction
         self.pinball_losses = [PinballLoss(quantile, reduction)
@@ -65,6 +67,7 @@ class MultiPinballLoss:  # cur: 6.6s
 
     def __call__(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
         assert y_pred_quantiles.shape[1] == len(self.pinball_losses)  # does this cost a lot of time?
+        assert y_pred_quantiles[0].shape == y_true.shape
         loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
             loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
