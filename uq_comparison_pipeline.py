@@ -182,7 +182,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             hidden_layer_size=50,
             activation=None,
             weight_decay=0,
-            lr=0.1,
+            lr=None,
+            use_scheduler=True,
             lr_patience=30,
             lr_reduction_factor=0.5,
             show_progress_bar=True,
@@ -194,6 +195,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ) -> 'NN_Estimator':
         """
 
+        :param use_scheduler:
         :param weight_decay:
         :param y_val:
         :param X_val:
@@ -245,6 +247,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             activation=activation,
             weight_decay=weight_decay,
             lr=lr,
+            use_scheduler=use_scheduler,
             lr_patience=lr_patience,
             lr_reduction_factor=lr_reduction_factor,
             verbose=verbose,

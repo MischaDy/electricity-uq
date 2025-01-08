@@ -142,7 +142,8 @@ METHODS_KWARGS = {
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
         "weight_decay": 1e-3,
-        "lr": 1e-2,
+        "lr": None,  # defaults to 1e-2 if use scheduler is true
+        'use_scheduler': True,
         "lr_patience": 30,
         "lr_reduction_factor": 0.5,
         "show_progress_bar": False,
