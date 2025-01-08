@@ -274,11 +274,8 @@ def predict_with_qr_nn(model: QR_NN, X_pred: np.array):
 
 def test_qr():
     logging.basicConfig(level=logging.INFO)
-
-    logging.info('importing...')
-    from matplotlib import pyplot as plt
-
     logging.info('data setup...')
+
     plot_data = False
     n_iter = 5
     dim = 10
@@ -291,6 +288,8 @@ def test_qr():
     y = np.sin(X.sum(axis=1) / n_samples / 3).reshape(-1, 1)
 
     if plot_data:
+        logging.info('plotting data')
+        from matplotlib import pyplot as plt
         plt.plot(y)
         plt.show(block=True)
 
