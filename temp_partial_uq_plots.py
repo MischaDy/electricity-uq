@@ -47,9 +47,9 @@ def get_arrays():
         'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
     ])
     qr_arrs = to_arrs([
-        'native_quantile_regression_nn_y_pred_n210432_it100_nh2_hs20.npy',
-        'native_quantile_regression_nn_y_quantiles_n210432_it100_nh2_hs20.npy',
-        'native_quantile_regression_nn_y_std_n210432_it100_nh2_hs20.npy',
+        'native_quantile_regression_nn_y_pred_n35136_it200_nh2_hs50.npy',
+        'native_quantile_regression_nn_y_quantiles_n35136_it200_nh2_hs50.npy',
+        'native_quantile_regression_nn_y_std_n35136_it200_nh2_hs50.npy',
     ])
     cp_hgbr_arrs = to_arrs([
         'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
@@ -73,13 +73,13 @@ def get_arrays():
     ])
 
     all_arrs = {
-        'gp_arrs': gp_arrs,
-        'mvnn_arrs': mvnn_arrs,
+        # 'gp_arrs': gp_arrs,
+        # 'mvnn_arrs': mvnn_arrs,
         'qr_arrs': qr_arrs,
-        'cp_hgbr_arrs': cp_hgbr_arrs,
-        'cp_linreg_arrs': cp_linreg_arrs,
-        'cp_nn_arrs': cp_nn_arrs,
-        'la_nn_arrs': la_nn_arrs,
+        # 'cp_hgbr_arrs': cp_hgbr_arrs,
+        # 'cp_linreg_arrs': cp_linreg_arrs,
+        # 'cp_nn_arrs': cp_nn_arrs,
+        # 'la_nn_arrs': la_nn_arrs,
     }
     return all_arrs
 
