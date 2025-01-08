@@ -10,6 +10,7 @@ from more_itertools import collapse
 from tqdm import tqdm
 
 from helpers import misc_helpers
+from helpers.io_helper import IO_Helper
 
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
@@ -254,6 +255,7 @@ def test_qr():
     n_samples = 1000
     n_train_samples = round(n_samples * 0.8)
     quantiles = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
+    io_helper = IO_Helper('comparison_storage')
 
     X = np.arange(n_samples * dim).reshape(n_samples, dim)
     y = np.sin(X.sum(axis=1) / n_samples / 3).reshape(-1, 1)
@@ -279,6 +281,7 @@ def test_qr():
         'show_progress_bar': True,
         'show_losses_plot': False,
         'save_losses_plot': True,
+        'io_helper': io_helper,
     }
 
     logging.info('start test run...')
