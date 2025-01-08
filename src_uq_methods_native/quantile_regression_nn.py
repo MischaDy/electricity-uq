@@ -86,6 +86,7 @@ class MultiPinballLoss:
     def to(self, device):
         self._quantiles_torch.to(device)
         self._1_m_quantiles_torch.to(device)
+        return self
 
 
 def _reduce_loss(loss, reduction):
