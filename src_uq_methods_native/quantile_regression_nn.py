@@ -67,11 +67,9 @@ class MultiPinballLoss:
         self._quantiles_torch = torch.Tensor(quantiles).requires_grad_(False).reshape(1, -1)
         self._1_m_quantiles_torch = 1 - self._quantiles_torch
         self.reduction = reduction
-        self.pinball_losses = [PinballLoss(quantile, reduction)
-                               for quantile in self.quantiles]
 
     def __call__(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
-        assert y_pred_quantiles.shape[1] == len(self.pinball_losses)  # does this cost a lot of time?
+        assert y_pred_quantiles.shape[1] == len(self.quantiles)
         assert y_pred_quantiles.shape[0] == y_true.shape[0]
 
         # try to compute as in https://scikit-learn.org/stable/modules/model_evaluation.html#pinball-loss
@@ -82,45 +80,6 @@ class MultiPinballLoss:
         err_1_m_alpha = torch.max(zeros, q_minus_y)
 
         loss = self._quantiles_torch * err_alpha + self._1_m_quantiles_torch * err_1_m_alpha
-        loss = _reduce_loss(loss, self.reduction)  # todo: 2 times reduction == 1 time reduction?
-
-        # self.temp_check_loss_quality(loss, y_pred_quantiles, y_true)
-        return loss
-
-    def temp_check_loss_quality(self, loss, y_pred_quantiles, y_true, eps=1e-5):
-        old_loss = self.old_call(y_pred_quantiles, y_true)
-        if abs(loss - old_loss) >= eps:
-            raise RuntimeError(
-                f'abs diff between old loss {old_loss} and new loss {loss} exceeded eps={eps} (was {loss - old_loss}')
-
-    def old_call(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
-        assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
-        loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
-        for i, pinball_loss in enumerate(self.pinball_losses):
-            loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
-        loss = _reduce_loss(loss, self.reduction)
-        return loss
-
-
-class PinballLoss:
-    """
-    copied with minor changes from: https://github.com/ywatanabe1989/custom_losses_pytorch/blob/master/pinball_loss.py
-    """
-
-    def __init__(self, quantile: float, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
-        assert 0 <= quantile <= 1
-        self.quantile = quantile
-        self.reduction = reduction
-
-    def __call__(self, y_pred_quantile, y_true):
-        assert y_pred_quantile.shape == y_true.shape
-        loss = torch.zeros_like(y_true, dtype=torch.float)
-        error = y_pred_quantile - y_true
-        smaller_index = error < 0
-        bigger_index = 0 < error
-        abs_error = abs(error)
-        loss[smaller_index] = self.quantile * abs_error[smaller_index]
-        loss[bigger_index] = (1 - self.quantile) * abs_error[bigger_index]
         loss = _reduce_loss(loss, self.reduction)
         return loss
 
@@ -193,8 +152,6 @@ def train_qr_nn(
     :param use_scheduler:
     :return:
     """
-    from timeit import default_timer  # todo: temp
-
     logging.info('setup')
     torch.manual_seed(random_seed)
 
@@ -226,7 +183,6 @@ def train_qr_nn(
     if show_progress_bar:
         epochs = tqdm(epochs)
     logging.info('training...')
-    t1 = default_timer()  # todo: temp
     for epoch in epochs:
         if not show_progress_bar:
             logging.info(f'epoch {epoch}/{n_iter}')
@@ -245,9 +201,7 @@ def train_qr_nn(
         val_losses.append(val_loss.item())
         if use_scheduler:
             scheduler.step(val_loss)
-    t2 = default_timer()  # todo: temp
     logging.info('done training.')
-    logging.info(f'took {t2 - t1}s')  # todo: temp
     misc_helpers.plot_nn_losses(
         train_losses,
         val_losses,
