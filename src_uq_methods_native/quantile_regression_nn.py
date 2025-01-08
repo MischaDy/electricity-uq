@@ -279,6 +279,7 @@ def test_qr():
         'show_losses_plot': False,
         'save_losses_plot': False,
         'io_helper': io_helper,
+        'activation': torch.nn.LeakyReLU,
     }
 
     train_qr_nn(
