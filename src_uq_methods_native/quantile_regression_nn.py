@@ -249,7 +249,7 @@ def test_qr():
 
     logging.info('data setup...')
     plot_data = False
-    n_iter = 10
+    n_iter = 5
     dim = 10
     n_samples = 1000
     n_train_samples = round(n_samples * 0.8)
@@ -277,8 +277,8 @@ def test_qr():
         'lr_patience': 30,
         "weight_decay": 1e-3,
         'show_progress_bar': True,
-        'show_losses_plot': True,
-        'save_losses_plot': False,
+        'show_losses_plot': False,
+        'save_losses_plot': True,
     }
 
     logging.info('start test run...')
