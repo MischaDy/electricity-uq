@@ -27,7 +27,6 @@ def train_laplace_approximation(
     torch.manual_seed(random_seed)
     torch.set_default_device(misc_helpers.get_device())
 
-    # todo: use validation data better(?)
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     X_train, y_train = misc_helpers.preprocess_arrays_to_tensors(X_train, y_train)
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)

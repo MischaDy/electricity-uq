@@ -26,7 +26,6 @@ def train_hgbr(
         val_frac=0.1,
         n_iter_no_change=30,
 ):
-    # todo: use validation data better(?)
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
 
     if model_param_distributions is None:
