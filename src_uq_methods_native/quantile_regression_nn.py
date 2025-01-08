@@ -265,7 +265,7 @@ def test_qr():
     X_train = X[:n_train_samples]
     y_train = y[:n_train_samples]
     X_val = X[n_train_samples:]
-    y_val = X[n_train_samples:]
+    y_val = y[n_train_samples:]
 
     kwargs = {
         "n_iter": n_iter,
