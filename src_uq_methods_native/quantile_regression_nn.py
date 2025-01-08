@@ -69,7 +69,7 @@ class MultiPinballLoss:  # cur: 6.6s
 
     def __call__(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
         assert y_pred_quantiles.shape[1] == len(self.pinball_losses)  # does this cost a lot of time?
-        assert y_pred_quantiles[0].shape == y_true.shape
+        assert y_pred_quantiles.shape[0] == y_true.shape[0]
 
         # try to compute as in https://scikit-learn.org/stable/modules/model_evaluation.html#pinball-loss
         zeros = torch.zeros_like(y_pred_quantiles, requires_grad=False)
