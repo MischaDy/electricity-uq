@@ -79,8 +79,8 @@ METHODS_KWARGS = {
         'activation': None,  # defaults to leaky ReLU
         'random_seed': 42,
         'use_scheduler': True,  # if disabling this, remember to reduce lr
-        'lr_patience': 30,
-        'lr': 1e-4,
+        'lr_patience': 20,
+        'lr': 1e-2,
         "weight_decay": 1e-3,
         'show_progress_bar': True,
         'show_losses_plot': False,
