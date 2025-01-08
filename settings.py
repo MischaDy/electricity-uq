@@ -76,7 +76,7 @@ METHODS_KWARGS = {
         "n_iter": 100,
         "num_hidden_layers": 2,
         "hidden_layer_size": 20,
-        'activation': None,
+        'activation': None,  # defaults to leaky ReLU
         'random_seed': 42,
         'lr': 1e-4,
         'use_scheduler': True,
@@ -140,7 +140,7 @@ METHODS_KWARGS = {
         "n_iter": 200,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
-        'activation': None,
+        'activation': None,  # defaults to leaky ReLU
         "weight_decay": 1e-3,
         "lr": 1e-2,
         "lr_patience": 30,

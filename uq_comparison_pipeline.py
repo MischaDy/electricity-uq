@@ -230,6 +230,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model = misc_helpers.object_to_cuda(model)
                 return model
 
+        if activation is None:
+            activation = torch.nn.LeakyReLU
         model = train_nn(
             X_train,
             y_train,
@@ -417,11 +419,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             predict_with_qr_nn,
         )
         torch.manual_seed(random_seed)
+
+        if activation is None:
+            activation = torch.nn.LeakyReLU
+
         method_name = 'native_quantile_regression_nn'
         if skip_training:
             logging.info('skipping training...')
-            if activation is None:
-                activation = torch.nn.LeakyReLU
             try:
                 model = self.io_helper.load_torch_model_statedict(
                     QR_NN,
@@ -502,11 +506,12 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         if not torch.cuda.is_available():
             logging.warning('cuda not available! using CPU')
 
+        if activation is None:
+            activation = torch.nn.LeakyReLU
+
         method_name = 'native_mvnn'
         if skip_training:
             logging.info('skipping training...')
-            if activation is None:
-                activation = torch.nn.LeakyReLU
             try:
                 model = self.io_helper.load_torch_model_statedict(
                     MeanVarNN,
