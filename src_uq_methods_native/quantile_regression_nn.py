@@ -164,6 +164,8 @@ def train_qr_nn(
     :param use_scheduler:
     :return:
     """
+    from timeit import default_timer   # todo: temp
+
     logging.info('setup')
     torch.manual_seed(random_seed)
 
@@ -195,6 +197,7 @@ def train_qr_nn(
     if show_progress_bar:
         epochs = tqdm(epochs)
     logging.info('training...')
+    t1 = default_timer()  # todo: temp
     for epoch in epochs:
         if not show_progress_bar:
             logging.info(f'epoch {epoch}/{n_iter}')
@@ -213,7 +216,9 @@ def train_qr_nn(
         val_losses.append(val_loss.item())
         if use_scheduler:
             scheduler.step(val_loss)
+    t2 = default_timer()  # todo: temp
     logging.info('done training.')
+    logging.info(f'took {t2 - t1}s')    # todo: temp
     misc_helpers.plot_nn_losses(
         train_losses,
         val_losses,
@@ -246,7 +251,6 @@ def test_qr():
 
     logging.info('importing...')
     from matplotlib import pyplot as plt
-    from timeit import default_timer
 
     logging.info('data setup...')
     plot_data = False
@@ -284,8 +288,6 @@ def test_qr():
         'io_helper': io_helper,
     }
 
-    logging.info('start test run...')
-    t1 = default_timer()
     train_qr_nn(
         X_train,
         y_train,
@@ -294,8 +296,6 @@ def test_qr():
         quantiles,
         **kwargs
     )
-    t2 = default_timer()
-    logging.info(f'done. took {t2 - t1}s')
 
 
 if __name__ == '__main__':
