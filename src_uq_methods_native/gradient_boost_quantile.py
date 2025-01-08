@@ -83,7 +83,12 @@ class HGBR_Quantile:
         self.models = {quantile: cv_obj.best_estimator_ for quantile, cv_obj in cv_objs.items()}
 
     def predict(self, X_pred, as_dict=True):
-        pass
+        # todo: parallelize?
+        result = {quantile: model.predict(X_pred)
+                  for quantile, model in self.models.items()}
+        if as_dict:
+            return result
+        return np.array(list(result.values()))
 
 
 def train_hgbr_quantile(
