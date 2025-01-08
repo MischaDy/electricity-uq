@@ -262,18 +262,18 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         # `feature_names_in_` but only check that the shape is consistent.
         X = self._validate_data(X, accept_sparse=False, reset=False)
         X = misc_helpers.np_array_to_tensor(X)
-        res = self.predict_on_tensor(X)
-        res = misc_helpers.make_arr_1d(res) if self.output_dim == 1 else misc_helpers.make_arr_2d(res)
+        result = self.predict_on_tensor(X)
+        result = misc_helpers.make_arr_1d(result) if self.output_dim == 1 else misc_helpers.make_arr_2d(result)
         if as_np:
-            res = misc_helpers.tensor_to_np_array(res)
-        return res
+            result = misc_helpers.tensor_to_np_array(result)
+        return result
 
     def predict_on_tensor(self, X: torch.Tensor):
         X = misc_helpers.object_to_cuda(X)
         X = misc_helpers.make_tensor_contiguous(X)
         with torch.no_grad():
-            res = self.model_(X)
-        return res
+            result = self.model_(X)
+        return result
 
     def get_nn(self, to_device=True) -> torch.nn.Module:
         if to_device:

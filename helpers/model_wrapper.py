@@ -14,9 +14,9 @@ class ModelWrapper:
         self.output_dim_orig = output_dim
 
     def predict(self, input_):
-        output = self.model_.predict(input_)
-        output = misc_helpers.make_arr_1d(output) if self.output_dim == 1 else misc_helpers.make_arr_2d(output)
-        return output
+        result = self.model_.predict(input_)
+        result = misc_helpers.make_arr_1d(result) if self.output_dim == 1 else misc_helpers.make_arr_2d(result)
+        return result
 
     def set_output_dim(self, output_dim, orig=False):
         self.output_dim = output_dim

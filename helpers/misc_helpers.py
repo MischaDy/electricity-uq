@@ -254,12 +254,12 @@ def starfilter(pred, iterable):
 
 def identity(*args):
     if len(args) > 2:
-        res = args
+        result = args
     elif len(args) == 1:
-        res = args[0]
+        result = args[0]
     else:
-        res = None
-    return res
+        result = None
+    return result
 
 
 def is_ascending(*arrays):
