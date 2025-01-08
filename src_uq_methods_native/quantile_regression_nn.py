@@ -18,12 +18,12 @@ torch.set_default_dtype(torch.float32)
 
 class QR_NN(torch.nn.Module):
     def __init__(
-        self,
-        dim_in,
-        quantiles,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
-        activation=torch.nn.LeakyReLU,
+            self,
+            dim_in,
+            quantiles,
+            num_hidden_layers=2,
+            hidden_layer_size=50,
+            activation=torch.nn.LeakyReLU,
     ):
         """
 
@@ -69,7 +69,7 @@ class MultiPinballLoss:
         assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
         loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
         for i, pinball_loss in enumerate(self.pinball_losses):
-            loss[i] = pinball_loss(y_pred_quantiles[:, i:i+1], y_true)  # i+1 to ensure correct shape
+            loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
         loss = _reduce_loss(loss, self.reduction)
         return loss
 
@@ -78,6 +78,7 @@ class PinballLoss:
     """
     copied with minor changes from: https://github.com/ywatanabe1989/custom_losses_pytorch/blob/master/pinball_loss.py
     """
+
     def __init__(self, quantile: float, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         assert 0 <= quantile <= 1
         self.quantile = quantile
@@ -115,28 +116,28 @@ def compute_eval_losses(model, criterion, X_train, y_train, X_val, y_val):
 
 
 def train_qr_nn(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    X_val: np.ndarray,
-    y_val: np.ndarray,
-    quantiles: list,
-    n_iter=200,
-    batch_size=20,
-    num_hidden_layers=2,
-    hidden_layer_size=50,
-    activation=torch.nn.LeakyReLU,
-    random_seed=42,
-    lr=0.1,
-    use_scheduler=True,
-    lr_patience=30,
-    lr_reduction_factor=0.5,
-    weight_decay=0.0,
-    show_progress_bar=True,
-    show_plots=True,
-    show_losses_plot=True,
-    save_losses_plot=True,
-    io_helper=None,
-    loss_skip=10,
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_val: np.ndarray,
+        y_val: np.ndarray,
+        quantiles: list,
+        n_iter=200,
+        batch_size=20,
+        num_hidden_layers=2,
+        hidden_layer_size=50,
+        activation=torch.nn.LeakyReLU,
+        random_seed=42,
+        lr=0.1,
+        use_scheduler=True,
+        lr_patience=30,
+        lr_reduction_factor=0.5,
+        weight_decay=0.0,
+        show_progress_bar=True,
+        show_plots=True,
+        show_losses_plot=True,
+        save_losses_plot=True,
+        io_helper=None,
+        loss_skip=10,
 ):
     """
 
@@ -164,7 +165,7 @@ def train_qr_nn(
     :param use_scheduler:
     :return:
     """
-    from timeit import default_timer   # todo: temp
+    from timeit import default_timer  # todo: temp
 
     logging.info('setup')
     torch.manual_seed(random_seed)
@@ -193,7 +194,7 @@ def train_qr_nn(
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
-    epochs = range(1, n_iter+1)
+    epochs = range(1, n_iter + 1)
     if show_progress_bar:
         epochs = tqdm(epochs)
     logging.info('training...')
@@ -218,7 +219,7 @@ def train_qr_nn(
             scheduler.step(val_loss)
     t2 = default_timer()  # todo: temp
     logging.info('done training.')
-    logging.info(f'took {t2 - t1}s')    # todo: temp
+    logging.info(f'took {t2 - t1}s')  # todo: temp
     misc_helpers.plot_nn_losses(
         train_losses,
         val_losses,
