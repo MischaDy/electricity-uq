@@ -15,7 +15,6 @@ from helpers.io_helper import IO_Helper
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
-USE_NEW_LOSS = False
 IO_HELPER = IO_Helper('comparison_storage')
 
 
@@ -92,47 +91,6 @@ class MultiPinballLoss:
         self._quantiles_torch = self._quantiles_torch.to(device)
         self._1_m_quantiles_torch = self._1_m_quantiles_torch.to(device)
         return self
-
-
-class MultiPinballLossOld:
-    def __init__(self, quantiles, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
-        if list(quantiles) != sorted(quantiles):
-            raise ValueError(f'Quantiles must be sorted: {quantiles}')
-        self.quantiles = quantiles
-        self.reduction = reduction
-        self.pinball_losses = [PinballLoss(quantile, reduction)
-                               for quantile in self.quantiles]
-
-    def __call__(self, y_pred_quantiles: torch.Tensor, y_true: torch.Tensor):
-        assert y_pred_quantiles.shape[1] == len(self.pinball_losses)
-        loss = torch.zeros(len(self.pinball_losses), dtype=torch.float)
-        for i, pinball_loss in enumerate(self.pinball_losses):
-            loss[i] = pinball_loss(y_pred_quantiles[:, i:i + 1], y_true)  # i+1 to ensure correct shape
-        loss = _reduce_loss(loss, self.reduction)
-        return loss
-
-
-class PinballLoss:
-    """
-    copied with minor changes from: https://github.com/ywatanabe1989/custom_losses_pytorch/blob/master/pinball_loss.py
-    """
-
-    def __init__(self, quantile: float, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
-        assert 0 <= quantile <= 1
-        self.quantile = quantile
-        self.reduction = reduction
-
-    def __call__(self, y_pred_quantile, y_true):
-        assert y_pred_quantile.shape == y_true.shape
-        loss = torch.zeros_like(y_true, dtype=torch.float)
-        error = y_pred_quantile - y_true
-        smaller_index = error < 0
-        bigger_index = 0 < error
-        abs_error = abs(error)
-        loss[smaller_index] = self.quantile * abs_error[smaller_index]
-        loss[bigger_index] = (1 - self.quantile) * abs_error[bigger_index]
-        loss = _reduce_loss(loss, self.reduction)
-        return loss
 
 
 def _reduce_loss(loss, reduction):
@@ -223,10 +181,7 @@ def train_qr_nn(
     logging.info('setup meta-models')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
-    if USE_NEW_LOSS:
-        criterion = MultiPinballLoss(quantiles, reduction='mean')
-    else:
-        criterion = MultiPinballLossOld(quantiles, reduction='mean')
+    criterion = MultiPinballLoss(quantiles, reduction='mean')
 
     logging.info('map to cuda')
     model, criterion = misc_helpers.objects_to_cuda(model, criterion)
