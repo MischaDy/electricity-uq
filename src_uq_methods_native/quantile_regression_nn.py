@@ -206,7 +206,11 @@ def train_qr_nn(
             optimizer.zero_grad()
             y_pred_quantiles = model(X_train_batch)
             loss = criterion(y_pred_quantiles, y_train_batch)
-            loss.backward(grad)
+            if grad.shape == loss.shape:
+                loss.backward(grad)
+            else:
+                # end of batch, shape is different.
+                loss.backward(torch.ones_like(loss))
             optimizer.step()
         if not use_scheduler and not save_losses_plot:
             continue
