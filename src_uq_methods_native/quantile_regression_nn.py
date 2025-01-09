@@ -257,8 +257,15 @@ def test_qr():
     USE_REAL_DATA = True
 
     n_iter = 100
-    reduction = 'none'
     n_samples = 1600
+
+    reduction = 'none'
+    num_hidden_layers = 2
+    hidden_layer_size = 50
+    lr = 1e-4
+    use_scheduler = False
+    lr_patience = 30
+
     train_frac = 0.4
     val_frac = 0.1
     test_frac = 0.5
@@ -297,12 +304,12 @@ def test_qr():
 
     kwargs = {
         "n_iter": n_iter,
-        "num_hidden_layers": 2,
-        "hidden_layer_size": 50,
+        "num_hidden_layers": num_hidden_layers,
+        "hidden_layer_size": hidden_layer_size,
+        'lr': lr,
+        'use_scheduler': use_scheduler,
+        'lr_patience': lr_patience,
         'random_seed': 42,
-        'lr': 1e-4,
-        'use_scheduler': False,
-        'lr_patience': 30,
         "weight_decay": 1e-3,
         'show_progress_bar': True,
         'show_losses_plot': True,
