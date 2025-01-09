@@ -134,9 +134,11 @@ def train_qr_nn(
         save_losses_plot=True,
         io_helper=None,
         loss_skip=10,
+        reduction: Literal['mean', 'sum', 'none'] = 'mean',
 ):
     """
 
+    :param reduction:
     :param num_hidden_layers:
     :param hidden_layer_size:
     :param activation:
@@ -181,12 +183,14 @@ def train_qr_nn(
     logging.info('setup meta-models')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
-    criterion = MultiPinballLoss(quantiles, reduction='mean')
+    criterion = MultiPinballLoss(quantiles, reduction=reduction)
 
     logging.info('map to cuda')
     model, criterion = misc_helpers.objects_to_cuda(model, criterion)
 
     logging.info('setup training')
+    grad = torch.ones(batch_size, len(quantiles)) if reduction == 'none' else torch.Tensor([1]).squeeze()
+
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
     train_losses, val_losses = [], []
@@ -202,7 +206,7 @@ def train_qr_nn(
             optimizer.zero_grad()
             y_pred_quantiles = model(X_train_batch)
             loss = criterion(y_pred_quantiles, y_train_batch)
-            loss.backward()
+            loss.backward(grad)
             optimizer.step()
         if not use_scheduler and not save_losses_plot:
             continue
@@ -303,6 +307,7 @@ def test_qr():
         'save_losses_plot': False,
         'io_helper': IO_HELPER,
         'activation': torch.nn.LeakyReLU,
+        'reduction': 'none',
     }
 
     model = train_qr_nn(
