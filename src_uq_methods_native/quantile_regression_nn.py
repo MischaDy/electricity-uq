@@ -271,7 +271,7 @@ def test_qr():
     val_frac = 0.1
     test_frac = 0.5
 
-    quantiles = [0.01, 0.5, 0.99]  # settings.QUANTILES
+    quantiles = settings.QUANTILES  # [0.01, 0.5, 0.99]
 
     n_train_samples = round(train_frac * n_samples)
     n_val_samples = round(val_frac * n_samples)
