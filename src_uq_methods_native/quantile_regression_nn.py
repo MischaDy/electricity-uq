@@ -263,8 +263,8 @@ def test_qr():
     num_hidden_layers = 2
     hidden_layer_size = 50
     lr = 1e-4
-    use_scheduler = False
-    lr_patience = 30
+    use_scheduler = True
+    lr_patience = 10
 
     train_frac = 0.4
     val_frac = 0.1
