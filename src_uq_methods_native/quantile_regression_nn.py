@@ -94,10 +94,10 @@ class MultiPinballLoss:
 
 
 def _reduce_loss(loss, reduction):
-    if reduction == 'sum':
-        loss = loss.sum()
-    elif reduction == 'mean':
+    if reduction == 'mean':
         loss = loss.mean()
+    elif reduction == 'sum':
+        loss = loss.sum()
     return loss
 
 
