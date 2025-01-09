@@ -256,12 +256,13 @@ def test_qr():
     USE_REAL_DATA = True
 
     n_iter = 50
+    reduction = 'mean'
     n_samples = 1600
     train_frac = 0.4
     val_frac = 0.1
     test_frac = 0.5
 
-    quantiles = settings.QUANTILES  # [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]
+    quantiles = [0.01, 0.05, 0.1, 0.5, 0.9, 0.95, 0.99]  # settings.QUANTILES
 
     n_train_samples = round(train_frac * n_samples)
     n_val_samples = round(val_frac * n_samples)
@@ -307,7 +308,7 @@ def test_qr():
         'save_losses_plot': False,
         'io_helper': IO_HELPER,
         'activation': torch.nn.LeakyReLU,
-        'reduction': 'none',
+        'reduction': reduction,
     }
 
     model = train_qr_nn(
