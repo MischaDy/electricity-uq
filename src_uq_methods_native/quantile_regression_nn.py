@@ -198,10 +198,10 @@ def train_qr_nn(
         if not show_progress_bar:
             logging.info(f'epoch {epoch}/{n_iter}')
         model.train()
-        for X_train, y_train in train_loader:
+        for X_train_batch, y_train_batch in train_loader:
             optimizer.zero_grad()
-            y_pred_quantiles = model(X_train)
-            loss = criterion(y_pred_quantiles, y_train)
+            y_pred_quantiles = model(X_train_batch)
+            loss = criterion(y_pred_quantiles, y_train_batch)
             loss.backward()
             optimizer.step()
         if not use_scheduler and not save_losses_plot:
