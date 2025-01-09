@@ -6,7 +6,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-RUN_SIZE: Literal['full', 'big', 'small'] = 'small'
+RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
