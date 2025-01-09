@@ -73,7 +73,7 @@ METHODS_KWARGS = {
     },
     "native_quantile_regression_nn": {
         'skip_training': False,
-        "n_iter": 50,
+        "n_iter": 300,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
