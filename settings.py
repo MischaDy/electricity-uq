@@ -80,7 +80,9 @@ METHODS_KWARGS = {
         'random_seed': 42,
         'use_scheduler': True,  # if disabling this, remember to reduce lr
         'lr_patience': 20,
+        'lr_reduction_factor': 0.9,
         'lr': 1e-2,
+        'reduction': 'none',
         "weight_decay": 1e-3,
         'show_progress_bar': True,
         'show_losses_plot': False,
