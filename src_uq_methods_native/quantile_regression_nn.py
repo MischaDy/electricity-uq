@@ -264,7 +264,8 @@ def test_qr():
     hidden_layer_size = 50
     lr = 1e-2
     use_scheduler = True
-    lr_patience = 30
+    lr_patience = 5
+    lr_reduction_factor = 0.9
 
     train_frac = 0.4
     val_frac = 0.1
@@ -309,6 +310,7 @@ def test_qr():
         'lr': lr,
         'use_scheduler': use_scheduler,
         'lr_patience': lr_patience,
+        'lr_reduction_factor': lr_reduction_factor,
         'random_seed': 42,
         "weight_decay": 1e-3,
         'show_progress_bar': True,
