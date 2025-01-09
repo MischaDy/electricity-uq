@@ -257,7 +257,7 @@ def test_qr():
     USE_REAL_DATA = True
 
     n_iter = 100
-    reduction = 'mean'
+    reduction = 'none'
     n_samples = 1600
     train_frac = 0.4
     val_frac = 0.1
@@ -305,8 +305,8 @@ def test_qr():
         'lr_patience': 30,
         "weight_decay": 1e-3,
         'show_progress_bar': True,
-        'show_losses_plot': False,
-        'save_losses_plot': False,
+        'show_losses_plot': True,
+        'save_losses_plot': True,
         'io_helper': IO_HELPER,
         'activation': torch.nn.LeakyReLU,
         'reduction': reduction,
