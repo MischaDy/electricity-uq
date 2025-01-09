@@ -345,7 +345,8 @@ def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, label_pa
     ax.set_ylabel("target")
     ax.set_title(f'{base_title} ({label_part})')
     if save_plot:
-        IO_HELPER.save_plot(filename=f'{base_filename}_{label_part}')
+        filename = f'{base_filename}_{label_part}'
+        plt.savefig(f'../comparison_storage/plots/{filename}.png')
     if show_plot:
         plt.show(block=True)
     plt.close(fig)
