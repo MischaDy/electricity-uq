@@ -262,7 +262,7 @@ def test_qr():
     reduction = 'none'
     num_hidden_layers = 2
     hidden_layer_size = 50
-    lr = 1e-4
+    lr = 1e-2
     use_scheduler = True
     lr_patience = 30
 
