@@ -1,2 +1,22 @@
 -------- PYTHON OUTPUT ----------
+
+base_model metrics:
+
+posthoc metrics:
+
+native metrics:
+	native_quantile_regression_nn:
+		rmse: 258.2700500488281
+		smape_scaled: 0.013713669031858444
+		crps: 143.35969085512403
+		nll_gaussian: 7.332964676271476
+		mean_pinball: 15.582905769348145
+
+optimal deterministic metrics:
+		rmse: 0.0
+		smape_scaled: 0.0
+	optimal uq metrics:
+		crps: None
+		nll_gaussian: None
+		mean_pinball: None
 ---------------------------------
