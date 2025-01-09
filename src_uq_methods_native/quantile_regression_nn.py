@@ -212,10 +212,11 @@ def train_qr_nn(
             continue
 
         train_loss, val_loss = compute_eval_losses(model, criterion, X_train, y_train, X_val, y_val)
-        train_losses.append(train_loss.item())
-        val_losses.append(val_loss.item())
+        train_losses.append(train_loss.mean().item())
+        val_loss_mean = val_loss.mean()
+        val_losses.append(val_loss.mean().item())
         if use_scheduler:
-            scheduler.step(val_loss)
+            scheduler.step(val_loss_mean)
     logging.info('done training.')
     misc_helpers.plot_nn_losses(
         train_losses,
