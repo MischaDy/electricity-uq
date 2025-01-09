@@ -6,11 +6,11 @@ posthoc metrics:
 
 native metrics:
 	native_quantile_regression_nn:
-		rmse: 205.80068969726562
-		smape_scaled: 0.011081885546445847
-		crps: 111.57766143312888
-		nll_gaussian: 6.802250336930342
-		mean_pinball: 18.654499053955078
+		rmse: 683.9324340820312
+		smape_scaled: 0.03534107655286789
+		crps: 388.42642678171643
+		nll_gaussian: 8.81751172943476
+		mean_pinball: 42.8190803527832
 
 optimal deterministic metrics:
 		rmse: 0.0
