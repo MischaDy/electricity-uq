@@ -1,4 +1,5 @@
 # based on: https://research.wmz.ninja/articles/2018/03/on-sharing-large-arrays-when-using-pythons-multiprocessing.html
+from typing import Literal
 
 import numpy as np
 from multiprocessing import RawArray
@@ -30,6 +31,7 @@ class Model:
 
         initargs = (X_train_raw, X_shape, y_train_raw, y_shape)
         print('submitting exec')
+        # noinspection PyTypeChecker
         with ProcessPoolExecutor(initializer=store_data_global, initargs=initargs) as executor:
             futures = [executor.submit(self.fit_single_model, model_id=model_id)
                        for model_id in self.model_ids]
@@ -38,14 +40,20 @@ class Model:
         results = [future.result() for future in futures]
         print(f'results: {results}')
 
-    @staticmethod
-    def fit_single_model(model_id):
+    @classmethod
+    def fit_single_model(cls, model_id):
         print(f'{model_id}: loading data')
-        X_np = np.frombuffer(train_data['X_train']).astype(np.float32).reshape(train_data['X_shape'])
-        y_np = np.frombuffer(train_data['y_train']).astype(np.float32).reshape(train_data['y_shape'])
+        X_np = cls.get_arr_from_buffer('X')
+        y_np = cls.get_arr_from_buffer('y')
         print(f'{model_id}: computing result')
         result = np.sum(X_np) * np.sum(y_np) + model_id
         return result
+
+    @staticmethod
+    def get_arr_from_buffer(kind: Literal['X', 'y']):
+        arr = np.frombuffer(train_data[f'{kind}_train'])
+        arr = arr.astype(np.float32).reshape(train_data[f'{kind}_shape'])
+        return arr
 
     @staticmethod
     def get_raw_array(arr):
