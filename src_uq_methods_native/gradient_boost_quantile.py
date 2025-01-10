@@ -1,4 +1,8 @@
 import logging
+logging.basicConfig(level=logging.INFO)
+
+logging.info('importing')  # temp
+
 from concurrent.futures import ProcessPoolExecutor
 
 from functools import partial
