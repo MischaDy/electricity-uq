@@ -24,6 +24,7 @@ conda activate masterarbeit
 
 # Run our code
 echo "-------- PYTHON OUTPUT ----------"
+rm -f gradient_boost_quantile.py  # temp hack
 cp src_uq_methods_native/gradient_boost_quantile.py .  # temp hack
 python3 gradient_boost_quantile.py
 rm -f gradient_boost_quantile.py  # temp hack
