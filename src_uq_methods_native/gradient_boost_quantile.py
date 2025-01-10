@@ -1,4 +1,5 @@
 import logging
+
 from functools import partial
 
 from sklearn.ensemble import HistGradientBoostingRegressor
@@ -184,7 +185,7 @@ def test_qhgbr():
     from scipy import stats
     import settings
 
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, force=True)
     logging.info('data setup...')
 
     SHOW_PLOT = True
