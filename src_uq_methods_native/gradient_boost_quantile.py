@@ -193,7 +193,7 @@ def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, label_pa
     ax.set_title(f'{base_title} ({label_part})')
     if save_plot:
         filename = f'{base_filename}_{label_part}'
-        plt.savefig(f'../comparison_storage/plots/{filename}.png')
+        plt.savefig(f'plots/{filename}.png')
     if show_plot:
         plt.show(block=True)
     plt.close(fig)
@@ -245,7 +245,7 @@ def test_qhgbr():
 
     settings.RUN_SIZE = RUN_SIZE
     settings_update.update_run_size_setup()
-    settings.DATA_FILEPATH = f'../{settings.DATA_FILEPATH}'
+    # settings.DATA_FILEPATH = f'../{settings.DATA_FILEPATH}'
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
         filepath=settings.DATA_FILEPATH,
         train_years=settings.TRAIN_YEARS,
