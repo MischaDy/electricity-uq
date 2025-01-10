@@ -63,9 +63,9 @@ class HGBR_Quantile:
         if model_param_distributions is None or cv_n_iter == 0:
             msg_param = 'cv_n_iter == 0' if cv_n_iter == 0 else 'model_param_distributions is None'
             msg = f'parameter {msg_param}, so no CV is performed'
-            logging.warning(msg)
+            logging.info(msg)
 
-            # todo: parallelize!
+            logging.info(f'fitting {len(self.models)} models.')
             for i, model in enumerate(self.models.values(), start=1):
                 logging.info(f'fitting model {i}/{len(self.models)}...')
                 model.fit(X_train, y_train)
