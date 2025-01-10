@@ -134,6 +134,6 @@ def train_hgbr_quantile(
 
 def predict_with_hgbr_quantile(model: HGBR_Quantile, X_pred: np.array):
     y_quantiles = model.predict(X_pred, as_dict=True)
-    y_pred = ...
-    y_std = ...
+    y_pred = y_quantiles[0.5]
+    y_std = misc_helpers.stds_from_quantiles(y_quantiles)
     return y_pred, y_quantiles, y_std
