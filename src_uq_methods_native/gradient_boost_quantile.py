@@ -1,4 +1,5 @@
 import logging
+from concurrent.futures import ProcessPoolExecutor
 
 from functools import partial
 
@@ -82,17 +83,19 @@ class HGBR_Quantile:
         )
         cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
 
-        logging.info(f'running CV on {len(cv_objs)} CVs objects.')
-
-        def fit_cv(cv_obj_enum):
-            i, cv_obj = cv_obj_enum
+        def fit_cv(i, quantile, cv_obj):
             logging.info(f'cv obj {i}/{len(cv_objs)}: fitting...')
             cv_obj.fit(X_train, y_train)
             logging.info(f'cv obj {i}/{len(cv_objs)}: done.'
                          f' best etimator stopped after {cv_obj.best_estimator_.n_iter_} iterations.')
+            return quantile, cv_obj
 
-        list(map(fit_cv, enumerate(cv_objs.values(), start=1)))
-        self.models = {quantile: cv_obj.best_estimator_ for quantile, cv_obj in cv_objs.items()}
+        logging.info(f'running CV on {len(cv_objs)} CVs objects.')
+        with ProcessPoolExecutor() as executor:
+            cv_objs = executor.map(lambda i, q_cv_pair: fit_cv(i, q_cv_pair[0], q_cv_pair[1]),
+                                   enumerate(cv_objs.items(), start=1))
+            self.models = {quantile: cv_obj.best_estimator_
+                           for quantile, cv_obj in cv_objs}
 
     def predict(self, X_pred, as_dict=True):
         # todo: parallelize?
