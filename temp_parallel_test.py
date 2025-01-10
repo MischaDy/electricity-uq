@@ -35,14 +35,14 @@ class Model:
                        for model_id in self.model_ids]
 
         print('getting future results...')
-        results = [np.array(future.result()) for future in futures]
+        results = [future.result() for future in futures]
         print(f'results: {results}')
 
     @staticmethod
     def fit_single_model(model_id):
         print(f'{model_id}: loading data')
-        X_np = np.frombuffer(train_data['X_train'], dtype=np.float32).reshape(train_data['X_shape'])
-        y_np = np.frombuffer(train_data['y_train'], dtype=np.float32).reshape(train_data['y_shape'])
+        X_np = np.frombuffer(train_data['X_train']).astype(np.float32).reshape(train_data['X_shape'])
+        y_np = np.frombuffer(train_data['y_train']).astype(np.float32).reshape(train_data['y_shape'])
         print(f'{model_id}: computing result')
         result = np.sum(X_np) * np.sum(y_np) + model_id
         return result
