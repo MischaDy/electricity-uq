@@ -243,7 +243,7 @@ def predict_with_qr_nn(model: QR_NN, X_pred: np.array):
             quantile: misc_helpers.tensor_to_np_array(tensor)
             for quantile, tensor in y_quantiles_dict.items()
         }
-    y_quantiles = np.array(list(y_quantiles_dict.values())).T
+    y_quantiles = misc_helpers.quantiles_dict_to_np_arr(y_quantiles_dict)
     y_pred = y_quantiles_dict[0.5]
     y_std = misc_helpers.stds_from_quantiles(y_quantiles)
     return y_pred, y_quantiles, y_std

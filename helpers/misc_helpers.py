@@ -505,3 +505,8 @@ def build_unif_distr(start: float, end: float):
 
 def get_device_of_nn(nn):
     return next(nn.parameters()).device
+
+
+def quantiles_dict_to_np_arr(quantiles_dict: dict[float, 'np.ndarray']):
+    import numpy as np
+    return np.array(list(quantiles_dict.values())).T
