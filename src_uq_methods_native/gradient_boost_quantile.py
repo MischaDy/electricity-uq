@@ -1,4 +1,10 @@
+# multiprocessing techniques based on:
+# - https://superfastpython.com/processpoolexecutor-map-vs-submit
+# - https://research.wmz.ninja/articles/2018/03/on-sharing-large-arrays-when-using-pythons-multiprocessing.html
+
 import logging
+from multiprocessing import RawArray
+
 logging.basicConfig(level=logging.INFO)
 
 logging.info('importing')  # temp
@@ -17,6 +23,8 @@ import numpy as np
 
 
 STORAGE_PATH = 'qhgbr_storage'
+
+TRAIN_DATA = {}
 
 
 class HGBR_Quantile:
@@ -63,6 +71,14 @@ class HGBR_Quantile:
         from timeit import default_timer  # temp
 
         y_train = y_train.ravel()
+
+        print('fitting...')
+        print('making raw arrays')
+        X_train_raw = self.get_raw_array(X_train)
+        X_shape = X_train.shape
+        y_train_raw = self.get_raw_array(y_train)
+        y_shape = y_train.shape
+
         if model_param_distributions is None or cv_n_iter == 0:
             msg_param = 'cv_n_iter == 0' if cv_n_iter == 0 else 'model_param_distributions is None'
             msg = f'parameter {msg_param}, so no CV is performed'
@@ -82,25 +98,27 @@ class HGBR_Quantile:
                 n_jobs=1,
             )
             objs_dict = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
+
         logging.info(f'fitting {len(objs_dict)} objects.')
+        initargs = (X_train_raw, X_shape, y_train_raw, y_shape)
         t1 = default_timer()
-        # based on https://superfastpython.com/processpoolexecutor-map-vs-submit/
-        with ProcessPoolExecutor() as executor:
-            futures = [executor.submit(self.fit_obj, quantile=quantile, obj=obj, X_train=X_train, y_train=y_train,
-                                       i=i)
+        # noinspection PyTypeChecker
+        with ProcessPoolExecutor(initializer=store_data_global, initargs=initargs) as executor:
+            futures = [executor.submit(self.fit_obj, quantile=quantile, obj=obj, i=i)
                        for i, (quantile, obj) in enumerate(objs_dict.items(), start=1)]
         self.models = dict(future.result() for future in futures)
         t2 = default_timer()
         logging.info(f'finished after {t2 - t1}s')
 
-    @staticmethod
-    def fit_obj(quantile: float, obj: RandomizedSearchCV | HistGradientBoostingRegressor, X_train: np.ndarray,
-                y_train: np.ndarray, i: int):  # type_: Literal['cv', 'model'] = 'cv'
-        # prefix = f'{type_} {i} (q={quantile})'
-        # logging.info(f'{prefix}: fitting...')
+    @classmethod
+    def fit_obj(cls, quantile: float, obj: RandomizedSearchCV | HistGradientBoostingRegressor, i: int):
+        prefix = f'model {i}'
+        print(f'{prefix}: loading data...')
+        X_train = cls.get_arr_from_buffer('X')
+        y_train = cls.get_arr_from_buffer('y')
+        print(f'{prefix}: fitting...')
         obj.fit(X_train, y_train)
-        # stop_iter = ... if type_ == 'cv' else ...
-        # logging.info(f'{prefix}: done. best etimator stopped after {stop_iter} iterations.')
+        print(f'{prefix}: done.')
         return quantile, obj
 
     def predict(self, X_pred, as_dict=True):
@@ -110,6 +128,27 @@ class HGBR_Quantile:
         if as_dict:
             return result
         return np.array(list(result.values()))
+
+    @staticmethod
+    def get_raw_array(arr):
+        assert len(arr.shape) == 2
+        arr_raw = RawArray('d', arr.shape[0] * arr.shape[1])
+        arr_raw_np = np.frombuffer(arr_raw).reshape(arr.shape)
+        np.copyto(arr_raw_np, arr)
+        return arr_raw
+
+    @staticmethod
+    def get_arr_from_buffer(kind: Literal['X', 'y']):
+        arr = np.frombuffer(TRAIN_DATA[f'{kind}_train'])
+        arr = arr.astype(np.float32).reshape(TRAIN_DATA[f'{kind}_shape'])
+        return arr
+
+
+def store_data_global(X_train_raw: RawArray, X_shape: tuple[int, int], y_train_raw: RawArray, y_shape: tuple[int, int]):
+    TRAIN_DATA['X_train'] = X_train_raw
+    TRAIN_DATA['X_shape'] = X_shape
+    TRAIN_DATA['y_train'] = y_train_raw
+    TRAIN_DATA['y_shape'] = y_shape
 
 
 def train_hgbr_quantile(
