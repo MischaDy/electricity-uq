@@ -11,10 +11,8 @@ from typing import Literal
 from helpers import misc_helpers
 import numpy as np
 
-from helpers.io_helper import IO_Helper
 
-
-IO_HELPER = IO_Helper('qhgbr_storage')
+STORAGE_PATH = 'qhgbr_storage'
 
 
 class HGBR_Quantile:
@@ -198,7 +196,12 @@ def test_qhgbr():
     from scipy import stats
     import settings
 
+    from helpers.io_helper import IO_Helper
+
     logging.basicConfig(level=logging.INFO, force=True)
+
+    io_helper = IO_Helper(STORAGE_PATH)
+
     logging.info('data setup...')
 
     SHOW_PLOT = True
@@ -276,13 +279,13 @@ def test_qhgbr():
     prefix = 'qhgbr'
     postfix = f'n{n_samples}_it{cv_n_iter}'
 
-    IO_HELPER.save_model(model, filename=f'{prefix}_y_pred_{postfix}.model')
+    io_helper.save_model(model, filename=f'{prefix}_y_pred_{postfix}.model')
     logging.info('predicting')
     y_pred, y_quantiles, y_std = predict_with_hgbr_quantile(model, X_pred)
 
-    IO_HELPER.save_array(y_pred, filename=f'{prefix}_y_pred_{postfix}.npy')
-    IO_HELPER.save_array(y_quantiles, filename=f'{prefix}_y_quantiles_{postfix}.npy')
-    IO_HELPER.save_array(y_std, filename=f'{prefix}_y_std_{postfix}.npy')
+    io_helper.save_array(y_pred, filename=f'{prefix}_y_pred_{postfix}.npy')
+    io_helper.save_array(y_quantiles, filename=f'{prefix}_y_quantiles_{postfix}.npy')
+    io_helper.save_array(y_std, filename=f'{prefix}_y_std_{postfix}.npy')
 
     index_low, index_high = [quantiles.index(0.05), quantiles.index(0.95)] if PLOT_90P_INTERVAL else [0, -1]
     ci_low, ci_high = y_quantiles[:, index_low], y_quantiles[:, index_high]
