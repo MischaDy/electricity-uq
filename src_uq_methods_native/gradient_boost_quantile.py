@@ -113,10 +113,9 @@ class HGBR_Quantile:
     @classmethod
     def fit_obj(cls, quantile: float, obj: RandomizedSearchCV | HistGradientBoostingRegressor, i: int):
         prefix = f'model {i}'
-        print(f'{prefix}: loading data...')
+        print(f'{prefix}: fitting...')
         X_train = cls.get_arr_from_buffer('X')
         y_train = cls.get_arr_from_buffer('y')
-        print(f'{prefix}: fitting...')
         obj.fit(X_train, y_train)
         print(f'{prefix}: done.')
         return quantile, obj
