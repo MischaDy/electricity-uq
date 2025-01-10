@@ -132,8 +132,6 @@ def train_hgbr_quantile(
         random_seed=random_seed,
         max_iter=1000,
         lr=0.2,
-        # max_leaf_nodes=0,
-        # min_samples_leaf=0,
         l2_regularization=1e-3,
     )
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
@@ -190,13 +188,11 @@ def test_qhgbr():
     SHOW_PLOT = True
     SAVE_PLOT = True
     PLOT_DATA = False
-    USE_REAL_DATA = True
 
     n_samples = 1600
 
     train_frac = 0.4
     val_frac = 0.1
-    test_frac = 0.5
 
     quantiles = [0.05, 0.10, 0.50, 0.90, 0.95]  # settings.QUANTILES
 
@@ -218,7 +214,6 @@ def test_qhgbr():
 
     n_train_samples = round(train_frac * n_samples)
     n_val_samples = round(val_frac * n_samples)
-    n_test_samples = round(test_frac * n_samples)
 
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
         '../data/data_1600.pkl',
