@@ -202,13 +202,13 @@ def test_qhgbr():
     cv_n_iter = 1
     cv_n_splits = 2
     verbose = 2
-    n_iter_no_change = 10
+    n_iter_no_change = 20
 
     model_param_distributions = {
         # 'max_features': stats.randint(1, X_train.shape[1]),
         "max_iter": [1000],  # stats.randint(10, 1000),
-        'learning_rate': [0.1, 0.15, 0.2],
-        'l2_regularization': [1e-4, 1e-3, 1e-2],
+        'learning_rate': [0.1],
+        'l2_regularization': [1e-3],
     }
 
     ##############
