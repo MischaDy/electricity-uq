@@ -12,7 +12,6 @@ from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
 
 from typing import Literal
 
-import settings_update
 from helpers import misc_helpers
 import numpy as np
 
@@ -203,6 +202,7 @@ def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, label_pa
 def test_qhgbr():
     from scipy import stats
     import settings
+    import settings_update
 
     from helpers.io_helper import IO_Helper
 
