@@ -190,7 +190,7 @@ def test_qhgbr():
     val_frac = 0.1
     test_frac = 0.5
 
-    quantiles = [0.01, 0.05, 0.5, 0.95, 0.99]  # settings.QUANTILES
+    quantiles = [0.05, 0.10, 0.50, 0.90, 0.95]  # settings.QUANTILES
 
     cv_n_iter = 5
     cv_n_splits = 3
