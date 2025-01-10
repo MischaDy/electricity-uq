@@ -206,10 +206,10 @@ def test_qhgbr():
 
     model_param_distributions = {
         # 'max_features': stats.randint(1, X_train.shape[1]),
-        "max_iter": [1000], # stats.randint(10, 1000),
+        "max_iter": [1000],  # stats.randint(10, 1000),
         'learning_rate': [1e-3],  # stats.loguniform(0.015, 0.15),
-        'max_leaf_nodes': [50], # stats.randint(10, 100),
-        'min_samples_leaf': [2], # stats.randint(15, 100),
+        'max_leaf_nodes': [50],  # stats.randint(10, 100),
+        'min_samples_leaf': [2],  # stats.randint(15, 100),
         'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
     }
 
@@ -219,15 +219,10 @@ def test_qhgbr():
     n_val_samples = round(val_frac * n_samples)
     n_test_samples = round(test_frac * n_samples)
 
-    # if USE_REAL_DATA:
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
         '../data/data_1600.pkl',
         n_points_per_group=n_samples,
     )
-    # else:
-    #     dim = 10
-    #     X = np.arange(n_samples * dim).reshape(n_samples, dim)
-    #     y = np.sin(X.sum(axis=1) / n_samples / 3).reshape(-1, 1)
 
     if PLOT_DATA:
         logging.info('plotting data')
@@ -240,8 +235,6 @@ def test_qhgbr():
     y_train = y[:n_train_samples]
     X_val = X[n_train_samples:n_train_samples + n_val_samples]
     y_val = y[n_train_samples:n_train_samples + n_val_samples]
-    X_test = X[-n_test_samples:]
-    y_test = y[-n_test_samples:]
 
     X_pred = X
     y_true = y
@@ -273,10 +266,7 @@ def test_qhgbr():
     IO_HELPER.save_array(y_quantiles, filename=f'{prefix}_y_quantiles_{postfix}.npy')
     IO_HELPER.save_array(y_std, filename=f'{prefix}_y_std_{postfix}.npy')
 
-    ci_low, ci_high = (
-        y_quantiles[:, 0],
-        y_quantiles[:, -1],
-    )
+    ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1]
     n_quantiles = y_quantiles.shape[1]
     logging.info('plotting')
     plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qhgbr', n_quantiles, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
