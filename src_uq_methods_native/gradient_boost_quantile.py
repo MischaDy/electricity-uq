@@ -113,10 +113,10 @@ class HGBR_Quantile:
 
 
 def train_hgbr_quantile(
-        X_train: 'np.ndarray',
-        y_train: 'np.ndarray',
-        X_val: 'np.ndarray',
-        y_val: 'np.ndarray',
+        X_train: np.ndarray,
+        y_train: np.ndarray,
+        X_val: np.ndarray,
+        y_val: np.ndarray,
         quantiles: list[float],
         cv_n_iter=100,
         cv_n_splits=10,
