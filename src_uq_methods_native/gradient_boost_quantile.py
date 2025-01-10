@@ -24,7 +24,7 @@ class HGBR_Quantile:
             lr=0.1,
             max_leaf_nodes=31,
             min_samples_leaf=20,
-            l2_regularization=0,
+            l2_regularization=0.0,
             max_features=1.0,
             categorical_features=None,
             monotonic_cst=None,
