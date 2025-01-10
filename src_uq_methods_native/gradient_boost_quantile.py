@@ -187,9 +187,9 @@ def test_qhgbr():
 
     quantiles = [0.01, 0.05, 0.5, 0.95, 0.99]  # settings.QUANTILES
 
-    cv_n_iter = 10
-    cv_n_splits = 10
-    verbose = 1
+    cv_n_iter = 5
+    cv_n_splits = 3
+    verbose = 2
     n_iter_no_change = 30
 
     model_param_distributions = {
