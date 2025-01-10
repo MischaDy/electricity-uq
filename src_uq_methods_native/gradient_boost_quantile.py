@@ -1,4 +1,3 @@
-import itertools
 import logging
 from concurrent.futures import ProcessPoolExecutor
 
@@ -59,6 +58,8 @@ class HGBR_Quantile:
 
     def fit(self, X_train, y_train, cv_n_iter=100, cv_n_splits=10, random_seed=42,
             model_param_distributions=None, verbose=0):
+        from timeit import default_timer  # temp
+
         y_train = y_train.ravel()
         if model_param_distributions is None or cv_n_iter == 0:
             msg_param = 'cv_n_iter == 0' if cv_n_iter == 0 else 'model_param_distributions is None'
@@ -66,43 +67,39 @@ class HGBR_Quantile:
             logging.info(msg)
 
             logging.info(f'fitting {len(self.models)} models.')
-            for i, model in enumerate(self.models.values(), start=1):
-                logging.info(f'fitting model {i}/{len(self.models)}...')
-                model.fit(X_train, y_train)
-                logging.info(f'done, model stopped after {model.n_iter_} iterations.')
-            return
-
-        cv_maker = partial(
-            RandomizedSearchCV,
-            param_distributions=model_param_distributions,
-            n_iter=cv_n_iter,
-            cv=TimeSeriesSplit(n_splits=cv_n_splits),
-            scoring="neg_root_mean_squared_error",
-            random_state=random_seed,
-            verbose=verbose,
-            n_jobs=1,
-        )
-        cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
-
-        logging.info(f'running CV on {len(cv_objs)} CVs objects.')
-        from timeit import default_timer  # temp
+            objs_dict = self.models
+        else:
+            cv_maker = partial(
+                RandomizedSearchCV,
+                param_distributions=model_param_distributions,
+                n_iter=cv_n_iter,
+                cv=TimeSeriesSplit(n_splits=cv_n_splits),
+                scoring="neg_root_mean_squared_error",
+                random_state=random_seed,
+                verbose=verbose,
+                n_jobs=1,
+            )
+            objs_dict = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
+        logging.info(f'fitting {len(objs_dict)} objects.')
         t1 = default_timer()
         # based on https://superfastpython.com/processpoolexecutor-map-vs-submit/
         with ProcessPoolExecutor() as executor:
-            futures = [executor.submit(self.fit_cv, quantile=quantile, cv_obj=cv_obj, X_train=X_train, y_train=y_train,
+            futures = [executor.submit(self.fit_obj, quantile=quantile, obj=obj, X_train=X_train, y_train=y_train,
                                        i=i)
-                       for i, (quantile, cv_obj) in enumerate(cv_objs.items(), start=1)]
+                       for i, (quantile, obj) in enumerate(objs_dict.items(), start=1)]
         self.models = dict(future.result() for future in futures)
         t2 = default_timer()
         logging.info(f'finished after {t2 - t1}s')
 
     @staticmethod
-    def fit_cv(quantile: float, cv_obj: RandomizedSearchCV, X_train: np.ndarray, y_train: np.ndarray, i: int):
-        prefix = f'cv obj {i} (q={quantile})'
-        logging.info(f'{prefix}: fitting...')
-        cv_obj.fit(X_train, y_train)
-        logging.info(f'{prefix}: done. best etimator stopped after {cv_obj.best_estimator_.n_iter_} iterations.')
-        return quantile, cv_obj
+    def fit_obj(quantile: float, obj: RandomizedSearchCV | HistGradientBoostingRegressor, X_train: np.ndarray,
+                y_train: np.ndarray, i: int):  # type_: Literal['cv', 'model'] = 'cv'
+        # prefix = f'{type_} {i} (q={quantile})'
+        # logging.info(f'{prefix}: fitting...')
+        obj.fit(X_train, y_train)
+        # stop_iter = ... if type_ == 'cv' else ...
+        # logging.info(f'{prefix}: done. best etimator stopped after {stop_iter} iterations.')
+        return quantile, obj
 
     def predict(self, X_pred, as_dict=True):
         # todo: parallelize?
