@@ -119,11 +119,11 @@ def train_hgbr_quantile(
         from scipy import stats
         model_param_distributions = {
             # 'max_features': stats.randint(1, X_train.shape[1]),
-            "max_iter": stats.randint(10, 1000),
-            'learning_rate': stats.loguniform(0.015, 0.15),
-            'max_leaf_nodes': stats.randint(10, 100),
-            'min_samples_leaf': stats.randint(15, 100),
-            'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
+            # "max_iter": stats.randint(10, 1000),
+            'learning_rate': [0.1, 0.15, 0.2],
+            # 'max_leaf_nodes': stats.randint(10, 100),
+            # 'min_samples_leaf': stats.randint(15, 100),
+            'l2_regularization': [1e-4, 1e-3, 1e-2],
         }
     model = HGBR_Quantile(
         quantiles,
@@ -198,18 +198,16 @@ def test_qhgbr():
 
     quantiles = [0.05, 0.50, 0.95]  # settings.QUANTILES
 
-    cv_n_iter = 0
-    cv_n_splits = 3
+    cv_n_iter = 1
+    cv_n_splits = 2
     verbose = 2
-    n_iter_no_change = 30
+    n_iter_no_change = 10
 
     model_param_distributions = {
         # 'max_features': stats.randint(1, X_train.shape[1]),
         "max_iter": [1000],  # stats.randint(10, 1000),
-        'learning_rate': [1e-3],  # stats.loguniform(0.015, 0.15),
-        'max_leaf_nodes': [50],  # stats.randint(10, 100),
-        'min_samples_leaf': [2],  # stats.randint(15, 100),
-        'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
+        'learning_rate': [0.1, 0.15, 0.2],
+        'l2_regularization': [1e-4, 1e-3, 1e-2],
     }
 
     ##############
@@ -251,7 +249,7 @@ def test_qhgbr():
         n_jobs=-1,
         verbose=verbose,
         val_frac=val_frac,
-        # n_iter_no_change=n_iter_no_change,
+        n_iter_no_change=n_iter_no_change,
     )
     prefix = 'qhgbr'
     postfix = f'n{n_samples}_it{cv_n_iter}'
