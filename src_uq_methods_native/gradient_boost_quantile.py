@@ -75,8 +75,10 @@ class HGBR_Quantile:
         y_train = y_train.ravel()
 
         # todo: parallelize!
-        for cv_obj in cv_objs.values():
+        for i, cv_obj in enumerate(cv_objs.values(), start=1):
+            logging.info(f'fitting cv obj {i}/{len(cv_objs)}...')
             cv_obj.fit(X_train, y_train)
+            logging.info(f'done.')
         self.models = {quantile: cv_obj.best_estimator_ for quantile, cv_obj in cv_objs.items()}
 
     def predict(self, X_pred, as_dict=True):
@@ -232,6 +234,7 @@ def test_qhgbr():
     X_pred = X
     y_true = y
 
+    logging.info('training...')
     model = train_hgbr_quantile(
         X_train,
         y_train,
@@ -247,12 +250,14 @@ def test_qhgbr():
         val_frac=val_frac,
         n_iter_no_change=n_iter_no_change,
     )
+    logging.info('predicting')
     y_pred, y_quantiles, y_std = predict_with_hgbr_quantile(model, X_pred)
     ci_low, ci_high = (
         y_quantiles[:, 0],
         y_quantiles[:, -1],
     )
     n_quantiles = y_quantiles.shape[1]
+    logging.info('plotting')
     plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qhgbr', n_quantiles, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
 
 
