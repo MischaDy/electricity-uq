@@ -256,7 +256,7 @@ def test_qhgbr():
         y_quantiles[:, -1],
     )
     n_quantiles = y_quantiles.shape[1]
-    plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qr', n_quantiles, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
+    plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qhgbr', n_quantiles, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
 
 
 if __name__ == '__main__':
