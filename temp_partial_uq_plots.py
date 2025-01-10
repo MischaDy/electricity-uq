@@ -1,4 +1,3 @@
-import logging
 from typing import Literal
 
 import numpy as np
@@ -32,10 +31,15 @@ def main():
     for method_name_arrs, arrs in all_arrs.items():
         method = method_name_arrs.replace('_arrs', '')
         y_pred, y_quantiles, y_std = arrs
-        plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method)
+        plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
 
 
 def get_arrays():
+    qr_arrs = [
+        np.load('remote_arrays_4/native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy'),
+        np.load('remote_arrays_4/native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy'),
+        np.load('remote_arrays_4/native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy'),
+    ]
     gp_arrs = to_arrs([
         'native_gpytorch_y_pred_n210432_it200.npy',
         'native_gpytorch_y_quantiles_n210432_it200.npy',
@@ -45,11 +49,6 @@ def get_arrays():
         'native_mvnn_y_pred_n210432_it100_nh2_hs50.npy',
         'native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy',
         'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
-    ])
-    qr_arrs = to_arrs([
-        'native_quantile_regression_nn_y_pred_n35136_it200_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_quantiles_n35136_it200_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_std_n35136_it200_nh2_hs50.npy',
     ])
     cp_hgbr_arrs = to_arrs([
         'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
@@ -88,7 +87,8 @@ def to_arrs(filenames):
     return [IO_HELPER.load_array(filename=filename) for filename in filenames]
 
 
-def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, n_samples_to_plot=1600):
+def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, n_samples_to_plot=1600, show_plot=True,
+            save_plot=True):
     ci_low, ci_high = (
         y_quantiles[:, 0],
         y_quantiles[:, -1],
@@ -109,11 +109,12 @@ def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, n_samples_to_pl
     y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
     ci_low_test = ci_low[start_test: start_test + n_samples_to_plot]
     ci_high_test = ci_high[start_test: start_test + n_samples_to_plot]
-    plot_uq_worker(y_test_plot, y_pred_test, ci_low_test, ci_high_test, 'test', method, n_quantiles)
+    plot_uq_worker(y_test_plot, y_pred_test, ci_low_test, ci_high_test, 'test', method, n_quantiles,
+                   show_plot=show_plot, save_plot=save_plot)
 
 
 def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, train_or_test: Literal['train', 'test'],
-                   method, n_quantiles):
+                   method, n_quantiles, show_plot=True, save_plot=True):
     base_title = method
     base_filename = method
     label = f'outermost 2/{n_quantiles} quantiles'
@@ -133,9 +134,9 @@ def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, train_or
     ax.set_xlabel("data")
     ax.set_ylabel("target")
     ax.set_title(f'{base_title} ({train_or_test})')
-    if SAVE_PLOT:
+    if save_plot:
         IO_HELPER.save_plot(filename=f'{base_filename}_{train_or_test}')
-    if SHOW_PLOT:
+    if show_plot:
         plt.show(block=True)
     plt.close(fig)
 

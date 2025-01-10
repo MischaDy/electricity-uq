@@ -1,0 +1,13 @@
+{
+    "base_model": {},
+    "posthoc": {},
+    "native": {
+        "native_quantile_regression_nn": {
+            "rmse": 683.9324340820312,
+            "smape_scaled": 0.03534107655286789,
+            "crps": 388.42642678171643,
+            "nll_gaussian": 8.81751172943476,
+            "mean_pinball": 42.8190803527832
+        }
+    }
+}

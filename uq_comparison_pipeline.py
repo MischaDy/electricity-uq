@@ -4,7 +4,7 @@ import logging
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
 
-from typing import Any, Generator, Union, TYPE_CHECKING
+from typing import Any, Generator, Union, TYPE_CHECKING, Literal
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
@@ -403,6 +403,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             lr=1e-4,
             use_scheduler=True,
             lr_patience=30,
+            lr_reduction_factor=0.5,
+            reduction: Literal['mean', 'sum', 'none'] = 'mean',
             weight_decay=0,
             show_progress_bar=True,
             show_losses_plot=True,
@@ -461,7 +463,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 lr=lr,
                 use_scheduler=use_scheduler,
                 lr_patience=lr_patience,
+                lr_reduction_factor=lr_reduction_factor,
                 weight_decay=weight_decay,
+                reduction=reduction,
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
                 io_helper=self.io_helper,
