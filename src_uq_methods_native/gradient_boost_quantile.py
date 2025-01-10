@@ -163,11 +163,14 @@ def predict_with_hgbr_quantile(model: HGBR_Quantile, X_pred: np.ndarray) -> tupl
 
 
 def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, label_part,
-                   method, n_quantiles=None, show_plot=True, save_plot=True):
+                   method, n_quantiles=None, show_plot=True, save_plot=True, plotting_90p_interval=False):
     from matplotlib import pyplot as plt
     base_title = method
     base_filename = method
-    label = f'outermost 2/{n_quantiles} quantiles' if n_quantiles is not None else 'outermost 2 quantiles'
+    if plotting_90p_interval:
+        label = '90% CI'
+    else:
+        label = f'outermost 2/{n_quantiles} quantiles' if n_quantiles is not None else 'outermost 2 quantiles'
     x_plot = np.arange(y_true_plot.shape[0])
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
     ax.plot(x_plot, y_true_plot, label=f'{label_part} data', color="black", linestyle='dashed')
@@ -291,7 +294,8 @@ def test_qhgbr():
     ci_low, ci_high = y_quantiles[:, index_low], y_quantiles[:, index_high]
     n_quantiles = y_quantiles.shape[1]
     logging.info('plotting')
-    plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qhgbr', n_quantiles, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
+    plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qhgbr', n_quantiles, show_plot=SHOW_PLOT,
+                   save_plot=SAVE_PLOT, plotting_90p_interval=PLOT_90P_INTERVAL)
 
 
 if __name__ == '__main__':
