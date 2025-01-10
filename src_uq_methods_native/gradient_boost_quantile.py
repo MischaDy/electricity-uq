@@ -85,18 +85,16 @@ class HGBR_Quantile:
         cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
 
         logging.info(f'running CV on {len(cv_objs)} CVs objects.')
-        models = {}
-        train_data_chain = itertools.repeat((X_train, y_train))
-        iterables = cv_objs.items(), train_data_chain, range(1, len(cv_objs)+1)
+
+        # based on https://superfastpython.com/processpoolexecutor-map-vs-submit/
         with ProcessPoolExecutor() as executor:
-            for quantile, cv_obj in executor.map(self.fit_cv, *iterables):
-                models[quantile] = cv_obj.best_estimator_
-        self.models = models
+            futures = [executor.submit(self.fit_cv, quantile=quantile, cv_obj=cv_obj, X_train=X_train, y_train=y_train,
+                                       i=i)
+                       for i, (quantile, cv_obj) in enumerate(cv_objs.items(), start=1)]
+        self.models = dict(future.result() for future in futures)
 
     @staticmethod
-    def fit_cv(cv_obj_tup: tuple[float, RandomizedSearchCV], train_data: tuple[np.ndarray, np.ndarray], i: int):
-        quantile, cv_obj = cv_obj_tup
-        X_train, y_train = train_data
+    def fit_cv(quantile: float, cv_obj: RandomizedSearchCV, X_train: np.ndarray, y_train: np.ndarray, i: int):
         prefix = f'cv obj {i} (q={quantile})'
         logging.info(f'{prefix}: fitting...')
         cv_obj.fit(X_train, y_train)
