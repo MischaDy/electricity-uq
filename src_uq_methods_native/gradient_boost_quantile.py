@@ -64,9 +64,9 @@ class HGBR_Quantile:
             msg = f'parameter {msg_param}, so no CV is performed'
             logging.info(msg)
 
-            logging.info(f'fitting {len(self.models)} models.')
             objs_dict = self.models
         else:
+            logging.info('using CV')
             cv_maker = partial(
                 RandomizedSearchCV,
                 param_distributions=model_param_distributions,
