@@ -210,7 +210,9 @@ def test_qhgbr():
     train_frac = 0.4
     val_frac = 0.1
 
-    quantiles = [0.05, 0.50, 0.95]  # settings.QUANTILES
+    # 3 ==> 45s
+    # 7 ==> 70s
+    quantiles = [0.01, 0.05, 0.10, 0.50, 0.90, 0.95, 0.99]  # settings.QUANTILES
 
     cv_n_iter = 1
     cv_n_splits = 2
