@@ -56,36 +56,37 @@ class HGBR_Quantile:
 
     def fit(self, X_train, y_train, cv_n_iter=100, cv_n_splits=10, n_jobs=-1, random_seed=42,
             model_param_distributions=None, verbose=0):
-        if model_param_distributions is None:
-            model_param_distributions = {
-                # 'max_features': stats.randint(1, X_train.shape[1]),
-                "max_iter": stats.randint(10, 1000),
-                'learning_rate': stats.loguniform(0.015, 0.15),
-                'max_leaf_nodes': stats.randint(10, 100),
-                'min_samples_leaf': stats.randint(15, 100),
-                'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
-            }
-        # cv_maker = partial(
-        #     RandomizedSearchCV,
-        #     param_distributions=model_param_distributions,
-        #     n_iter=cv_n_iter,
-        #     cv=TimeSeriesSplit(n_splits=cv_n_splits),
-        #     scoring="neg_root_mean_squared_error",
-        #     random_state=random_seed,
-        #     verbose=verbose,
-        #     n_jobs=n_jobs,
-        # )
-        # cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
-        cv_objs = self.models  # temp
-
         y_train = y_train.ravel()
+        if model_param_distributions is None or cv_n_iter == 0:
+            msg_param = 'cv_n_iter == 0' if cv_n_iter == 0 else 'model_param_distributions is None'
+            msg = f'parameter {msg_param}, so no CV is performed'
+            logging.warning(msg)
+
+            # todo: parallelize!
+            for i, model in enumerate(self.models.values(), start=1):
+                logging.info(f'fitting model {i}/{len(self.models)}...')
+                model.fit(X_train, y_train)
+                logging.info(f'done, model stopped after {model.n_iter_} iterations.')
+            return
+
+        cv_maker = partial(
+            RandomizedSearchCV,
+            param_distributions=model_param_distributions,
+            n_iter=cv_n_iter,
+            cv=TimeSeriesSplit(n_splits=cv_n_splits),
+            scoring="neg_root_mean_squared_error",
+            random_state=random_seed,
+            verbose=verbose,
+            n_jobs=n_jobs,
+        )
+        cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
 
         # todo: parallelize!
         for i, cv_obj in enumerate(cv_objs.values(), start=1):
             logging.info(f'fitting cv obj {i}/{len(cv_objs)}...')
             cv_obj.fit(X_train, y_train)
             logging.info(f'done.')
-        # self.models = {quantile: cv_obj.best_estimator_ for quantile, cv_obj in cv_objs.items()}  # temp
+        self.models = {quantile: cv_obj.best_estimator_ for quantile, cv_obj in cv_objs.items()}
 
     def predict(self, X_pred, as_dict=True):
         # todo: parallelize?
