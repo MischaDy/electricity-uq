@@ -709,24 +709,12 @@ def update_training_flags():
 
 
 def update_run_size_setup():
-    if settings.RUN_SIZE == 'full':
-        settings.DATA_FILEPATH = 'data/data.pkl'
-        settings.N_POINTS_PER_GROUP = None
-        settings.TRAIN_YEARS = (2016, 2022)  # todo: simplify
-        settings.VAL_YEARS = (2022, 2023)  # todo: simplify
-        settings.TEST_YEARS = (2023, 2024)  # todo: simplify
-    elif settings.RUN_SIZE == 'big':
-        settings.DATA_FILEPATH = 'data/data_2015_2018.pkl'
-        settings.N_POINTS_PER_GROUP = None
-        settings.TRAIN_YEARS = (2016, 2017)
-        settings.VAL_YEARS = (2017, 2018)
-        settings.TEST_YEARS = (2018, 2019)
-    elif settings.RUN_SIZE == 'small':
-        settings.DATA_FILEPATH = 'data/data_1600.pkl'
-        settings.N_POINTS_PER_GROUP = 800
-        settings.TRAIN_YEARS = None
-        settings.VAL_YEARS = None
-        settings.TEST_YEARS = None
+    run_size_settings = settings.RUN_SIZE_DICT.get(settings.RUN_SIZE)
+    if run_size_settings is None:
+        return
+
+    for setting_name, setting_value in run_size_settings.items():
+        setattr(settings, setting_name, setting_value)
 
 
 def update_progress_bar_settings():

@@ -213,3 +213,27 @@ FILENAME_PARTS = {
         'model'
     ),
 }
+
+RUN_SIZE_DICT = {
+    'small': {
+        'DATA_FILEPATH': 'data/data_1600.pkl',
+        'N_POINTS_PER_GROUP': 800,
+        'TRAIN_YEARS': None,
+        'VAL_YEARS': None,
+        'TEST_YEARS': None,
+    },
+    'big': {
+        'DATA_FILEPATH': 'data/data_2015_2018.pkl',
+        'N_POINTS_PER_GROUP': None,
+        'TRAIN_YEARS': (2016, 2017),
+        'VAL_YEARS': (2017, 2018),
+        'TEST_YEARS': (2018, 2019),
+    },
+    'full': {
+        'DATA_FILEPATH': 'data/data.pkl',
+        'N_POINTS_PER_GROUP': None,
+        'TRAIN_YEARS': (2016, 2022),
+        'VAL_YEARS': (2022, 2023),
+        'TEST_YEARS': (2023, 2024),
+    },
+}
