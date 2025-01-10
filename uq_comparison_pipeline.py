@@ -1,6 +1,8 @@
 import os
 import logging
 
+import settings_update
+
 logging.basicConfig(level=logging.INFO, force=True)
 
 filename = os.path.split(__file__)[-1]
@@ -697,47 +699,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         self.io_helper.save_model(model, method_name=method_name)
 
 
-def update_training_flags():
-    logging.info('updating training flags...')
-    assert not (settings.DO_TRAIN_ALL and settings.SKIP_TRAINING_ALL)
-
-    for _, method_kwargs in settings.METHODS_KWARGS.items():
-        if settings.DO_TRAIN_ALL:
-            method_kwargs['skip_training'] = False
-        elif settings.SKIP_TRAINING_ALL:
-            method_kwargs['skip_training'] = True
-
-
-def update_run_size_setup():
-    run_size_settings = settings.RUN_SIZE_DICT.get(settings.RUN_SIZE)
-    if run_size_settings is None:
-        return
-
-    for setting_name, setting_value in run_size_settings.items():
-        setattr(settings, setting_name, setting_value)
-
-
-def update_progress_bar_settings():
-    if settings.SHOW_PROGRESS_BARS is not None:
-        for _, method_kwargs in settings.METHODS_KWARGS.items():
-            if 'show_progress_bar' not in method_kwargs:
-                continue
-            method_kwargs['show_progress_bar'] = settings.SHOW_PROGRESS_BARS
-
-
-def update_losses_plots_settings():
-    if settings.SHOW_LOSSES_PLOTS is not None:
-        for _, method_kwargs in settings.METHODS_KWARGS.items():
-            if 'show_losses_plot' not in method_kwargs:
-                continue
-            method_kwargs['show_losses_plot'] = settings.SHOW_LOSSES_PLOTS
-    if settings.SAVE_LOSSES_PLOTS is not None:
-        for _, method_kwargs in settings.METHODS_KWARGS.items():
-            if 'save_losses_plot' not in method_kwargs:
-                continue
-            method_kwargs['save_losses_plot'] = settings.SAVE_LOSSES_PLOTS
-
-
 def check_method_kwargs_dict(class_, method_kwargs_dict):
     logging.info('checking kwargs dict...')
     from inspect import signature
@@ -759,10 +720,10 @@ def main():
     logging.info('running main pipeline...')
     logging.info('running preliminary checks/setup...')
     check_method_kwargs_dict(UQ_Comparison_Pipeline, settings.METHODS_KWARGS)
-    update_run_size_setup()
-    update_training_flags()
-    update_progress_bar_settings()
-    update_losses_plots_settings()
+    settings_update.update_run_size_setup()
+    settings_update.update_training_flags()
+    settings_update.update_progress_bar_settings()
+    settings_update.update_losses_plots_settings()
     # todo: check filename parts dict!
 
     uq_comparer = UQ_Comparison_Pipeline(
