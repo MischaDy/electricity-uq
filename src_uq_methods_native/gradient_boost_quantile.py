@@ -205,13 +205,16 @@ def test_qhgbr():
     SAVE_PLOT = True
     PLOT_DATA = False
 
+    # if False, plot between outermost quantiles
+    PLOT_90P_INTERVAL = True
+
     n_samples = 1600
 
     train_frac = 0.4
     val_frac = 0.1
 
-    # 3 ==> 45s
-    # 7 ==> 70s
+    # 3 ==> 45s, 58s
+    # 7 ==> 70s, 100s
     quantiles = [0.01, 0.05, 0.10, 0.50, 0.90, 0.95, 0.99]  # settings.QUANTILES
 
     cv_n_iter = 1
@@ -277,7 +280,8 @@ def test_qhgbr():
     IO_HELPER.save_array(y_quantiles, filename=f'{prefix}_y_quantiles_{postfix}.npy')
     IO_HELPER.save_array(y_std, filename=f'{prefix}_y_std_{postfix}.npy')
 
-    ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1]
+    index_low, index_high = [quantiles.index(0.05), quantiles.index(0.95)] if PLOT_90P_INTERVAL else [0, -1]
+    ci_low, ci_high = y_quantiles[:, index_low], y_quantiles[:, index_high]
     n_quantiles = y_quantiles.shape[1]
     logging.info('plotting')
     plot_uq_worker(y_true, y_pred, ci_low, ci_high, 'full', 'qhgbr', n_quantiles, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
