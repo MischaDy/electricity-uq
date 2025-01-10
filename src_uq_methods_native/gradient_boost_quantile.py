@@ -48,7 +48,7 @@ class HGBR_Quantile:
             verbose=verbose,
         )
         self.models = {
-            quantile: model_constructor(quantile)
+            quantile: model_constructor(quantile=quantile)
             for quantile in self.quantiles
         }
 
@@ -73,7 +73,7 @@ class HGBR_Quantile:
             verbose=self.verbose,
             n_jobs=n_jobs,
         )
-        cv_objs = {quantile: cv_maker(model) for quantile, model in self.models.items()}
+        cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
         y_train = y_train.ravel()
 
         # todo: parallelize!
