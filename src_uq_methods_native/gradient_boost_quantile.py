@@ -1,3 +1,4 @@
+import itertools
 import logging
 from concurrent.futures import ProcessPoolExecutor
 
@@ -83,19 +84,24 @@ class HGBR_Quantile:
         )
         cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
 
-        def fit_cv(i_q_cv_tuple: tuple[int, tuple[float, RandomizedSearchCV]]):
-            i, (quantile, cv_obj) = i_q_cv_tuple
-            logging.info(f'cv obj {i}/{len(cv_objs)}: fitting...')
-            cv_obj.fit(X_train, y_train)
-            logging.info(f'cv obj {i}/{len(cv_objs)}: done.'
-                         f' best etimator stopped after {cv_obj.best_estimator_.n_iter_} iterations.')
-            return quantile, cv_obj
-
         logging.info(f'running CV on {len(cv_objs)} CVs objects.')
+        models = {}
+        train_data_chain = itertools.repeat((X_train, y_train))
+        iterables = cv_objs.items(), train_data_chain, range(1, len(cv_objs)+1)
         with ProcessPoolExecutor() as executor:
-            cv_objs = executor.map(fit_cv, enumerate(cv_objs.items(), start=1))
-            self.models = {quantile: cv_obj.best_estimator_
-                           for quantile, cv_obj in cv_objs}
+            for quantile, cv_obj in executor.map(self.fit_cv, *iterables):
+                models[quantile] = cv_obj.best_estimator_
+        self.models = models
+
+    @staticmethod
+    def fit_cv(cv_obj_tup: tuple[float, RandomizedSearchCV], train_data: tuple[np.ndarray, np.ndarray], i: int):
+        quantile, cv_obj = cv_obj_tup
+        X_train, y_train = train_data
+        prefix = f'cv obj {i} (q={quantile})'
+        logging.info(f'{prefix}: fitting...')
+        cv_obj.fit(X_train, y_train)
+        logging.info(f'{prefix}: done. best etimator stopped after {cv_obj.best_estimator_.n_iter_} iterations.')
+        return quantile, cv_obj
 
     def predict(self, X_pred, as_dict=True):
         # todo: parallelize?
