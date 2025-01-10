@@ -179,3 +179,5 @@ cython_debug/
 /remote_arrays_4/
 /remote_models_4/
 /src_uq_methods_native/qhgbr_storage/
+qhgbr_storage/arrays/
+qhgbr_storage/models/
