@@ -123,7 +123,7 @@ def train_hgbr_quantile(
         val_frac=val_frac,
         n_iter_no_change=n_iter_no_change,
         random_seed=random_seed,
-        verbose=verbose,
+        verbose=0,
     )
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     model.fit(X_train, y_train, cv_n_iter=cv_n_iter, cv_n_splits=cv_n_splits, n_jobs=n_jobs, random_seed=random_seed,
