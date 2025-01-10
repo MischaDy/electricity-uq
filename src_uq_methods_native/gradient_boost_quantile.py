@@ -176,7 +176,7 @@ def test_qhgbr():
 
     SHOW_PLOT = True
     SAVE_PLOT = True
-    PLOT_DATA = True
+    PLOT_DATA = False
     USE_REAL_DATA = True
 
     n_samples = 1600
@@ -221,6 +221,7 @@ def test_qhgbr():
         logging.info('plotting data')
         from matplotlib import pyplot as plt
         plt.plot(y)
+        plt.title('data')
         plt.show(block=True)
 
     X_train = X[:n_train_samples]
