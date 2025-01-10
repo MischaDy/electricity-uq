@@ -131,8 +131,8 @@ class HGBR_Quantile:
 
     @staticmethod
     def get_raw_array(arr):
-        assert len(arr.shape) == 2
-        arr_raw = RawArray('d', arr.shape[0] * arr.shape[1])
+        size = int(np.prod(arr.shape))
+        arr_raw = RawArray('d', size)
         arr_raw_np = np.frombuffer(arr_raw).reshape(arr.shape)
         np.copyto(arr_raw_np, arr)
         return arr_raw
