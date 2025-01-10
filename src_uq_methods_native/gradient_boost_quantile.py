@@ -57,7 +57,7 @@ class HGBR_Quantile:
             for quantile in self.quantiles
         }
 
-    def fit(self, X_train, y_train, cv_n_iter=100, cv_n_splits=10, n_jobs=-1, random_seed=42,
+    def fit(self, X_train, y_train, cv_n_iter=100, cv_n_splits=10, random_seed=42,
             model_param_distributions=None, verbose=0):
         y_train = y_train.ravel()
         if model_param_distributions is None or cv_n_iter == 0:
@@ -80,7 +80,7 @@ class HGBR_Quantile:
             scoring="neg_root_mean_squared_error",
             random_state=random_seed,
             verbose=verbose,
-            n_jobs=n_jobs,
+            n_jobs=1,
         )
         cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
 
@@ -122,7 +122,6 @@ def train_hgbr_quantile(
         categorical_features: list[int] = None,
         monotonic_cst: list[Literal[-1, 0, 1]] = None,
         random_seed=42,
-        n_jobs=-1,
         verbose=1,
         val_frac=0.1,
         n_iter_no_change=30,
@@ -149,7 +148,7 @@ def train_hgbr_quantile(
         l2_regularization=1e-3,
     )
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
-    model.fit(X_train, y_train, cv_n_iter=cv_n_iter, cv_n_splits=cv_n_splits, n_jobs=n_jobs, random_seed=random_seed,
+    model.fit(X_train, y_train, cv_n_iter=cv_n_iter, cv_n_splits=cv_n_splits, random_seed=random_seed,
               model_param_distributions=model_param_distributions, verbose=verbose)
     return model
 
@@ -258,7 +257,6 @@ def test_qhgbr():
         cv_n_splits=cv_n_splits,
         model_param_distributions=model_param_distributions,
         random_seed=42,
-        n_jobs=-1,
         verbose=verbose,
         val_frac=val_frac,
         n_iter_no_change=n_iter_no_change,
