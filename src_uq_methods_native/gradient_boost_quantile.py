@@ -5,12 +5,10 @@ from scipy import stats
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
 
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from helpers import misc_helpers
-
-if TYPE_CHECKING:
-    import numpy as np
+import numpy as np
 
 
 class HGBR_Quantile:
