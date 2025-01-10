@@ -82,10 +82,11 @@ class HGBR_Quantile:
         cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
 
         # todo: parallelize!
+        logging.info(f'running CV on {len(cv_objs)} CVs objects.')
         for i, cv_obj in enumerate(cv_objs.values(), start=1):
             logging.info(f'fitting cv obj {i}/{len(cv_objs)}...')
             cv_obj.fit(X_train, y_train)
-            logging.info(f'done.')
+            logging.info(f'done, best etimator stopped after {cv_obj.best_estimator_.n_iter_} iterations.')
         self.models = {quantile: cv_obj.best_estimator_ for quantile, cv_obj in cv_objs.items()}
 
     def predict(self, X_pred, as_dict=True):
