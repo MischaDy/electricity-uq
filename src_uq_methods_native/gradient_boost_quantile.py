@@ -26,9 +26,7 @@ class HGBR_Quantile:
             val_frac=0.1,
             n_iter_no_change=30,
             random_seed=42,
-            verbose=0,
     ):
-        self.verbose = verbose
         self.quantiles = sorted(quantiles)
         model_constructor = partial(
             HistGradientBoostingRegressor,
@@ -45,7 +43,7 @@ class HGBR_Quantile:
             validation_fraction=val_frac,
             n_iter_no_change=n_iter_no_change,
             random_state=random_seed,
-            verbose=verbose,
+            verbose=0,
         )
         self.models = {
             quantile: model_constructor(quantile=quantile)
@@ -53,7 +51,7 @@ class HGBR_Quantile:
         }
 
     def fit(self, X_train, y_train, cv_n_iter=100, cv_n_splits=10, n_jobs=-1, random_seed=42,
-            model_param_distributions=None):
+            model_param_distributions=None, verbose=0):
         if model_param_distributions is None:
             model_param_distributions = {
                 # 'max_features': stats.randint(1, X_train.shape[1]),
@@ -70,7 +68,7 @@ class HGBR_Quantile:
             cv=TimeSeriesSplit(n_splits=cv_n_splits),
             scoring="neg_root_mean_squared_error",
             random_state=random_seed,
-            verbose=self.verbose,
+            verbose=verbose,
             n_jobs=n_jobs,
         )
         cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
@@ -123,11 +121,10 @@ def train_hgbr_quantile(
         val_frac=val_frac,
         n_iter_no_change=n_iter_no_change,
         random_seed=random_seed,
-        verbose=0,
     )
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     model.fit(X_train, y_train, cv_n_iter=cv_n_iter, cv_n_splits=cv_n_splits, n_jobs=n_jobs, random_seed=random_seed,
-              model_param_distributions=model_param_distributions)
+              model_param_distributions=model_param_distributions, verbose=verbose)
     return model
 
 
