@@ -5,22 +5,30 @@ INFO:root:data setup...
 INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
 INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
 INFO:numexpr.utils:NumExpr defaulting to 16 threads.
-Traceback (most recent call last):
-  File "/mnt/qb/work/ludwig/lqb589/my_code/gradient_boost_quantile.py", line 309, in <module>
-    test_qhgbr()
-  File "/mnt/qb/work/ludwig/lqb589/my_code/gradient_boost_quantile.py", line 249, in test_qhgbr
-    X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
-                                                                     ^^^^^^^^^^^^^^^^^^^^^^
-  File "/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py", line 38, in get_data
-    X, y, numerical_cols = load_data(
-                           ^^^^^^^^^^
-  File "/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py", line 169, in load_data
-    df = pd.read_pickle(filepath)
-         ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/pandas/io/pickle.py", line 185, in read_pickle
-    with get_handle(
-         ^^^^^^^^^^^
-  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/pandas/io/common.py", line 882, in get_handle
-    handle = open(handle, ioargs.mode)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '../data/data_1600.pkl'
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+INFO:root:training...
+INFO:root:parameter cv_n_iter == 0, so no CV is performed
+INFO:root:fitting 99 objects.
+INFO:root:finished after 2031.2214410677552s
+INFO:root:saving model in path qhgbr_storage/models/qhgbr_y_pred_n35136_it0.model
+INFO:root:predicting
+INFO:root:plotting
