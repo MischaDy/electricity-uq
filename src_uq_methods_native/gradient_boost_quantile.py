@@ -10,6 +10,11 @@ from typing import Literal
 from helpers import misc_helpers
 import numpy as np
 
+from helpers.io_helper import IO_Helper
+
+
+IO_HELPER = IO_Helper('comparison_storage')
+
 
 class HGBR_Quantile:
     def __init__(
@@ -250,8 +255,17 @@ def test_qhgbr():
         val_frac=val_frac,
         n_iter_no_change=n_iter_no_change,
     )
+    prefix = 'qhgbr'
+    postfix = f'n{n_samples}_it{cv_n_iter}'
+
+    IO_HELPER.save_model(model, filename=f'{prefix}_y_pred_{postfix}.model')
     logging.info('predicting')
     y_pred, y_quantiles, y_std = predict_with_hgbr_quantile(model, X_pred)
+
+    IO_HELPER.save_array(y_pred, filename=f'{prefix}_y_pred_{postfix}.npy')
+    IO_HELPER.save_array(y_quantiles, filename=f'{prefix}_y_quantiles_{postfix}.npy')
+    IO_HELPER.save_array(y_std, filename=f'{prefix}_y_std_{postfix}.npy')
+
     ci_low, ci_high = (
         y_quantiles[:, 0],
         y_quantiles[:, -1],
