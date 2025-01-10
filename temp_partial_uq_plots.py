@@ -1,4 +1,3 @@
-import logging
 from typing import Literal
 
 import numpy as np
@@ -36,6 +35,11 @@ def main():
 
 
 def get_arrays():
+    qr_arrs = [
+        np.load('remote_arrays_4/native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy'),
+        np.load('remote_arrays_4/native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy'),
+        np.load('remote_arrays_4/native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy'),
+    ]
     gp_arrs = to_arrs([
         'native_gpytorch_y_pred_n210432_it200.npy',
         'native_gpytorch_y_quantiles_n210432_it200.npy',
@@ -45,11 +49,6 @@ def get_arrays():
         'native_mvnn_y_pred_n210432_it100_nh2_hs50.npy',
         'native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy',
         'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
-    ])
-    qr_arrs = to_arrs([
-        'native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy',
     ])
     cp_hgbr_arrs = to_arrs([
         'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
