@@ -83,7 +83,8 @@ class HGBR_Quantile:
         )
         cv_objs = {quantile: cv_maker(estimator=model) for quantile, model in self.models.items()}
 
-        def fit_cv(i, quantile, cv_obj):
+        def fit_cv(i_q_cv_tuple: tuple[int, tuple[float, RandomizedSearchCV]]):
+            i, (quantile, cv_obj) = i_q_cv_tuple
             logging.info(f'cv obj {i}/{len(cv_objs)}: fitting...')
             cv_obj.fit(X_train, y_train)
             logging.info(f'cv obj {i}/{len(cv_objs)}: done.'
@@ -92,8 +93,7 @@ class HGBR_Quantile:
 
         logging.info(f'running CV on {len(cv_objs)} CVs objects.')
         with ProcessPoolExecutor() as executor:
-            cv_objs = executor.map(lambda i, q_cv_pair: fit_cv(i, q_cv_pair[0], q_cv_pair[1]),
-                                   enumerate(cv_objs.items(), start=1))
+            cv_objs = executor.map(fit_cv, enumerate(cv_objs.items(), start=1))
             self.models = {quantile: cv_obj.best_estimator_
                            for quantile, cv_obj in cv_objs}
 
