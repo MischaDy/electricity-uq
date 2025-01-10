@@ -131,7 +131,7 @@ def train_hgbr_quantile(
     return model
 
 
-def predict_with_hgbr_quantile(model: HGBR_Quantile, X_pred: np.array):
+def predict_with_hgbr_quantile(model: HGBR_Quantile, X_pred: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     y_quantiles_dict = model.predict(X_pred, as_dict=True)
     y_pred = y_quantiles_dict[0.5]
     y_quantiles = misc_helpers.quantiles_dict_to_np_arr(y_quantiles_dict)
