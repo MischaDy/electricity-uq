@@ -1,7 +1,6 @@
 import logging
 from functools import partial
 
-from scipy import stats
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
 
@@ -115,6 +114,7 @@ def train_hgbr_quantile(
         n_iter_no_change=30,
 ):
     if model_param_distributions is None:
+        from scipy import stats
         model_param_distributions = {
             # 'max_features': stats.randint(1, X_train.shape[1]),
             "max_iter": stats.randint(10, 1000),
@@ -181,6 +181,7 @@ def plot_uq_worker(y_true_plot, y_pred_plot, ci_low_plot, ci_high_plot, label_pa
 
 
 def test_qhgbr():
+    from scipy import stats
     import settings
 
     logging.basicConfig(level=logging.INFO)
