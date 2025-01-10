@@ -8,6 +8,7 @@ from sklearn.model_selection import RandomizedSearchCV, TimeSeriesSplit
 
 from typing import Literal
 
+import settings_update
 from helpers import misc_helpers
 import numpy as np
 
@@ -207,16 +208,16 @@ def test_qhgbr():
 
     logging.info('data setup...')
 
-    SHOW_PLOT = True
+    SHOW_PLOT = False
     SAVE_PLOT = True
     PLOT_DATA = False
+    RUN_SIZE = 'small'
 
     # if False, plot between outermost quantiles
     PLOT_90P_INTERVAL = True
 
-    n_samples = 1600
+    n_samples_plot = 1600
 
-    train_frac = 0.4
     val_frac = 0.1
 
     quantiles = settings.QUANTILES
@@ -238,12 +239,16 @@ def test_qhgbr():
 
     ##############
 
-    n_train_samples = round(train_frac * n_samples)
-    n_val_samples = round(val_frac * n_samples)
-
+    settings.RUN_SIZE = RUN_SIZE
+    settings_update.update_run_size_setup()
+    settings.DATA_FILEPATH = f'../{settings.DATA_FILEPATH}'
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
-        '../data/data_1600.pkl',
-        n_points_per_group=n_samples,
+        filepath=settings.DATA_FILEPATH,
+        train_years=settings.TRAIN_YEARS,
+        val_years=settings.VAL_YEARS,
+        test_years=settings.TEST_YEARS,
+        n_points_per_group=settings.N_POINTS_PER_GROUP,
+        do_standardize_data=True,
     )
 
     if PLOT_DATA:
@@ -252,11 +257,6 @@ def test_qhgbr():
         plt.plot(y)
         plt.title('data')
         plt.show(block=True)
-
-    X_train = X[:n_train_samples]
-    y_train = y[:n_train_samples]
-    X_val = X[n_train_samples:n_train_samples + n_val_samples]
-    y_val = y[n_train_samples:n_train_samples + n_val_samples]
 
     X_pred = X
     y_true = y
@@ -280,7 +280,7 @@ def test_qhgbr():
         l2_regularization=l2_regularization,
     )
     prefix = 'qhgbr'
-    postfix = f'n{n_samples}_it{cv_n_iter}'
+    postfix = f'n{X_train.shape[0]}_it{cv_n_iter}'
 
     io_helper.save_model(model, filename=f'{prefix}_y_pred_{postfix}.model')
     logging.info('predicting')
@@ -289,6 +289,9 @@ def test_qhgbr():
     io_helper.save_array(y_pred, filename=f'{prefix}_y_pred_{postfix}.npy')
     io_helper.save_array(y_quantiles, filename=f'{prefix}_y_quantiles_{postfix}.npy')
     io_helper.save_array(y_std, filename=f'{prefix}_y_std_{postfix}.npy')
+
+    y_pred, y_quantiles, y_std = y_pred[:n_samples_plot], y_quantiles[:n_samples_plot], y_std[:n_samples_plot]
+    y_true = y_true[:n_samples_plot]
 
     index_low, index_high = [quantiles.index(0.05), quantiles.index(0.95)] if PLOT_90P_INTERVAL else [0, -1]
     ci_low, ci_high = y_quantiles[:, index_low], y_quantiles[:, index_high]
