@@ -125,6 +125,9 @@ def train_hgbr_quantile(
         verbose=1,
         val_frac=0.1,
         n_iter_no_change=30,
+        max_iter=1000,
+        lr=0.2,
+        l2_regularization=1e-3,
 ):
     if model_param_distributions is None:
         from scipy import stats
@@ -143,9 +146,9 @@ def train_hgbr_quantile(
         val_frac=val_frac,
         n_iter_no_change=n_iter_no_change,
         random_seed=random_seed,
-        max_iter=1000,
-        lr=0.2,
-        l2_regularization=1e-3,
+        max_iter=max_iter,
+        lr=lr,
+        l2_regularization=l2_regularization,
     )
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     model.fit(X_train, y_train, cv_n_iter=cv_n_iter, cv_n_splits=cv_n_splits, random_seed=random_seed,
@@ -218,6 +221,9 @@ def test_qhgbr():
     cv_n_splits = 2
     verbose = 2
     n_iter_no_change = 20
+    max_iter = 1000
+    lr = 0.2
+    l2_regularization = 1e-3
 
     model_param_distributions = {
         # 'max_features': stats.randint(1, X_train.shape[1]),
@@ -265,6 +271,9 @@ def test_qhgbr():
         verbose=verbose,
         val_frac=val_frac,
         n_iter_no_change=n_iter_no_change,
+        max_iter=max_iter,
+        lr=lr,
+        l2_regularization=l2_regularization,
     )
     prefix = 'qhgbr'
     postfix = f'n{n_samples}_it{cv_n_iter}'
