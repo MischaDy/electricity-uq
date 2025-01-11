@@ -27,66 +27,70 @@ def main():
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = data
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
-    all_arrs = get_arrays()
-    for method_name_arrs, arrs in all_arrs.items():
-        method = method_name_arrs.replace('_arrs', '')
+    uq_method_to_arrs_dict = get_uq_method_to_arrs_dict()
+    for uq_method, arrs in uq_method_to_arrs_dict.items():
         y_pred, y_quantiles, y_std = arrs
-        plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
+        plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
 
 
-def get_arrays():
-    qhgbr_arrs = [
-        np.load('my_qhgbr_storage3/arrays/qhgbr_y_pred_n210432_it0.npy'),
-        np.load('my_qhgbr_storage3/arrays/qhgbr_y_quantiles_n210432_it0.npy'),
-        np.load('my_qhgbr_storage3/arrays/qhgbr_y_std_n210432_it0.npy'),
-    ]
-    # qr_arrs = [
-    #     np.load('remote_arrays_4/native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy'),
-    #     np.load('remote_arrays_4/native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy'),
-    #     np.load('remote_arrays_4/native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy'),
-    # ]
-    gp_arrs = to_arrs([
-        'native_gpytorch_y_pred_n210432_it200.npy',
-        'native_gpytorch_y_quantiles_n210432_it200.npy',
-        'native_gpytorch_y_std_n210432_it200.npy',
-    ])
-    mvnn_arrs = to_arrs([
-        'native_mvnn_y_pred_n210432_it100_nh2_hs50.npy',
-        'native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy',
-        'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
-    ])
-    cp_hgbr_arrs = to_arrs([
-        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy'
-    ])
-    cp_linreg_arrs = to_arrs([
-        'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy'
-    ])
-    cp_nn_arrs = to_arrs([
-        'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy'
-    ])
-    la_nn_arrs = to_arrs([
-        'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it100.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it100.npy',
-    ])
-
-    all_arrs = {
-        'qhgbr_arrs': qhgbr_arrs,
-        # 'gp_arrs': gp_arrs,
-        # 'mvnn_arrs': mvnn_arrs,
-        # 'qr_arrs': qr_arrs,
-        # 'cp_hgbr_arrs': cp_hgbr_arrs,
-        # 'cp_linreg_arrs': cp_linreg_arrs,
-        # 'cp_nn_arrs': cp_nn_arrs,
-        # 'la_nn_arrs': la_nn_arrs,
+def get_uq_method_to_arrs_dict():
+    uq_methods_whitelist = {
+        'qhgbr',
+        # 'qr',
+        # 'gp',
+        # 'mvnn',
+        # 'cp_hgbr',
+        # 'cp_linreg',
+        # 'cp_nn',
+        # 'la_nn',
     }
-    return all_arrs
+
+    arr_names = {
+        'qhgbr': [
+            'native_qhgbr_y_pred_n210432_it0.npy',
+            'native_qhgbr_y_quantiles_n210432_it0.npy',
+            'native_qhgbr_y_std_n210432_it0.npy',
+        ],
+        'qr': [
+            'native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy',
+            'native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy',
+            'native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy',
+        ],
+        'gp': [
+            'native_gpytorch_y_pred_n210432_it200.npy',
+            'native_gpytorch_y_quantiles_n210432_it200.npy',
+            'native_gpytorch_y_std_n210432_it200.npy',
+        ],
+        'mvnn': [
+            'native_mvnn_y_pred_n210432_it100_nh2_hs50.npy',
+            'native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy',
+            'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
+        ],
+        'cp_hgbr': [
+            'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
+            'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
+            'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy'
+        ],
+        'cp_linreg': [
+            'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
+            'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
+            'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy'
+        ],
+        'cp_nn': [
+            'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
+            'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5.npy',
+            'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy'
+        ],
+        'la_nn': [
+            'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy',
+            'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it100.npy',
+            'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it100.npy',
+        ],
+    }
+    uq_method_to_arrs_dict = {uq_method: to_arrs(arr_names)
+                              for uq_method, arr_names in arr_names.items()
+                              if uq_method in uq_methods_whitelist}
+    return uq_method_to_arrs_dict
 
 
 def to_arrs(filenames):
