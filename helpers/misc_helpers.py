@@ -479,10 +479,10 @@ def plot_nn_losses(
     ax.legend()
     if save_plot:
         if method_name is not None:
-            io_helper.save_plot(method_name=method_name)
+            io_helper.save_plot(method_name=method_name, is_loss_plot=True)
         else:
             filename = postfix if filename is None else f'{filename}{io_helper.sep}{postfix}'
-            io_helper.save_plot(filename=filename)
+            io_helper.save_plot(filename=filename, is_loss_plot=True)
     if show_plot:
         plt.show(block=True)
     plt.close(fig)

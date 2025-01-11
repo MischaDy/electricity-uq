@@ -20,6 +20,7 @@ class IO_Helper:
             arrays_folder="arrays",
             models_folder="models",
             plots_folder="plots",
+            loss_plots_folder='plots_losses',
             metrics_folder='metrics',
             sep='_',
     ):
@@ -54,6 +55,7 @@ class IO_Helper:
         self.arrays_folder = os.path.join(base_folder, arrays_folder)
         self.models_folder = os.path.join(base_folder, models_folder)
         self.plots_folder = os.path.join(base_folder, plots_folder)
+        self.loss_plots_folder = os.path.join(base_folder, loss_plots_folder)
         self.metrics_folder = os.path.join(base_folder, metrics_folder)
         self.folders = [self.arrays_folder, self.models_folder, self.plots_folder, self.metrics_folder]
         for folder in self.folders:
@@ -66,8 +68,9 @@ class IO_Helper:
     def _get_model_savepath(self, filename):
         return os.path.join(self.models_folder, filename)
 
-    def _get_plot_savepath(self, filename):
-        return os.path.join(self.plots_folder, filename)
+    def _get_plot_savepath(self, filename, is_loss_plot=False):
+        plots_folder = self.loss_plots_folder if is_loss_plot else self.plots_folder
+        return os.path.join(plots_folder, filename)
 
     def _get_metrics_savepath(self, filename):
         return os.path.join(self.metrics_folder, filename)
@@ -182,7 +185,15 @@ class IO_Helper:
         laplace_model_filepath = self._get_model_savepath(filename)
         torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
-    def save_plot(self, method_name=None, filename=None, infix=None):
+    def save_plot(self, method_name=None, filename=None, infix=None, is_loss_plot=False):
+        """
+
+        :param is_loss_plot: only relevant if file_type='plot' determines where to store the plot.
+        :param method_name:
+        :param filename:
+        :param infix:
+        :return:
+        """
         from matplotlib import pyplot as plt
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='plot')
@@ -191,7 +202,7 @@ class IO_Helper:
             if ext not in {'png', 'jpeg', 'jpg'}:
                 logging.info(f"filename '{filename}' had no extension. saving as PNG")
                 filename += '.png'
-        path = self._get_plot_savepath(filename)
+        path = self._get_plot_savepath(filename, is_loss_plot=is_loss_plot)
         plt.savefig(path)
 
     def save_metrics(self, metrics: dict, method_name=None, filename=None, infix=None):
