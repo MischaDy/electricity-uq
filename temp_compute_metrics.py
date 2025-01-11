@@ -1,9 +1,13 @@
+from typing import Generator, Union, TYPE_CHECKING
+
 import settings
 import settings_update
 from helpers import misc_helpers
 from helpers.uq_arr_helpers import get_uq_method_to_arrs_dict
 from uq_comparison_pipeline import UQ_Comparison_Pipeline
 
+if TYPE_CHECKING:
+    import numpy as np
 
 RUN_SIZE = 'full'
 
@@ -32,6 +36,35 @@ def load_data():
     )
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
     return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
+
+
+### HELPERS ###
+
+def _metrics_to_float_allow_none(metrics: dict):
+    """
+    metrics are allowed to be None
+    :param metrics:
+    :return:
+    """
+    metrics = {
+        metric_name: (None if value is None else float(value))
+        for metric_name, value in metrics.items()
+    }
+    return metrics
+
+
+def _make_arrs_1d_allow_none(*arrs) -> Generator[Union['np.ndarray', None], None, None]:
+    """
+    ys are allowed to be None
+    :param metrics:
+    :return:
+    """
+    import numpy as np
+    for arr in arrs:
+        if arr is None:
+            yield arr
+        else:
+            yield np.array(arr).squeeze()
 
 
 if __name__ == '__main__':
