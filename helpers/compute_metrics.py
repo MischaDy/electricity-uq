@@ -18,6 +18,17 @@ RUN_SIZE = 'big'
 METHODS = {
     'qhgbr',
 }
+UQ_METHOD_TO_ARR_NAMES_DICT = {
+    'qhgbr': [
+        'native_qhgbr_y_pred_n210432_it0.npy',
+        'native_qhgbr_y_quantiles_n210432_it0.npy',
+        'native_qhgbr_y_std_n210432_it0.npy',
+    ] if RUN_SIZE == 'full' else [
+        'native_qhgbr_y_pred_n35136_it0.npy',
+        'native_qhgbr_y_quantiles_n35136_it0.npy',
+        'native_qhgbr_y_std_n35136_it0.npy',
+    ]
+}
 
 
 def main():
@@ -27,7 +38,8 @@ def main():
     logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
     logging.info('loading predictions')
-    uq_method_to_arrs_dict = get_uq_method_to_arrs_dict(uq_methods_whitelist=METHODS)
+    uq_method_to_arrs_dict = get_uq_method_to_arrs_dict(uq_methods_whitelist=METHODS,
+                                                        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT)
     for method, arrs in uq_method_to_arrs_dict.items():
         logging.info(f'computing metrics for {method}:')
         y_pred, y_quantiles, y_std = arrs
