@@ -8,7 +8,7 @@ from scipy import stats
 
 RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
-DO_TRAIN_ALL = True
+DO_TRAIN_ALL = False
 SKIP_TRAINING_ALL = False
 
 
@@ -44,13 +44,13 @@ LOGGING_LEVEL = logging.INFO
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    # 'base_model_linreg',
+    'base_model_linreg',
     # 'base_model_nn',
-    # 'base_model_hgbr',
+    'base_model_hgbr',
     # 'native_gpytorch',
     # 'native_mvnn',
-    'native_quantile_regression_nn',
-    # 'posthoc_conformal_prediction',
+    # 'native_quantile_regression_nn',
+    'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
 ]
 
