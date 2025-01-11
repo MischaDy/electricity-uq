@@ -27,19 +27,24 @@ RUN_SIZE_DICT = {
 }
 
 
-def update_training_flags():
-    logging.info('updating training flags...')
-    assert not (settings.DO_TRAIN_ALL and settings.SKIP_TRAINING_ALL)
+def update_training_flags(do_train_all=None, skip_training_all=None):
+    if do_train_all is None:
+        do_train_all = settings.DO_TRAIN_ALL
+    if skip_training_all is None:
+        skip_training_all = settings.SKIP_TRAINING_ALL
+    assert not (do_train_all and skip_training_all)  # can legitimately be None!
 
     for _, method_kwargs in settings.METHODS_KWARGS.items():
-        if settings.DO_TRAIN_ALL:
+        if do_train_all:
             method_kwargs['skip_training'] = False
-        elif settings.SKIP_TRAINING_ALL:
+        elif skip_training_all:
             method_kwargs['skip_training'] = True
 
 
-def update_run_size_setup():
-    run_size_settings = RUN_SIZE_DICT.get(settings.RUN_SIZE)
+def update_run_size_setup(run_size=None):
+    if run_size is None:
+        run_size = settings.RUN_SIZE
+    run_size_settings = RUN_SIZE_DICT.get(run_size)
     if run_size_settings is None:
         return
 
@@ -47,21 +52,27 @@ def update_run_size_setup():
         setattr(settings, setting_name, setting_value)
 
 
-def update_progress_bar_settings():
-    if settings.SHOW_PROGRESS_BARS is not None:
+def update_progress_bar_settings(show_progress_bars=None):
+    if show_progress_bars is None:
+        show_progress_bars = settings.SHOW_PROGRESS_BARS
+    if show_progress_bars is not None:
         for _, method_kwargs in settings.METHODS_KWARGS.items():
             if 'show_progress_bar' not in method_kwargs:
                 continue
             method_kwargs['show_progress_bar'] = settings.SHOW_PROGRESS_BARS
 
 
-def update_losses_plots_settings():
-    if settings.SHOW_LOSSES_PLOTS is not None:
+def update_losses_plots_settings(show_losses_plots=None, save_losses_plots=None):
+    if show_losses_plots is None:
+        show_losses_plots = settings.SHOW_LOSSES_PLOTS
+    if save_losses_plots is None:
+        save_losses_plots = settings.SAVE_LOSSES_PLOTS
+    if show_losses_plots is not None:
         for _, method_kwargs in settings.METHODS_KWARGS.items():
             if 'show_losses_plot' not in method_kwargs:
                 continue
             method_kwargs['show_losses_plot'] = settings.SHOW_LOSSES_PLOTS
-    if settings.SAVE_LOSSES_PLOTS is not None:
+    if save_losses_plots is not None:
         for _, method_kwargs in settings.METHODS_KWARGS.items():
             if 'save_losses_plot' not in method_kwargs:
                 continue
