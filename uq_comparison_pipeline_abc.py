@@ -784,6 +784,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
     def print_uq_metrics(self, uq_metrics, print_optimal=True, y_true_orig_scale=None, y_quantiles=None, y_std=None,
                          quantiles=None, eps_std=1e-2):
+        # todo: move
         print()
         for uq_type, method_metrics in uq_metrics.items():
             print(f"{uq_type} metrics:")
@@ -798,6 +799,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                                           eps_std=eps_std)
 
     def print_optimal_uq_metrics(self, y_true_orig_scale, quantiles, y_quantiles=None, y_std=None, eps_std=1e-2):
+        # todo: move
         print('\toptimal uq metrics:')
         y_quantiles_opt = np.hstack([y_true_orig_scale] * y_quantiles.shape[1]) if y_quantiles is not None else None
         y_std_opt = np.ones_like(y_std) * eps_std if y_std is not None else None
@@ -807,6 +809,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             print(f"\t\t{metric}: {value}")
 
     def print_base_models_metrics(self, base_models_metrics, print_optimal=True, y_true_orig_scale=None):
+        # todo: move
         print()
         for model_name, metrics in base_models_metrics.items():
             print(f"{model_name}:")
@@ -817,6 +820,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self.print_optimal_det_metrics(y_true_orig_scale)
 
     def print_optimal_det_metrics(self, y_true_orig_scale):
+        # todo: move
         optimal_det_metrics = self.compute_metrics_det(y_true_orig_scale, y_true_orig_scale)
         print('optimal deterministic metrics:')
         for metric, value in optimal_det_metrics.items():

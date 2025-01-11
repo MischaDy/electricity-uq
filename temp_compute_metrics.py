@@ -11,6 +11,7 @@ RUN_SIZE = 'full'
 def main():
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = load_data()
 
+    # todo: sharpness? calibration? PIT? coverage?
     uq_method_to_arrs_dict = get_uq_method_to_arrs_dict()
     arrs = list(uq_method_to_arrs_dict.values())[0]
     y_pred, y_quantiles, y_std = arrs
