@@ -1,9 +1,6 @@
 import os
 import logging
 
-import temp_compute_metrics
-import settings_update
-
 logging.basicConfig(level=logging.INFO, force=True)
 
 filename = os.path.split(__file__)[-1]
@@ -11,9 +8,14 @@ logging.info(f'reading file {filename}...')
 
 from typing import Any, Union, TYPE_CHECKING, Literal
 
+
+import settings
+import settings_update
+
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
-import settings
+
+from helpers.compute_metrics import compute_metrics_det, compute_metrics_uq
 
 if TYPE_CHECKING:
     from src_base_models.nn_estimator import NN_Estimator
@@ -79,11 +81,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     @classmethod
     def compute_metrics_det(cls, y_pred, y_true) -> dict[str, float]:
-        return metrics.compute_metrics_det(y_pred, y_true)
+        return compute_metrics_det(y_pred, y_true)
 
     @classmethod
     def compute_metrics_uq(cls, y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
-        return metrics.compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
+        return compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
 
     def base_model_linreg(
             self,
