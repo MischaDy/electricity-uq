@@ -85,8 +85,21 @@ class IO_Helper:
         import pickle
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
-        with open(self._get_model_savepath(filename), "rb") as file:
-            model = pickle.load(file)
+        model_path = self._get_model_savepath(filename)
+        try:
+            with open(model_path, "rb") as file:
+                model = pickle.load(file)
+        except RuntimeError as e:
+            error_msg = e.args[0]
+            if not error_msg.startswith('Attempting to deserialize object on a CUDA device'):
+                raise
+            model = self._load_torch_on_cpu(model_path)
+        return model
+
+    def _load_torch_on_cpu(self, model_path):
+        from helpers.cpu_unpickler import CPU_Unpickler
+        with open(model_path, "rb") as file:
+            model = CPU_Unpickler(file).load()
         return model
 
     def load_torch_model(self, method_name=None, filename=None, infix=None):
