@@ -14,7 +14,7 @@ IO_HELPER = IO_Helper('comparison_storage')
 
 
 def main():
-    from uq_comparison_pipeline import update_run_size_setup
+    from settings_update import update_run_size_setup
 
     update_run_size_setup()
     data = get_data(
