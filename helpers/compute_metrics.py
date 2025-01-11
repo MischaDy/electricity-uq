@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 logging.basicConfig(level=logging.INFO)
 
 
-RUN_SIZE = 'big'
+RUN_SIZE = 'full'
 METHODS = {
     'qhgbr',
 }
