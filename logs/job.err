@@ -28,7 +28,7 @@ See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stab
 INFO:root:training...
 INFO:root:parameter cv_n_iter == 0, so no CV is performed
 INFO:root:fitting 99 objects.
-INFO:root:finished after 1304.6871564444155s
-INFO:root:saving model in path qhgbr_storage/models/qhgbr_y_pred_n35136_it0.model
+INFO:root:finished after 2406.8759718341753s
+INFO:root:saving model in path qhgbr_storage/models/qhgbr_y_pred_n210432_it0.model
 INFO:root:predicting
 INFO:root:plotting
