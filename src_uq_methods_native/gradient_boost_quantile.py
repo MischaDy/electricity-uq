@@ -279,7 +279,7 @@ def test_qhgbr():
     MAX_ITER = 1000
     LR = 0.2
     L2_REGULARIZATION = 1e-3
-    N_FEATURES_FACTOR = 0.5
+    MAX_FEATURES = 0.5
     MAX_LEAF_NODES = 10
     MAX_WORKERS = None  # if too much mem usage: N_CPUS_REMOTE // 2
 
@@ -315,8 +315,6 @@ def test_qhgbr():
     y_true = y
 
     logging.info('training...')
-    n_features = X_train.shape[1]
-    max_features = round(N_FEATURES_FACTOR * n_features)
     model = train_hgbr_quantile(
         X_train,
         y_train,
@@ -334,7 +332,7 @@ def test_qhgbr():
         lr=LR,
         l2_regularization=L2_REGULARIZATION,
         max_workers=MAX_WORKERS,
-        max_features=max_features,
+        max_features=MAX_FEATURES,
         max_leaf_nodes=MAX_LEAF_NODES,
     )
     prefix = 'qhgbr'
