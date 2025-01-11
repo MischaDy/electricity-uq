@@ -35,11 +35,16 @@ def main():
 
 
 def get_arrays():
-    qr_arrs = [
-        np.load('remote_arrays_4/native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy'),
-        np.load('remote_arrays_4/native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy'),
-        np.load('remote_arrays_4/native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy'),
+    qhgbr_arrs = [
+        np.load('my_qhgbr_storage3/arrays/qhgbr_y_pred_n210432_it0.npy'),
+        np.load('my_qhgbr_storage3/arrays/qhgbr_y_quantiles_n210432_it0.npy'),
+        np.load('my_qhgbr_storage3/arrays/qhgbr_y_std_n210432_it0.npy'),
     ]
+    # qr_arrs = [
+    #     np.load('remote_arrays_4/native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy'),
+    #     np.load('remote_arrays_4/native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy'),
+    #     np.load('remote_arrays_4/native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy'),
+    # ]
     gp_arrs = to_arrs([
         'native_gpytorch_y_pred_n210432_it200.npy',
         'native_gpytorch_y_quantiles_n210432_it200.npy',
@@ -72,9 +77,10 @@ def get_arrays():
     ])
 
     all_arrs = {
+        'qhgbr_arrs': qhgbr_arrs,
         # 'gp_arrs': gp_arrs,
         # 'mvnn_arrs': mvnn_arrs,
-        'qr_arrs': qr_arrs,
+        # 'qr_arrs': qr_arrs,
         # 'cp_hgbr_arrs': cp_hgbr_arrs,
         # 'cp_linreg_arrs': cp_linreg_arrs,
         # 'cp_nn_arrs': cp_nn_arrs,
