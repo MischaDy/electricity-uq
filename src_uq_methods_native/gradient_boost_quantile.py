@@ -67,7 +67,7 @@ class HGBR_Quantile:
         }
 
     def fit(self, X_train, y_train, cv_n_iter=100, cv_n_splits=10, random_seed=42,
-            model_param_distributions=None, verbose=0):
+            model_param_distributions=None, verbose=0, max_workers=None):
         from timeit import default_timer  # temp
 
         y_train = y_train.ravel()
@@ -103,7 +103,7 @@ class HGBR_Quantile:
         initargs = (X_train_raw, X_shape, y_train_raw, y_shape)
         t1 = default_timer()
         # noinspection PyTypeChecker
-        with ProcessPoolExecutor(initializer=store_data_global, initargs=initargs) as executor:
+        with ProcessPoolExecutor(max_workers=max_workers, initializer=store_data_global, initargs=initargs) as executor:
             futures = [executor.submit(self.fit_obj, quantile=quantile, obj=obj, i=i)
                        for i, (quantile, obj) in enumerate(objs_dict.items(), start=1)]
         self.models = dict(future.result() for future in futures)
@@ -168,6 +168,7 @@ def train_hgbr_quantile(
         max_iter=1000,
         lr=0.2,
         l2_regularization=1e-3,
+        max_workers=None,
 ):
     if model_param_distributions is None:
         from scipy import stats
@@ -192,7 +193,7 @@ def train_hgbr_quantile(
     )
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     model.fit(X_train, y_train, cv_n_iter=cv_n_iter, cv_n_splits=cv_n_splits, random_seed=random_seed,
-              model_param_distributions=model_param_distributions, verbose=verbose)
+              model_param_distributions=model_param_distributions, verbose=verbose, max_workers=max_workers)
     return model
 
 
@@ -244,6 +245,9 @@ def test_qhgbr():
 
     from helpers.io_helper import IO_Helper
 
+    N_CPUS_REMOTE = 72
+    # N_CPUS_LOCAL = 8
+
     logging.basicConfig(level=logging.INFO, force=True)
 
     io_helper = IO_Helper(STORAGE_PATH)
@@ -271,6 +275,7 @@ def test_qhgbr():
     max_iter = 1000
     lr = 0.2
     l2_regularization = 1e-3
+    max_workers = None  # if too much mem usage: N_CPUS_REMOTE // 2
 
     model_param_distributions = {
         # 'max_features': stats.randint(1, X_train.shape[1]),
@@ -320,6 +325,7 @@ def test_qhgbr():
         max_iter=max_iter,
         lr=lr,
         l2_regularization=l2_regularization,
+        max_workers=max_workers,
     )
     prefix = 'qhgbr'
     postfix = f'n{X_train.shape[0]}_it{cv_n_iter}'
