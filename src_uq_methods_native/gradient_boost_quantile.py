@@ -168,7 +168,9 @@ def train_hgbr_quantile(
         max_iter=1000,
         lr=0.2,
         l2_regularization=1e-3,
+        max_leaf_nodes=31,
         max_workers=None,
+        max_features=1.0,
 ):
     if model_param_distributions is None:
         from scipy import stats
@@ -190,6 +192,8 @@ def train_hgbr_quantile(
         max_iter=max_iter,
         lr=lr,
         l2_regularization=l2_regularization,
+        max_leaf_nodes=max_leaf_nodes,
+        max_features=max_features,
     )
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     model.fit(X_train, y_train, cv_n_iter=cv_n_iter, cv_n_splits=cv_n_splits, random_seed=random_seed,
@@ -275,6 +279,8 @@ def test_qhgbr():
     max_iter = 1000
     lr = 0.2
     l2_regularization = 1e-3
+    n_features_factor = 1.0
+    max_leaf_nodes = 31
     max_workers = None  # if too much mem usage: N_CPUS_REMOTE // 2
 
     model_param_distributions = {
@@ -309,6 +315,8 @@ def test_qhgbr():
     y_true = y
 
     logging.info('training...')
+    n_features = X_train.shape[1]
+    max_features = round(n_features_factor * n_features)
     model = train_hgbr_quantile(
         X_train,
         y_train,
@@ -326,6 +334,8 @@ def test_qhgbr():
         lr=lr,
         l2_regularization=l2_regularization,
         max_workers=max_workers,
+        max_features=max_features,
+        max_leaf_nodes=max_leaf_nodes,
     )
     prefix = 'qhgbr'
     postfix = f'n{X_train.shape[0]}_it{cv_n_iter}'
