@@ -1,3 +1,5 @@
+import logging
+
 from typing import Generator, Union, TYPE_CHECKING
 
 import settings
@@ -9,22 +11,32 @@ from helpers.uq_arr_helpers import get_uq_method_to_arrs_dict
 if TYPE_CHECKING:
     import numpy as np
 
-RUN_SIZE = 'full'
+logging.basicConfig(level=logging.INFO)
+
+
+RUN_SIZE = 'big'
 
 
 def main():
     # todo: sharpness? calibration? PIT? coverage?
+    logging.info('running metrics computation script')
     io_helper = IO_Helper()
+    logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
+    logging.info('loading predictions')
     uq_method_to_arrs_dict = get_uq_method_to_arrs_dict()
     for method, arrs in uq_method_to_arrs_dict.items():
+        logging.info(f'computing metrics for {method}:')
         y_pred, y_quantiles, y_std = arrs
-        metrics_det = compute_metrics_det(y_pred, y)
-        metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
         metrics = {}
+        logging.info(f'deterministic metrics...')
+        metrics_det = compute_metrics_det(y_pred, y)
         metrics.update(metrics_det)
+        logging.info(f'UQ metrics...')
+        metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
         metrics.update(metrics_uq)
-        print(metrics)
+        logging.info(f'metrics: {metrics}')
+        logging.info('saving metrics...')
         filename = f'uq_metrics_{method}'
         filename = misc_helpers.timestamped_filename(filename)
         io_helper.save_metrics(metrics_det, filename=filename)
