@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from helpers.io_helper import IO_Helper
 
 UQ_METHODS_WHITELIST = {
@@ -55,14 +57,19 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
 }
 
 
-def get_uq_method_to_arrs_dict():
+def get_uq_method_to_arrs_dict(uq_method_to_arr_names_dict: dict[str, Iterable[str]] = None,
+                               uq_methods_whitelist: set[str] = None):
+    if uq_method_to_arr_names_dict is None:
+        uq_method_to_arr_names_dict = UQ_METHOD_TO_ARR_NAMES_DICT
+    if uq_methods_whitelist is None:
+        uq_methods_whitelist = UQ_METHODS_WHITELIST
     uq_method_to_arrs_dict = {uq_method: to_arrs(arr_names)
-                              for uq_method, arr_names in UQ_METHOD_TO_ARR_NAMES_DICT.items()
-                              if uq_method in UQ_METHODS_WHITELIST}
+                              for uq_method, arr_names in uq_method_to_arr_names_dict.items()
+                              if uq_method in uq_methods_whitelist}
     return uq_method_to_arrs_dict
 
 
-def to_arrs(filenames, io_helper=None, storage_path='comparison_storage'):
+def to_arrs(filenames: Iterable, io_helper=None, storage_path='comparison_storage'):
     if io_helper is None:
         io_helper = IO_Helper(storage_path)
     return [io_helper.load_array(filename=filename) for filename in filenames]

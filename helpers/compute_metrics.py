@@ -15,6 +15,9 @@ logging.basicConfig(level=logging.INFO)
 
 
 RUN_SIZE = 'big'
+METHODS = {
+    'qhgbr',
+}
 
 
 def main():
@@ -24,7 +27,7 @@ def main():
     logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
     logging.info('loading predictions')
-    uq_method_to_arrs_dict = get_uq_method_to_arrs_dict()
+    uq_method_to_arrs_dict = get_uq_method_to_arrs_dict(uq_methods_whitelist=METHODS)
     for method, arrs in uq_method_to_arrs_dict.items():
         logging.info(f'computing metrics for {method}:')
         y_pred, y_quantiles, y_std = arrs
