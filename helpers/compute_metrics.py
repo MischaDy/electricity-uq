@@ -39,7 +39,7 @@ def main():
         logging.info('saving metrics...')
         filename = f'uq_metrics_{method}'
         filename = misc_helpers.timestamped_filename(filename)
-        io_helper.save_metrics(metrics_det, filename=filename)
+        io_helper.save_metrics(metrics, filename=filename)
 
 
 def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
