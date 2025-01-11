@@ -3,8 +3,8 @@ from typing import Generator, Union, TYPE_CHECKING
 import settings
 import settings_update
 from helpers import misc_helpers
+from helpers.io_helper import IO_Helper
 from helpers.uq_arr_helpers import get_uq_method_to_arrs_dict
-from uq_comparison_pipeline import UQ_Comparison_Pipeline
 
 if TYPE_CHECKING:
     import numpy as np
@@ -12,18 +12,49 @@ if TYPE_CHECKING:
 RUN_SIZE = 'full'
 
 
+
 def main():
-    X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = load_data()
-
     # todo: sharpness? calibration? PIT? coverage?
+    io_helper = IO_Helper()
+    X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
     uq_method_to_arrs_dict = get_uq_method_to_arrs_dict()
-    arrs = list(uq_method_to_arrs_dict.values())[0]
-    y_pred, y_quantiles, y_std = arrs
-    metrics_det = UQ_Comparison_Pipeline.compute_metrics_det(y_pred, y)
-    metrics_uq = UQ_Comparison_Pipeline.compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
+    for method, arrs in uq_method_to_arrs_dict.items():
+        y_pred, y_quantiles, y_std = arrs
+        metrics_det = compute_metrics_det(y_pred, y)
+        metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
+        metrics = {}
+        metrics.update(metrics_det)
+        metrics.update(metrics_uq)
+        print(metrics)
+        filename = f'uq_metrics_{method}'
+        filename = misc_helpers.timestamped_filename(filename)
+        io_helper.save_metrics(metrics_det, filename=filename)
 
 
-def load_data():
+def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
+    from helpers.temp_compute_script import rmse, smape_scaled
+
+    y_pred, y_true = _make_arrs_1d_allow_none(y_pred, y_true)
+    metrics = {
+        "rmse": rmse(y_true, y_pred),
+        "smape_scaled": smape_scaled(y_true, y_pred),
+    }
+    return _metrics_to_float_allow_none(metrics)
+
+
+def compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
+    from helpers.temp_compute_script import crps, nll_gaussian, mean_pinball_loss
+
+    y_pred, y_quantiles, y_std, y_true = _make_arrs_1d_allow_none(y_pred, y_quantiles, y_std, y_true)
+    metrics = {
+        "crps": crps(y_true, y_quantiles),
+        "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
+        "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
+    }
+    return _metrics_to_float_allow_none(metrics)
+
+
+def _load_data():
     settings.RUN_SIZE = RUN_SIZE
     settings_update.update_run_size_setup()
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(

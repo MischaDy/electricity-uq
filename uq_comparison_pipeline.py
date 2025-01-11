@@ -1,6 +1,7 @@
 import os
 import logging
 
+import temp_compute_metrics
 import settings_update
 
 logging.basicConfig(level=logging.INFO, force=True)
@@ -8,7 +9,7 @@ logging.basicConfig(level=logging.INFO, force=True)
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
 
-from typing import Any, Generator, Union, TYPE_CHECKING, Literal
+from typing import Any, Union, TYPE_CHECKING, Literal
 
 from uq_comparison_pipeline_abc import UQ_Comparison_Pipeline_ABC
 from helpers import misc_helpers
@@ -78,28 +79,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
     @classmethod
     def compute_metrics_det(cls, y_pred, y_true) -> dict[str, float]:
-        # todo: sharpness? calibration? PIT? coverage?
-        from helpers.metrics import rmse, smape_scaled
-
-        y_pred, y_true = cls._clean_ys_for_metrics(y_pred, y_true)
-        metrics = {
-            "rmse": rmse(y_true, y_pred),
-            "smape_scaled": smape_scaled(y_true, y_pred),
-        }
-        return cls._clean_metrics(metrics)
+        return metrics.compute_metrics_det(y_pred, y_true)
 
     @classmethod
     def compute_metrics_uq(cls, y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
-        # todo: sharpness? calibration? PIT? coverage?
-        from helpers.metrics import crps, nll_gaussian, mean_pinball_loss
-
-        y_pred, y_quantiles, y_std, y_true = cls._clean_ys_for_metrics(y_pred, y_quantiles, y_std, y_true)
-        metrics = {
-            "crps": crps(y_true, y_quantiles),
-            "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
-            "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
-        }
-        return cls._clean_metrics(metrics)
+        return metrics.compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
 
     def base_model_linreg(
             self,
@@ -667,23 +651,6 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
-
-    @staticmethod
-    def _clean_ys_for_metrics(*ys) -> Generator[Union['np.ndarray', None], None, None]:
-        import numpy as np
-        for y in ys:
-            if y is None:
-                yield y
-            else:
-                yield np.array(y).squeeze()
-
-    @staticmethod
-    def _clean_metrics(metrics):
-        metrics = {
-            metric_name: (None if value is None else float(value))
-            for metric_name, value in metrics.items()
-        }
-        return metrics
 
     def try_skipping_training(self, method_name):
         try:
