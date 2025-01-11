@@ -10,7 +10,7 @@ from helpers.misc_helpers import get_data
 SAVE_PLOT = True
 SHOW_PLOT = True
 
-IO_HELPER = IO_Helper('comparison_storage')
+IO_HELPER = IO_Helper()
 
 
 def main():

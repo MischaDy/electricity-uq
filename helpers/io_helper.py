@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class IO_Helper:
     def __init__(
             self,
-            base_folder,
+            base_folder='comparison_storage',
             methods_kwargs=None,
             filename_parts: dict[tuple[list[tuple[str, str]], str]] = None,  # todo: make optional?
             filesave_prefix=None,
