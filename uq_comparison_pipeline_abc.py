@@ -32,7 +32,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
        y_quantiles is ... . y_std is ... .
        The methods' names should start with 'native_' and they should be instance methods.
     5. Define all desired posthoc UQ methods. The required signature is:
-            (X_train, y_train, X_val, y_val, X_test, quantiles, base_model, ...) -> (y_pred, y_quantiles, y_std)
+            (X_train, y_train, X_val, y_val, X_test, quantiles, base_model, base_model_name, ...) -> (y_pred, y_quantiles, y_std)
        y_quantiles and y_std are the same as for native methods.
        The methods' names should start with 'posthoc_' and they should be instance methods.
     6. Call compare_methods from the child class.
@@ -423,6 +423,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                     X_pred,
                     quantiles,
                     base_model_copy,
+                    base_model_name=base_model_name,
                     **method_kwargs
                 )
                 if scaler_y is not None:

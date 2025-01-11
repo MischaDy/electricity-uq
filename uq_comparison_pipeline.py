@@ -266,6 +266,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_pred: 'np.ndarray',
             quantiles: list,
             base_model: Union['ModelWrapper', 'NN_Estimator'],
+            base_model_name='',
             n_estimators=10,
             bootstrap_n_blocks=10,
             bootstrap_overlapping_blocks=False,
@@ -276,6 +277,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param base_model_name:
         :param y_val:
         :param X_val:
         :param save_model:
@@ -297,6 +299,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             predict_with_conformal_prediction,
         )
         method_name = 'posthoc_conformal_prediction'
+        model_name_infix = base_model_name
         if skip_training:
             model = self.try_skipping_training(method_name)
             if model is None:
@@ -316,7 +319,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 verbose=verbose,
             )
             if save_model:
-                self.save_model(model, method_name=method_name)
+                self.save_model(model, method_name=method_name, infix=model_name_infix)
         # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_conformal_prediction(model, X_pred, quantiles)
         base_model.reset_output_dim()
@@ -331,6 +334,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             X_pred: 'np.ndarray',
             quantiles: list,
             base_model: 'NN_Estimator',
+            base_model_name='',
             n_iter=100,
             batch_size=20,
             random_seed=42,
@@ -343,6 +347,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
         )
         method_name = 'posthoc_laplace_approximation'
+        model_name_infix = base_model_name
         base_model_nn = base_model.get_nn(to_device=True)
         if skip_training:
             logging.info(f'skipping model training in method {method_name}')
@@ -372,7 +377,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             )
             if save_model:
                 logging.info('saving model...')
-                self.io_helper.save_laplace_model_statedict(model, method_name=method_name)
+                self.io_helper.save_laplace_model_statedict(model, method_name=method_name, infix=model_name_infix)
         # noinspection PyUnboundLocalVariable
         y_pred, y_quantiles, y_std = predict_with_laplace_approximation(model, X_pred, quantiles)
         return y_pred, y_quantiles, y_std
@@ -663,9 +668,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             logging.warning(f"trained model '{error.filename}' not found. training from scratch.")
         return None
 
-    def save_model(self, model, method_name):
+    def save_model(self, model, method_name, infix=None):
         logging.info(f'saving model in method {method_name}...')
-        self.io_helper.save_model(model, method_name=method_name)
+        self.io_helper.save_model(model, method_name=method_name, infix=infix)
 
 
 def check_method_kwargs_dict(class_, method_kwargs_dict):
