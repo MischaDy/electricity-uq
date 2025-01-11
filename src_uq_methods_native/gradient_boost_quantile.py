@@ -266,24 +266,24 @@ def test_qhgbr():
     # if False, plot between outermost quantiles
     PLOT_90P_INTERVAL = True
 
-    n_samples_plot = 1600
+    N_SAMPLES_PLOT = 1600
 
-    val_frac = 0.1
+    VAL_FRAC = 0.1
 
-    quantiles = settings.QUANTILES
+    QUANTILES = settings.QUANTILES
 
-    cv_n_iter = 0
-    cv_n_splits = 2
-    verbose = 2
-    n_iter_no_change = 15
-    max_iter = 1000
-    lr = 0.2
-    l2_regularization = 1e-3
-    n_features_factor = 0.5
-    max_leaf_nodes = 10
-    max_workers = None  # if too much mem usage: N_CPUS_REMOTE // 2
+    CV_N_ITER = 0
+    CV_N_SPLITS = 2
+    VERBOSE = 2
+    N_ITER_NO_CHANGE = 15
+    MAX_ITER = 1000
+    LR = 0.2
+    L2_REGULARIZATION = 1e-3
+    N_FEATURES_FACTOR = 0.5
+    MAX_LEAF_NODES = 10
+    MAX_WORKERS = None  # if too much mem usage: N_CPUS_REMOTE // 2
 
-    model_param_distributions = {
+    MODEL_PARAM_DISTRIBUTIONS = {
         # 'max_features': stats.randint(1, X_train.shape[1]),
         "max_iter": [1000],  # stats.randint(10, 1000),
         'learning_rate': [0.1],
@@ -316,29 +316,29 @@ def test_qhgbr():
 
     logging.info('training...')
     n_features = X_train.shape[1]
-    max_features = round(n_features_factor * n_features)
+    max_features = round(N_FEATURES_FACTOR * n_features)
     model = train_hgbr_quantile(
         X_train,
         y_train,
         X_val,
         y_val,
-        quantiles,
-        cv_n_iter=cv_n_iter,
-        cv_n_splits=cv_n_splits,
-        model_param_distributions=model_param_distributions,
+        QUANTILES,
+        cv_n_iter=CV_N_ITER,
+        cv_n_splits=CV_N_SPLITS,
+        model_param_distributions=MODEL_PARAM_DISTRIBUTIONS,
         random_seed=42,
-        verbose=verbose,
-        val_frac=val_frac,
-        n_iter_no_change=n_iter_no_change,
-        max_iter=max_iter,
-        lr=lr,
-        l2_regularization=l2_regularization,
-        max_workers=max_workers,
+        verbose=VERBOSE,
+        val_frac=VAL_FRAC,
+        n_iter_no_change=N_ITER_NO_CHANGE,
+        max_iter=MAX_ITER,
+        lr=LR,
+        l2_regularization=L2_REGULARIZATION,
+        max_workers=MAX_WORKERS,
         max_features=max_features,
-        max_leaf_nodes=max_leaf_nodes,
+        max_leaf_nodes=MAX_LEAF_NODES,
     )
     prefix = 'qhgbr'
-    postfix = f'n{X_train.shape[0]}_it{cv_n_iter}'
+    postfix = f'n{X_train.shape[0]}_it{CV_N_ITER}'
 
     io_helper.save_model(model, filename=f'{prefix}_y_pred_{postfix}.model')
     logging.info('predicting')
@@ -348,10 +348,10 @@ def test_qhgbr():
     io_helper.save_array(y_quantiles, filename=f'{prefix}_y_quantiles_{postfix}.npy')
     io_helper.save_array(y_std, filename=f'{prefix}_y_std_{postfix}.npy')
 
-    y_pred, y_quantiles, y_std = y_pred[:n_samples_plot], y_quantiles[:n_samples_plot], y_std[:n_samples_plot]
-    y_true = y_true[:n_samples_plot]
+    y_pred, y_quantiles, y_std = y_pred[:N_SAMPLES_PLOT], y_quantiles[:N_SAMPLES_PLOT], y_std[:N_SAMPLES_PLOT]
+    y_true = y_true[:N_SAMPLES_PLOT]
 
-    index_low, index_high = [quantiles.index(0.05), quantiles.index(0.95)] if PLOT_90P_INTERVAL else [0, -1]
+    index_low, index_high = [QUANTILES.index(0.05), QUANTILES.index(0.95)] if PLOT_90P_INTERVAL else [0, -1]
     ci_low, ci_high = y_quantiles[:, index_low], y_quantiles[:, index_high]
     n_quantiles = y_quantiles.shape[1]
     logging.info('plotting')
