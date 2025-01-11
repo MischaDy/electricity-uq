@@ -281,7 +281,7 @@ def test_qhgbr():
     L2_REGULARIZATION = 1e-3
     MAX_FEATURES = 0.5
     MAX_LEAF_NODES = 10
-    MAX_WORKERS = None  # if too much mem usage: N_CPUS_REMOTE // 2
+    MAX_WORKERS = 24  # if too much mem usage: N_CPUS_REMOTE // 2
 
     MODEL_PARAM_DISTRIBUTIONS = {
         # 'max_features': stats.randint(1, X_train.shape[1]),
