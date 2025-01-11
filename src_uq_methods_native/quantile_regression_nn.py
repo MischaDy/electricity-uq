@@ -273,13 +273,11 @@ def test_qr():
 
     train_frac = 0.4
     val_frac = 0.1
-    test_frac = 0.5
 
     quantiles = settings.QUANTILES  # [0.01, 0.5, 0.99]
 
     n_train_samples = round(train_frac * n_samples)
     n_val_samples = round(val_frac * n_samples)
-    n_test_samples = round(test_frac * n_samples)
 
     if USE_REAL_DATA:
         X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
@@ -301,8 +299,6 @@ def test_qr():
     y_train = y[:n_train_samples]
     X_val = X[n_train_samples:n_train_samples + n_val_samples]
     y_val = y[n_train_samples:n_train_samples + n_val_samples]
-    X_test = X[-n_test_samples:]
-    y_test = y[-n_test_samples:]
 
     X_pred = X
     y_true = y
