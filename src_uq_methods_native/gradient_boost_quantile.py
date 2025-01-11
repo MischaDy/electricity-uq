@@ -275,12 +275,12 @@ def test_qhgbr():
     cv_n_iter = 0
     cv_n_splits = 2
     verbose = 2
-    n_iter_no_change = 20
+    n_iter_no_change = 15
     max_iter = 1000
     lr = 0.2
     l2_regularization = 1e-3
-    n_features_factor = 1.0
-    max_leaf_nodes = 31
+    n_features_factor = 0.5
+    max_leaf_nodes = 10
     max_workers = None  # if too much mem usage: N_CPUS_REMOTE // 2
 
     model_param_distributions = {
