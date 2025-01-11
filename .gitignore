@@ -181,3 +181,5 @@ cython_debug/
 /src_uq_methods_native/qhgbr_storage/
 qhgbr_storage/arrays/
 qhgbr_storage/models/
+/comparison_storage/arrays_small/
+/comparison_storage/models_small/
