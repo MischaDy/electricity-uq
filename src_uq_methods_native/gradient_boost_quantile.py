@@ -261,7 +261,7 @@ def test_qhgbr():
     SHOW_PLOT = False
     SAVE_PLOT = True
     PLOT_DATA = False
-    RUN_SIZE = 'big'
+    RUN_SIZE = 'small'
 
     # if False, plot between outermost quantiles
     PLOT_90P_INTERVAL = True
@@ -270,7 +270,7 @@ def test_qhgbr():
 
     VAL_FRAC = 0.1
 
-    QUANTILES = settings.QUANTILES
+    QUANTILES = [0.01, 0.05, 0.10, 0.50, 0.90, 0.95, 0.99]  # settings.QUANTILES
 
     CV_N_ITER = 0
     CV_N_SPLITS = 2
