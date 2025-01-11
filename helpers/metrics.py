@@ -1,10 +1,5 @@
 import numpy as np
 
-from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian as nll_gaussian_
-from sklearn.metrics import mean_pinball_loss as mean_pinball_loss_
-import scores
-import xarray
-
 
 def smape_scaled(y_true: np.ndarray, y_pred: np.ndarray):
     """
@@ -34,6 +29,7 @@ def mean_pinball_loss(y_true: np.ndarray, y_quantiles: np.ndarray, quantiles: np
     :param quantiles:
     :return:
     """
+    from sklearn.metrics import mean_pinball_loss as mean_pinball_loss_
     if y_quantiles is None:
         return None
     return np.mean([
@@ -43,6 +39,7 @@ def mean_pinball_loss(y_true: np.ndarray, y_quantiles: np.ndarray, quantiles: np
 
 
 def nll_gaussian(y_true: np.ndarray, y_pred: np.ndarray, y_std: np.ndarray):
+    from uncertainty_toolbox.metrics_scoring_rule import nll_gaussian as nll_gaussian_
     if y_std is None:
         return None
     return nll_gaussian_(y_pred, y_std, y_true)
@@ -58,6 +55,8 @@ def crps(y_true: np.ndarray, y_quantiles: np.ndarray):
     :param y_quantiles:
     :return:
     """
+    import scores
+    import xarray
     if y_quantiles is None:
         return None
     sample_dim, ensemble_member_dim = 'samples', 'sample_quantiles'
