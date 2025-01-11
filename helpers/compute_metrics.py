@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 RUN_SIZE = 'full'
 
 
-
 def main():
     # todo: sharpness? calibration? PIT? coverage?
     io_helper = IO_Helper()
@@ -32,7 +31,7 @@ def main():
 
 
 def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
-    from helpers.temp_compute_script import rmse, smape_scaled
+    from helpers._metrics import rmse, smape_scaled
 
     y_pred, y_true = _make_arrs_1d_allow_none(y_pred, y_true)
     metrics = {
@@ -43,7 +42,7 @@ def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
 
 
 def compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
-    from helpers.temp_compute_script import crps, nll_gaussian, mean_pinball_loss
+    from helpers._metrics import crps, nll_gaussian, mean_pinball_loss
 
     y_pred, y_quantiles, y_std, y_true = _make_arrs_1d_allow_none(y_pred, y_quantiles, y_std, y_true)
     metrics = {
