@@ -6,6 +6,8 @@ from matplotlib import pyplot as plt
 import settings
 from helpers.io_helper import IO_Helper
 from helpers.misc_helpers import get_data
+from helpers import uq_arr_helpers
+
 
 SAVE_PLOT = True
 SHOW_PLOT = True
@@ -27,74 +29,10 @@ def main():
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = data
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
-    uq_method_to_arrs_dict = get_uq_method_to_arrs_dict()
+    uq_method_to_arrs_dict = uq_arr_helpers.get_uq_method_to_arrs_dict()
     for uq_method, arrs in uq_method_to_arrs_dict.items():
         y_pred, y_quantiles, y_std = arrs
         plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
-
-
-def get_uq_method_to_arrs_dict():
-    uq_methods_whitelist = {
-        'qhgbr',
-        # 'qr',
-        # 'gp',
-        # 'mvnn',
-        # 'cp_hgbr',
-        # 'cp_linreg',
-        # 'cp_nn',
-        # 'la_nn',
-    }
-
-    arr_names = {
-        'qhgbr': [
-            'native_qhgbr_y_pred_n210432_it0.npy',
-            'native_qhgbr_y_quantiles_n210432_it0.npy',
-            'native_qhgbr_y_std_n210432_it0.npy',
-        ],
-        'qr': [
-            'native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy',
-            'native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy',
-            'native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy',
-        ],
-        'gp': [
-            'native_gpytorch_y_pred_n210432_it200.npy',
-            'native_gpytorch_y_quantiles_n210432_it200.npy',
-            'native_gpytorch_y_std_n210432_it200.npy',
-        ],
-        'mvnn': [
-            'native_mvnn_y_pred_n210432_it100_nh2_hs50.npy',
-            'native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy',
-            'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
-        ],
-        'cp_hgbr': [
-            'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
-            'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
-            'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy'
-        ],
-        'cp_linreg': [
-            'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
-            'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
-            'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy'
-        ],
-        'cp_nn': [
-            'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
-            'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5.npy',
-            'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy'
-        ],
-        'la_nn': [
-            'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy',
-            'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it100.npy',
-            'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it100.npy',
-        ],
-    }
-    uq_method_to_arrs_dict = {uq_method: to_arrs(arr_names)
-                              for uq_method, arr_names in arr_names.items()
-                              if uq_method in uq_methods_whitelist}
-    return uq_method_to_arrs_dict
-
-
-def to_arrs(filenames):
-    return [IO_HELPER.load_array(filename=filename) for filename in filenames]
 
 
 def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, method, n_samples_to_plot=1600, show_plot=True,
