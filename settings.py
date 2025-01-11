@@ -6,7 +6,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
+RUN_SIZE: Literal['full', 'big', 'small'] = 'small'
 
 DO_TRAIN_ALL = False
 SKIP_TRAINING_ALL = False
@@ -14,7 +14,7 @@ SKIP_TRAINING_ALL = False
 
 ### NORMAL SETTINGS ###
 
-QUANTILES = list(map(lambda x: round(x, 2), np.linspace(0.01, 0.99, 99)))
+QUANTILES = [0.01, 0.05, 0.10, 0.50, 0.90, 0.95, 0.99]  # list(map(lambda x: round(x, 2), np.linspace(0.01, 0.99, 99)))
 
 DATA_FILEPATH = 'data/data.pkl'
 N_POINTS_PER_GROUP = None
@@ -130,8 +130,8 @@ METHODS_KWARGS = {
             'min_samples_leaf': stats.randint(15, 100),
             'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
         },
-        'cv_n_iter': 30,
-        'cv_n_splits': 3,
+        'cv_n_iter': 5,
+        'cv_n_splits': 2,
         "random_seed": 42,
         "verbose": 4,
         'n_jobs': -1,

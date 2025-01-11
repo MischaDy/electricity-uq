@@ -1,0 +1,29 @@
+{
+    "base_model": {
+        "base_model_linreg": {
+            "rmse": 421.0050964355469,
+            "smape_scaled": 0.022017354145646095
+        },
+        "base_model_hgbr": {
+            "rmse": 404.374377552991,
+            "smape_scaled": 0.014976451002017398
+        }
+    },
+    "posthoc": {
+        "posthoc_conformal_prediction__base_model_linreg": {
+            "rmse": 415.84527587890625,
+            "smape_scaled": 0.021747875958681107,
+            "crps": 291.8011196219665,
+            "nll_gaussian": 42.33919681157781,
+            "mean_pinball": 1.0541310882798827
+        },
+        "posthoc_conformal_prediction__base_model_hgbr": {
+            "rmse": 404.374377552991,
+            "smape_scaled": 0.014976451002017398,
+            "crps": 203.01412372099978,
+            "nll_gaussian": 22.42548514703013,
+            "mean_pinball": 1.2925071616566204
+        }
+    },
+    "native": {}
+}
