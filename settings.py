@@ -6,7 +6,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-RUN_SIZE: Literal['full', 'big', 'small'] = 'small'
+RUN_SIZE: Literal['full', 'big', 'small'] = 'big'
 
 DO_TRAIN_ALL = False
 SKIP_TRAINING_ALL = False
@@ -130,8 +130,8 @@ METHODS_KWARGS = {
             'min_samples_leaf': stats.randint(15, 100),
             'l2_regularization': [0, 1e-4, 1e-3, 1e-2, 1e-1],
         },
-        'cv_n_iter': 5,
-        'cv_n_splits': 2,
+        'cv_n_iter': 100,
+        'cv_n_splits': 5,
         "random_seed": 42,
         "verbose": 4,
         'n_jobs': -1,
