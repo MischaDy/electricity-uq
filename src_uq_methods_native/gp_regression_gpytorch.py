@@ -44,6 +44,7 @@ def make_plot(model, likelihood, quantiles, X_pred, y_true, infix=None):
     from make_partial_uq_plots import plot_uq_single_dataset
 
     y_pred, y_quantiles, _ = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
+    y_true = misc_helpers.tensor_to_np_array(y_true)
     uq_method = f'gp_{infix}' if infix is not None else 'gp'
     plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method=uq_method, interval=90, is_training_data=True,
                            n_samples_to_plot=N_SAMPLES_TO_PLOT, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
