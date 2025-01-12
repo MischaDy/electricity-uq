@@ -32,6 +32,7 @@ def main():
     from settings_update import update_run_size_setup
 
     logging.info('loading data')
+    assert settings.RUN_SIZE in ['big', 'full']
     update_run_size_setup()
     data = get_data(
         filepath=settings.DATA_FILEPATH,
