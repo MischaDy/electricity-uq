@@ -1,0 +1,13 @@
+{
+    "base_model": {},
+    "posthoc": {},
+    "native": {
+        "native_gpytorch": {
+            "rmse": 575.0810546875,
+            "smape_scaled": 0.03013576567173004,
+            "crps": 343.23938256302677,
+            "nll_gaussian": 8.439153054280046,
+            "mean_pinball": 33.63719529285842
+        }
+    }
+}
