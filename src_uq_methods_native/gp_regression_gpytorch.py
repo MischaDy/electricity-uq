@@ -157,7 +157,7 @@ def prepare_data(
     return X_train, y_train, X_val, y_val, X_pred
 
 
-def predict_with_gpytorch(model, likelihood, X_pred, quantiles):
+def predict_with_gpytorch(model, likelihood, X_pred: torch.Tensor, quantiles):
     model.eval()
     likelihood.eval()
 
