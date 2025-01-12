@@ -17,6 +17,9 @@ if TYPE_CHECKING:
     from helpers.typing_ import UQ_Output
 
 
+DRAW_90P_INTERVAL = True
+
+
 # noinspection PyPep8Naming
 class UQ_Comparison_Pipeline_ABC(ABC):
     # todo: update usage guide!
@@ -652,13 +655,12 @@ class UQ_Comparison_Pipeline_ABC(ABC):
 
         drawing_quantiles = y_quantiles is not None
         if drawing_quantiles:
-            ci_low, ci_high = (
-                y_quantiles[:, 0],
-                y_quantiles[:, -1],
-            )
-            drawn_quantile = round(max(quantiles) - min(quantiles), 2)
-            ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1]
-            interval = round(max(quantiles) - min(quantiles), 2)
+            if DRAW_90P_INTERVAL and y_quantiles.shape[1] == 99:
+                ci_low, ci_high = y_quantiles[:, 5-1], y_quantiles[:, 95-1]
+                interval = 0.9
+            else:
+                ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1]
+                interval = round(max(quantiles) - min(quantiles), 2)
         else:
             ci_low, ci_high = y_pred - n_stds * y_std, y_pred + n_stds * y_std
 
