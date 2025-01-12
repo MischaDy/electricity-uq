@@ -6,13 +6,12 @@ import settings
 import settings_update
 from helpers import misc_helpers
 from helpers.io_helper import IO_Helper
-from helpers.uq_arr_helpers import get_uq_method_to_arrs_dict
+from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
 
 if TYPE_CHECKING:
     import numpy as np
 
 logging.basicConfig(level=logging.INFO)
-
 
 RUN_SIZE = 'full'
 METHODS = {
@@ -38,9 +37,9 @@ def main():
     logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
     logging.info('loading predictions')
-    uq_method_to_arrs_dict = get_uq_method_to_arrs_dict(uq_methods_whitelist=METHODS,
-                                                        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT)
-    for method, arrs in uq_method_to_arrs_dict.items():
+    uq_method_to_arrs_gen = get_uq_method_to_arrs_gen(uq_methods_whitelist=METHODS,
+                                                      uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT)
+    for method, arrs in uq_method_to_arrs_gen:
         logging.info(f'computing metrics for {method}:')
         y_pred, y_quantiles, y_std = arrs
         metrics = {}

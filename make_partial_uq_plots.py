@@ -33,8 +33,8 @@ def main():
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
     logging.info('loading predictions')
-    uq_method_to_arrs_dict = uq_arr_helpers.get_uq_method_to_arrs_dict()
-    for uq_method, arrs in uq_method_to_arrs_dict.items():
+    uq_method_to_arrs_gen = uq_arr_helpers.get_uq_method_to_arrs_gen()
+    for uq_method, arrs in uq_method_to_arrs_gen:
         logging.info(f'plotting for method {uq_method}')
         y_pred, y_quantiles, y_std = arrs
         if np.any(y_pred < 0):
