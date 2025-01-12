@@ -43,11 +43,9 @@ class IO_Helper:
         :param sep:
         :param filesave_prefix:
         """
-        warn_msg = 'IO_Helper param {} is None, so not all functionality will be available!'
-        if filename_parts is None:
-            logging.warning(warn_msg.format('filename_parts'))
-        if methods_kwargs is None:
-            logging.warning(warn_msg.format('methods_kwargs'))
+        if filename_parts is None or methods_kwargs is None:
+            logging.warning(f'At least one IO_Helper param of [filename_parts, methods_kwargs] is None,'
+                            f' so not all functionality will be available!')
         self.filename_parts = filename_parts
         self.methods_kwargs = methods_kwargs
         self.filesave_prefix = filesave_prefix
