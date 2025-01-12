@@ -657,6 +657,8 @@ class UQ_Comparison_Pipeline_ABC(ABC):
                 y_quantiles[:, -1],
             )
             drawn_quantile = round(max(quantiles) - min(quantiles), 2)
+            ci_low, ci_high = y_quantiles[:, 0], y_quantiles[:, -1]
+            interval = round(max(quantiles) - min(quantiles), 2)
         else:
             ci_low, ci_high = y_pred - n_stds * y_std, y_pred + n_stds * y_std
 
@@ -665,7 +667,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         x_plot_full = self._get_x_plot_full(X_train, X_val, X_test)
         ax.plot(x_plot_full, y_pred, label="point prediction", color="green")
         # noinspection PyUnboundLocalVariable
-        label = rf'{100 * drawn_quantile}% CI' if drawing_quantiles else f'{n_stds} std'
+        label = rf'{100 * interval}% CI' if drawing_quantiles else f'{n_stds} std'
         ax.fill_between(
             x_plot_full.ravel(),
             ci_low,
