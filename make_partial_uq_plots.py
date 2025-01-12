@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 SAVE_PLOT = False
 SHOW_PLOT = True
 
-METHOD_TO_FILENAME = {
+METHOD_NAME_TO_BASE_FILENAME = {
     'qhgbr': 'native_qhgbr',
     'qr': 'native_quantile_regression_nn',
     'gp': 'native_gpytorch',
@@ -165,7 +165,11 @@ def plot_uq_worker(
         logging.error('only plotting quantiles supported right now, not stds. trying to ignore and plot quantiles...')
 
     base_title = uq_method
-    base_filename = METHOD_TO_FILENAME[uq_method]
+    try:
+        base_filename = METHOD_NAME_TO_BASE_FILENAME[uq_method]
+    except KeyError:
+        logging.error(f"method {uq_method} not found in base filenames dict. using the method name as a base filename.")
+        base_filename = uq_method
     dataset_label = 'training' if is_training_data else 'test'
 
     interval = int(interval) if float(interval).is_integer() else round(100 * interval, 2)
