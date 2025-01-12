@@ -7,6 +7,7 @@ import gpytorch
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+import settings
 from helpers import misc_helpers
 
 import numpy as np
@@ -14,6 +15,13 @@ import numpy as np
 
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
+
+
+STORE_PLOT_EVERY_N = 10
+N_SAMPLES_TO_PLOT = 1600
+SHOW_PLOT = False
+SAVE_PLOT = True
+N_INDUCING_POINTS = 4
 
 
 # noinspection PyPep8Naming
@@ -30,6 +38,15 @@ class ApproximateGP(gpytorch.models.ApproximateGP):
         X_mean = self.mean_module(X)
         X_covar = self.covar_module(X)
         return gpytorch.distributions.MultivariateNormal(X_mean, X_covar)
+
+
+def make_plot(model, likelihood, quantiles, X_pred, y_true, infix=None):
+    from make_partial_uq_plots import plot_uq_single_dataset
+
+    y_pred, y_quantiles, _ = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
+    uq_method = f'gp_{infix}' if infix is not None else 'gp'
+    plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method=uq_method, interval=90, is_training_data=True,
+                           n_samples_to_plot=N_SAMPLES_TO_PLOT, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
 
 
 @misc_helpers.measure_runtime
@@ -59,6 +76,8 @@ def train_gpytorch(
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
 
     logging.info('setup models')
+    if N_INDUCING_POINTS is not None:
+        n_inducing_points = N_INDUCING_POINTS
     inducing_points = get_inducing_points(X_train, n_inducing_points)
     model = ApproximateGP(inducing_points=inducing_points)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
@@ -103,6 +122,10 @@ def train_gpytorch(
                 val_loss = -mll(y_pred_batch, y_val).sum()
                 val_losses.append(val_loss.item())
             scheduler.step(val_loss)
+
+        if STORE_PLOT_EVERY_N is not None and epoch % STORE_PLOT_EVERY_N == 0:
+            make_plot(model, likelihood, settings.QUANTILES, X_train[:N_SAMPLES_TO_PLOT], y_train[:N_SAMPLES_TO_PLOT],
+                      infix=epoch)
 
     misc_helpers.plot_nn_losses(
         train_losses,
