@@ -32,7 +32,7 @@ PLOT_UQ_RESULTS = True
 PLOT_BASE_RESULTS_PARTIAL = True
 
 SHOW_PROGRESS_BARS = True  # bool or None
-SHOW_LOSSES_PLOTS = True  # bool or None
+SHOW_LOSSES_PLOTS = False  # bool or None
 SAVE_LOSSES_PLOTS = True  # bool or None
 
 SKIP_BASE_MODEL_COPY = True
@@ -91,9 +91,9 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 200,
+        'n_iter': 6000,
         'lr': 1e-2,
-        'use_scheduler': True,
+        'use_scheduler': False,
         'lr_patience': 15,
         'lr_reduction_factor': 0.9,
         'show_progress_bar': True,

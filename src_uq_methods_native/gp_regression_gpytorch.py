@@ -17,7 +17,7 @@ torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
 
-STORE_PLOT_EVERY_N = 10
+STORE_PLOT_EVERY_N = 60
 N_SAMPLES_TO_PLOT = 1600
 SHOW_PLOT = False
 SAVE_PLOT = True
