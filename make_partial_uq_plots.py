@@ -58,6 +58,33 @@ def main():
                 save_plot=SAVE_PLOT)
 
 
+def plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method, interval: int | float, is_training_data,
+                           n_samples_to_plot=1600, show_plot=True, save_plot=True):
+    n_quantiles = y_quantiles.shape[1]
+    if n_quantiles == 99:
+        ind_5p, ind_95p = 5-1, 95-1  # starts with 1
+        ci_low, ci_high = y_quantiles[:, ind_5p], y_quantiles[:, ind_95p]
+    else:
+        raise ValueError("can't automatically determine which quantiles to plot")
+
+    y_plot = y_true[:n_samples_to_plot]
+    y_pred = y_pred[:n_samples_to_plot]
+    ci_low = ci_low[:n_samples_to_plot]
+    ci_high = ci_high[:n_samples_to_plot]
+    plot_uq_worker(
+        y_plot,
+        y_pred,
+        ci_low,
+        ci_high,
+        uq_method=uq_method,
+        is_training_data=is_training_data,
+        interval=interval,
+        # n_stds=n_stds,
+        show_plot=show_plot,
+        save_plot=save_plot,
+    )
+
+
 def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval: int | float, n_samples_to_plot=1600,
             show_plot=True, save_plot=True):
     n_quantiles = y_quantiles.shape[1]
