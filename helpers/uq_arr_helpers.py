@@ -5,13 +5,13 @@ from helpers.io_helper import IO_Helper
 
 UQ_METHODS_WHITELIST = {
     'qhgbr',
-    # 'qr',
-    # 'gp',
-    # 'mvnn',
-    # 'cp_hgbr',
-    # 'cp_linreg',
-    # 'cp_nn',
-    # 'la_nn',
+    'qr',
+    'gp',
+    'mvnn',
+    'cp_hgbr',
+    'cp_linreg',
+    'cp_nn',
+    'la_nn',
 }
 
 UQ_METHOD_TO_ARR_NAMES_DICT = {

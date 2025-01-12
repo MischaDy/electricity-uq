@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 SAVE_PLOT = True
-SHOW_PLOT = True
+SHOW_PLOT = False
 
 IO_HELPER = IO_Helper()
 
