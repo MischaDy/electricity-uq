@@ -1,3 +1,4 @@
+import logging
 from typing import Literal
 
 import numpy as np
@@ -18,6 +19,7 @@ IO_HELPER = IO_Helper()
 def main():
     from settings_update import update_run_size_setup
 
+    logging.info('loading data')
     update_run_size_setup()
     data = get_data(
         filepath=settings.DATA_FILEPATH,
@@ -29,8 +31,10 @@ def main():
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = data
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
+    logging.info('loading predictions')
     uq_method_to_arrs_dict = uq_arr_helpers.get_uq_method_to_arrs_dict()
     for uq_method, arrs in uq_method_to_arrs_dict.items():
+        logging.info(f'plotting for method {uq_method}')
         y_pred, y_quantiles, y_std = arrs
         plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
 
