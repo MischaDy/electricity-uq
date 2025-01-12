@@ -142,8 +142,22 @@ def train_gpytorch(
     return model, likelihood
 
 
-def get_inducing_points(X_train, n_inducing_points):
-    return X_train[:n_inducing_points, :]
+def get_inducing_points(X_train, n_inducing_points, random_seed=42):
+    """
+    currently uses the simplest unbiased method: sampling!
+
+    :param random_seed:
+    :param X_train:
+    :param n_inducing_points:
+    :return:
+    """
+    import random
+
+    random.seed(random_seed)
+    n_samples_train = X_train.shape[0]
+    inducing_inds = random.sample(range(n_samples_train), n_inducing_points)
+    inducing_inds = sorted(inducing_inds)
+    return X_train[inducing_inds]
 
 
 @misc_helpers.measure_runtime
