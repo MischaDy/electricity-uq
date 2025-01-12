@@ -731,7 +731,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_pred_train = y_pred[:n_samples_to_plot]
             start_test = y_train.shape[0] + y_val.shape[0]
             y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
-            self._plot_base_partial(y_train, y_pred_train, 'train', base_model_name,
+            self._plot_base_partial(y_train, y_pred_train, 'training', base_model_name,
                                     n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
             self._plot_base_partial(y_test, y_pred_test, 'test', base_model_name,
                                     n_samples_to_plot=n_samples_to_plot, save_plot=save_plot, show_plot=show_plots)
@@ -751,7 +751,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             plt.show(block=True)
         plt.close(fig)
 
-    def _plot_base_partial(self, y_true, y_pred, y_true_label: Literal['train', 'test'], base_model_name,
+    def _plot_base_partial(self, y_true, y_pred, y_true_label: Literal['training', 'test'], base_model_name,
                            n_samples_to_plot=1600, save_plot=True, show_plot=True):
         """
         plot first two weeks (by default) of training/test data
