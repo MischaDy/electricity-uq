@@ -106,7 +106,7 @@ class IO_Helper:
         import torch
         torch.set_default_dtype(torch.float32)
         filepath = self._get_model_savepath(filename)
-        model = torch.load(filepath, weights_only=False)
+        model = torch.load(filepath, weights_only=False, map_location='cpu')
         model.eval()
         return model
 
@@ -127,7 +127,7 @@ class IO_Helper:
         if model_kwargs is None:
             model_kwargs = {}
         path = self._get_model_savepath(filename)
-        state_dict = torch.load(path)
+        state_dict = torch.load(path, map_location='cpu')
         model = model_class(**model_kwargs)
         model.load_state_dict(state_dict)
         return model
@@ -146,7 +146,7 @@ class IO_Helper:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
         la = la_instantiator(base_model)
-        la.load_state_dict(torch.load(laplace_model_filepath))
+        la.load_state_dict(torch.load(laplace_model_filepath, map_location='cpu'))
         return la
 
     ### SAVERS ###
