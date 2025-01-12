@@ -91,9 +91,9 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 6000,
+        'n_iter': 400,
         'lr': 1e-2,
-        'use_scheduler': False,
+        'use_scheduler': True,
         'lr_patience': 15,
         'lr_reduction_factor': 0.9,
         'show_progress_bar': True,
