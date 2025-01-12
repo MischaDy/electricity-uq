@@ -4,14 +4,14 @@ from typing import Iterable
 from helpers.io_helper import IO_Helper
 
 UQ_METHODS_WHITELIST = {
-    'qhgbr',
-    'qr',
+    # 'qhgbr',
+    # 'qr',
     'gp',
-    'mvnn',
-    'cp_hgbr',
-    'cp_linreg',
-    'cp_nn',
-    'la_nn',
+    # 'mvnn',
+    # 'cp_hgbr',
+    # 'cp_linreg',
+    # 'cp_nn',
+    # 'la_nn',
 }
 
 UQ_METHOD_TO_ARR_NAMES_DICT = {

@@ -11,8 +11,8 @@ from helpers import uq_arr_helpers
 logging.basicConfig(level=logging.INFO)
 
 
-SAVE_PLOT = True
-SHOW_PLOT = False
+SAVE_PLOT = False
+SHOW_PLOT = True
 
 METHOD_TO_FILENAME = {
     'qhgbr': 'native_qhgbr',

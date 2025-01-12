@@ -6,7 +6,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
+RUN_SIZE: Literal['full', 'big', 'small'] = 'small'
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -24,7 +24,7 @@ TEST_YEARS = (2023, 2024)  # todo: simplify
 
 STANDARDIZE_DATA = True
 
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 SAVE_PLOTS = True
 PLOT_DATA = False
 PLOT_BASE_RESULTS = True
@@ -47,9 +47,9 @@ METHOD_WHITELIST = [
     # 'base_model_linreg',
     # 'base_model_nn',
     # 'base_model_hgbr',
-    # 'native_gpytorch',
+    'native_gpytorch',
     # 'native_mvnn',
-    'native_quantile_regression_nn',
+    # 'native_quantile_regression_nn',
     # 'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
 ]
@@ -94,9 +94,9 @@ METHODS_KWARGS = {
         'n_iter': 200,
         'lr': 1e-2,
         'use_scheduler': True,
-        'lr_patience': 30,
-        'lr_reduction_factor': 0.5,
-        'show_progress_bar': False,
+        'lr_patience': 15,
+        'lr_reduction_factor': 0.9,
+        'show_progress_bar': True,
         'show_plots': True,
         'show_losses_plot': False,
         'save_losses_plot': True,
