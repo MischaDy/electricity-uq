@@ -52,11 +52,11 @@ def make_plot(model, likelihood, quantiles, X_pred, y_true, infix=None):
 
 @misc_helpers.measure_runtime
 def train_gpytorch(
-        X_train,
-        y_train,
-        X_val,
-        y_val,
-        n_iter,
+        X_train: torch.Tensor,
+        y_train: torch.Tensor,
+        X_val: torch.Tensor,
+        y_val: torch.Tensor,
+        n_iter: int,
         use_scheduler=True,
         lr=1e-2,
         lr_patience=30,
