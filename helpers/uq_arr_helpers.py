@@ -1,3 +1,4 @@
+import logging
 from typing import Iterable
 
 from helpers.io_helper import IO_Helper
@@ -63,9 +64,17 @@ def get_uq_method_to_arrs_dict(uq_method_to_arr_names_dict: dict[str, Iterable[s
         uq_method_to_arr_names_dict = UQ_METHOD_TO_ARR_NAMES_DICT
     if uq_methods_whitelist is None:
         uq_methods_whitelist = UQ_METHODS_WHITELIST
-    uq_method_to_arrs_dict = {uq_method: to_arrs(arr_names)
-                              for uq_method, arr_names in uq_method_to_arr_names_dict.items()
-                              if uq_method in uq_methods_whitelist}
+    uq_method_to_arrs_dict = {}
+    for uq_method, arr_names in uq_method_to_arr_names_dict.items():
+        if uq_method not in uq_methods_whitelist:
+            continue
+        try:
+            arrs = to_arrs(arr_names)
+        except FileNotFoundError as e:
+            logging.error(f"when loading arrays for {uq_method}, file '{e.filename}' couldn't be found."
+                          f" skipping method.")
+            continue
+        uq_method_to_arrs_dict[uq_method] = arrs
     return uq_method_to_arrs_dict
 
 
