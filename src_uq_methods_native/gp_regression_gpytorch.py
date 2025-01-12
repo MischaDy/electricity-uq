@@ -59,7 +59,7 @@ def train_gpytorch(
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
 
     logging.info('setup models')
-    inducing_points = X_train[:n_inducing_points, :]
+    inducing_points = get_inducing_points(X_train, n_inducing_points)
     model = ApproximateGP(inducing_points=inducing_points)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
@@ -116,6 +116,10 @@ def train_gpytorch(
 
     logging.info(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
     return model, likelihood
+
+
+def get_inducing_points(X_train, n_inducing_points):
+    return X_train[:n_inducing_points, :]
 
 
 @misc_helpers.measure_runtime
