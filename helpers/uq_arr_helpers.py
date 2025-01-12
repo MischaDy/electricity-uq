@@ -58,8 +58,12 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
 }
 
 
-def get_uq_method_to_arrs_gen(uq_method_to_arr_names_dict: dict[str, Iterable[str]] = None,
-                              uq_methods_whitelist: set[str] = None):
+def get_uq_method_to_arrs_gen(
+        uq_method_to_arr_names_dict: dict[str, Iterable[str]] = None,
+        uq_methods_whitelist: set[str] = None,
+        io_helper=None,
+        storage_path='comparison_storage',
+):
     if uq_method_to_arr_names_dict is None:
         uq_method_to_arr_names_dict = UQ_METHOD_TO_ARR_NAMES_DICT
     if uq_methods_whitelist is None:
@@ -68,7 +72,7 @@ def get_uq_method_to_arrs_gen(uq_method_to_arr_names_dict: dict[str, Iterable[st
         if uq_method not in uq_methods_whitelist:
             continue
         try:
-            arrs = to_arrs(arr_names)
+            arrs = to_arrs(arr_names, io_helper=io_helper, storage_path=storage_path)
         except FileNotFoundError as e:
             logging.error(f"when loading arrays for {uq_method}, file '{e.filename}' couldn't be found."
                           f" skipping method.")
