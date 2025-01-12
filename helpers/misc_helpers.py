@@ -510,3 +510,21 @@ def get_device_of_nn(nn):
 def quantiles_dict_to_np_arr(quantiles_dict: dict[float, 'np.ndarray']):
     import numpy as np
     return np.array(list(quantiles_dict.values())).T
+
+
+def _quick_load_data(run_size):
+    import settings
+    from settings_update import update_run_size_setup
+
+    logging.info('loading data')
+    update_run_size_setup(run_size)
+    data = get_data(
+        filepath=settings.DATA_FILEPATH,
+        train_years=settings.TRAIN_YEARS,
+        val_years=settings.VAL_YEARS,
+        test_years=settings.TEST_YEARS,
+        do_standardize_data=True,
+    )
+    X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = data
+    y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
+    return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
