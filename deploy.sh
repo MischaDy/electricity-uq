@@ -24,7 +24,7 @@ conda activate masterarbeit
 
 # Run our code
 echo "-------- PYTHON OUTPUT ----------"
-python3 compute_metrics.py
+python3 uq_comparison_pipeline.py
 echo "---------------------------------"
 
 # Deactivate environment again
