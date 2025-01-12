@@ -14,6 +14,17 @@ logging.basicConfig(level=logging.INFO)
 SAVE_PLOT = True
 SHOW_PLOT = False
 
+METHOD_TO_FILENAME = {
+    'qhgbr': 'native_qhgbr',
+    'qr': 'native_quantile_regression_nn',
+    'gp': 'native_gpytorch',
+    'mvnn': 'native_mvnn',
+    'cp_hgbr': 'posthoc_conformal_prediction_base_model_hgbr',
+    'cp_linreg': 'posthoc_conformal_prediction_base_model_linreg',
+    'cp_nn': 'posthoc_conformal_prediction_base_model_nn',
+    'la_nn': 'posthoc_laplace_approximation_base_model_nn',
+}
+
 IO_HELPER = IO_Helper()
 
 
@@ -126,7 +137,7 @@ def plot_uq_worker(
         logging.error('only plotting quantiles supported right now, not stds. trying to ignore and plot quantiles...')
 
     base_title = uq_method
-    base_filename = uq_method
+    base_filename = METHOD_TO_FILENAME[uq_method]
     dataset_label = 'training' if is_training_data else 'test'
 
     interval = int(interval) if float(interval).is_integer() else round(100 * interval, 2)
