@@ -72,7 +72,7 @@ def get_uq_method_to_arrs_gen(
         if uq_method not in uq_methods_whitelist:
             continue
         try:
-            arrs = to_arrs(arr_names, io_helper=io_helper, storage_path=storage_path)
+            arrs = load_arrs(arr_names, io_helper=io_helper, storage_path=storage_path)
         except FileNotFoundError as e:
             logging.error(f"when loading arrays for {uq_method}, file '{e.filename}' couldn't be found."
                           f" skipping method.")
@@ -80,7 +80,7 @@ def get_uq_method_to_arrs_gen(
         yield uq_method, arrs
 
 
-def to_arrs(filenames: Iterable, io_helper=None, storage_path='comparison_storage'):
+def load_arrs(filenames: Iterable, io_helper=None, storage_path='comparison_storage'):
     if io_helper is None:
         io_helper = IO_Helper(storage_path)
     return [io_helper.load_array(filename=filename) for filename in filenames]
