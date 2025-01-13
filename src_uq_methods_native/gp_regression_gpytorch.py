@@ -22,6 +22,7 @@ N_SAMPLES_TO_PLOT = 1600
 SHOW_PLOT = False
 SAVE_PLOT = True
 N_INDUCING_POINTS = None
+PLOT_EXT = 'svg'
 
 
 # noinspection PyPep8Naming
@@ -47,7 +48,7 @@ def make_plot(model, likelihood, quantiles, X_pred, y_true, infix=None):
     y_true = misc_helpers.tensor_to_np_array(y_true)
     uq_method = f'gp_{infix}' if infix is not None else 'gp'
     plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method=uq_method, interval=90, is_training_data=True,
-                           n_samples_to_plot=N_SAMPLES_TO_PLOT, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT)
+                           n_samples_to_plot=N_SAMPLES_TO_PLOT, show_plot=SHOW_PLOT, save_plot=SAVE_PLOT, ext=PLOT_EXT)
 
 
 @misc_helpers.measure_runtime
