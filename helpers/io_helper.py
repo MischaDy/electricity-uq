@@ -210,7 +210,7 @@ class IO_Helper:
             filename = self.make_filename(method_name, infix=infix, file_type='plot')
         else:
             ext = os.path.splitext(filename)[-1]
-            if ext not in {'png', 'jpeg', 'jpg'}:
+            if ext not in {'png', 'jpeg', 'jpg', 'svg'}:
                 logging.info(f"filename '{filename}' had no extension. saving as PNG")
                 filename += '.png'
         path = self._get_plot_savepath(filename, is_loss_plot=is_loss_plot)
