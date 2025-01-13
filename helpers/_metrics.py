@@ -21,6 +21,18 @@ def mse(y_true: np.ndarray, y_pred: np.ndarray):
     return np.mean((y_pred - y_true) ** 2)
 
 
+def mae(y_true: np.ndarray, y_pred: np.ndarray, keep_dim=False):
+    """
+
+    :param y_true:
+    :param y_pred:
+    :param keep_dim:
+    :return: the MAE if keep_dim False, else just the absolute errors array
+    """
+    absolute_errors = np.abs(y_true - y_pred)
+    return absolute_errors if keep_dim else np.mean(absolute_errors)
+
+
 def mean_pinball_loss(y_true: np.ndarray, y_quantiles: np.ndarray, quantiles: np.ndarray, keep_dim=False):
     """
 
