@@ -10,9 +10,9 @@ if TYPE_CHECKING:
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
     # 'qr',
-    'gp',
+    # 'gp',
     # 'mvnn',
-    # 'cp_hgbr',
+    'cp_hgbr',
     # 'cp_linreg',
     # 'cp_nn',
     # 'la_nn',
@@ -40,19 +40,19 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
         'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
     ],
     'cp_hgbr': [
-        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy'
+        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
     ],
     'cp_linreg': [
         'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
         'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy'
+        'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy',
     ],
     'cp_nn': [
         'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
         'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy'
+        'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy',
     ],
     'la_nn': [
         'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy',
