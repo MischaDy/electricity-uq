@@ -14,7 +14,10 @@ logging.basicConfig(level=logging.INFO, force=True)
 RUN_SIZE = 'small'
 SHOW_PLOTS = False
 SAVE_PLOTS = True
+SAVE_ARRAYS = True
+RECOMPUTE_ERRORS = False
 SMALL_IO_HELPER = True
+
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
     # 'qr',
@@ -25,6 +28,7 @@ UQ_METHODS_WHITELIST = {
     # 'cp_nn',
     # 'la_nn',
 }
+
 UQ_METHOD_TO_ARR_NAMES_DICT = {
     'qhgbr': [
         'native_qhgbr_y_pred_n210432_it0.npy',
@@ -86,6 +90,7 @@ def main():
         uq_methods_whitelist=UQ_METHODS_WHITELIST,
         io_helper=io_helper,
     )
+    recompute_errors = RECOMPUTE_ERRORS
     for uq_method, uq_arrs in uq_method_to_arrs_gen:
         arrs_train, arrs_test = split_pred_arrs_train_test(uq_arrs, n_samples_train=n_samples_train)
         for y_true, arrs, are_train_arrs in [(y_train, arrs_train, True), (y_test, arrs_test, False)]:
@@ -94,28 +99,50 @@ def main():
                 'crps': partial(crps, y_true, y_quantiles, keep_dim=True),
                 'ae': partial(mae, y_true, y_pred, keep_dim=True),
             }
+            dataset = 'training' if are_train_arrs else 'test'
             for error_score_name, error_func in error_scores_dict.items():
-                logging.info(f'computing {error_score_name}')
-                error_arr = error_func()
+                logging.info(f"{uq_method=}, error score={error_score_name.upper()}, {dataset=}")
+                filename = _get_filename(infix=error_score_name, uq_method=uq_method, dataset=dataset)
+                if not recompute_errors:
+                    error_arr_filename = f'{filename}.npy'
+                    try:
+                        error_arr = io_helper.load_array(filename=error_arr_filename)
+                    except FileNotFoundError as e:
+                        logging.info(f'error score array {e.filename} not found, computing from scratch')
+                        recompute_errors = True
 
-                logging.info('saving array')
-                filename = _get_filename(infix=error_score_name, uq_method=uq_method, are_train_arrs=are_train_arrs)
-                io_helper.save_array(error_arr, filename=filename)
+                if recompute_errors:
+                    logging.info(f'computing {error_score_name}')
+                    error_arr = error_func()
+                    if SAVE_ARRAYS:
+                        logging.info('saving array')
+                        io_helper.save_array(error_arr, filename=filename)
+                else:
+                    logging.info('skipping error computation')
 
                 logging.info('plotting histogram')
+                # noinspection PyUnboundLocalVariable
                 sns.displot(error_arr, bins=25, stat='density')
                 if SAVE_PLOTS:
+                    logging.info('saving plot')
                     io_helper.save_plot(filename=filename)
                 if SHOW_PLOTS:
                     plt.show(block=True)
                 plt.close()
 
 
-def _get_filename(infix: str, uq_method: str, are_train_arrs: bool, ext: str = None):
+def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
+    """
+
+    :param infix:
+    :param uq_method:
+    :param dataset: one of 'training', 'test'
+    :param ext:
+    :return:
+    """
     filename_y_pred = UQ_METHOD_TO_ARR_NAMES_DICT[uq_method][0]
     assert 'y_pred' in filename_y_pred
     base_filename = filename_y_pred.split('_y_pred_')[0]
-    dataset = 'training' if are_train_arrs else 'test'
     filename = f'{base_filename}_{infix}_{dataset}'
     if ext is not None:
         filename = f'{filename}.{ext}'
