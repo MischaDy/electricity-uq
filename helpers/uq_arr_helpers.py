@@ -1,7 +1,11 @@
 import logging
-from typing import Iterable
+from typing import Iterable, TYPE_CHECKING, Generator
 
 from helpers.io_helper import IO_Helper
+
+if TYPE_CHECKING:
+    import numpy as np
+
 
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
@@ -63,7 +67,7 @@ def get_uq_method_to_arrs_gen(
         uq_methods_whitelist: set[str] = None,
         io_helper=None,
         storage_path='comparison_storage',
-):
+) -> Generator[tuple[str, 'np.ndarray'], None, None]:
     if uq_method_to_arr_names_dict is None:
         uq_method_to_arr_names_dict = UQ_METHOD_TO_ARR_NAMES_DICT
     if uq_methods_whitelist is None:
