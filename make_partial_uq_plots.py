@@ -11,9 +11,9 @@ from helpers import uq_arr_helpers
 logging.basicConfig(level=logging.INFO)
 
 
-SAVE_PLOT = False
-SHOW_PLOT = True
-
+SAVE_PLOT = True
+SHOW_PLOT = False
+PLOT_EXT = 'svg'
 METHOD_NAME_TO_BASE_FILENAME = {
     'qhgbr': 'native_qhgbr',
     'qr': 'native_quantile_regression_nn',
@@ -56,11 +56,11 @@ def main():
             y_pred, y_quantiles = map(scaler_y.inverse_transform, [y_pred.reshape(-1, 1), y_quantiles])
             y_pred = y_pred.squeeze()
         plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval=90, show_plot=SHOW_PLOT,
-                save_plot=SAVE_PLOT)
+                save_plot=SAVE_PLOT, ext=PLOT_EXT)
 
 
 def plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method, interval: int | float, is_training_data,
-                           n_samples_to_plot=1600, show_plot=True, save_plot=True):
+                           n_samples_to_plot=1600, show_plot=True, save_plot=True, ext=None):
     n_quantiles = y_quantiles.shape[1]
     if n_quantiles == 99:
         ind_5p, ind_95p = 5-1, 95-1  # starts with 1
@@ -83,11 +83,12 @@ def plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method, interval: int
         # n_stds=n_stds,
         show_plot=show_plot,
         save_plot=save_plot,
+        ext=ext,
     )
 
 
 def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval: int | float, n_samples_to_plot=1600,
-            show_plot=True, save_plot=True):
+            show_plot=True, save_plot=True, ext=None):
     n_quantiles = y_quantiles.shape[1]
     if n_quantiles == 99:
         ind_5p, ind_95p = 5-1, 95-1  # starts with 1
@@ -112,6 +113,7 @@ def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval: in
         # n_stds=n_stds,
         show_plot=show_plot,
         save_plot=save_plot,
+        ext=ext,
     )
 
     # plot test
@@ -131,6 +133,7 @@ def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval: in
         # n_stds=n_stds,
         show_plot=show_plot,
         save_plot=save_plot,
+        ext=ext,
     )
 
 
@@ -145,9 +148,12 @@ def plot_uq_worker(
         n_stds=None,
         plotting_quantiles=True,
         show_plot=True,
-        save_plot=True):
+        save_plot=True,
+        ext=None,
+):
     """
 
+    :param ext:
     :param y_true_plot:
     :param y_pred_plot:
     :param ci_low_plot:
@@ -192,7 +198,10 @@ def plot_uq_worker(
     ax.set_ylabel("target")
     ax.set_title(f'{base_title} ({dataset_label})')
     if save_plot:
-        IO_HELPER.save_plot(filename=f'{base_filename}_{dataset_label}')
+        filename = f'{base_filename}_{dataset_label}'
+        if ext is not None:
+            filename = f'{filename}.{ext}'
+        IO_HELPER.save_plot(filename=filename)
     if show_plot:
         plt.show(block=True)
     plt.close(fig)
