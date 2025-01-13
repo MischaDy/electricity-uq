@@ -75,6 +75,8 @@ def main():
 
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._quick_load_data(RUN_SIZE)
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
+    y_train, y_test, y = misc_helpers.make_arrs_1d(y_train, y_test, y)
+
     n_samples_train = X_train.shape[0]
 
     io_helper_kwargs = {'arrays_folder': 'arrays_small', 'models_folder': 'models_small'} if SMALL_IO_HELPER else {}
