@@ -55,7 +55,8 @@ def get_data():
     return X_test, X_train, y_test, y_train, scaler_y
 
 
-def predict(X_pred, model, likelihood, quantiles, is_training_data, save_preds=True):
+def predict(X_pred: np.ndarray, model, likelihood, quantiles, is_training_data, save_preds=True):
+    X_pred = misc_helpers.np_array_to_tensor(X_pred)
     y_pred, y_quantiles, _ = predict_with_gpytorch(model, likelihood, X_pred, quantiles)
     if save_preds:
         infix = 'train' if is_training_data else 'test'
