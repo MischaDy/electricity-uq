@@ -6,11 +6,11 @@ posthoc metrics:
 
 native metrics:
 	native_gpytorch:
-		rmse: 170.76998901367188
-		smape_scaled: 0.008644227869808674
-		crps: 101.22262799133253
-		nll_gaussian: 9.899414058746972
-		mean_pinball: 6.692938777451035
+		rmse: 440.74774169921875
+		smape_scaled: 0.024991024285554886
+		crps: 277.5255237469373
+		nll_gaussian: 8.88638222606442
+		mean_pinball: 22.407713185744903
 
 optimal deterministic metrics:
 		rmse: 0.0
