@@ -14,11 +14,12 @@ SHOW_PLOT = True
 SAVE_PLOT = True
 SAVE_PREDS = True
 N_SAMPLES_TO_PLOT = 1600
+N_INDUCING_POINTS = 4
 
 
 def main():
     X_test, X_train, y_test, y_train, scaler_y = get_data()
-    likelihood, model = load_models(X_train)
+    likelihood, model = load_models(X_train, n_inducing_points=N_INDUCING_POINTS)
 
     for X_pred, y_true, is_training_data in [(X_train, y_train, True), (X_test, y_test, False)]:
         X_pred = X_pred[:N_SAMPLES_TO_PLOT]
