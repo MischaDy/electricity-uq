@@ -13,9 +13,13 @@ SMALL_IO_HELPER = False
 
 
 arr_names = [
-    'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
-    'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
-    'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
+
+    'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
+    'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
+    'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
 ]
 
 
@@ -51,4 +55,4 @@ y_pred_test, y_quantiles_test, y_std_test = map(lambda arr: arr[n_samples_train+
 y_train, y_test, y_val, y = misc_helpers.make_arrs_1d(y_train, y_test, y_val, y)
 
 
-p([y_test, y_pred_test], ['test', 'pred'])
+# p([y_test, y_pred_test], ['test', 'pred'])
