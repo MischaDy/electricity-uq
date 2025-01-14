@@ -15,8 +15,6 @@ from helpers.io_helper import IO_Helper
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
-IO_HELPER = IO_Helper()
-
 
 class QR_NN(torch.nn.Module):
     def __init__(
@@ -313,7 +311,7 @@ def test_qr():
         'show_progress_bar': True,
         'show_losses_plot': True,
         'save_losses_plot': True,
-        'io_helper': IO_HELPER,
+        'io_helper': IO_Helper(),
         'activation': torch.nn.LeakyReLU,
         'reduction': reduction,
     }
