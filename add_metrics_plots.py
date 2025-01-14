@@ -5,6 +5,8 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 
 from helpers.io_helper import IO_Helper
+from helpers import misc_helpers
+from helpers._metrics import crps, mae, ssr
 from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
 
 
@@ -74,9 +76,6 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
 
 
 def main():
-    from helpers import misc_helpers
-    from helpers._metrics import crps, mae
-
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._quick_load_data(RUN_SIZE)
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     y_train, y_test, y = misc_helpers.make_arrs_1d(y_train, y_test, y)
