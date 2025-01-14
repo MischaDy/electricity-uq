@@ -7,6 +7,11 @@ from helpers import uq_arr_helpers, misc_helpers
 from helpers.io_helper import IO_Helper
 
 
+
+RUN_SIZE = 'full'
+SMALL_IO_HELPER = False
+
+
 arr_names = [
     'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
     'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
@@ -25,11 +30,14 @@ def s():
     plt.show(block=True)
 
 
-X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._quick_load_data('small')
+X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._quick_load_data(RUN_SIZE)
 
-io_helper_small = IO_Helper(arrays_folder='arrays_small', models_folder='models_small')
+if SMALL_IO_HELPER:
+    io_helper = IO_Helper(arrays_folder='arrays_small', models_folder='models_small')
+else:
+    io_helper = IO_Helper()
 
-y_pred, y_quantiles, y_std = uq_arr_helpers.load_arrs(arr_names, io_helper=io_helper_small)
+y_pred, y_quantiles, y_std = uq_arr_helpers.load_arrs(arr_names, io_helper=io_helper)
 
 n_samples_train = y_train.shape[0]
 n_samples_val = y_val.shape[0]
