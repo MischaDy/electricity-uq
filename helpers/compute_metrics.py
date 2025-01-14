@@ -60,10 +60,11 @@ def main():
 
 
 def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
-    from helpers._metrics import rmse, smape_scaled
+    from helpers._metrics import rmse, smape_scaled, mae
 
     y_pred, y_true = _make_arrs_1d_allow_none(y_pred, y_true)
     metrics = {
+        "mae": mae(y_true, y_pred),
         "rmse": rmse(y_true, y_pred),
         "smape_scaled": smape_scaled(y_true, y_pred),
     }
@@ -71,13 +72,14 @@ def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
 
 
 def compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
-    from helpers._metrics import crps, nll_gaussian, mean_pinball_loss
+    from helpers._metrics import crps, nll_gaussian, mean_pinball_loss, ssr
 
     y_pred, y_quantiles, y_std, y_true = _make_arrs_1d_allow_none(y_pred, y_quantiles, y_std, y_true)
     metrics = {
         "crps": crps(y_true, y_quantiles),
         "nll_gaussian": nll_gaussian(y_true, y_pred, y_std),
         "mean_pinball": mean_pinball_loss(y_pred, y_quantiles, quantiles),
+        "ssr": ssr(y_true, y_pred, y_std),
     }
     return _metrics_to_float_allow_none(metrics)
 
