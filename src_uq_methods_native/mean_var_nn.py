@@ -45,11 +45,9 @@ class MeanVarNN(torch.nn.Module):
 
     def freeze_variance(self, value: float):
         assert value > 0
-        # self.last_layer_var.requires_grad_(False)
         self._frozen_var = value
 
     def unfreeze_variance(self):
-        # self.last_layer_var.requires_grad_(True)
         self._frozen_var = None
 
 
