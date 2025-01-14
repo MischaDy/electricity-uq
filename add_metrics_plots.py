@@ -111,7 +111,7 @@ def main():
         if PLOT_FOR_TEST:
             data_to_plot_for.append([y_test, arrs_test, False])
         for y_true, arrs, are_train_arrs in data_to_plot_for:
-            y_pred, y_quantiles, y_std = arrs
+            y_pred, y_quantiles, y_std = misc_helpers.make_arrs_1d(*arrs)
             error_scores_dict = {
                 'crps': partial(crps, y_true, y_quantiles, keep_dim=True),
                 'ae': partial(mae, y_true, y_pred, keep_dim=True),
