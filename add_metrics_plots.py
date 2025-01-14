@@ -35,8 +35,8 @@ UQ_METHODS_WHITELIST = {
     # 'qr',
     # 'gp',
     # 'mvnn',
-    'cp_hgbr',
-    # 'cp_linreg',
+    # 'cp_hgbr',
+    'cp_linreg',
     # 'cp_nn',
     # 'la_nn',
 }
@@ -68,9 +68,9 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
         'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
     ],
     'cp_linreg': [
-        'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_pred_n35136_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n35136_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_std_n35136_it5.npy',
     ],
     'cp_nn': [
         'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
