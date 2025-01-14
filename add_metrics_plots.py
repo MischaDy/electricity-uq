@@ -119,25 +119,34 @@ def main():
                         io_helper.save_array(error_arr, filename=filename)
                 else:
                     logging.info('skipping error computation')
-
-                logging.info('plotting histogram')
                 # noinspection PyUnboundLocalVariable
-                plot_histogram(error_arr)
-                if SAVE_PLOTS:
-                    logging.info('saving plot')
-                    io_helper.save_plot(filename=filename)
-                if SHOW_PLOTS:
-                    plt.show(block=True)
-                plt.close()
-                plot_kde(error_arr)
+                plot_all(error_arr, io_helper, filename)
 
 
-def plot_histogram(error_arr, bins=25):
+def plot_all(error_arr, io_helper, filename):
+    logging.info('plotting histogram')
+    plot_histogram(error_arr, io_helper, filename=f'{filename}_hist', bins=25)
+    logging.info('plotting KDE')
+    plot_kde(error_arr, io_helper, filename=f'{filename}_kde', bw_adjust=1)
+
+
+def _plot_save_close(io_helper, filename):
+    if SAVE_PLOTS:
+        logging.info('saving plot')
+        io_helper.save_plot(filename=filename)
+    if SHOW_PLOTS:
+        plt.show(block=True)
+    plt.close()
+
+
+def plot_histogram(error_arr, io_helper, filename, bins=25):
     sns.displot(error_arr, bins=bins)
+    _plot_save_close(io_helper, filename)
 
 
-def plot_kde(error_arr, bw_adjust=1):
+def plot_kde(error_arr, io_helper, filename, bw_adjust=1):
     sns.displot(error_arr, kind="kde", bw_adjust=bw_adjust)
+    _plot_save_close(io_helper, filename)
 
 
 def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
