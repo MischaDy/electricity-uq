@@ -13,7 +13,7 @@ from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
 logging.basicConfig(level=logging.INFO, force=True)
 
 
-RUN_SIZE = 'big'
+RUN_SIZE = 'full'
 SMALL_IO_HELPER = False
 
 PLOT_HIST = False
@@ -27,18 +27,18 @@ SHOW_PLOTS = False
 SAVE_PLOTS = True
 SAVE_ARRAYS = True
 
-RECOMPUTE_ERRORS = False
+RECOMPUTE_ERRORS = True
 
 
 UQ_METHODS_WHITELIST = {
-    # 'qhgbr',
-    # 'qr',
-    # 'gp',
-    # 'mvnn',
-    # 'cp_hgbr',
+    'qhgbr',
+    'qr',
+    'gp',
+    'mvnn',
+    'cp_hgbr',
     'cp_linreg',
-    # 'cp_nn',
-    # 'la_nn',
+    'cp_nn',
+    'la_nn',
 }
 
 UQ_METHOD_TO_ARR_NAMES_DICT = {
@@ -63,14 +63,14 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
         'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
     ],
     'cp_hgbr': [
-        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
     ],
     'cp_linreg': [
-        'posthoc_conformal_prediction_base_model_linreg_y_pred_n35136_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n35136_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_std_n35136_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy',
     ],
     'cp_nn': [
         'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
