@@ -141,11 +141,9 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         X_train, y_train, X_val, y_val = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
         X_train, y_train, X_val, y_val = misc_helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
-        dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-
+        dim_in = X_train.shape[-1]
         model = self._nn_builder(
             dim_in,
-            dim_out,
             num_hidden_layers=self.num_hidden_layers,
             hidden_layer_size=self.hidden_layer_size,
             activation=self.activation,
@@ -212,7 +210,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     @staticmethod
     def _nn_builder(
             dim_in,
-            dim_out,
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=torch.nn.LeakyReLU,
@@ -223,7 +220,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             [[torch.nn.Linear(hidden_layer_size, hidden_layer_size),
               activation()]
              for _ in range(num_hidden_layers)],
-            torch.nn.Linear(hidden_layer_size, dim_out),
+            torch.nn.Linear(hidden_layer_size, 1),
         ])
         model = torch.nn.Sequential(*layers)
         return model.float()
