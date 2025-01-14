@@ -17,6 +17,10 @@ arr_names = [
     # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
     # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
 
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_pred_n35136_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n35136_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n35136_it5.npy',
+
     'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
     'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
     'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
