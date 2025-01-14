@@ -13,12 +13,22 @@ from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
 logging.basicConfig(level=logging.INFO, force=True)
 
 
-RUN_SIZE = 'small'
+RUN_SIZE = 'big'
+SMALL_IO_HELPER = False
+
+PLOT_HIST = False
+PLOT_KDE = False
+PLOT_HIST_WITH_KDE = True
+
+PLOT_FOR_TEST = True
+PLOT_FOR_TRAIN = False
+
 SHOW_PLOTS = False
 SAVE_PLOTS = True
 SAVE_ARRAYS = True
+
 RECOMPUTE_ERRORS = False
-SMALL_IO_HELPER = True
+
 
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
@@ -76,6 +86,9 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
 
 
 def main():
+    assert PLOT_FOR_TRAIN or PLOT_FOR_TEST
+    assert any([PLOT_KDE, PLOT_HIST, PLOT_HIST_WITH_KDE])
+
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._quick_load_data(RUN_SIZE)
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     y_train, y_test, y = misc_helpers.make_arrs_1d(y_train, y_test, y)
@@ -92,7 +105,12 @@ def main():
     recompute_errors = RECOMPUTE_ERRORS
     for uq_method, uq_arrs in uq_method_to_arrs_gen:
         arrs_train, arrs_test = split_pred_arrs_train_test(uq_arrs, n_samples_train=n_samples_train)
-        for y_true, arrs, are_train_arrs in [(y_train, arrs_train, True), (y_test, arrs_test, False)]:
+        data_to_plot_for = []
+        if PLOT_FOR_TRAIN:
+            data_to_plot_for.append([y_train, arrs_train, True])
+        if PLOT_FOR_TEST:
+            data_to_plot_for.append([y_test, arrs_test, False])
+        for y_true, arrs, are_train_arrs in data_to_plot_for:
             y_pred, y_quantiles, y_std = arrs
             error_scores_dict = {
                 'crps': partial(crps, y_true, y_quantiles, keep_dim=True),
@@ -124,12 +142,15 @@ def main():
 
 
 def plot_all(error_arr, io_helper, filename):
-    logging.info('plotting histogram')
-    plot_histogram(error_arr, io_helper, filename=f'{filename}_hist', bins=25)
-    logging.info('plotting KDE')
-    plot_kde(error_arr, io_helper, filename=f'{filename}_kde', bw_adjust=1)
-    logging.info('plotting histogram with KDE')
-    plot_hist_kde(error_arr, io_helper, filename=f'{filename}_histkde', bins=25)
+    if PLOT_HIST:
+        logging.info('plotting histogram')
+        plot_histogram(error_arr, io_helper, filename=f'{filename}_hist', bins=25)
+    if PLOT_KDE:
+        logging.info('plotting KDE')
+        plot_kde(error_arr, io_helper, filename=f'{filename}_kde', bw_adjust=1)
+    if PLOT_HIST_WITH_KDE:
+        logging.info('plotting histogram with KDE')
+        plot_hist_kde(error_arr, io_helper, filename=f'{filename}_histkde', bins=25)
 
 
 def _plot_save_close(io_helper, filename):
