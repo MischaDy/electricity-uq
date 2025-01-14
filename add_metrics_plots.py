@@ -121,13 +121,17 @@ def main():
 
                 logging.info('plotting histogram')
                 # noinspection PyUnboundLocalVariable
-                sns.displot(error_arr, bins=25, stat='density')
+                plot_histogram(error_arr)
                 if SAVE_PLOTS:
                     logging.info('saving plot')
                     io_helper.save_plot(filename=filename)
                 if SHOW_PLOTS:
                     plt.show(block=True)
                 plt.close()
+
+
+def plot_histogram(error_arr, bins=25):
+    sns.displot(error_arr, bins=bins)
 
 
 def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
