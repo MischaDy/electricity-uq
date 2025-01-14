@@ -129,10 +129,15 @@ def main():
                 if SHOW_PLOTS:
                     plt.show(block=True)
                 plt.close()
+                plot_kde(error_arr)
 
 
 def plot_histogram(error_arr, bins=25):
     sns.displot(error_arr, bins=bins)
+
+
+def plot_kde(error_arr, bw_adjust=1):
+    sns.displot(error_arr, kind="kde", bw_adjust=bw_adjust)
 
 
 def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
