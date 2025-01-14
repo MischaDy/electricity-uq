@@ -97,6 +97,7 @@ def main():
             error_scores_dict = {
                 'crps': partial(crps, y_true, y_quantiles, keep_dim=True),
                 'ae': partial(mae, y_true, y_pred, keep_dim=True),
+                'ssr': partial(ssr, y_true, y_pred, y_std, keep_dim=True),
             }
             dataset = 'training' if are_train_arrs else 'test'
             for error_score_name, error_func in error_scores_dict.items():
