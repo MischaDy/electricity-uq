@@ -128,6 +128,8 @@ def plot_all(error_arr, io_helper, filename):
     plot_histogram(error_arr, io_helper, filename=f'{filename}_hist', bins=25)
     logging.info('plotting KDE')
     plot_kde(error_arr, io_helper, filename=f'{filename}_kde', bw_adjust=1)
+    logging.info('plotting histogram with KDE')
+    plot_hist_kde(error_arr, io_helper, filename=f'{filename}_histkde', bins=25)
 
 
 def _plot_save_close(io_helper, filename):
@@ -146,6 +148,11 @@ def plot_histogram(error_arr, io_helper, filename, bins=25):
 
 def plot_kde(error_arr, io_helper, filename, bw_adjust=1):
     sns.displot(error_arr, kind="kde", bw_adjust=bw_adjust)
+    _plot_save_close(io_helper, filename)
+
+
+def plot_hist_kde(error_arr, io_helper, filename, bins=25):
+    sns.displot(error_arr, kde=True, bins=bins)
     _plot_save_close(io_helper, filename)
 
 
