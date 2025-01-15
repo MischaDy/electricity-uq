@@ -45,7 +45,7 @@ STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
     # 'base_model_linreg',
-#    'base_model_nn',
+    # 'base_model_nn',
     # 'base_model_hgbr',
     # 'native_gpytorch',
     'native_mvnn',
@@ -57,7 +57,7 @@ METHOD_WHITELIST = [
 METHODS_KWARGS = {
     "native_mvnn": {
         'skip_training': False,
-        "n_iter": 5,
+        "n_iter": 150,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
@@ -147,7 +147,7 @@ METHODS_KWARGS = {
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
         "weight_decay": 1e-3,
-        "lr": None,  # defaults to 1e-2 if use_scheduler is true
+        "lr": 1e-3,  # defaults to 1e-2 if use_scheduler is true
         'use_scheduler': True,
         "lr_patience": 10,
         "lr_reduction_factor": 0.8,
