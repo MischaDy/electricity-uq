@@ -6,7 +6,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-RUN_SIZE: Literal['full', 'big', 'small'] = 'big'
+RUN_SIZE: Literal['full', 'big', 'small'] = 'small'
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -45,7 +45,7 @@ STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
     # 'base_model_linreg',
-    'base_model_nn',
+    # 'base_model_nn',
     # 'base_model_hgbr',
     # 'native_gpytorch',
     'native_mvnn',
@@ -57,16 +57,16 @@ METHOD_WHITELIST = [
 METHODS_KWARGS = {
     "native_mvnn": {
         'skip_training': False,
-        "n_iter": 100,
+        "n_iter": 30,  # 150
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
         "weight_decay": 1e-3,
         "lr": None,  # defaults to 1e-2 if use_scheduler is true
         'use_scheduler': True,
-        "lr_patience": 30,
+        "lr_patience": 10,
         "lr_reduction_factor": 0.8,
-        "warmup_period": 50,
+        "warmup_period": 20,
         "frozen_var_value": 0.1,
         'show_progress_bar': False,
         'show_losses_plot': False,
