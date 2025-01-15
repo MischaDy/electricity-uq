@@ -68,7 +68,7 @@ def train_mean_var_nn(
     lr_patience=30,
     lr_reduction_factor=0.5,
     weight_decay=0.0,
-    train_var=True,
+    do_train_var=True,
     frozen_var_value=0.5,
     loss_skip=10,
     show_progress_bar=True,
@@ -98,7 +98,7 @@ def train_mean_var_nn(
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
 
-    if train_var:
+    if do_train_var:
         model.unfreeze_variance()
         criterion = torch.nn.GaussianNLLLoss()
         criterion = misc_helpers.object_to_cuda(criterion)

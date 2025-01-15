@@ -547,7 +547,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 logging.info('running warmup...')
                 model = train_mean_var_nn(
                     n_iter=warmup_period,
-                    train_var=False,
+                    do_train_var=False,
                     frozen_var_value=frozen_var_value,
                     show_losses_plot=False,  # never show for warmup
                     save_losses_plot=False,  # never save for warmup
@@ -560,7 +560,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_mean_var_nn(
                 model=model,
                 n_iter=n_iter,
-                train_var=True,
+                do_train_var=True,
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
                 io_helper=self.io_helper,
