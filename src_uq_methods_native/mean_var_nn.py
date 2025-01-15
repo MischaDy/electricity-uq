@@ -87,8 +87,6 @@ def train_mean_var_nn(
     if lr is None:
         lr = 1e-2 if use_scheduler else 1e-4
 
-    y_val_np = y_val.copy()  # for eval
-
     X_train, y_train, X_val, y_val = misc_helpers.np_arrays_to_tensors(X_train, y_train, X_val, y_val)
     X_train, y_train, X_val, y_val = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
     X_train, y_train, X_val, y_val = misc_helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
@@ -139,7 +137,7 @@ def train_mean_var_nn(
         model.eval()
         with torch.no_grad():
             y_pred_mean_val, y_pred_var_val = model(X_val)
-            val_loss = criterion(y_pred_mean_val, y_pred_var_val, y_val_np)
+            val_loss = criterion(y_pred_mean_val, y_val, y_pred_var_val)
             if show_losses_plot or save_losses_plot:
                 val_loss = misc_helpers.tensor_to_np_array(val_loss)
                 val_losses.append(val_loss)
