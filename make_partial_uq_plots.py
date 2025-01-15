@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 SAVE_PLOT = True
 SHOW_PLOT = False
-PLOT_EXT = 'svg'
+PLOT_EXT = 'png'
 
 SMALL_IO_HELPER = True
 
