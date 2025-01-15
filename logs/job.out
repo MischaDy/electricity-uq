@@ -6,13 +6,13 @@ posthoc metrics:
 
 native metrics:
 	native_mvnn:
-		mae: 339.24029541015625
-		rmse: 459.485595703125
-		smape_scaled: 0.022605054080486298
-		crps: 252.6022160944365
-		nll_gaussian: 7.736955505032892
-		mean_pinball: 34.38466108082882
-		ssr: 0.6344140793270456
+		mae: 150.55104064941406
+		rmse: 203.028076171875
+		smape_scaled: 0.010509273037314415
+		crps: 110.61009183484248
+		nll_gaussian: 7.06901700371602
+		mean_pinball: 14.599107617907912
+		ssr: 0.6096072855107159
 
 optimal deterministic metrics:
 		mae: 0.0
