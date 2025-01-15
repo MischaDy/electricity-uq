@@ -77,13 +77,16 @@ class IO_Helper:
     def load_array(self, method_name=None, filename=None, infix=None):
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='array')
-        return np.load(self._get_array_savepath(filename))
+        path = self._get_array_savepath(filename)
+        logging.info(f'loading array from {path}')
+        return np.load(path)
 
     def load_model(self, method_name=None, filename=None, infix=None):
         import pickle
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         model_path = self._get_model_savepath(filename)
+        logging.info(f'loading model from {model_path}')
         try:
             with open(model_path, "rb") as file:
                 model = pickle.load(file)
@@ -94,18 +97,20 @@ class IO_Helper:
             model = self._load_torch_on_cpu(model_path)
         return model
 
-    def _load_torch_on_cpu(self, model_path):
+    @staticmethod
+    def _load_torch_on_cpu(model_path):
         from helpers.cpu_unpickler import CPU_Unpickler
         with open(model_path, "rb") as file:
             model = CPU_Unpickler(file).load()
         return model
 
     def load_torch_model(self, method_name=None, filename=None, infix=None):
-        if filename is None:
-            filename = self.make_filename(method_name, infix=infix, file_type='model')
         import torch
         torch.set_default_dtype(torch.float32)
+        if filename is None:
+            filename = self.make_filename(method_name, infix=infix, file_type='model')
         filepath = self._get_model_savepath(filename)
+        logging.info(f'loading torch model from {filepath}')
         model = torch.load(filepath, weights_only=False, map_location='cpu')
         model.eval()
         return model
@@ -127,6 +132,7 @@ class IO_Helper:
         if model_kwargs is None:
             model_kwargs = {}
         path = self._get_model_savepath(filename)
+        logging.info(f'loading torch statedict from {path}')
         state_dict = torch.load(path, map_location='cpu')
         model = model_class(**model_kwargs)
         model.load_state_dict(state_dict)
@@ -145,6 +151,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
+        logging.info(f'loading laplace statedict from {laplace_model_filepath}')
         la = la_instantiator(base_model)
         la.load_state_dict(torch.load(laplace_model_filepath, map_location='cpu'))
         return la
@@ -154,6 +161,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='array')
         path = self._get_array_savepath(filename)
+        logging.info(f'saving array to {path}')
         np.save(path, array)
 
     def save_model(self, model, method_name=None, filename=None, infix=None):
@@ -161,7 +169,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
-        logging.info(f'saving model in path {path}')
+        logging.info(f'saving model to {path}')
         with open(path, "wb") as file:
             # noinspection PyTypeChecker
             pickle.dump(model, file, protocol=pickle.HIGHEST_PROTOCOL)
@@ -172,6 +180,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
+        logging.info(f'saving torch model to {path}')
         torch.save(model, path)
 
     def save_torch_model_statedict(self, model, method_name=None, filename=None, infix=None):
@@ -180,6 +189,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         path = self._get_model_savepath(filename)
+        logging.info(f'saving torch statedict to {path}')
         torch.save(model.state_dict(), path)
 
     def save_laplace_model_statedict(
@@ -194,6 +204,7 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
         laplace_model_filepath = self._get_model_savepath(filename)
+        logging.info(f'saving laplace state dict to {laplace_model_filepath}')
         torch.save(laplace_model.state_dict(), laplace_model_filepath)
 
     def save_plot(self, method_name=None, filename=None, infix=None, is_loss_plot=False):
@@ -213,6 +224,7 @@ class IO_Helper:
             if ext.lstrip('.') not in {'png', 'jpeg', 'jpg', 'svg'}:
                 filename += '.png'
         path = self._get_plot_savepath(filename, is_loss_plot=is_loss_plot)
+        logging.info(f'saving plot to {path}')
         plt.savefig(path)
 
     def save_metrics(self, metrics: dict, method_name=None, filename=None, infix=None):
@@ -223,6 +235,7 @@ class IO_Helper:
         elif not os.path.splitext(filename)[-1]:
             filename += '.json'
         path = self._get_metrics_savepath(filename)
+        logging.info(f'saving metrics to {path}')
         metrics_str = json.dumps(metrics, indent=4)
         with open(path, 'w') as file:
             file.write(metrics_str)
