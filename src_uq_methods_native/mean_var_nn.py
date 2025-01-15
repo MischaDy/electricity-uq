@@ -69,7 +69,7 @@ def train_mean_var_nn(
     hidden_layer_size=50,
     activation=torch.nn.LeakyReLU,
     random_seed=42,
-    lr=0.1,
+    lr=None,
     use_scheduler=True,
     lr_patience=30,
     lr_reduction_factor=0.5,
@@ -83,6 +83,9 @@ def train_mean_var_nn(
     io_helper: 'IO_Helper' = None,
 ):
     torch.manual_seed(random_seed)
+
+    if lr is None:
+        lr = 1e-2 if use_scheduler else 1e-4
 
     y_val_np = y_val.copy()  # for eval
 

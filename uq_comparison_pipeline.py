@@ -487,13 +487,16 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             hidden_layer_size=50,
             activation=None,
             lr=1e-4,
+            use_scheduler=True,
             lr_patience=30,
-            weight_decay=0,  # 1e-2,
+            lr_reduction_factor=0.5,
+            weight_decay=1e-3,
             warmup_period=50,
             frozen_var_value=0.1,
             show_losses_plot=True,
             save_losses_plot=True,
             show_progress_bar=True,
+            random_seed=42,
             skip_training=True,
             save_model=True,
     ):
@@ -538,9 +541,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "y_val": y_val,
                 "lr": lr,
                 "lr_patience": lr_patience,
+                "lr_reduction_factor": lr_reduction_factor,
                 "weight_decay": weight_decay,
                 'show_progress_bar': show_progress_bar,
-                "use_scheduler": True,
+                "use_scheduler": use_scheduler,
+                "random_seed": random_seed,
             }
             model = None
             if warmup_period > 0:

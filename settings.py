@@ -61,14 +61,17 @@ METHODS_KWARGS = {
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         "activation": None,  # defaults to leaky ReLU
-        "lr": 1e-4,
-        "lr_patience": 30,
         "weight_decay": 1e-3,
+        "lr": None,  # defaults to 1e-2 if use_scheduler is true
+        'use_scheduler': True,
+        "lr_patience": 30,
+        "lr_reduction_factor": 0.8,
         "warmup_period": 50,
         "frozen_var_value": 0.1,
+        'show_progress_bar': False,
         'show_losses_plot': False,
         'save_losses_plot': True,
-        'show_progress_bar': False,
+        "random_seed": 42,
         'save_model': True,
     },
     "native_quantile_regression_nn": {
