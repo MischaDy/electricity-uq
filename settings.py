@@ -138,7 +138,7 @@ METHODS_KWARGS = {
         "save_model": True,
     },
     "base_model_nn": {
-        "skip_training": True,
+        "skip_training": False,
         "n_iter": 200,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
@@ -146,8 +146,8 @@ METHODS_KWARGS = {
         "weight_decay": 1e-3,
         "lr": None,  # defaults to 1e-2 if use_scheduler is true
         'use_scheduler': True,
-        "lr_patience": 30,
-        "lr_reduction_factor": 0.5,
+        "lr_patience": 10,
+        "lr_reduction_factor": 0.8,
         "show_progress_bar": False,
         "show_losses_plot": False,
         "save_losses_plot": True,
