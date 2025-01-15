@@ -67,7 +67,7 @@ METHODS_KWARGS = {
         "lr_patience": 10,
         "lr_reduction_factor": 0.8,
         "warmup_period": 50,
-        "frozen_var_value": 0.1,
+        "frozen_var_value": 1,
         'show_progress_bar': False,
         'show_losses_plot': False,
         'save_losses_plot': True,
