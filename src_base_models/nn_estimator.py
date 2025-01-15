@@ -44,7 +44,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         "n_iter": [int],
         "batch_size": [int],
         "random_seed": [int],
-        "lr": [float],
+        "lr": [float, None],
         "lr_patience": [int],
         "lr_reduction_factor": [float],
         "to_standardize": [str],
