@@ -17,7 +17,7 @@ torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
 
-STORE_PLOT_EVERY_N = 60
+STORE_PLOT_EVERY_N = 30
 N_SAMPLES_TO_PLOT = 1600
 SHOW_PLOT = False
 SAVE_PLOT = True
@@ -99,7 +99,7 @@ def train_gpytorch(
     likelihood.train()
 
     logging.info('setup meta-models')
-    mll = gpytorch.mlls.VariationalELBO(likelihood, model, num_data=y_train.size(0))
+    mll = gpytorch.mlls.PredictiveLogLikelihood(likelihood, model, num_data=y_train.size(0))
     optimizer = torch.optim.Adam([
         {'params': model.parameters()},
         {'params': likelihood.parameters()},
