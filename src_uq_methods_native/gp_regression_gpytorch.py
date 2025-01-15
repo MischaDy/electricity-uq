@@ -124,15 +124,19 @@ def train_gpytorch(
             loss.backward()
             optimizer.step()
     
-        if use_scheduler or show_losses_plot:
-            # noinspection PyUnboundLocalVariable
-            train_losses.append(loss.item())  # don't append more often than needed
+        if use_scheduler:
             model.eval()
             likelihood.eval()
             with torch.no_grad(), gpytorch.settings.memory_efficient(True):
-                y_pred_batch = model(X_val)
-                val_loss = -mll(y_pred_batch, y_val).sum()
-                val_losses.append(val_loss.item())
+                # compute val loss
+                y_pred_val = model(X_val)
+                val_loss = -mll(y_pred_val, y_val).sum()
+                if show_losses_plot or save_losses_plot:
+                    val_losses.append(val_loss.item())
+                    # compute train loss
+                    y_pred_train = model(X_train)
+                    train_loss = -mll(y_pred_train, y_train).sum()
+                    train_losses.append(train_loss.item())
             scheduler.step(val_loss)
 
         if STORE_PLOT_EVERY_N is not None and epoch % STORE_PLOT_EVERY_N == 0:
