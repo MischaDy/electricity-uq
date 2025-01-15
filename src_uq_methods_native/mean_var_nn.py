@@ -161,7 +161,7 @@ def train_mean_var_nn(
     return model
 
 
-def predict_with_mvnn(model, X_pred, quantiles):
+def predict_with_mvnn(model: MeanVarNN, X_pred: np.ndarray, quantiles: list[float]):
     X_pred = misc_helpers.preprocess_array_to_tensor(X_pred)
     with torch.no_grad():
         y_pred, y_var = model(X_pred)
