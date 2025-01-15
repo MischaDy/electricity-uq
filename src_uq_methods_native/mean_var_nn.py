@@ -148,6 +148,7 @@ def train_mean_var_nn(
                 train_losses.append(train_loss)
         if use_scheduler:
             scheduler.step(val_loss)
+    filename = misc_helpers.timestamped_filename('train_mean_var_nn')
     misc_helpers.plot_nn_losses(
         train_losses,
         val_losses,
@@ -155,7 +156,7 @@ def train_mean_var_nn(
         show_plot=show_losses_plot,
         save_plot=save_losses_plot,
         io_helper=io_helper,
-        filename='train_mean_var_nn',
+        filename=filename,
     )
     model.eval()
     return model

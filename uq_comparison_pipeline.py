@@ -555,7 +555,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                     do_train_var=False,
                     frozen_var_value=frozen_var_value,
                     show_losses_plot=False,  # never show for warmup
-                    save_losses_plot=False,  # never save for warmup
+                    save_losses_plot=True,  # never save for warmup
                     num_hidden_layers=num_hidden_layers,
                     hidden_layer_size=hidden_layer_size,
                     activation=activation,
