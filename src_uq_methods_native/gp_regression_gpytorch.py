@@ -17,12 +17,12 @@ torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
 
-STORE_PLOT_EVERY_N = 1
+STORE_PLOT_EVERY_N = 20
 N_SAMPLES_TO_PLOT = 1600
 SHOW_PLOT = False
 SAVE_PLOT = True
 N_INDUCING_POINTS = None
-PLOT_EXT = 'svg'
+PLOT_EXT = 'png'
 
 
 # noinspection PyPep8Naming
