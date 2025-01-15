@@ -184,3 +184,5 @@ qhgbr_storage/models/
 /comparison_storage/arrays_small/
 /comparison_storage/models_small/
 /comparison_storage_old/
+/remote_error_arrays/
+/comparison_storage/remote_error_arrays_mvnn/
