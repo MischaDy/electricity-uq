@@ -10,6 +10,12 @@ from tqdm import tqdm
 
 from helpers import misc_helpers
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from helpers.io_helper import IO_Helper
+
+
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
@@ -74,7 +80,7 @@ def train_mean_var_nn(
     show_progress_bar=True,
     show_losses_plot=True,
     save_losses_plot=True,
-    io_helper=None,
+    io_helper: 'IO_Helper' = None,
 ):
     torch.manual_seed(random_seed)
 
