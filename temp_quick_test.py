@@ -7,8 +7,7 @@ from helpers import uq_arr_helpers, misc_helpers
 from helpers.io_helper import IO_Helper
 
 
-
-RUN_SIZE = 'full'
+RUN_SIZE = 'big'
 SMALL_IO_HELPER = False
 
 
@@ -21,9 +20,13 @@ arr_names = [
     # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n35136_it5.npy',
     # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n35136_it5.npy',
 
-    'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
-    'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
-    'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
+
+    'native_mvnn_y_pred_n35136_it150_nh2_hs50.npy',
+    'native_mvnn_y_quantiles_n35136_it150_nh2_hs50.npy',
+    'native_mvnn_y_std_n35136_it150_nh2_hs50.npy',
 ]
 
 
