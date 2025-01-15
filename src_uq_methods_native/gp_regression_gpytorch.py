@@ -99,7 +99,7 @@ def train_gpytorch(
     likelihood.train()
 
     logging.info('setup meta-models')
-    mll = gpytorch.mlls.VariationalELBO(likelihood, model, num_data=y_train.size(0))
+    mll = gpytorch.mlls.PredictiveLogLikelihood(likelihood, model, num_data=y_train.size(0))
     optimizer = torch.optim.Adam([
         {'params': model.parameters()},
         {'params': likelihood.parameters()},
