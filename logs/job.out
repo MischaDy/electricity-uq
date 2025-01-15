@@ -1,12 +1,26 @@
 -------- PYTHON OUTPUT ----------
 
-base_model_nn:
-	mae: 419.7315979003906
-	rmse: 516.7003173828125
-	smape_scaled: 0.029496880248188972
+base_model metrics:
+
+posthoc metrics:
+
+native metrics:
+	native_mvnn:
+		mae: 904.8505249023438
+		rmse: 1278.7457275390625
+		smape_scaled: 0.061496302485466
+		crps: 656.0157010231052
+		nll_gaussian: 8.390230302233041
+		mean_pinball: 169.10608705639785
+		ssr: 1.1211275551878073
 
 optimal deterministic metrics:
 		mae: 0.0
 		rmse: 0.0
 		smape_scaled: 0.0
+	optimal uq metrics:
+		crps: None
+		nll_gaussian: None
+		mean_pinball: None
+		ssr: None
 ---------------------------------
