@@ -587,11 +587,12 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             use_scheduler=True,
             lr_patience=30,
             lr_reduction_factor=0.5,
+            n_inducing_points=500,
+            mean_type='constant',
             show_progress_bar=True,
             show_plots=True,
             show_losses_plot=True,
             save_losses_plot=True,
-            n_inducing_points=500,
             skip_training=True,
             save_model=True,
     ):
@@ -648,6 +649,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 save_losses_plot=save_losses_plot,
                 io_helper=self.io_helper,
                 n_inducing_points=n_inducing_points,
+                mean_type=mean_type,
             )
             if save_model:
                 logging.info('saving model...')

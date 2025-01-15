@@ -27,12 +27,22 @@ PLOT_EXT = 'svg'
 
 # noinspection PyPep8Naming
 class ApproximateGP(gpytorch.models.ApproximateGP):
-    def __init__(self, inducing_points):
+    def __init__(self, inducing_points, mean_type='constant'):
+        """
+
+        :param inducing_points:
+        :param mean_type: one of 'constant', 'linear'
+        """
+        assert mean_type in ['constant', 'linear']
         variational_distribution = CholeskyVariationalDistribution(inducing_points.size(0))
         variational_strategy = VariationalStrategy(self, inducing_points, variational_distribution,
                                                    learn_inducing_locations=True)
         super(ApproximateGP, self).__init__(variational_strategy)
-        self.mean_module = gpytorch.means.ConstantMean()
+        if mean_type == 'constant':
+            self.mean_module = gpytorch.means.ConstantMean()
+        else:
+            input_dim = inducing_points[0].shape[1]
+            self.mean_module = gpytorch.means.LinearMean(input_dim)
         self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.keops.RBFKernel())
 
     def forward(self, X):
@@ -69,6 +79,7 @@ def train_gpytorch(
         io_helper=None,
         n_inducing_points=500,
         batch_size=1024,
+        mean_type='constant',
 ):
     n_devices = torch.cuda.device_count()
     logging.info('Planning to run on {} GPUs.'.format(n_devices))
@@ -81,7 +92,7 @@ def train_gpytorch(
     if N_INDUCING_POINTS is not None:
         n_inducing_points = N_INDUCING_POINTS
     inducing_points = get_inducing_points(X_train, n_inducing_points)
-    model = ApproximateGP(inducing_points=inducing_points)
+    model = ApproximateGP(inducing_points=inducing_points, mean_type=mean_type)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
     model.train()
