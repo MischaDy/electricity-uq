@@ -1,0 +1,11 @@
+{
+    "base_model": {
+        "base_model_nn": {
+            "mae": 419.7315979003906,
+            "rmse": 516.7003173828125,
+            "smape_scaled": 0.029496880248188972
+        }
+    },
+    "posthoc": {},
+    "native": {}
+}
