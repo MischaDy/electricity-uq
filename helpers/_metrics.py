@@ -37,17 +37,26 @@ def ssr(y_true: np.ndarray, y_pred: np.ndarray, y_std: np.ndarray, keep_dim=Fals
     """
     compute spread-skill ratio
 
-    :param eps: added to denominator where it's zero to prevent division by zero
+    :param eps: lower bound of denominator to prevent division by (almost) zero
     :param y_std:
     :param y_true:
     :param y_pred:
     :param keep_dim:
     :return: std/AE if keep_dim, else std/RMSE
     """
+    if y_std is None:
+        return None
+
+    if keep_dim:
+        spread = y_std
+        skill = mae(y_true, y_pred, keep_dim=True)  # RMSE without mean is just AEs
+    else:
+        spread = np.mean(y_std)
+        skill = rmse(y_true, y_pred)
+
     assert eps >= 0
-    skill = mae(y_true, y_pred, keep_dim=True) if keep_dim else rmse(y_true, y_pred)
-    skill[skill == 0] = eps
-    return y_std / skill
+    skill = max(eps, skill)
+    return spread / skill
 
 
 def mean_pinball_loss(y_true: np.ndarray, y_quantiles: np.ndarray, quantiles: np.ndarray, keep_dim=False):
