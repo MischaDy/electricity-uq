@@ -173,17 +173,20 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
                 loss = criterion(y_pred, y)
                 loss.backward()
                 optimizer.step()
+            if not any([self.use_scheduler, self.show_losses_plot, self.save_losses_plot]):
+                continue
+
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
-                if self.save_losses_plot:
+                if self.show_losses_plot or self.save_losses_plot:
+                    val_loss = misc_helpers.tensor_to_np_array(val_loss)
+                    val_losses.append(val_loss)
                     train_loss = self._mse_torch(model(X_train), y_train)
                     train_loss = misc_helpers.tensor_to_np_array(train_loss)
                     train_losses.append(train_loss)
             if self.use_scheduler:
                 scheduler.step(val_loss)
-            val_loss = misc_helpers.tensor_to_np_array(val_loss)
-            val_losses.append(val_loss)
 
         model.eval()
         self.model_ = model
