@@ -124,21 +124,21 @@ def train_mean_var_nn(
             loss = criterion(y_pred_mean, y_train, y_pred_var)
             loss.backward()
             optimizer.step()
+        if not any([use_scheduler, show_losses_plot, save_losses_plot]):
+            continue
+
         model.eval()
-
         with torch.no_grad():
-            y_pred_mean_train, y_pred_var_train = model(X_train)
-            y_pred_mean_train, y_pred_var_train, y_train = misc_helpers.tensors_to_np_arrays(
-                y_pred_mean_train,
-                y_pred_var_train,
-                y_train)
-            train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train)
-            train_losses.append(train_loss)
-
             y_pred_mean_val, y_pred_var_val = model(X_val)
-            y_pred_mean_val, y_pred_var_val = misc_helpers.tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val)
-            val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val_np)
-            val_losses.append(val_loss)
+            val_loss = criterion(y_pred_mean_val, y_pred_var_val, y_val_np)
+            if show_losses_plot or save_losses_plot:
+                val_loss = misc_helpers.tensor_to_np_array(val_loss)
+                val_losses.append(val_loss)
+
+                y_pred_mean_train, y_pred_var_train = model(X_train)
+                train_loss = criterion(y_pred_mean_train, y_train, y_pred_var_train)
+                train_loss = misc_helpers.tensor_to_np_array(train_loss)
+                train_losses.append(train_loss)
         if use_scheduler:
             scheduler.step(val_loss)
     misc_helpers.plot_nn_losses(
@@ -152,14 +152,6 @@ def train_mean_var_nn(
     )
     model.eval()
     return model
-
-
-def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.ndarray):
-    # todo: use torch.nn.NLLLoss instead!
-    from uncertainty_toolbox import nll_gaussian
-    y_pred_std = np.sqrt(y_pred_var)
-    y_pred_mean, y_pred_std, y_test = misc_helpers.make_arrs_1d(y_pred_mean, y_pred_std, y_test)
-    return nll_gaussian(y_pred_mean, y_pred_std, y_test)
 
 
 def predict_with_mvnn(model, X_pred, quantiles):
