@@ -7,27 +7,7 @@ INFO:root:loading data...
 INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
 INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
 INFO:numexpr.utils:NumExpr defaulting to 16 threads.
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
-/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
-A value is trying to be set on a copy of a slice from a DataFrame
-
-See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
-  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
-INFO:root:data shapes: (35136, 16), (35040, 16), (35040, 16);  (35136, 1), (35040, 1), (35040, 1)
+INFO:root:data shapes: (640, 16), (160, 16), (800, 16);  (640, 1), (160, 1), (800, 1)
 INFO:root:training base models...
 INFO:root:skipping training base_model_linreg.
 INFO:root:skipping training base_model_hgbr.
@@ -51,71 +31,20 @@ INFO:root:setup dataset
 INFO:root:setup models
 INFO:root:setup meta-models
 INFO:root:start proper training...
-  0%|          | 0/30 [00:00<?, ?it/s]WARNING:root:At least one IO_Helper param of [filename_parts, methods_kwargs] is None, so not all functionality will be available!
-WARNING:root:method gp_1 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_1_training' had no extension. saving as PNG
-  3%|▎         | 1/30 [00:04<02:08,  4.41s/it]WARNING:root:method gp_2 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_2_training' had no extension. saving as PNG
-  7%|▋         | 2/30 [00:06<01:19,  2.85s/it]WARNING:root:method gp_3 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_3_training' had no extension. saving as PNG
- 10%|█         | 3/30 [00:07<01:03,  2.36s/it]WARNING:root:method gp_4 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_4_training' had no extension. saving as PNG
- 13%|█▎        | 4/30 [00:09<00:56,  2.18s/it]WARNING:root:method gp_5 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_5_training' had no extension. saving as PNG
- 17%|█▋        | 5/30 [00:11<00:49,  2.00s/it]WARNING:root:method gp_6 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_6_training' had no extension. saving as PNG
- 20%|██        | 6/30 [00:13<00:46,  1.96s/it]WARNING:root:method gp_7 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_7_training' had no extension. saving as PNG
- 23%|██▎       | 7/30 [00:15<00:42,  1.87s/it]WARNING:root:method gp_8 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_8_training' had no extension. saving as PNG
- 27%|██▋       | 8/30 [00:16<00:39,  1.81s/it]WARNING:root:method gp_9 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_9_training' had no extension. saving as PNG
- 30%|███       | 9/30 [00:18<00:37,  1.79s/it]WARNING:root:method gp_10 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_10_training' had no extension. saving as PNG
- 33%|███▎      | 10/30 [00:20<00:37,  1.86s/it]WARNING:root:method gp_11 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_11_training' had no extension. saving as PNG
- 37%|███▋      | 11/30 [00:22<00:35,  1.86s/it]WARNING:root:method gp_12 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_12_training' had no extension. saving as PNG
- 40%|████      | 12/30 [00:23<00:32,  1.78s/it]WARNING:root:method gp_13 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_13_training' had no extension. saving as PNG
- 43%|████▎     | 13/30 [00:25<00:29,  1.75s/it]WARNING:root:method gp_14 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_14_training' had no extension. saving as PNG
- 47%|████▋     | 14/30 [00:27<00:27,  1.71s/it]WARNING:root:method gp_15 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_15_training' had no extension. saving as PNG
- 50%|█████     | 15/30 [00:29<00:26,  1.74s/it]WARNING:root:method gp_16 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_16_training' had no extension. saving as PNG
- 53%|█████▎    | 16/30 [00:30<00:23,  1.69s/it]WARNING:root:method gp_17 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_17_training' had no extension. saving as PNG
- 57%|█████▋    | 17/30 [00:32<00:21,  1.66s/it]WARNING:root:method gp_18 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_18_training' had no extension. saving as PNG
- 60%|██████    | 18/30 [00:34<00:20,  1.70s/it]WARNING:root:method gp_19 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_19_training' had no extension. saving as PNG
- 63%|██████▎   | 19/30 [00:35<00:18,  1.70s/it]WARNING:root:method gp_20 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_20_training' had no extension. saving as PNG
- 67%|██████▋   | 20/30 [00:37<00:18,  1.83s/it]WARNING:root:method gp_21 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_21_training' had no extension. saving as PNG
- 70%|███████   | 21/30 [00:39<00:15,  1.76s/it]WARNING:root:method gp_22 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_22_training' had no extension. saving as PNG
- 73%|███████▎  | 22/30 [00:41<00:13,  1.75s/it]WARNING:root:method gp_23 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_23_training' had no extension. saving as PNG
- 77%|███████▋  | 23/30 [00:42<00:12,  1.73s/it]WARNING:root:method gp_24 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_24_training' had no extension. saving as PNG
- 80%|████████  | 24/30 [00:44<00:10,  1.71s/it]WARNING:root:method gp_25 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_25_training' had no extension. saving as PNG
- 83%|████████▎ | 25/30 [00:46<00:08,  1.75s/it]WARNING:root:method gp_26 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_26_training' had no extension. saving as PNG
- 87%|████████▋ | 26/30 [00:48<00:06,  1.74s/it]WARNING:root:method gp_27 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_27_training' had no extension. saving as PNG
- 90%|█████████ | 27/30 [00:50<00:05,  1.79s/it]WARNING:root:method gp_28 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_28_training' had no extension. saving as PNG
- 93%|█████████▎| 28/30 [00:51<00:03,  1.76s/it]WARNING:root:method gp_29 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_29_training' had no extension. saving as PNG
- 97%|█████████▋| 29/30 [00:53<00:01,  1.78s/it]WARNING:root:method gp_30 not found in base filenames dict. using the method name as a base filename.
-INFO:root:filename 'gp_30_training' had no extension. saving as PNG
-100%|██████████| 30/30 [01:03<00:00,  4.16s/it]100%|██████████| 30/30 [01:03<00:00,  2.11s/it]
-INFO:root:filename 'train_gpytorch_losses' had no extension. saving as PNG
-INFO:root:Finished training on 35136 data points using 2 GPUs.
-INFO:root:function train_gpytorch is done. [took 79.79831885546446s]
+  0%|          | 0/300 [00:00<?, ?it/s]  0%|          | 1/300 [00:01<06:01,  1.21s/it]  2%|▏         | 5/300 [00:01<01:00,  4.85it/s]  3%|▎         | 9/300 [00:01<00:31,  9.14it/s]  4%|▍         | 12/300 [00:01<00:23, 12.30it/s]  5%|▌         | 16/300 [00:01<00:17, 16.41it/s]  7%|▋         | 20/300 [00:01<00:14, 19.99it/s]  8%|▊         | 24/300 [00:01<00:11, 23.16it/s]  9%|▉         | 28/300 [00:02<00:10, 25.87it/s]WARNING:root:At least one IO_Helper param of [filename_parts, methods_kwargs] is None, so not all functionality will be available!
+WARNING:root:method gp_30 not found in base filenames dict. using the method name as a base filename.
+ 11%|█         | 32/300 [00:04<01:10,  3.82it/s] 12%|█▏        | 36/300 [00:05<00:50,  5.27it/s] 13%|█▎        | 40/300 [00:05<00:36,  7.10it/s] 15%|█▍        | 44/300 [00:05<00:27,  9.31it/s] 16%|█▌        | 48/300 [00:05<00:21, 11.86it/s] 17%|█▋        | 52/300 [00:05<00:16, 14.68it/s] 19%|█▊        | 56/300 [00:05<00:13, 17.51it/s]WARNING:root:method gp_60 not found in base filenames dict. using the method name as a base filename.
+ 20%|██        | 60/300 [00:06<00:21, 10.97it/s] 21%|██        | 63/300 [00:06<00:18, 12.95it/s] 22%|██▏       | 67/300 [00:06<00:14, 15.90it/s] 24%|██▎       | 71/300 [00:06<00:12, 18.78it/s] 25%|██▌       | 75/300 [00:06<00:10, 21.39it/s] 26%|██▋       | 79/300 [00:07<00:09, 23.57it/s] 28%|██▊       | 83/300 [00:07<00:08, 25.25it/s] 29%|██▉       | 87/300 [00:07<00:07, 26.69it/s]WARNING:root:method gp_90 not found in base filenames dict. using the method name as a base filename.
+ 30%|███       | 91/300 [00:07<00:11, 17.98it/s] 31%|███▏      | 94/300 [00:07<00:12, 16.69it/s] 33%|███▎      | 98/300 [00:08<00:10, 19.67it/s] 34%|███▍      | 102/300 [00:08<00:08, 22.35it/s] 35%|███▌      | 106/300 [00:08<00:07, 24.41it/s] 37%|███▋      | 110/300 [00:08<00:07, 26.00it/s] 38%|███▊      | 114/300 [00:08<00:06, 27.30it/s] 39%|███▉      | 118/300 [00:08<00:06, 28.53it/s]WARNING:root:method gp_120 not found in base filenames dict. using the method name as a base filename.
+ 41%|████      | 122/300 [00:09<00:19,  9.22it/s] 42%|████▏     | 126/300 [00:09<00:14, 11.72it/s] 43%|████▎     | 130/300 [00:10<00:11, 14.32it/s] 45%|████▍     | 134/300 [00:10<00:09, 17.05it/s] 46%|████▌     | 138/300 [00:10<00:08, 19.70it/s] 47%|████▋     | 142/300 [00:10<00:07, 22.13it/s] 49%|████▊     | 146/300 [00:10<00:06, 24.36it/s]WARNING:root:method gp_150 not found in base filenames dict. using the method name as a base filename.
+ 50%|█████     | 150/300 [00:10<00:08, 17.77it/s] 51%|█████     | 153/300 [00:11<00:07, 19.68it/s] 52%|█████▏    | 156/300 [00:11<00:06, 21.47it/s] 53%|█████▎    | 160/300 [00:11<00:05, 23.81it/s] 55%|█████▍    | 164/300 [00:11<00:05, 26.07it/s] 56%|█████▌    | 168/300 [00:11<00:04, 27.68it/s] 57%|█████▋    | 172/300 [00:11<00:04, 28.62it/s] 59%|█████▊    | 176/300 [00:11<00:04, 29.08it/s]WARNING:root:method gp_180 not found in base filenames dict. using the method name as a base filename.
+ 60%|██████    | 180/300 [00:12<00:06, 19.05it/s] 61%|██████    | 183/300 [00:12<00:05, 20.90it/s] 62%|██████▏   | 187/300 [00:12<00:04, 23.18it/s] 64%|██████▎   | 191/300 [00:12<00:04, 25.07it/s] 65%|██████▌   | 195/300 [00:12<00:03, 26.93it/s] 66%|██████▋   | 199/300 [00:12<00:03, 27.98it/s] 68%|██████▊   | 203/300 [00:12<00:03, 28.69it/s] 69%|██████▉   | 207/300 [00:13<00:03, 29.18it/s]WARNING:root:method gp_210 not found in base filenames dict. using the method name as a base filename.
+ 70%|███████   | 211/300 [00:13<00:04, 18.56it/s] 71%|███████▏  | 214/300 [00:13<00:04, 20.45it/s] 72%|███████▏  | 217/300 [00:13<00:03, 22.29it/s] 74%|███████▎  | 221/300 [00:13<00:03, 24.69it/s] 75%|███████▌  | 225/300 [00:13<00:02, 26.51it/s] 76%|███████▋  | 229/300 [00:14<00:02, 27.72it/s] 78%|███████▊  | 233/300 [00:14<00:02, 28.57it/s] 79%|███████▉  | 237/300 [00:14<00:02, 29.27it/s]WARNING:root:method gp_240 not found in base filenames dict. using the method name as a base filename.
+ 80%|████████  | 241/300 [00:14<00:03, 19.15it/s] 82%|████████▏ | 245/300 [00:14<00:02, 21.59it/s] 83%|████████▎ | 249/300 [00:14<00:02, 23.70it/s] 84%|████████▍ | 253/300 [00:15<00:01, 25.63it/s] 85%|████████▌ | 256/300 [00:15<00:01, 24.74it/s] 86%|████████▋ | 259/300 [00:15<00:01, 25.77it/s] 87%|████████▋ | 262/300 [00:15<00:01, 26.14it/s] 88%|████████▊ | 265/300 [00:15<00:01, 27.02it/s] 89%|████████▉ | 268/300 [00:15<00:01, 27.45it/s]WARNING:root:method gp_270 not found in base filenames dict. using the method name as a base filename.
+ 90%|█████████ | 271/300 [00:16<00:02, 13.05it/s] 91%|█████████▏| 274/300 [00:16<00:01, 15.47it/s] 92%|█████████▏| 277/300 [00:16<00:01, 17.93it/s] 93%|█████████▎| 280/300 [00:16<00:00, 20.26it/s] 94%|█████████▍| 283/300 [00:16<00:00, 22.22it/s] 95%|█████████▌| 286/300 [00:16<00:00, 23.76it/s] 96%|█████████▋| 289/300 [00:16<00:00, 24.90it/s] 97%|█████████▋| 292/300 [00:16<00:00, 25.73it/s] 98%|█████████▊| 295/300 [00:16<00:00, 26.45it/s] 99%|█████████▉| 298/300 [00:17<00:00, 27.08it/s]WARNING:root:method gp_300 not found in base filenames dict. using the method name as a base filename.
+100%|██████████| 300/300 [00:18<00:00, 16.54it/s]
+INFO:root:Finished training on 640 data points using 2 GPUs.
+INFO:root:function train_gpytorch is done. [took 32.11059323899099s]
 INFO:root:saving model...
 INFO:root:saving native UQ results...
 INFO:root:plotting native results...
