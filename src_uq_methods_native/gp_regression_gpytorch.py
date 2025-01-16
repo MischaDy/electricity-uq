@@ -81,6 +81,7 @@ def train_gpytorch(
         n_inducing_points=500,
         batch_size=1024,
         mean_type='constant',
+        random_seed=42,
 ):
     n_devices = torch.cuda.device_count()
     logging.info('Planning to run on {} GPUs.'.format(n_devices))

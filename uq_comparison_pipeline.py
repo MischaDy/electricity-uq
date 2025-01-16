@@ -597,6 +597,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_losses_plot=True,
             save_losses_plot=True,
             n_samples_train_loss_plot=10000,
+            random_seed=42,
             skip_training=True,
             save_model=True,
     ):
@@ -655,6 +656,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 io_helper=self.io_helper,
                 n_inducing_points=n_inducing_points,
                 mean_type=mean_type,
+                random_seed=random_seed,
             )
             if save_model:
                 logging.info('saving model...')
