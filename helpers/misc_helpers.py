@@ -368,17 +368,25 @@ def get_train_loader(X_train: 'torch.Tensor', y_train: 'torch.Tensor', batch_siz
 
 
 def timestamped_filename(prefix, ext=None, randomize=False):
-    from datetime import datetime
-    timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
-    filename = f'{prefix}_{timestamp}'
+    filename = f'{prefix}_{get_timestamp()}'
     if randomize:
-        import random
-        import string
-        postfix = ''.join(random.choices(string.ascii_lowercase, k=4))
+        postfix = get_random_string()
         filename = f'{filename}_{postfix}'
     if ext is not None:
         filename = f'{filename}.{ext}'
     return filename
+
+
+def get_random_string(length=4):
+    import random
+    import string
+    return ''.join(random.choices(string.ascii_lowercase, k=length))
+
+
+def get_timestamp():
+    from datetime import datetime
+    timestamp = datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
+    return timestamp
 
 
 def quantiles_gaussian(quantiles: list, y_pred: np.ndarray, y_std: np.ndarray):
