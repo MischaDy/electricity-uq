@@ -12,17 +12,17 @@ logging.basicConfig(level=logging.INFO)
 RUN_SIZE = 'full'
 TIMESTAMPED_FILES = False
 METHODS = {
-    'base_model_hgbr',
-    'base_model_linreg',
-    'base_model_nn',
-#    'native_qhgbr',
-#    'native_qr',
-#    'native_gp',
-#    'native_mvnn',
-#    'posthoc_cp_hgbr',
-#    'posthoc_cp_linreg',
-#    'posthoc_cp_nn',
-#    'posthoc_la_nn',
+    # 'base_model_hgbr',
+    # 'base_model_linreg',
+    # 'base_model_nn',
+    # 'native_qhgbr',
+    # 'native_qr',
+    # 'native_gp',
+    # 'native_mvnn',
+    'posthoc_cp_hgbr',
+    # 'posthoc_cp_linreg',
+    # 'posthoc_cp_nn',
+    # 'posthoc_la_nn',
 }
 UQ_METHOD_TO_ARR_NAMES_DICT = {
     'base_model_hgbr': ['base_model_hgbr_n210432_it30_its3.npy'],
@@ -49,9 +49,9 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
         'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
     ],
     'posthoc_cp_hgbr': [
-        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
     ],
     'posthoc_cp_linreg': [
         'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
