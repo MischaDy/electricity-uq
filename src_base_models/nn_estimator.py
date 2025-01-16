@@ -83,6 +83,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             io_helper=None,
             output_dim=2,
             early_stop_patience=None,
+            n_samples_train_loss_plot=10000,
     ):
         if use_scheduler and early_stop_patience is not None and early_stop_patience <= lr_patience:
             logging.warning('early stop patience < LR patience!')
@@ -102,6 +103,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.show_progress_bar = show_progress_bar
         self.show_losses_plot = show_losses_plot
         self.save_losses_plot = save_losses_plot
+        self.n_samples_train_loss_plot = n_samples_train_loss_plot
         self.io_helper = io_helper
         self.is_fitted_ = False
         self.output_dim = output_dim
@@ -170,6 +172,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         if self.early_stop_patience is not None:
             early_stopper = EarlyStopper(self.early_stop_patience)
 
+        X_train_sample, y_train_sample = misc_helpers.get_random_arrs_samples(
+            [X_train, y_train],
+            n_samples=self.n_samples_train_loss_plot,
+            random_seed=self.random_seed,
+            safe=True,
+        )
         train_losses, val_losses = [], []
         epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
         for epoch in epochs:
@@ -191,7 +199,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
                 if self.show_losses_plot or self.save_losses_plot:
                     val_loss_np = misc_helpers.tensor_to_np_array(val_loss)
                     val_losses.append(val_loss_np)
-                    train_loss_np = self._mse_torch(model(X_train), y_train)
+                    train_loss_np = self._mse_torch(model(X_train_sample), y_train_sample)
                     train_loss_np = misc_helpers.tensor_to_np_array(train_loss_np)
                     train_losses.append(train_loss_np)
 
@@ -199,6 +207,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             if self.early_stop_patience is not None and early_stopper.should_stop(val_loss):
                 logging.info(f'stopping early since no improvement in past {self.early_stop_patience} epochs')
                 break
+
             if self.use_scheduler:
                 scheduler.step(val_loss)
 
@@ -351,6 +360,7 @@ def train_nn(
         show_losses_plot=True,
         save_losses_plot=True,
         io_helper=None,
+        n_samples_train_loss_plot=10000,
         verbose: int = 1,
         warm_start_model=None,
         early_stop_patience=None,
@@ -377,6 +387,7 @@ def train_nn(
             save_losses_plot=save_losses_plot,
             io_helper=io_helper,
             early_stop_patience=early_stop_patience,
+            n_samples_train_loss_plot=n_samples_train_loss_plot,
         )
     else:
         model = warm_start_model

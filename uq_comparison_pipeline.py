@@ -179,6 +179,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_progress_bar=True,
             show_losses_plot=True,
             save_losses_plot=True,
+            n_samples_train_loss_plot=10000,
             skip_training=True,
             warm_start_model_name=None,
             early_stop_patience=None,
@@ -189,6 +190,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         :param early_stop_patience:
         :param warm_start_model_name: model to load for warm-started training
+        :param n_samples_train_loss_plot:
         :param use_scheduler:
         :param weight_decay:
         :param y_val:
@@ -255,6 +257,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             io_helper=self.io_helper,
             warm_start_model=model,
             early_stop_patience=early_stop_patience,
+            n_samples_train_loss_plot=n_samples_train_loss_plot,
         )
         with torch.no_grad():
             y_pred_temp = model.predict(X_train[:1], as_np=False)
