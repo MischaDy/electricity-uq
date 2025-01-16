@@ -12,6 +12,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 
 from helpers import misc_helpers
+from helpers.early_stopper import EarlyStopper
 
 if TYPE_CHECKING:
     import numpy as np
@@ -57,6 +58,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         'save_losses_plot': [bool],
         'output_dim': [int],
         'weight_decay': [float],
+        'n_samples_train_loss_plot': [int],
+        'early_stop_patience': [int],
     }
 
     def __init__(
@@ -79,7 +82,10 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             save_losses_plot=True,
             io_helper=None,
             output_dim=2,
+            early_stop_patience=None,
     ):
+        if use_scheduler and early_stop_patience is not None and early_stop_patience <= lr_patience:
+            logging.warning('early stop patience < LR patience!')
         self.train_size_orig = train_size_orig  # todo: temp solution
         self.use_scheduler = use_scheduler
         self.n_iter = n_iter
@@ -100,6 +106,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.is_fitted_ = False
         self.output_dim = output_dim
         self.output_dim_orig = output_dim
+        self.early_stop_patience = early_stop_patience
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: 'np.ndarray', y: 'np.ndarray'):
@@ -160,6 +167,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         scheduler = ReduceLROnPlateau(optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor)
         criterion = torch.nn.MSELoss()
         criterion = misc_helpers.object_to_cuda(criterion)
+        if self.early_stop_patience is not None:
+            early_stopper = EarlyStopper(self.early_stop_patience)
 
         train_losses, val_losses = [], []
         epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
@@ -180,11 +189,16 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
                 if self.show_losses_plot or self.save_losses_plot:
-                    val_loss = misc_helpers.tensor_to_np_array(val_loss)
-                    val_losses.append(val_loss)
-                    train_loss = self._mse_torch(model(X_train), y_train)
-                    train_loss = misc_helpers.tensor_to_np_array(train_loss)
-                    train_losses.append(train_loss)
+                    val_loss_np = misc_helpers.tensor_to_np_array(val_loss)
+                    val_losses.append(val_loss_np)
+                    train_loss_np = self._mse_torch(model(X_train), y_train)
+                    train_loss_np = misc_helpers.tensor_to_np_array(train_loss_np)
+                    train_losses.append(train_loss_np)
+
+            # noinspection PyUnboundLocalVariable
+            if self.early_stop_patience is not None and early_stopper.should_stop(val_loss):
+                logging.info(f'stopping early since no improvement in past {self.early_stop_patience} epochs')
+                break
             if self.use_scheduler:
                 scheduler.step(val_loss)
 
@@ -339,6 +353,7 @@ def train_nn(
         io_helper=None,
         verbose: int = 1,
         warm_start_model=None,
+        early_stop_patience=None,
 ) -> NN_Estimator:
     train_size_orig = X_train.shape[0]
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)  # todo: temp solution
@@ -361,6 +376,7 @@ def train_nn(
             show_losses_plot=show_losses_plot,
             save_losses_plot=save_losses_plot,
             io_helper=io_helper,
+            early_stop_patience=early_stop_patience,
         )
     else:
         model = warm_start_model

@@ -158,6 +158,7 @@ METHODS_KWARGS = {
         "verbose": 1,
         "save_model": True,
         'warm_start_model_name': None,
+        'early_stop_patience': 30,
     },
 }
 
