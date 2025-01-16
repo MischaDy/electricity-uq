@@ -142,7 +142,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": False,
-        "n_iter": 20,
+        "n_iter": 100,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
@@ -158,7 +158,7 @@ METHODS_KWARGS = {
         "random_seed": 42,
         "verbose": 1,
         "save_model": True,
-        'warm_start_model_name': None,
+        'warm_start_model_name': 'base_model_nn_n35136_it20_nh2_hs50.pth',
         'early_stop_patience': 30,
     },
 }
