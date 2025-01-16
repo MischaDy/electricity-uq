@@ -1,112 +1,11 @@
-import logging
-
 from typing import Generator, Union, TYPE_CHECKING
 
 import settings
 import settings_update
 from helpers import misc_helpers
-from helpers.io_helper import IO_Helper
-from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
 
 if TYPE_CHECKING:
     import numpy as np
-
-logging.basicConfig(level=logging.INFO)
-
-RUN_SIZE = 'full'
-TIMESTAMPED_FILES = False
-METHODS = {
-    'base_modelhgbr',
-    'base_modellinreg',
-    'base_modelnn',
-    'native_qhgbr',
-    'native_qr',
-    'native_gp',
-    'native_mvnn',
-    'posthoc_cp_hgbr',
-    'posthoc_cp_linreg',
-    'posthoc_cp_nn',
-    'posthoc_la_nn',
-}
-UQ_METHOD_TO_ARR_NAMES_DICT = {
-    'base_model_hgbr': ['base_model_hgbr_n210432_it30_its3.npy'],
-    'base_model_linreg': ['base_model_linreg_n210432.npy'],
-    'base_model_nn': ['base_model_nn_n210432_it200_nh2_hs50.npy'],
-    'native_qhgbr': [
-        'native_qhgbr_y_pred_n210432_it0.npy',
-        'native_qhgbr_y_quantiles_n210432_it0.npy',
-        'native_qhgbr_y_std_n210432_it0.npy',
-    ],
-    'native_qr': [
-        'native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy',
-        'native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy',
-    ],
-    'native_gp': [
-        'native_gpytorch_y_pred_n210432_it200.npy',
-        'native_gpytorch_y_quantiles_n210432_it200.npy',
-        'native_gpytorch_y_std_n210432_it200.npy',
-    ],
-    'native_mvnn': [
-        'native_mvnn_y_pred_n210432_it100_nh2_hs50.npy',
-        'native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy',
-        'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
-    ],
-    'posthoc_cp_hgbr': [
-        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
-    ],
-    'posthoc_cp_linreg': [
-        'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy',
-    ],
-    'posthoc_cp_nn': [
-        'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy',
-    ],
-    'posthoc_la_nn': [
-        'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it100.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it100.npy',
-    ],
-}
-
-
-def main():
-    # todo: sharpness? calibration? PIT? coverage?
-    logging.info('running metrics computation script')
-    io_helper = IO_Helper()
-    logging.info('loading train/test data')
-    X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
-    logging.info('loading predictions')
-    uq_method_to_arrs_gen = get_uq_method_to_arrs_gen(
-        uq_methods_whitelist=METHODS,
-        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
-        io_helper=io_helper,
-    )
-    for method, arrs in uq_method_to_arrs_gen:
-        logging.info(f'computing metrics for {method}:')
-        if len(arrs) > 1:
-            y_pred, y_quantiles, y_std = arrs
-        else:
-            y_pred, y_quantiles, y_std = arrs, None, None
-        metrics = {}
-        logging.info(f'deterministic metrics...')
-        metrics_det = compute_metrics_det(y_pred, y)
-        metrics.update(metrics_det)
-        if len(arrs) > 1:
-            logging.info(f'UQ metrics...')
-            metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
-            metrics.update(metrics_uq)
-        logging.info(f'metrics: {metrics}')
-        logging.info('saving metrics...')
-        filename = f'uq_metrics_{method}'
-        if TIMESTAMPED_FILES:
-            filename = misc_helpers.timestamped_filename(filename)
-        io_helper.save_metrics(metrics, filename=filename)
 
 
 def compute_metrics_det(y_pred, y_true) -> dict[str, float]:
@@ -132,21 +31,6 @@ def compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[st
         "ssr": ssr(y_true, y_pred, y_std),
     }
     return _metrics_to_float_allow_none(metrics)
-
-
-def _load_data():
-    settings.RUN_SIZE = RUN_SIZE
-    settings_update.update_run_size_setup()
-    X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers.get_data(
-        filepath=settings.DATA_FILEPATH,
-        train_years=settings.TRAIN_YEARS,
-        val_years=settings.VAL_YEARS,
-        test_years=settings.TEST_YEARS,
-        n_points_per_group=settings.N_POINTS_PER_GROUP,
-        do_standardize_data=True,
-    )
-    y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
-    return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
 
 
 ### HELPERS ###
@@ -176,7 +60,3 @@ def _make_arrs_1d_allow_none(*arrs) -> Generator[Union['np.ndarray', None], None
             yield arr
         else:
             yield np.array(arr).squeeze()
-
-
-if __name__ == '__main__':
-    main()
