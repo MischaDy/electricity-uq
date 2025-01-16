@@ -153,6 +153,7 @@ METHODS_KWARGS = {
         "show_progress_bar": False,
         "show_losses_plot": False,
         "save_losses_plot": True,
+        'n_samples_train_loss_plot': 10000,
         "random_seed": 42,
         "verbose": 1,
         "save_model": True,

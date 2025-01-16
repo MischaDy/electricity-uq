@@ -57,6 +57,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         'save_losses_plot': [bool],
         'output_dim': [int],
         'weight_decay': [float],
+        'n_samples_train_loss_plot': [int],
     }
 
     def __init__(
@@ -79,6 +80,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             save_losses_plot=True,
             io_helper=None,
             output_dim=2,
+            n_samples_train_loss_plot=10000,
     ):
         self.train_size_orig = train_size_orig  # todo: temp solution
         self.use_scheduler = use_scheduler
@@ -96,6 +98,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.show_progress_bar = show_progress_bar
         self.show_losses_plot = show_losses_plot
         self.save_losses_plot = save_losses_plot
+        self.n_samples_train_loss_plot = n_samples_train_loss_plot
         self.io_helper = io_helper
         self.is_fitted_ = False
         self.output_dim = output_dim
@@ -163,6 +166,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         criterion = torch.nn.MSELoss()
         criterion = misc_helpers.object_to_cuda(criterion)
 
+        X_train_sample, y_train_sample = misc_helpers.get_random_arrs_samples(
+            [X_train, y_train],
+            n_samples=self.n_samples_train_loss_plot,
+            random_seed=self.random_seed,
+            safe=True,
+        )
         train_losses, val_losses = [], []
         epochs = tqdm(range(self.n_iter)) if self.show_progress_bar else range(self.n_iter)
         for epoch in epochs:
@@ -179,7 +188,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
                 if self.save_losses_plot:
-                    train_loss = self._mse_torch(model(X_train), y_train)
+                    train_loss = self._mse_torch(model(X_train_sample), y_train_sample)
                     train_loss = misc_helpers.tensor_to_np_array(train_loss)
                     train_losses.append(train_loss)
             if self.use_scheduler:
@@ -337,6 +346,7 @@ def train_nn(
         show_losses_plot=True,
         save_losses_plot=True,
         io_helper=None,
+        n_samples_train_loss_plot=10000,
         verbose: int = 1,
 ) -> NN_Estimator:
     train_size_orig = X_train.shape[0]
@@ -359,6 +369,7 @@ def train_nn(
         show_losses_plot=show_losses_plot,
         save_losses_plot=save_losses_plot,
         io_helper=io_helper,
+        n_samples_train_loss_plot=n_samples_train_loss_plot,
     )
     # noinspection PyTypeChecker
     model.fit(X_train, y_train)
