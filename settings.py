@@ -142,7 +142,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": False,
-        "n_iter": 200,
+        "n_iter": 20,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
