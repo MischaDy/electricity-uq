@@ -214,7 +214,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :param random_seed:
         :return:
         """
-        from src_base_models.nn_estimator import train_nn
+        from src_base_models.nn_estimator import train_nn, NN_Estimator
         import torch
         torch.set_default_dtype(torch.float32)
 
@@ -222,16 +222,46 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             logging.warning('cuda not available! using CPU')
 
         method_name = 'base_model_nn'
+        model_kwargs = {
+            'dim_in': X_train.shape[1],
+            'train_size_orig': X_train.shape[0],
+            'num_hidden_layers': num_hidden_layers,
+            'hidden_layer_size': hidden_layer_size,
+            'activation': activation,
+            'n_iter': n_iter,
+            'batch_size': batch_size,
+            'random_seed': random_seed,
+            'weight_decay': weight_decay,
+            'use_scheduler': use_scheduler,
+            'lr': lr,
+            'lr_patience': lr_patience,
+            'lr_reduction_factor': lr_reduction_factor,
+            'verbose': verbose,
+            'show_progress_bar': show_progress_bar,
+            'show_losses_plot': show_losses_plot,
+            'save_losses_plot': save_losses_plot,
+            'io_helper': self.io_helper,
+            'early_stop_patience': early_stop_patience,
+            'n_samples_train_loss_plot': n_samples_train_loss_plot,
+        }
         if skip_training:
-            model = self.try_skipping_training(method_name)
-            if model is not None:
-                model = misc_helpers.object_to_cuda(model)
-                return model
+            model = self.io_helper.load_torch_model_statedict(
+                NN_Estimator,
+                method_name=method_name,
+                model_kwargs=model_kwargs,
+            )
+            # todo: correct NN_Estimator params!
+            model = misc_helpers.object_to_cuda(model)
+            return model
 
         model = None
         if warm_start_model_name is not None:
-            model = self.io_helper.load_model(filename=warm_start_model_name)
-
+            model = self.io_helper.load_torch_model_statedict(
+                NN_Estimator,
+                filename=warm_start_model_name,
+                model_kwargs=model_kwargs,
+            )
+            model = misc_helpers.object_to_cuda(model)
         if activation is None:
             activation = torch.nn.LeakyReLU
         model = train_nn(
@@ -265,7 +295,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         if save_model:
             model.to('cpu')  # temp
             infix = misc_helpers.get_random_string() if warm_start_model_name is not None else None
-            self.save_model(model, method_name=method_name, infix=infix)
+            self.io_helper.save_torch_model_statedict(model, method_name=method_name, infix=infix)
             misc_helpers.object_to_cuda(model)  # temp
         # noinspection PyTypeChecker
         model.set_params(verbose=False)

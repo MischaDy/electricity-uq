@@ -125,6 +125,7 @@ class IO_Helper:
         :param filename:
         :return:
         """
+        # todo: num_layers = len([k for k in statedict.keys() if 'weight' in k])
         import torch
         torch.set_default_dtype(torch.float32)
         if filename is None:
