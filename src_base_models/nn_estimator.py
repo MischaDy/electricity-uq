@@ -41,6 +41,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     """
 
     _parameter_constraints = {
+        'dim_in': [int],
         "train_size_orig": [int],
         "n_iter": [int],
         "batch_size": [int],
@@ -64,6 +65,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def __init__(
             self,
+            dim_in,
             train_size_orig,
             n_iter=100,
             batch_size=20,
@@ -87,6 +89,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     ):
         if use_scheduler and early_stop_patience is not None and early_stop_patience <= lr_patience:
             logging.warning('early stop patience < LR patience!')
+        self.dim_in = dim_in
         self.train_size_orig = train_size_orig  # todo: temp solution
         self.use_scheduler = use_scheduler
         self.n_iter = n_iter
@@ -136,6 +139,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         torch.manual_seed(self.random_seed)
 
         X, y = self._validate_data(X, y, accept_sparse=False)  # todo: remove "y is 2d" warning
+        assert self.dim_in == X.shape[-1]
 
         if self.activation is None:
             self.activation = torch.nn.LeakyReLU
@@ -150,9 +154,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         X_train, y_train, X_val, y_val = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
         X_train, y_train, X_val, y_val = misc_helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
-        dim_in = X_train.shape[-1]
         model = self._nn_builder(
-            dim_in,
+            self.dim_in,
             num_hidden_layers=self.num_hidden_layers,
             hidden_layer_size=self.hidden_layer_size,
             activation=self.activation,
@@ -315,7 +318,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def __getattr__(self, item):
         try:
-            model = self.__getattribute__('model_')  # workaround bcdirect attr access doesn't work
+            model = self.__getattribute__('model_')  # workaround bc direct attr access doesn't work
             return getattr(model, item)
         except AttributeError:
             msg = f'NN_Estimator has no attribute "{item}"'
@@ -338,6 +341,16 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def reset_output_dim(self):
         self.output_dim = self.output_dim_orig
+
+    def load_state_dict(self, state_dict):
+        model = self._nn_builder(
+            self.dim_in,
+            num_hidden_layers=self.num_hidden_layers,
+            hidden_layer_size=self.hidden_layer_size,
+            activation=self.activation,
+        )
+        model.load_state_dict(state_dict)
+        self.model_ = model
 
 
 def train_nn(
@@ -367,8 +380,10 @@ def train_nn(
 ) -> NN_Estimator:
     train_size_orig = X_train.shape[0]
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)  # todo: temp solution
+    dim_in = X_train.shape[1]
     if warm_start_model is None:
         model = NN_Estimator(
+            dim_in=dim_in,
             train_size_orig=train_size_orig,
             n_iter=n_iter,
             batch_size=batch_size,
@@ -398,5 +413,5 @@ def train_nn(
 
 if __name__ == '__main__':
     from sklearn.utils.estimator_checks import check_estimator
-    estimator = NN_Estimator(train_size_orig=10, verbose=0)  # todo: does temp solution work?
+    estimator = NN_Estimator(dim_in=2, train_size_orig=10, verbose=0)  # todo: does temp solution work?
     check_estimator(estimator)
