@@ -142,12 +142,12 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": False,
-        "n_iter": 20,
+        "n_iter": 300,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
         "weight_decay": 1e-3,
-        "lr": 1e-2,  # defaults to 1e-2 if use_scheduler is true
+        "lr": 1e-3,  # defaults to 1e-2 if use_scheduler is true
         'use_scheduler': True,
         "lr_patience": 10,
         "lr_reduction_factor": 0.8,
