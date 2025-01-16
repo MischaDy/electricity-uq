@@ -377,9 +377,10 @@ def timestamped_filename(prefix, ext=None, randomize=False):
     return filename
 
 
-def get_random_string(length=4):
-    import random
+def get_random_string(length=4, random_seed=None):
     import string
+    import random
+    random.seed(random_seed)
     return ''.join(random.choices(string.ascii_lowercase, k=length))
 
 
