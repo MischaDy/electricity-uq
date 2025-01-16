@@ -230,7 +230,7 @@ class IO_Helper:
 
     def save_metrics(self, metrics: dict, method_name=None, filename=None, infix=None):
         import json
-        infix = 'metrics' if infix is None else f'{infix}_metrics'
+        infix = 'metrics' if infix is None else f'{infix}{self.sep}metrics'
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='metrics')
         elif not os.path.splitext(filename)[-1]:
@@ -284,7 +284,7 @@ class IO_Helper:
             joined_suffixes.append(joined_suffix)
         suffix_str = self.sep.join(joined_suffixes)
 
-        filename = f'{method_name}_{base_suffix}' if base_suffix is not None else method_name
+        filename = f'{method_name}{self.sep}{base_suffix}' if base_suffix is not None else method_name
         if infix is not None:
             filename += f'{self.sep}{infix}'
         filename += f'{self.sep}{suffix_str}.{ext}'
