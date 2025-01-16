@@ -131,19 +131,22 @@ def train_gpytorch(
             loss.backward()
             optimizer.step()
     
+        if not any([use_scheduler, show_losses_plot, save_losses_plot]):
+            continue
+
+        model.eval()
+        likelihood.eval()
+        with torch.no_grad(), gpytorch.settings.memory_efficient(True):
+            # compute val loss
+            y_pred_val = model(X_val)
+            val_loss = -mll(y_pred_val, y_val).sum()
+            val_losses.append(val_loss.item())
+            if show_losses_plot or save_losses_plot:
+                # compute train loss
+                y_pred_train = model(X_train_sample)
+                train_loss = -mll(y_pred_train, y_train_sample).sum()
+                train_losses.append(train_loss.item())
         if use_scheduler:
-            model.eval()
-            likelihood.eval()
-            with torch.no_grad(), gpytorch.settings.memory_efficient(True):
-                # compute val loss
-                y_pred_val = model(X_val)
-                val_loss = -mll(y_pred_val, y_val).sum()
-                if show_losses_plot or save_losses_plot:
-                    val_losses.append(val_loss.item())
-                    # compute train loss
-                    y_pred_train = model(X_train_sample)
-                    train_loss = -mll(y_pred_train, y_train_sample).sum()
-                    train_losses.append(train_loss.item())
             scheduler.step(val_loss)
 
         # noinspection PyTypeChecker
