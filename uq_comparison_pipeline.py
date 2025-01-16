@@ -596,6 +596,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_plots=True,
             show_losses_plot=True,
             save_losses_plot=True,
+            n_samples_train_loss_plot=10000,
             skip_training=True,
             save_model=True,
     ):
@@ -650,6 +651,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 show_plots=show_plots,
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
+                n_samples_train_loss_plot=n_samples_train_loss_plot,
                 io_helper=self.io_helper,
                 n_inducing_points=n_inducing_points,
                 mean_type=mean_type,

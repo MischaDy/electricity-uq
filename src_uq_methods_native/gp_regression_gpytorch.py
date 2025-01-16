@@ -76,6 +76,7 @@ def train_gpytorch(
         show_plots=True,
         show_losses_plot=True,
         save_losses_plot=True,
+        n_samples_train_loss_plot=10000,
         io_helper=None,
         n_inducing_points=500,
         batch_size=1024,
@@ -91,7 +92,7 @@ def train_gpytorch(
     logging.info('setup models')
     if N_INDUCING_POINTS is not None:
         n_inducing_points = N_INDUCING_POINTS
-    inducing_points = misc_helpers.get_random_arr_sample(X_train, n_inducing_points, sort_sample=True)
+    inducing_points = misc_helpers.get_random_arr_sample(X_train, n_inducing_points, safe=True)
     model = ApproximateGP(inducing_points=inducing_points, mean_type=mean_type)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
@@ -107,7 +108,12 @@ def train_gpytorch(
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     logging.info('start proper training...')
-    # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
+    X_train_sample, y_train_sample = misc_helpers.get_random_arrs_samples(
+        [X_train, y_train],
+        n_samples=n_samples_train_loss_plot,
+        random_seed=random_seed,
+        safe=True,
+    )
     train_losses, val_losses = [], []
     epochs = range(1, n_iter+1)
     if show_progress_bar:
@@ -134,8 +140,8 @@ def train_gpytorch(
                 if show_losses_plot or save_losses_plot:
                     val_losses.append(val_loss.item())
                     # compute train loss
-                    y_pred_train = model(X_train)
-                    train_loss = -mll(y_pred_train, y_train).sum()
+                    y_pred_train = model(X_train_sample)
+                    train_loss = -mll(y_pred_train, y_train_sample).sum()
                     train_losses.append(train_loss.item())
             scheduler.step(val_loss)
 

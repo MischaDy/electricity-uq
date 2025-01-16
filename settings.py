@@ -102,6 +102,7 @@ METHODS_KWARGS = {
         'show_plots': False,
         'show_losses_plot': False,
         'save_losses_plot': True,
+        'n_samples_train_loss_plot': 10000,
         'save_model': True,
     },
     "posthoc_conformal_prediction": {
