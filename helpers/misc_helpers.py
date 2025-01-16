@@ -1,4 +1,4 @@
-from typing import Generator, Any, TYPE_CHECKING
+from typing import Generator, Any, TYPE_CHECKING, Union
 
 import numpy as np
 import logging
@@ -536,3 +536,44 @@ def _quick_load_data(run_size):
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = data
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
     return X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y
+
+
+def get_random_arr_sample(arr_2d: Union['np.ndarray', 'torch.Tensor'], n_samples: int, random_seed=42,
+                          sort_sample=False, safe=False):
+    """
+
+    :param arr_2d:
+    :param n_samples:
+    :param random_seed:
+    :param sort_sample: if True, returns a list
+    :param safe:
+    :return:
+    """
+    arr_sample = get_random_arrs_samples([arr_2d], n_samples, random_seed=random_seed, safe=safe)[0]
+    if sort_sample:
+        arr_sample = sorted(arr_sample)
+    return arr_sample
+
+
+def get_random_arrs_samples(arrs_2d: list['np.ndarray'] | list['torch.Tensor'], n_samples: int, random_seed=42,
+                            safe=False):
+    """
+    get distinct random samples, with all arrays being sampled together (as if zipped)
+
+    :param safe: if True, limit number of samples to number of datapoints
+    :param arrs_2d: list of arrays with same number of samples (first dim)
+    :param n_samples:
+    :param random_seed:
+    :return:
+    """
+    n_datapoints = arrs_2d[0].shape[0]
+    assert np.all(np.array([arr.shape[0] for arr in arrs_2d]) == n_datapoints)
+
+    import random
+    random.seed(random_seed)
+
+    if safe:
+        n_samples = min(n_samples, n_datapoints)
+    arr_sample = random.sample(range(n_datapoints), n_samples)
+    arrs_2d_samples = [arr_2d[arr_sample] for arr_2d in arrs_2d]
+    return arrs_2d_samples
