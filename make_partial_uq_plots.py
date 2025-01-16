@@ -11,17 +11,17 @@ from helpers import uq_arr_helpers
 logging.basicConfig(level=logging.INFO)
 
 
-SAVE_PLOT = True
 SHOW_PLOT = False
-PLOT_EXT = 'svg'
+SAVE_PLOT = True
+PLOT_EXT = 'png'
 
-SMALL_IO_HELPER = True
+SMALL_IO_HELPER = False
 
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
     # 'qr',
-    # 'gp',
-    'mvnn',
+    'gp',
+    # 'mvnn',
     # 'cp_hgbr',
     # 'cp_linreg',
     # 'cp_nn',
@@ -85,7 +85,7 @@ METHOD_NAME_TO_BASE_FILENAME = {
 if SMALL_IO_HELPER:
     IO_HELPER = IO_Helper(arrays_folder='arrays_small', models_folder='models_small')
 else:
-    IO_HELPER = IO_Helper()
+    IO_HELPER = IO_Helper(arrays_folder='arrays_gp', models_folder='models_gp')
 
 
 def main():
