@@ -227,7 +227,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             'train_size_orig': X_train.shape[0],
             'num_hidden_layers': num_hidden_layers,
             'hidden_layer_size': hidden_layer_size,
-            'activation': activation,
+            'activation': activation if activation is not None else torch.nn.LeakyReLU,
             'n_iter': n_iter,
             'batch_size': batch_size,
             'random_seed': random_seed,
