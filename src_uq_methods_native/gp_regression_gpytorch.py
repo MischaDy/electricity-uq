@@ -17,22 +17,32 @@ torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
 
-STORE_PLOT_EVERY_N = 1
+STORE_PLOT_EVERY_N = None
 N_SAMPLES_TO_PLOT = 1600
 SHOW_PLOT = False
-SAVE_PLOT = True
+SAVE_PLOT = False
 N_INDUCING_POINTS = None
-PLOT_EXT = 'svg'
+PLOT_EXT = 'png'
 
 
 # noinspection PyPep8Naming
 class ApproximateGP(gpytorch.models.ApproximateGP):
-    def __init__(self, inducing_points):
+    def __init__(self, inducing_points, mean_type='constant'):
+        """
+
+        :param inducing_points:
+        :param mean_type: one of 'constant', 'linear'
+        """
+        assert mean_type in ['constant', 'linear']
         variational_distribution = CholeskyVariationalDistribution(inducing_points.size(0))
         variational_strategy = VariationalStrategy(self, inducing_points, variational_distribution,
                                                    learn_inducing_locations=True)
         super(ApproximateGP, self).__init__(variational_strategy)
-        self.mean_module = gpytorch.means.ConstantMean()
+        if mean_type == 'constant':
+            self.mean_module = gpytorch.means.ConstantMean()
+        else:
+            input_dim = inducing_points[0].shape[1]
+            self.mean_module = gpytorch.means.LinearMean(input_dim)
         self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.keops.RBFKernel())
 
     def forward(self, X):
@@ -66,9 +76,12 @@ def train_gpytorch(
         show_plots=True,
         show_losses_plot=True,
         save_losses_plot=True,
+        n_samples_train_loss_plot=10000,
         io_helper=None,
         n_inducing_points=500,
         batch_size=1024,
+        mean_type='constant',
+        random_seed=42,
 ):
     n_devices = torch.cuda.device_count()
     logging.info('Planning to run on {} GPUs.'.format(n_devices))
@@ -80,15 +93,15 @@ def train_gpytorch(
     logging.info('setup models')
     if N_INDUCING_POINTS is not None:
         n_inducing_points = N_INDUCING_POINTS
-    inducing_points = get_inducing_points(X_train, n_inducing_points)
-    model = ApproximateGP(inducing_points=inducing_points)
+    inducing_points = misc_helpers.get_random_arr_sample(X_train, n_inducing_points, safe=True)
+    model = ApproximateGP(inducing_points=inducing_points, mean_type=mean_type)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
     model.train()
     likelihood.train()
 
     logging.info('setup meta-models')
-    mll = gpytorch.mlls.VariationalELBO(likelihood, model, num_data=y_train.size(0))
+    mll = gpytorch.mlls.PredictiveLogLikelihood(likelihood, model, num_data=y_train.size(0))
     optimizer = torch.optim.Adam([
         {'params': model.parameters()},
         {'params': likelihood.parameters()},
@@ -96,7 +109,12 @@ def train_gpytorch(
     scheduler = ReduceLROnPlateau(optimizer, patience=lr_patience, factor=lr_reduction_factor)
 
     logging.info('start proper training...')
-    # with gpytorch.settings.max_preconditioner_size(preconditioner_size):
+    X_train_sample, y_train_sample = misc_helpers.get_random_arrs_samples(
+        [X_train, y_train],
+        n_samples=n_samples_train_loss_plot,
+        random_seed=random_seed,
+        safe=True,
+    )
     train_losses, val_losses = [], []
     epochs = range(1, n_iter+1)
     if show_progress_bar:
@@ -113,17 +131,25 @@ def train_gpytorch(
             loss.backward()
             optimizer.step()
     
-        if use_scheduler or show_losses_plot:
-            # noinspection PyUnboundLocalVariable
-            train_losses.append(loss.item())  # don't append more often than needed
-            model.eval()
-            likelihood.eval()
-            with torch.no_grad(), gpytorch.settings.memory_efficient(True):
-                y_pred_batch = model(X_val)
-                val_loss = -mll(y_pred_batch, y_val).sum()
-                val_losses.append(val_loss.item())
+        if not any([use_scheduler, show_losses_plot, save_losses_plot]):
+            continue
+
+        model.eval()
+        likelihood.eval()
+        with torch.no_grad(), gpytorch.settings.memory_efficient(True):
+            # compute val loss
+            y_pred_val = model(X_val)
+            val_loss = -mll(y_pred_val, y_val).sum()
+            val_losses.append(val_loss.item())
+            if show_losses_plot or save_losses_plot:
+                # compute train loss
+                y_pred_train = model(X_train_sample)
+                train_loss = -mll(y_pred_train, y_train_sample).sum()
+                train_losses.append(train_loss.item())
+        if use_scheduler:
             scheduler.step(val_loss)
 
+        # noinspection PyTypeChecker
         if STORE_PLOT_EVERY_N is not None and epoch % STORE_PLOT_EVERY_N == 0:
             make_plot(model, likelihood, settings.QUANTILES, X_train[:N_SAMPLES_TO_PLOT], y_train[:N_SAMPLES_TO_PLOT],
                       infix=epoch)
@@ -140,24 +166,6 @@ def train_gpytorch(
 
     logging.info(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
     return model, likelihood
-
-
-def get_inducing_points(X_train, n_inducing_points, random_seed=42):
-    """
-    currently uses the simplest unbiased method: sampling!
-
-    :param random_seed:
-    :param X_train:
-    :param n_inducing_points:
-    :return:
-    """
-    import random
-
-    random.seed(random_seed)
-    n_samples_train = X_train.shape[0]
-    inducing_inds = random.sample(range(n_samples_train), n_inducing_points)
-    inducing_inds = sorted(inducing_inds)
-    return X_train[inducing_inds]
 
 
 @misc_helpers.measure_runtime

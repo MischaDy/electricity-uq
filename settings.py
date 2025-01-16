@@ -6,7 +6,7 @@ from scipy import stats
 
 ### CONVENIENCE FLAGS ###
 
-RUN_SIZE: Literal['full', 'big', 'small'] = 'big'
+RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
 DO_TRAIN_ALL = True
 SKIP_TRAINING_ALL = False
@@ -91,15 +91,18 @@ METHODS_KWARGS = {
     },
     "native_gpytorch": {
         'skip_training': False,
-        'n_iter': 30,
+        'n_iter': 200,
         'lr': 1e-2,
         'use_scheduler': True,
-        'lr_patience': 15,
-        'lr_reduction_factor': 0.9,
+        'lr_patience': 10,
+        'lr_reduction_factor': 0.8,
+        'n_inducing_points': 500,
+        'mean_type': 'constant',
         'show_progress_bar': True,
-        'show_plots': True,
+        'show_plots': False,
         'show_losses_plot': False,
         'save_losses_plot': True,
+        'n_samples_train_loss_plot': 10000,
         'save_model': True,
     },
     "posthoc_conformal_prediction": {
@@ -151,6 +154,7 @@ METHODS_KWARGS = {
         "show_progress_bar": False,
         "show_losses_plot": False,
         "save_losses_plot": True,
+        'n_samples_train_loss_plot': 10000,
         "random_seed": 42,
         "verbose": 1,
         "save_model": True,

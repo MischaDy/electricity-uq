@@ -11,9 +11,65 @@ from helpers import uq_arr_helpers
 logging.basicConfig(level=logging.INFO)
 
 
-SAVE_PLOT = True
 SHOW_PLOT = False
-PLOT_EXT = 'svg'
+SAVE_PLOT = True
+PLOT_EXT = 'png'
+
+SMALL_IO_HELPER = False
+
+UQ_METHODS_WHITELIST = {
+    # 'qhgbr',
+    # 'qr',
+    'gp',
+    # 'mvnn',
+    # 'cp_hgbr',
+    # 'cp_linreg',
+    # 'cp_nn',
+    # 'la_nn',
+}
+UQ_METHOD_TO_ARR_NAMES_DICT = {
+    'qhgbr': [
+        'native_qhgbr_y_pred_n210432_it0.npy',
+        'native_qhgbr_y_quantiles_n210432_it0.npy',
+        'native_qhgbr_y_std_n210432_it0.npy',
+    ],
+    'qr': [
+        'native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy',
+        'native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy',
+        'native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy',
+    ],
+    'gp': [
+        'native_gpytorch_y_pred_n210432_it200.npy',
+        'native_gpytorch_y_quantiles_n210432_it200.npy',
+        'native_gpytorch_y_std_n210432_it200.npy',
+    ],
+    'mvnn': [
+        'native_mvnn_y_pred_n35136_it150_nh2_hs50.npy',
+        'native_mvnn_y_quantiles_n35136_it150_nh2_hs50.npy',
+        'native_mvnn_y_std_n35136_it150_nh2_hs50.npy',
+    ],
+    'cp_hgbr': [
+        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
+    ],
+    'cp_linreg': [
+        'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy',
+    ],
+    'cp_nn': [
+        'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy',
+    ],
+    'la_nn': [
+        'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it100.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it100.npy',
+    ],
+}
+
 METHOD_NAME_TO_BASE_FILENAME = {
     'qhgbr': 'native_qhgbr',
     'qr': 'native_quantile_regression_nn',
@@ -25,7 +81,11 @@ METHOD_NAME_TO_BASE_FILENAME = {
     'la_nn': 'posthoc_laplace_approximation_base_model_nn',
 }
 
-IO_HELPER = IO_Helper()
+
+if SMALL_IO_HELPER:
+    IO_HELPER = IO_Helper(arrays_folder='arrays_small', models_folder='models_small')
+else:
+    IO_HELPER = IO_Helper(arrays_folder='arrays_gp', models_folder='models_gp')
 
 
 def main():
@@ -45,7 +105,11 @@ def main():
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
     logging.info('loading predictions')
-    uq_method_to_arrs_gen = uq_arr_helpers.get_uq_method_to_arrs_gen(io_helper=IO_HELPER)
+    uq_method_to_arrs_gen = uq_arr_helpers.get_uq_method_to_arrs_gen(
+        io_helper=IO_HELPER,
+        uq_methods_whitelist=UQ_METHODS_WHITELIST,
+        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
+    )
     for uq_method, arrs in uq_method_to_arrs_gen:
         logging.info(f'plotting for method {uq_method}')
         y_pred, y_quantiles, y_std = arrs

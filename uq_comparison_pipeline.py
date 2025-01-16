@@ -179,12 +179,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_progress_bar=True,
             show_losses_plot=True,
             save_losses_plot=True,
+            n_samples_train_loss_plot=10000,
             skip_training=True,
             save_model=True,
             verbose: int = 1,
     ) -> 'NN_Estimator':
         """
 
+        :param n_samples_train_loss_plot:
         :param use_scheduler:
         :param weight_decay:
         :param y_val:
@@ -245,6 +247,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_losses_plot=show_losses_plot,
             save_losses_plot=save_losses_plot,
             io_helper=self.io_helper,
+            n_samples_train_loss_plot=n_samples_train_loss_plot,
         )
         with torch.no_grad():
             y_pred_temp = model.predict(X_train[:1], as_np=False)
@@ -587,11 +590,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             use_scheduler=True,
             lr_patience=30,
             lr_reduction_factor=0.5,
+            n_inducing_points=500,
+            mean_type='constant',
             show_progress_bar=True,
             show_plots=True,
             show_losses_plot=True,
             save_losses_plot=True,
-            n_inducing_points=500,
+            n_samples_train_loss_plot=10000,
+            random_seed=42,
             skip_training=True,
             save_model=True,
     ):
@@ -646,8 +652,11 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 show_plots=show_plots,
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
+                n_samples_train_loss_plot=n_samples_train_loss_plot,
                 io_helper=self.io_helper,
                 n_inducing_points=n_inducing_points,
+                mean_type=mean_type,
+                random_seed=random_seed,
             )
             if save_model:
                 logging.info('saving model...')
