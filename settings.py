@@ -157,6 +157,7 @@ METHODS_KWARGS = {
         "random_seed": 42,
         "verbose": 1,
         "save_model": True,
+        'warm_start_model_name': None,
     },
 }
 

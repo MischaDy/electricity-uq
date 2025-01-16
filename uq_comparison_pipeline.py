@@ -180,11 +180,13 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_losses_plot=True,
             save_losses_plot=True,
             skip_training=True,
+            warm_start_model_name=None,
             save_model=True,
             verbose: int = 1,
     ) -> 'NN_Estimator':
         """
 
+        :param warm_start_model_name: model to load for warm-started training
         :param use_scheduler:
         :param weight_decay:
         :param y_val:
@@ -222,6 +224,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 model = misc_helpers.object_to_cuda(model)
                 return model
 
+        model = None
+        if warm_start_model_name is not None:
+            model = self.io_helper.load_model(filename=warm_start_model_name)
+
         if activation is None:
             activation = torch.nn.LeakyReLU
         model = train_nn(
@@ -245,13 +251,15 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_losses_plot=show_losses_plot,
             save_losses_plot=save_losses_plot,
             io_helper=self.io_helper,
+            warm_start_model=model,
         )
         with torch.no_grad():
             y_pred_temp = model.predict(X_train[:1], as_np=False)
         model.set_output_dim(len(y_pred_temp.shape), orig=True)
         if save_model:
             model.to('cpu')  # temp
-            self.save_model(model, method_name=method_name)
+            infix = misc_helpers.get_random_string() if warm_start_model_name is not None else None
+            self.save_model(model, method_name=method_name, infix=infix)
             misc_helpers.object_to_cuda(model)  # temp
         # noinspection PyTypeChecker
         model.set_params(verbose=False)

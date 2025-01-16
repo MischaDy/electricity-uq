@@ -338,28 +338,32 @@ def train_nn(
         save_losses_plot=True,
         io_helper=None,
         verbose: int = 1,
+        warm_start_model=None,
 ) -> NN_Estimator:
     train_size_orig = X_train.shape[0]
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)  # todo: temp solution
-    model = NN_Estimator(
-        train_size_orig=train_size_orig,
-        n_iter=n_iter,
-        batch_size=batch_size,
-        random_seed=random_seed,
-        num_hidden_layers=num_hidden_layers,
-        hidden_layer_size=hidden_layer_size,
-        activation=activation,
-        weight_decay=weight_decay,
-        lr=lr,
-        use_scheduler=use_scheduler,
-        lr_patience=lr_patience,
-        lr_reduction_factor=lr_reduction_factor,
-        verbose=verbose,
-        show_progress_bar=show_progress_bar,
-        show_losses_plot=show_losses_plot,
-        save_losses_plot=save_losses_plot,
-        io_helper=io_helper,
-    )
+    if warm_start_model is None:
+        model = NN_Estimator(
+            train_size_orig=train_size_orig,
+            n_iter=n_iter,
+            batch_size=batch_size,
+            random_seed=random_seed,
+            num_hidden_layers=num_hidden_layers,
+            hidden_layer_size=hidden_layer_size,
+            activation=activation,
+            weight_decay=weight_decay,
+            lr=lr,
+            use_scheduler=use_scheduler,
+            lr_patience=lr_patience,
+            lr_reduction_factor=lr_reduction_factor,
+            verbose=verbose,
+            show_progress_bar=show_progress_bar,
+            show_losses_plot=show_losses_plot,
+            save_losses_plot=save_losses_plot,
+            io_helper=io_helper,
+        )
+    else:
+        model = warm_start_model
     # noinspection PyTypeChecker
     model.fit(X_train, y_train)
     return model
