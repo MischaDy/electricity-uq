@@ -184,11 +184,14 @@ class IO_Helper:
         logging.info(f'saving torch model to {path}')
         torch.save(model, path)
 
-    def save_torch_model_statedict(self, model, method_name=None, filename=None, infix=None):
+    def save_torch_model_statedict(self, model, method_name=None, filename=None, infix=None, postfix=None):
         import torch
         torch.set_default_dtype(torch.float32)
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='model')
+        if postfix is not None:
+            root, ext = os.path.splitext(filename)
+            filename = f'{root}{self.sep}{postfix}{ext}'
         path = self._get_model_savepath(filename)
         logging.info(f'saving torch statedict to {path}')
         torch.save(model.state_dict(), path)

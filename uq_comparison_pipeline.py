@@ -294,8 +294,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model.set_output_dim(len(y_pred_temp.shape), orig=True)
         if save_model:
             model.to('cpu')  # temp
-            infix = misc_helpers.get_random_string() if warm_start_model_name is not None else None
-            self.io_helper.save_torch_model_statedict(model, method_name=method_name, infix=infix)
+            postfix = misc_helpers.get_random_string() if warm_start_model_name is not None else None
+            self.io_helper.save_torch_model_statedict(model, method_name=method_name, postfix=postfix)
             misc_helpers.object_to_cuda(model)  # temp
         # noinspection PyTypeChecker
         model.set_params(verbose=False)
