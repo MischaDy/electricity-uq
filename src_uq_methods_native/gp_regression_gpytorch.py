@@ -91,7 +91,7 @@ def train_gpytorch(
     logging.info('setup models')
     if N_INDUCING_POINTS is not None:
         n_inducing_points = N_INDUCING_POINTS
-    inducing_points = get_inducing_points(X_train, n_inducing_points)
+    inducing_points = misc_helpers.get_random_arr_sample(X_train, n_inducing_points, sort_sample=True)
     model = ApproximateGP(inducing_points=inducing_points, mean_type=mean_type)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model, likelihood = misc_helpers.objects_to_cuda(model, likelihood)
@@ -139,6 +139,7 @@ def train_gpytorch(
                     train_losses.append(train_loss.item())
             scheduler.step(val_loss)
 
+        # noinspection PyTypeChecker
         if STORE_PLOT_EVERY_N is not None and epoch % STORE_PLOT_EVERY_N == 0:
             make_plot(model, likelihood, settings.QUANTILES, X_train[:N_SAMPLES_TO_PLOT], y_train[:N_SAMPLES_TO_PLOT],
                       infix=epoch)
@@ -155,24 +156,6 @@ def train_gpytorch(
 
     logging.info(f"Finished training on {X_train.size(0)} data points using {n_devices} GPUs.")
     return model, likelihood
-
-
-def get_inducing_points(X_train, n_inducing_points, random_seed=42):
-    """
-    currently uses the simplest unbiased method: sampling!
-
-    :param random_seed:
-    :param X_train:
-    :param n_inducing_points:
-    :return:
-    """
-    import random
-
-    random.seed(random_seed)
-    n_samples_train = X_train.shape[0]
-    inducing_inds = random.sample(range(n_samples_train), n_inducing_points)
-    inducing_inds = sorted(inducing_inds)
-    return X_train[inducing_inds]
 
 
 @misc_helpers.measure_runtime

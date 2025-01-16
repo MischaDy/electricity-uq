@@ -7,7 +7,6 @@ from helpers import uq_arr_helpers, misc_helpers
 from helpers.io_helper import IO_Helper
 
 
-
 RUN_SIZE = 'full'
 SMALL_IO_HELPER = False
 
