@@ -175,6 +175,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         if self.early_stop_patience is not None:
             early_stopper = EarlyStopper(self.early_stop_patience)
 
+        prev_lr = self.lr
         X_train_sample, y_train_sample = misc_helpers.get_random_arrs_samples(
             [X_train, y_train],
             n_samples=self.n_samples_train_loss_plot,
@@ -213,6 +214,10 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
             if self.use_scheduler:
                 scheduler.step(val_loss)
+                new_lr = scheduler.get_last_lr()
+                if new_lr < prev_lr:
+                    logging.info(f'reduced LR from {prev_lr} to {new_lr}')
+                    prev_lr = new_lr
 
         model.eval()
         self.model_ = model
