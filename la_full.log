@@ -1,0 +1,105 @@
+INFO:root:reading file uq_comparison_pipeline.py...
+INFO:root:reading file uq_comparison_pipeline_abc.py...
+INFO:root:running main pipeline...
+INFO:root:running preliminary checks/setup...
+INFO:root:checking kwargs dict...
+INFO:root:loading data...
+INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO:numexpr.utils:NumExpr defaulting to 16 threads.
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+INFO:root:data shapes: (210432, 16), (35040, 16), (35040, 16);  (210432, 1), (35040, 1), (35040, 1)
+INFO:root:training base models...
+INFO:root:skipping training base_model_linreg.
+INFO:root:skipping training base_model_hgbr.
+INFO:root:training base_model_nn...
+INFO:root:loading torch statedict from comparison_storage/models/base_model_nn_n210432_it300_nh2_hs50.pth
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/io_helper.py:137: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(path, map_location='cpu')
+INFO:root:saving base model results...
+INFO:root:saving array to comparison_storage/arrays/base_model_nn_n210432_it300_nh2_hs50.npy
+INFO:root:plotting base model results...
+INFO:root:plotting partial plots...
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_p1600_training_n210432_it300_nh2_hs50.png
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_p1600_test_n210432_it300_nh2_hs50.png
+INFO:root:plotting full plot...
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_n210432_it300_nh2_hs50.png
+INFO:root:computing base model metrics...
+INFO:root:running posthoc UQ methods...
+INFO:root:running posthoc methods...
+INFO:root:running posthoc_laplace_approximation on base_model_nn...
+
+base_model_nn:
+	mae: 176.14645385742188
+	rmse: 229.2932891845703
+	smape_scaled: 0.012739311903715134
+
+optimal deterministic metrics:
+		mae: 0.0
+		rmse: 0.0
+		smape_scaled: 0.0
+  0%|          | 0/100 [00:00<?, ?it/s]  1%|          | 1/100 [00:00<00:22,  4.49it/s] 46%|████▌     | 46/100 [00:00<00:00, 177.51it/s] 91%|█████████ | 91/100 [00:00<00:00, 274.30it/s]100%|██████████| 100/100 [00:00<00:00, 224.92it/s]
+INFO:root:saving model...
+INFO:root:saving laplace state dict to comparison_storage/models/posthoc_laplace_approximation_base_model_nn_n210432_it100.pth
+INFO:root:predicting...
+INFO:root:saving posthoc UQ results...
+INFO:root:saving array to comparison_storage/arrays/posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy
+INFO:root:saving array to comparison_storage/arrays/posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it100.npy
+INFO:root:saving array to comparison_storage/arrays/posthoc_laplace_approximation_base_model_nn_y_std_n210432_it100.npy
+INFO:root:plotting posthoc results...
+INFO:root:saving plot to comparison_storage/plots/posthoc_laplace_approximation_base_model_nn_n210432_it100.png
+INFO:root:running native UQ methods...
+INFO:root:No native methods found and/or whitelisted. Skipping...
+INFO:root:saving native UQ results...
+INFO:root:plotting native results...
+INFO:root:computing and saving UQ metrics...
+INFO:root:posthoc...
+INFO:root:native...
+INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_2025_01_17__02_20_38_vstl.json
+
+base_model metrics:
+	base_model_nn:
+		mae: 176.14645385742188
+		rmse: 229.2932891845703
+		smape_scaled: 0.012739311903715134
+
+posthoc metrics:
+	posthoc_laplace_approximation__base_model_nn:
+		mae: 176.14645385742188
+		rmse: 229.2932891845703
+		smape_scaled: 0.012739311903715134
+		crps: 125.03918360961457
+		nll_gaussian: 6.8549149351837
+		mean_pinball: 27.913456520571128
+		ssr: 1.0320535601611287
+
+native metrics:
+
+optimal deterministic metrics:
+		mae: 0.0
+		rmse: 0.0
+		smape_scaled: 0.0
+	optimal uq metrics:
+		crps: None
+		nll_gaussian: None
+		mean_pinball: None
+		ssr: None
