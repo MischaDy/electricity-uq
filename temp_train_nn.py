@@ -1,11 +1,17 @@
+import logging
+logging.basicConfig(level=logging.INFO, force=True)
+
+print('importing')
+
 import torch.nn
 
 from helpers import misc_helpers
 from helpers.io_helper import IO_Helper
 from src_base_models.nn_estimator import NN_Estimator, train_nn
 
-
+print('loading data')
 X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._quick_load_data('full')
+print('loading model')
 dim_in = X_train.shape[1]
 model_kwargs = {
     'dim_in': dim_in,
@@ -31,6 +37,7 @@ io_helper = IO_Helper()
 model = io_helper.load_torch_model_statedict(model_class=NN_Estimator, model_kwargs=model_kwargs,
                                              filename='base_model_nn_n210432_it300_nh2_hs50.pth')
 
+print('training model')
 train_nn(
         X_train,
         y_train,
@@ -52,7 +59,7 @@ train_nn(
         save_losses_plot=True,
         io_helper=io_helper,
         n_samples_train_loss_plot=10000,
-        verbose: int = 1,
+        verbose = 1,
         warm_start_model=model,
         early_stop_patience=None,
 )
