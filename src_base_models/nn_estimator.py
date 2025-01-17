@@ -200,12 +200,14 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
+                val_loss_np = misc_helpers.tensor_to_np_array(val_loss)
                 if self.show_losses_plot or self.save_losses_plot:
-                    val_loss_np = misc_helpers.tensor_to_np_array(val_loss)
                     val_losses.append(val_loss_np)
                     train_loss_np = self._mse_torch(model(X_train_sample), y_train_sample)
                     train_loss_np = misc_helpers.tensor_to_np_array(train_loss_np)
                     train_losses.append(train_loss_np)
+
+            logging.info(f'epoch {epoch} -- last val loss: {val_loss_np}')
 
             # noinspection PyUnboundLocalVariable
             if self.early_stop_patience is not None and early_stopper.should_stop(val_loss):
