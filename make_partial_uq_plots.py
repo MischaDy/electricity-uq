@@ -16,7 +16,7 @@ SHOW_PLOT = False
 PLOT_EXT = 'png'
 
 SMALL_IO_HELPER = False
-BIG_ARRAYS_FOLDER = 'cp_run'
+BIG_ARRAYS_FOLDER = 'cp_run2'
 
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
