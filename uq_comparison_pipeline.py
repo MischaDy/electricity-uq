@@ -245,6 +245,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             'n_samples_train_loss_plot': n_samples_train_loss_plot,
         }
         if skip_training:
+            logging.info(f'skipping training in {method_name}')
             model = self.io_helper.load_torch_model_statedict(
                 NN_Estimator,
                 method_name=method_name,
