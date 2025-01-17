@@ -108,7 +108,7 @@ METHODS_KWARGS = {
     "posthoc_conformal_prediction": {
         "skip_training": False,
         "n_estimators": 5,
-        'n_iter_base': 10,
+        'n_iter_base': 100,
         "verbose": 1,
         "save_model": True,
     },
