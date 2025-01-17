@@ -245,6 +245,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             'n_samples_train_loss_plot': n_samples_train_loss_plot,
         }
         if skip_training:
+            logging.info(f'skipping training in {method_name}')
             model = self.io_helper.load_torch_model_statedict(
                 NN_Estimator,
                 method_name=method_name,
@@ -389,6 +390,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
             verbose=True,
             show_progress_bar=True,
+            subset_of_weights='last_layer',
+            hessian_structure='kron',
     ):
         from src_uq_methods_posthoc.laplace_approximation import (
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
@@ -421,6 +424,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 random_seed=random_seed,
                 verbose=verbose,
                 show_progress_bar=show_progress_bar,
+                subset_of_weights=subset_of_weights,
+                hessian_structure=hessian_structure,
             )
             if save_model:
                 logging.info('saving model...')
