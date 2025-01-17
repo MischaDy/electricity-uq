@@ -216,7 +216,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
             if self.use_scheduler:
                 scheduler.step(val_loss)
-                new_lr = scheduler.get_last_lr()
+                new_lr = scheduler.get_last_lr()[0]
                 if new_lr < prev_lr:
                     logging.info(f'reduced LR from {prev_lr} to {new_lr}')
                     prev_lr = new_lr
