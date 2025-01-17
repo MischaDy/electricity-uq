@@ -7,8 +7,9 @@ from helpers import uq_arr_helpers, misc_helpers
 from helpers.io_helper import IO_Helper
 
 
-RUN_SIZE = 'big'
+RUN_SIZE = 'full'
 SMALL_IO_HELPER = False
+BIG_ARRAYS_FOLDER = 'cp_run'
 
 
 arr_names = [
@@ -46,7 +47,7 @@ X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._q
 if SMALL_IO_HELPER:
     io_helper = IO_Helper(arrays_folder='arrays_small', models_folder='models_small')
 else:
-    io_helper = IO_Helper()
+    io_helper = IO_Helper(arrays_folder=BIG_ARRAYS_FOLDER)
 
 y_pred, y_quantiles, y_std = uq_arr_helpers.load_arrs(arr_names, io_helper=io_helper)
 
