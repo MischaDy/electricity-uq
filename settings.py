@@ -160,7 +160,7 @@ METHODS_KWARGS = {
         "random_seed": 42,
         "verbose": 1,
         "save_model": True,
-        'warm_start_model_name': 'base_model_nn_n210432_it200_nh2_hs50_dict.pth',
+        'warm_start_model_name': None,  # 'base_model_nn_n210432_it200_nh2_hs50_dict.pth',
         'early_stop_patience': 30,
     },
 }
