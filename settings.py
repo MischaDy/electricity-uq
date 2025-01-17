@@ -118,6 +118,7 @@ METHODS_KWARGS = {
         'save_model': True,
         'verbose': True,
         'show_progress_bar': False,
+        'batch_size': 20,
     },
     "base_model_linreg": {
         "skip_training": True,
