@@ -119,6 +119,8 @@ METHODS_KWARGS = {
         'verbose': True,
         'show_progress_bar': True,
         'batch_size': 20,
+        'subset_of_weights': 'all',
+        'hessian_structure': 'full',
     },
     "base_model_linreg": {
         "skip_training": True,
