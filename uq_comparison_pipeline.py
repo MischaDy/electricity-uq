@@ -312,6 +312,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             base_model: Union['ModelWrapper', 'NN_Estimator'],
             base_model_name='',
             n_estimators=10,
+            n_iter_base: int = None,
             bootstrap_n_blocks=10,
             bootstrap_overlapping_blocks=False,
             random_seed=42,
@@ -321,6 +322,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param n_iter_base: if base_model has attribute n_iter, set it to this value
         :param base_model_name:
         :param y_val:
         :param X_val:
@@ -357,6 +359,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 y_val,
                 base_model,
                 n_estimators=n_estimators,
+                n_iter_base=n_iter_base,
                 bootstrap_n_blocks=bootstrap_n_blocks,
                 bootstrap_overlapping_blocks=bootstrap_overlapping_blocks,
                 random_seed=random_seed,
