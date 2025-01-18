@@ -12,5 +12,3 @@ for metrics_file_name in metrics_file_names:
     for key, value in metrics.items():
         print(f'{key}: {round(value, 6)}')
     print()
-
-
