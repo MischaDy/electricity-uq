@@ -9,7 +9,7 @@ from scipy import stats
 RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
 DO_TRAIN_ALL = False
-SKIP_TRAINING_ALL = False
+SKIP_TRAINING_ALL = True
 
 
 ### NORMAL SETTINGS ###
@@ -50,7 +50,7 @@ METHOD_WHITELIST = [
     # 'native_gpytorch',
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
-    'posthoc_conformal_prediction',
+    # 'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
 ]
 
@@ -162,8 +162,9 @@ METHODS_KWARGS = {
         "random_seed": 42,
         "verbose": 1,
         "save_model": True,
-        'warm_start_model_name': None,  # 'base_model_nn_n210432_it200_nh2_hs50_dict.pth',
+        'warm_start_model_name': None,
         'early_stop_patience': 30,
+        'filename_trained_model': 'base_model_nn_n210432_it400_nh2_hs50.pth'
     },
 }
 
