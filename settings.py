@@ -9,7 +9,7 @@ from scipy import stats
 RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
 DO_TRAIN_ALL = False
-SKIP_TRAINING_ALL = False
+SKIP_TRAINING_ALL = True
 
 
 ### NORMAL SETTINGS ###
@@ -51,7 +51,7 @@ METHOD_WHITELIST = [
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
     # 'posthoc_conformal_prediction',
-    'posthoc_laplace_approximation',
+    # 'posthoc_laplace_approximation',
 ]
 
 METHODS_KWARGS = {
@@ -108,7 +108,7 @@ METHODS_KWARGS = {
     "posthoc_conformal_prediction": {
         "skip_training": False,
         "n_estimators": 5,
-        'n_iter_base': 10,
+        'n_iter_base': 100,
         "verbose": 1,
         "save_model": True,
     },
@@ -151,10 +151,10 @@ METHODS_KWARGS = {
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
         "weight_decay": 1e-3,
-        "lr": 1e-3,  # defaults to 1e-2 if use_scheduler is true
+        "lr": 1e-5,  # defaults to 1e-2 if use_scheduler is true
         'use_scheduler': True,
         "lr_patience": 10,
-        "lr_reduction_factor": 0.8,
+        "lr_reduction_factor": 0.5,
         "show_progress_bar": False,
         "show_losses_plot": False,
         "save_losses_plot": True,
@@ -162,8 +162,9 @@ METHODS_KWARGS = {
         "random_seed": 42,
         "verbose": 1,
         "save_model": True,
-        'warm_start_model_name': None,  # 'base_model_nn_n210432_it200_nh2_hs50_dict.pth',
+        'warm_start_model_name': None,
         'early_stop_patience': 30,
+        'filename_trained_model': 'base_model_nn_n210432_it100ex_nh2_hs50.pth'
     },
 }
 

@@ -1,0 +1,46 @@
+---------- JOB INFOS ------------
+JobId=1064149 JobName=deploy.sh
+   UserId=lqb589(4852) GroupId=ludwig(4026) MCS_label=N/A
+   Priority=65855 Nice=0 Account=ludwig QOS=normal
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:00:00 TimeLimit=05:00:00 TimeMin=N/A
+   SubmitTime=2025-01-17T19:03:29 EligibleTime=2025-01-17T19:03:29
+   AccrueTime=2025-01-17T19:03:30
+   StartTime=2025-01-17T19:03:30 EndTime=2025-01-18T00:03:30 Deadline=N/A
+   PreemptEligibleTime=2025-01-17T19:04:30 PreemptTime=None
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2025-01-17T19:03:30 Scheduler=Main
+   Partition=2080-galvani AllocNode:Sid=galvani-login:615623
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=galvani-cn119
+   BatchHost=galvani-cn119
+   NumNodes=1 NumCPUs=6 NumTasks=1 CPUs/Task=5 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=5,mem=15G,node=1,billing=1,gres/gpu=4
+   AllocTRES=cpu=6,mem=15G,node=1,billing=1,gres/gpu=4,gres/gpu:rtx2080ti=4
+   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*
+   MinCPUsNode=5 MinMemoryNode=15G MinTmpDiskNode=0
+   Features=(null) DelayBoot=00:00:00
+   OverSubscribe=OK Contiguous=0 Licenses=(null) Network=(null)
+   Command=/mnt/qb/work/ludwig/lqb589/my_code/deploy.sh
+   WorkDir=/mnt/qb/work/ludwig/lqb589/my_code
+   StdErr=/mnt/qb/work/ludwig/lqb589/my_code/logs/job_cp_1064149.err
+   StdIn=/dev/null
+   StdOut=/mnt/qb/work/ludwig/lqb589/my_code/logs/job_cp_1064149.out
+   Power=
+   TresPerNode=gres:gpu:4
+   MailUser=mikhail.dubovoy@student.uni-tuebingen.de MailType=END,FAIL
+   
+
+---------------------------------
+
+-------- PYTHON OUTPUT ----------
+
+base_model_nn:
+	mae: 176.14645385742188
+	rmse: 229.2932891845703
+	smape_scaled: 0.012739311903715134
+
+optimal deterministic metrics:
+		mae: 0.0
+		rmse: 0.0
+		smape_scaled: 0.0

@@ -182,12 +182,14 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             n_samples_train_loss_plot=10000,
             skip_training=True,
             warm_start_model_name=None,
+            filename_trained_model=None,
             early_stop_patience=None,
             save_model=True,
             verbose: int = 1,
     ) -> 'NN_Estimator':
         """
 
+        :param filename_trained_model: if skipping training, the filename to load
         :param early_stop_patience:
         :param warm_start_model_name: model to load for warm-started training
         :param n_samples_train_loss_plot:
@@ -248,6 +250,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             logging.info(f'skipping training in {method_name}')
             model = self.io_helper.load_torch_model_statedict(
                 NN_Estimator,
+                filename=filename_trained_model,
                 method_name=method_name,
                 model_kwargs=model_kwargs,
             )

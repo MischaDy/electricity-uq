@@ -16,8 +16,7 @@ SHOW_PLOT = False
 PLOT_EXT = 'png'
 
 SMALL_IO_HELPER = False
-
-BIG_ARRAYS_FOLDER = 'la_run'
+BIG_ARRAYS_FOLDER = 'cp_run2'
 
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
@@ -26,8 +25,8 @@ UQ_METHODS_WHITELIST = {
     # 'mvnn',
     # 'cp_hgbr',
     # 'cp_linreg',
-    # 'cp_nn',
-    'la_nn',
+    'cp_nn',
+    # 'la_nn',
 }
 UQ_METHOD_TO_ARR_NAMES_DICT = {
     'qhgbr': [

@@ -1,0 +1,84 @@
+INFO:root:reading file uq_comparison_pipeline.py...
+INFO:root:reading file uq_comparison_pipeline_abc.py...
+INFO:root:running main pipeline...
+INFO:root:running preliminary checks/setup...
+INFO:root:checking kwargs dict...
+INFO:root:loading data...
+INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO:numexpr.utils:NumExpr defaulting to 16 threads.
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+INFO:root:data shapes: (210432, 16), (35040, 16), (35040, 16);  (210432, 1), (35040, 1), (35040, 1)
+INFO:root:training base models...
+INFO:root:base_model_linreg not in whitelist, skipping
+INFO:root:base_model_hgbr not in whitelist, skipping
+INFO:root:training base_model_nn...
+INFO:root:skipping training in base_model_nn
+INFO:root:loading torch statedict from comparison_storage/models/base_model_nn_n210432_it300_nh2_hs50.pth
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/io_helper.py:137: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(path, map_location='cpu')
+INFO:root:saving base model results...
+INFO:root:saving array to comparison_storage/arrays/base_model_nn_n210432_it300_nh2_hs50.npy
+INFO:root:plotting base model results...
+INFO:root:plotting partial plots...
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_p1600_training_n210432_it300_nh2_hs50.png
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_p1600_test_n210432_it300_nh2_hs50.png
+INFO:root:plotting full plot...
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_n210432_it300_nh2_hs50.png
+INFO:root:computing base model metrics...
+INFO:root:running posthoc UQ methods...
+INFO:root:running posthoc methods...
+INFO:root:running posthoc_conformal_prediction on base_model_nn...
+/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/sklearn/utils/validation.py:1339: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+  y = column_or_1d(y, warn=True)
+  0%|          | 0/100 [00:00<?, ?it/s]INFO:root:epoch 0 -- last val loss: 0.03343351185321808
+  1%|          | 1/100 [00:20<33:59, 20.60s/it]INFO:root:epoch 1 -- last val loss: 0.021445028483867645
+  2%|▏         | 2/100 [00:40<32:43, 20.03s/it]INFO:root:epoch 2 -- last val loss: 0.01812276430428028
+  3%|▎         | 3/100 [01:00<32:38, 20.19s/it]INFO:root:epoch 3 -- last val loss: 0.016533268615603447
+  4%|▍         | 4/100 [01:21<32:37, 20.40s/it]INFO:root:epoch 4 -- last val loss: 0.015697360038757324
+  5%|▌         | 5/100 [01:40<31:51, 20.13s/it]INFO:root:epoch 5 -- last val loss: 0.015077078714966774
+  6%|▌         | 6/100 [02:00<31:26, 20.07s/it]INFO:root:epoch 6 -- last val loss: 0.014574011787772179
+  7%|▋         | 7/100 [02:21<31:13, 20.15s/it]INFO:root:epoch 7 -- last val loss: 0.014208396896719933
+  8%|▊         | 8/100 [02:41<30:47, 20.09s/it]INFO:root:epoch 8 -- last val loss: 0.013925528153777122
+  9%|▉         | 9/100 [03:01<30:31, 20.13s/it]INFO:root:epoch 9 -- last val loss: 0.013676963746547699
+ 10%|█         | 10/100 [03:21<30:21, 20.24s/it]INFO:root:epoch 10 -- last val loss: 0.013612907379865646
+ 11%|█         | 11/100 [03:41<29:39, 20.00s/it]INFO:root:epoch 11 -- last val loss: 0.013540813699364662
+ 12%|█▏        | 12/100 [04:01<29:18, 19.99s/it]INFO:root:epoch 12 -- last val loss: 0.013407448306679726
+ 13%|█▎        | 13/100 [04:22<29:21, 20.24s/it]INFO:root:epoch 13 -- last val loss: 0.013204719871282578
+ 14%|█▍        | 14/100 [04:41<28:48, 20.10s/it]INFO:root:epoch 14 -- last val loss: 0.013131808489561081
+ 15%|█▌        | 15/100 [05:01<28:24, 20.05s/it]INFO:root:epoch 15 -- last val loss: 0.013001819141209126
+ 16%|█▌        | 16/100 [05:22<28:12, 20.15s/it]INFO:root:epoch 16 -- last val loss: 0.012851277366280556
+ 17%|█▋        | 17/100 [05:42<27:49, 20.11s/it]INFO:root:epoch 17 -- last val loss: 0.01275213249027729
+ 18%|█▊        | 18/100 [06:02<27:28, 20.10s/it]INFO:root:epoch 18 -- last val loss: 0.012647680938243866
+ 19%|█▉        | 19/100 [06:22<27:16, 20.20s/it]INFO:root:epoch 19 -- last val loss: 0.012830730527639389
+ 20%|██        | 20/100 [06:42<26:42, 20.03s/it]INFO:root:epoch 20 -- last val loss: 0.012623603455722332
+ 21%|██        | 21/100 [07:02<26:22, 20.03s/it]INFO:root:epoch 21 -- last val loss: 0.01265057921409607
+ 22%|██▏       | 22/100 [07:23<26:21, 20.28s/it]INFO:root:epoch 22 -- last val loss: 0.012628802098333836
+ 23%|██▎       | 23/100 [07:42<25:41, 20.02s/it]INFO:root:epoch 23 -- last val loss: 0.012634368613362312
+ 24%|██▍       | 24/100 [08:02<25:24, 20.06s/it]INFO:root:epoch 24 -- last val loss: 0.0127585893496871
+ 25%|██▌       | 25/100 [08:23<25:21, 20.29s/it]INFO:root:epoch 25 -- last val loss: 0.0126267084851861
+ 26%|██▌       | 26/100 [08:43<24:52, 20.16s/it]INFO:root:epoch 26 -- last val loss: 0.012536057271063328
+ 27%|██▋       | 27/100 [09:03<24:32, 20.18s/it]INFO:root:epoch 27 -- last val loss: 0.012662309221923351
+ 28%|██▊       | 28/100 [09:24<24:22, 20.31s/it]INFO:root:epoch 28 -- last val loss: 0.01253337599337101
+ 29%|██▉       | 29/100 [09:44<23:49, 20.14s/it]INFO:root:epoch 29 -- last val loss: 0.01247493363916874
+ 30%|███       | 30/100 [10:04<23:29, 20.13s/it]INFO:root:epoch 30 -- last val loss: 0.012456722557544708
+ 31%|███       | 31/100 [10:24<23:18, 20.27s/it]slurmstepd: error: *** JOB 1064149 ON galvani-cn119 CANCELLED AT 2025-01-17T19:22:36 ***
