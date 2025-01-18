@@ -1,0 +1,21 @@
+{
+  "native_mvnn": {
+    "skip_training": false,
+    "n_iter": 150,
+    "num_hidden_layers": 2,
+    "hidden_layer_size": 50,
+    "activation": "torch.nn.LeakyReLU",
+    "weight_decay": 1e-3,
+    "lr": 1e-3,
+    "use_scheduler": true,
+    "lr_patience": 10,
+    "lr_reduction_factor": 0.8,
+    "warmup_period": 50,
+    "frozen_var_value": 1,
+    "show_progress_bar": false,
+    "show_losses_plot": false,
+    "save_losses_plot": true,
+    "random_seed": 42,
+    "save_model": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "native_quantile_regression_nn": {
+    "skip_training": false,
+    "n_iter": 300,
+    "num_hidden_layers": 2,
+    "hidden_layer_size": 50,
+    "activation": "torch.nn.LeakyReLU",
+    "random_seed": 42,
+    "use_scheduler": true,
+    "lr_patience": 10,
+    "lr_reduction_factor": 0.9,
+    "lr": 1e-2,
+    "reduction": "none",
+    "weight_decay": 1e-3,
+    "show_progress_bar": true,
+    "show_losses_plot": false,
+    "save_losses_plot": true,
+    "save_model": true
+  }
+}
