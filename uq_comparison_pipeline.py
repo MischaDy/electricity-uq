@@ -189,12 +189,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ) -> 'NN_Estimator':
         """
 
-<<<<<<< HEAD
-=======
         :param filename_trained_model: if skipping training, the filename to load
         :param early_stop_patience:
         :param warm_start_model_name: model to load for warm-started training
->>>>>>> bugchecks
         :param n_samples_train_loss_plot:
         :param use_scheduler:
         :param weight_decay:
