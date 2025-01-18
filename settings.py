@@ -117,7 +117,7 @@ METHODS_KWARGS = {
     },
     "posthoc_laplace_approximation": {
         'skip_training': False,
-        "n_iter": 100,
+        "n_iter": 1000,
         'save_model': True,
         'verbose': True,
         'show_progress_bar': True,
