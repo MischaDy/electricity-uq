@@ -164,7 +164,7 @@ METHODS_KWARGS = {
         "save_model": True,
         'warm_start_model_name': None,
         'early_stop_patience': 30,
-        'filename_trained_model': 'base_model_nn_n210432_it400_nh2_hs50.pth'
+        'filename_trained_model': 'base_model_nn_n210432_it100ex_nh2_hs50.pth'
     },
 }
 
