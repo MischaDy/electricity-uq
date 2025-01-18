@@ -1,0 +1,75 @@
+---------- JOB INFOS ------------
+JobId=1064256 JobName=deploy.sh
+   UserId=lqb589(4852) GroupId=ludwig(4026) MCS_label=N/A
+   Priority=65855 Nice=0 Account=ludwig QOS=normal
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:00:00 TimeLimit=05:00:00 TimeMin=N/A
+   SubmitTime=2025-01-17T20:02:08 EligibleTime=2025-01-17T20:02:08
+   AccrueTime=2025-01-17T20:02:09
+   StartTime=2025-01-17T20:02:09 EndTime=2025-01-18T01:02:09 Deadline=N/A
+   PreemptEligibleTime=2025-01-17T20:03:09 PreemptTime=None
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2025-01-17T20:02:09 Scheduler=Main
+   Partition=2080-galvani AllocNode:Sid=galvani-login:615623
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=galvani-cn119
+   BatchHost=galvani-cn119
+   NumNodes=1 NumCPUs=6 NumTasks=1 CPUs/Task=5 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=5,mem=15G,node=1,billing=1,gres/gpu=4
+   AllocTRES=cpu=6,mem=15G,node=1,billing=1,gres/gpu=4,gres/gpu:rtx2080ti=4
+   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*
+   MinCPUsNode=5 MinMemoryNode=15G MinTmpDiskNode=0
+   Features=(null) DelayBoot=00:00:00
+   OverSubscribe=OK Contiguous=0 Licenses=(null) Network=(null)
+   Command=/mnt/qb/work/ludwig/lqb589/my_code/deploy.sh
+   WorkDir=/mnt/qb/work/ludwig/lqb589/my_code
+   StdErr=/mnt/qb/work/ludwig/lqb589/my_code/logs/job_cp_1064256.err
+   StdIn=/dev/null
+   StdOut=/mnt/qb/work/ludwig/lqb589/my_code/logs/job_cp_1064256.out
+   Power=
+   TresPerNode=gres:gpu:4
+   MailUser=mikhail.dubovoy@student.uni-tuebingen.de MailType=END,FAIL
+   
+
+---------------------------------
+
+-------- PYTHON OUTPUT ----------
+
+base_model_nn:
+	mae: 176.14645385742188
+	rmse: 229.2932891845703
+	smape_scaled: 0.012739311903715134
+
+optimal deterministic metrics:
+		mae: 0.0
+		rmse: 0.0
+		smape_scaled: 0.0
+
+base_model metrics:
+	base_model_nn:
+		mae: 176.14645385742188
+		rmse: 229.2932891845703
+		smape_scaled: 0.012739311903715134
+
+posthoc metrics:
+	posthoc_conformal_prediction__base_model_nn:
+		mae: 144.67515563964844
+		rmse: 192.6067657470703
+		smape_scaled: 0.010394271463155746
+		crps: 103.78238957414356
+		nll_gaussian: 6.685780660097147
+		mean_pinball: 19.816665627415084
+		ssr: 0.9261900712464475
+
+native metrics:
+
+optimal deterministic metrics:
+		mae: 0.0
+		rmse: 0.0
+		smape_scaled: 0.0
+	optimal uq metrics:
+		crps: None
+		nll_gaussian: None
+		mean_pinball: None
+		ssr: None
+---------------------------------

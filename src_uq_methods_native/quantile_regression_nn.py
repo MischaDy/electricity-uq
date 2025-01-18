@@ -15,8 +15,6 @@ from helpers.io_helper import IO_Helper
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
-IO_HELPER = IO_Helper()
-
 
 class QR_NN(torch.nn.Module):
     def __init__(
@@ -57,9 +55,6 @@ class QR_NN(torch.nn.Module):
 
 
 class MultiPinballLoss:
-    # NN: 28s (1.8it/s) for n=50
-    # QR: 30s (1.7it/s) for n=50, qs=7
-    # QR: 38s (1.4it/s) for n=50, qs=99
     def __init__(self, quantiles, reduction: Literal['mean', 'sum', 'none'] = 'mean'):
         if list(quantiles) != sorted(quantiles):
             raise ValueError(f'Quantiles must be sorted: {quantiles}')
@@ -316,7 +311,7 @@ def test_qr():
         'show_progress_bar': True,
         'show_losses_plot': True,
         'save_losses_plot': True,
-        'io_helper': IO_HELPER,
+        'io_helper': IO_Helper(),
         'activation': torch.nn.LeakyReLU,
         'reduction': reduction,
     }

@@ -21,18 +21,22 @@ def train_laplace_approximation(
         random_seed=42,
         verbose=True,
         show_progress_bar=True,
+        subset_of_weights='last_layer',
+        hessian_structure='kron',
 ):
     # todo: offer option to alternatively optimize parameters and hyperparameters of the prior jointly (cf. example
     #  script)?
     torch.manual_seed(random_seed)
     torch.set_default_device(misc_helpers.get_device())
-
+    logging.info('setting up train loader')
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
     X_train, y_train = misc_helpers.preprocess_arrays_to_tensors(X_train, y_train)
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
-    model = la_instantiator(base_model_nn)
+    logging.info('fitting laplace (phase 1)')
+    model = la_instantiator(base_model_nn, subset_of_weights=subset_of_weights, hessian_structure=hessian_structure)
     model.fit(train_loader)
 
+    logging.info('fitting laplace (phase 2)')
     log_prior, log_sigma = torch.ones(1, requires_grad=True), torch.ones(1, requires_grad=True)
     hyper_optimizer = torch.optim.Adam([log_prior, log_sigma], lr=1e-1)
     epochs = tqdm(range(n_iter)) if show_progress_bar else range(n_iter)
@@ -59,5 +63,12 @@ def predict_with_laplace_approximation(model, X_pred: np.ndarray, quantiles: lis
     return y_pred, y_quantiles, y_std
 
 
-def la_instantiator(base_model: torch.nn.Module):
-    return Laplace(base_model, "regression")
+def la_instantiator(base_model: torch.nn.Module, subset_of_weights='last_layer', hessian_structure='kron'):
+    """
+
+    :param base_model:
+    :param subset_of_weights: passed to Laplace constructor. One of 'last_layer', 'subnetwork', 'all'.
+    :param hessian_structure: passed to Laplace constructor. One of 'diag', 'kron', 'full', 'lowrank', 'gp'.
+    :return:
+    """
+    return Laplace(base_model, "regression", subset_of_weights=subset_of_weights, hessian_structure=hessian_structure)

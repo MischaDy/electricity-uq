@@ -186,3 +186,7 @@ qhgbr_storage/models/
 /comparison_storage_old/
 /remote_error_arrays/
 /comparison_storage/remote_error_arrays_mvnn/
+/comparison_storage/models_nn/
+/comparison_storage/cp_run/
+/comparison_storage/cp_run2/
+/comparison_storage/la_run/

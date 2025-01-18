@@ -12,6 +12,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
 
 from helpers import misc_helpers
+from helpers.early_stopper import EarlyStopper
 
 if TYPE_CHECKING:
     import numpy as np
@@ -40,11 +41,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     """
 
     _parameter_constraints = {
+        'dim_in': [int],
         "train_size_orig": [int],
         "n_iter": [int],
         "batch_size": [int],
         "random_seed": [int],
-        "lr": [float],
+        "lr": [float, None],
         "lr_patience": [int],
         "lr_reduction_factor": [float],
         "to_standardize": [str],
@@ -58,10 +60,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         'output_dim': [int],
         'weight_decay': [float],
         'n_samples_train_loss_plot': [int],
+        'early_stop_patience': [int],
     }
 
     def __init__(
             self,
+            dim_in,
             train_size_orig,
             n_iter=100,
             batch_size=20,
@@ -80,8 +84,12 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             save_losses_plot=True,
             io_helper=None,
             output_dim=2,
+            early_stop_patience=None,
             n_samples_train_loss_plot=10000,
     ):
+        if use_scheduler and early_stop_patience is not None and early_stop_patience <= lr_patience:
+            logging.warning('early stop patience < LR patience!')
+        self.dim_in = dim_in
         self.train_size_orig = train_size_orig  # todo: temp solution
         self.use_scheduler = use_scheduler
         self.n_iter = n_iter
@@ -103,6 +111,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         self.is_fitted_ = False
         self.output_dim = output_dim
         self.output_dim_orig = output_dim
+        self.early_stop_patience = early_stop_patience
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X: 'np.ndarray', y: 'np.ndarray'):
@@ -130,6 +139,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         torch.manual_seed(self.random_seed)
 
         X, y = self._validate_data(X, y, accept_sparse=False)  # todo: remove "y is 2d" warning
+        assert self.dim_in == X.shape[-1]
 
         if self.activation is None:
             self.activation = torch.nn.LeakyReLU
@@ -144,11 +154,8 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         X_train, y_train, X_val, y_val = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
         X_train, y_train, X_val, y_val = misc_helpers.make_tensors_contiguous(X_train, y_train, X_val, y_val)
 
-        dim_in, dim_out = X_train.shape[-1], y_train.shape[-1]
-
         model = self._nn_builder(
-            dim_in,
-            dim_out,
+            self.dim_in,
             num_hidden_layers=self.num_hidden_layers,
             hidden_layer_size=self.hidden_layer_size,
             activation=self.activation,
@@ -165,7 +172,10 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
         scheduler = ReduceLROnPlateau(optimizer, patience=self.lr_patience, factor=self.lr_reduction_factor)
         criterion = torch.nn.MSELoss()
         criterion = misc_helpers.object_to_cuda(criterion)
+        if self.early_stop_patience is not None:
+            early_stopper = EarlyStopper(self.early_stop_patience)
 
+        prev_lr = self.lr
         X_train_sample, y_train_sample = misc_helpers.get_random_arrs_samples(
             [X_train, y_train],
             n_samples=self.n_samples_train_loss_plot,
@@ -184,17 +194,32 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
                 loss = criterion(y_pred, y)
                 loss.backward()
                 optimizer.step()
+            if not any([self.use_scheduler, self.show_losses_plot, self.save_losses_plot]):
+                continue
+
             model.eval()
             with torch.no_grad():
                 val_loss = self._mse_torch(model(X_val), y_val)
-                if self.save_losses_plot:
-                    train_loss = self._mse_torch(model(X_train_sample), y_train_sample)
-                    train_loss = misc_helpers.tensor_to_np_array(train_loss)
-                    train_losses.append(train_loss)
+                val_loss_np = misc_helpers.tensor_to_np_array(val_loss)
+                if self.show_losses_plot or self.save_losses_plot:
+                    val_losses.append(val_loss_np)
+                    train_loss_np = self._mse_torch(model(X_train_sample), y_train_sample)
+                    train_loss_np = misc_helpers.tensor_to_np_array(train_loss_np)
+                    train_losses.append(train_loss_np)
+
+            logging.info(f'epoch {epoch} -- last val loss: {val_loss_np}')
+
+            # noinspection PyUnboundLocalVariable
+            if self.early_stop_patience is not None and early_stopper.should_stop(val_loss):
+                logging.info(f'stopping early since no improvement in past {self.early_stop_patience} epochs')
+                break
+
             if self.use_scheduler:
                 scheduler.step(val_loss)
-            val_loss = misc_helpers.tensor_to_np_array(val_loss)
-            val_losses.append(val_loss)
+                new_lr = scheduler.get_last_lr()[0]
+                if new_lr < prev_lr:
+                    logging.info(f'reduced LR from {prev_lr} to {new_lr}')
+                    prev_lr = new_lr
 
         model.eval()
         self.model_ = model
@@ -221,7 +246,6 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
     @staticmethod
     def _nn_builder(
             dim_in,
-            dim_out,
             num_hidden_layers=2,
             hidden_layer_size=50,
             activation=torch.nn.LeakyReLU,
@@ -232,7 +256,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
             [[torch.nn.Linear(hidden_layer_size, hidden_layer_size),
               activation()]
              for _ in range(num_hidden_layers)],
-            torch.nn.Linear(hidden_layer_size, dim_out),
+            torch.nn.Linear(hidden_layer_size, 1),
         ])
         model = torch.nn.Sequential(*layers)
         return model.float()
@@ -301,7 +325,7 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def __getattr__(self, item):
         try:
-            model = self.__getattribute__('model_')  # workaround bcdirect attr access doesn't work
+            model = self.__getattribute__('model_')  # workaround bc direct attr access doesn't work
             return getattr(model, item)
         except AttributeError:
             msg = f'NN_Estimator has no attribute "{item}"'
@@ -324,6 +348,16 @@ class NN_Estimator(RegressorMixin, BaseEstimator):
 
     def reset_output_dim(self):
         self.output_dim = self.output_dim_orig
+
+    def load_state_dict(self, state_dict):
+        model = self._nn_builder(
+            self.dim_in,
+            num_hidden_layers=self.num_hidden_layers,
+            hidden_layer_size=self.hidden_layer_size,
+            activation=self.activation,
+        )
+        model.load_state_dict(state_dict)
+        self.model_ = model
 
 
 def train_nn(
@@ -348,29 +382,37 @@ def train_nn(
         io_helper=None,
         n_samples_train_loss_plot=10000,
         verbose: int = 1,
+        warm_start_model=None,
+        early_stop_patience=None,
 ) -> NN_Estimator:
     train_size_orig = X_train.shape[0]
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)  # todo: temp solution
-    model = NN_Estimator(
-        train_size_orig=train_size_orig,
-        n_iter=n_iter,
-        batch_size=batch_size,
-        random_seed=random_seed,
-        num_hidden_layers=num_hidden_layers,
-        hidden_layer_size=hidden_layer_size,
-        activation=activation,
-        weight_decay=weight_decay,
-        lr=lr,
-        use_scheduler=use_scheduler,
-        lr_patience=lr_patience,
-        lr_reduction_factor=lr_reduction_factor,
-        verbose=verbose,
-        show_progress_bar=show_progress_bar,
-        show_losses_plot=show_losses_plot,
-        save_losses_plot=save_losses_plot,
-        io_helper=io_helper,
-        n_samples_train_loss_plot=n_samples_train_loss_plot,
-    )
+    dim_in = X_train.shape[1]
+    if warm_start_model is None:
+        model = NN_Estimator(
+            dim_in=dim_in,
+            train_size_orig=train_size_orig,
+            n_iter=n_iter,
+            batch_size=batch_size,
+            random_seed=random_seed,
+            num_hidden_layers=num_hidden_layers,
+            hidden_layer_size=hidden_layer_size,
+            activation=activation,
+            weight_decay=weight_decay,
+            lr=lr,
+            use_scheduler=use_scheduler,
+            lr_patience=lr_patience,
+            lr_reduction_factor=lr_reduction_factor,
+            verbose=verbose,
+            show_progress_bar=show_progress_bar,
+            show_losses_plot=show_losses_plot,
+            save_losses_plot=save_losses_plot,
+            io_helper=io_helper,
+            early_stop_patience=early_stop_patience,
+            n_samples_train_loss_plot=n_samples_train_loss_plot,
+        )
+    else:
+        model = warm_start_model
     # noinspection PyTypeChecker
     model.fit(X_train, y_train)
     return model
@@ -378,5 +420,5 @@ def train_nn(
 
 if __name__ == '__main__':
     from sklearn.utils.estimator_checks import check_estimator
-    estimator = NN_Estimator(train_size_orig=10, verbose=0)  # todo: does temp solution work?
+    estimator = NN_Estimator(dim_in=2, train_size_orig=10, verbose=0)  # todo: does temp solution work?
     check_estimator(estimator)

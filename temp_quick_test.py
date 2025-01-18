@@ -9,6 +9,7 @@ from helpers.io_helper import IO_Helper
 
 RUN_SIZE = 'full'
 SMALL_IO_HELPER = False
+BIG_ARRAYS_FOLDER = 'cp_run'
 
 
 arr_names = [
@@ -16,9 +17,17 @@ arr_names = [
     # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
     # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
 
-    'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
-    'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
-    'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_pred_n35136_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n35136_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n35136_it5.npy',
+
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
+    # 'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
+
+    'native_mvnn_y_pred_n35136_it150_nh2_hs50.npy',
+    'native_mvnn_y_quantiles_n35136_it150_nh2_hs50.npy',
+    'native_mvnn_y_std_n35136_it150_nh2_hs50.npy',
 ]
 
 
@@ -38,7 +47,7 @@ X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._q
 if SMALL_IO_HELPER:
     io_helper = IO_Helper(arrays_folder='arrays_small', models_folder='models_small')
 else:
-    io_helper = IO_Helper()
+    io_helper = IO_Helper(arrays_folder=BIG_ARRAYS_FOLDER)
 
 y_pred, y_quantiles, y_std = uq_arr_helpers.load_arrs(arr_names, io_helper=io_helper)
 

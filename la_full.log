@@ -1,0 +1,111 @@
+INFO:root:reading file uq_comparison_pipeline.py...
+INFO:root:reading file uq_comparison_pipeline_abc.py...
+INFO:root:running main pipeline...
+INFO:root:running preliminary checks/setup...
+INFO:root:checking kwargs dict...
+INFO:root:loading data...
+INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO:numexpr.utils:NumExpr defaulting to 16 threads.
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+INFO:root:data shapes: (210432, 16), (35040, 16), (35040, 16);  (210432, 1), (35040, 1), (35040, 1)
+INFO:root:training base models...
+INFO:root:base_model_linreg not in whitelist, skipping
+INFO:root:base_model_hgbr not in whitelist, skipping
+INFO:root:training base_model_nn...
+INFO:root:skipping training in base_model_nn
+INFO:root:loading torch statedict from comparison_storage/models/base_model_nn_n210432_it300_nh2_hs50.pth
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/io_helper.py:137: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  state_dict = torch.load(path, map_location='cpu')
+INFO:root:saving base model results...
+INFO:root:saving array to comparison_storage/arrays/base_model_nn_n210432_it300_nh2_hs50.npy
+INFO:root:plotting base model results...
+INFO:root:plotting partial plots...
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_p1600_training_n210432_it300_nh2_hs50.png
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_p1600_test_n210432_it300_nh2_hs50.png
+INFO:root:plotting full plot...
+INFO:root:saving plot to comparison_storage/plots/base_model_nn_n210432_it300_nh2_hs50.png
+INFO:root:computing base model metrics...
+INFO:root:running posthoc UQ methods...
+INFO:root:running posthoc methods...
+INFO:root:running posthoc_laplace_approximation on base_model_nn...
+INFO:root:setting up train loader
+INFO:root:fitting laplace (phase 1)
+
+base_model_nn:
+	mae: 176.14645385742188
+	rmse: 229.2932891845703
+	smape_scaled: 0.012739311903715134
+
+optimal deterministic metrics:
+		mae: 0.0
+		rmse: 0.0
+		smape_scaled: 0.0
+Traceback (most recent call last):
+  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline.py", line 784, in <module>
+    main()
+  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline.py", line 769, in main
+    uq_comparer.compare_methods(
+  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline_abc.py", line 164, in compare_methods
+    posthoc_results = self.run_posthoc_methods(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline_abc.py", line 421, in run_posthoc_methods
+    y_pred, y_quantiles, y_std = posthoc_method(
+                                 ^^^^^^^^^^^^^^^
+  File "/mnt/qb/work/ludwig/lqb589/my_code/uq_comparison_pipeline.py", line 416, in posthoc_laplace_approximation
+    model = train_laplace_approximation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/qb/work/ludwig/lqb589/my_code/src_uq_methods_posthoc/laplace_approximation.py", line 37, in train_laplace_approximation
+    model.fit(train_loader)
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/laplace/baselaplace.py", line 1576, in fit
+    super().fit(train_loader, override=override, progress_bar=progress_bar)
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/laplace/baselaplace.py", line 927, in fit
+    loss_batch, H_batch = self._curv_closure(X, y, N=N)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/laplace/baselaplace.py", line 1567, in _curv_closure
+    return self.backend.full(X, y, N=N)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/laplace/curvature/curvlinops.py", line 135, in full
+    linop @ torch.eye(linop.shape[0]), device=p.device, dtype=p.dtype
+    ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 455, in __matmul__
+    return self.__mul__(other)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 411, in __mul__
+    return self.dot(x)
+           ^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/scipy/sparse/linalg/_interface.py", line 441, in dot
+    x = np.asarray(x)
+        ^^^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/torch/_tensor.py", line 1147, in __array__
+    return handle_torch_function(Tensor.__array__, (self,), self, dtype=dtype)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/torch/overrides.py", line 1717, in handle_torch_function
+    result = mode.__torch_function__(public_api, types, args, kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/torch/utils/_device.py", line 106, in __torch_function__
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ludwig/lqb589/.conda/envs/masterarbeit/lib/python3.12/site-packages/torch/_tensor.py", line 1149, in __array__
+    return self.numpy()
+           ^^^^^^^^^^^^
+TypeError: can't convert cuda:0 device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.

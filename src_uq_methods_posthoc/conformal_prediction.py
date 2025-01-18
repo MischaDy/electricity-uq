@@ -55,16 +55,35 @@ def train_conformal_prediction(
         y_val: np.ndarray,
         base_model,
         n_estimators=5,
+        n_iter_base: int = None,
         bootstrap_n_blocks=10,
         bootstrap_overlapping_blocks=False,
         random_seed=42,
         verbose=1,
 ):
+    """
+
+    :param X_train:
+    :param y_train:
+    :param X_val:
+    :param y_val:
+    :param base_model:
+    :param n_estimators:
+    :param n_iter_base: if base_model has attribute n_iter, set it to this value
+    :param bootstrap_n_blocks:
+    :param bootstrap_overlapping_blocks:
+    :param random_seed:
+    :param verbose:
+    :return:
+    """
     # bugfix weird consistency error, solution taken from here:
     # https://github.com/scikit-learn-contrib/MAPIE/issues/321#issuecomment-1617601314
     from mapie.conformity_scores import AbsoluteConformityScore
     conformity_score = AbsoluteConformityScore()
     conformity_score.consistency_check = False
+
+    if n_iter_base is not None and hasattr(base_model, 'n_iter'):
+        base_model.n_iter = n_iter_base
 
     cv = BlockBootstrap(
         n_resamplings=n_estimators,

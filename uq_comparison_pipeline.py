@@ -181,11 +181,20 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_losses_plot=True,
             n_samples_train_loss_plot=10000,
             skip_training=True,
+            warm_start_model_name=None,
+            filename_trained_model=None,
+            early_stop_patience=None,
             save_model=True,
             verbose: int = 1,
     ) -> 'NN_Estimator':
         """
 
+<<<<<<< HEAD
+=======
+        :param filename_trained_model: if skipping training, the filename to load
+        :param early_stop_patience:
+        :param warm_start_model_name: model to load for warm-started training
+>>>>>>> bugchecks
         :param n_samples_train_loss_plot:
         :param use_scheduler:
         :param weight_decay:
@@ -210,7 +219,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         :param random_seed:
         :return:
         """
-        from src_base_models.nn_estimator import train_nn
+        from src_base_models.nn_estimator import train_nn, NN_Estimator
         import torch
         torch.set_default_dtype(torch.float32)
 
@@ -218,12 +227,48 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             logging.warning('cuda not available! using CPU')
 
         method_name = 'base_model_nn'
+        model_kwargs = {
+            'dim_in': X_train.shape[1],
+            'train_size_orig': X_train.shape[0],
+            'num_hidden_layers': num_hidden_layers,
+            'hidden_layer_size': hidden_layer_size,
+            'activation': activation if activation is not None else torch.nn.LeakyReLU,
+            'n_iter': n_iter,
+            'batch_size': batch_size,
+            'random_seed': random_seed,
+            'weight_decay': weight_decay,
+            'use_scheduler': use_scheduler,
+            'lr': lr,
+            'lr_patience': lr_patience,
+            'lr_reduction_factor': lr_reduction_factor,
+            'verbose': verbose,
+            'show_progress_bar': show_progress_bar,
+            'show_losses_plot': show_losses_plot,
+            'save_losses_plot': save_losses_plot,
+            'io_helper': self.io_helper,
+            'early_stop_patience': early_stop_patience,
+            'n_samples_train_loss_plot': n_samples_train_loss_plot,
+        }
         if skip_training:
-            model = self.try_skipping_training(method_name)
-            if model is not None:
-                model = misc_helpers.object_to_cuda(model)
-                return model
+            logging.info(f'skipping training in {method_name}')
+            model = self.io_helper.load_torch_model_statedict(
+                NN_Estimator,
+                filename=filename_trained_model,
+                method_name=method_name,
+                model_kwargs=model_kwargs,
+            )
+            # todo: correct NN_Estimator params!
+            model = misc_helpers.object_to_cuda(model)
+            return model
 
+        model = None
+        if warm_start_model_name is not None:
+            model = self.io_helper.load_torch_model_statedict(
+                NN_Estimator,
+                filename=warm_start_model_name,
+                model_kwargs=model_kwargs,
+            )
+            model = misc_helpers.object_to_cuda(model)
         if activation is None:
             activation = torch.nn.LeakyReLU
         model = train_nn(
@@ -247,6 +292,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             show_losses_plot=show_losses_plot,
             save_losses_plot=save_losses_plot,
             io_helper=self.io_helper,
+            warm_start_model=model,
+            early_stop_patience=early_stop_patience,
             n_samples_train_loss_plot=n_samples_train_loss_plot,
         )
         with torch.no_grad():
@@ -254,7 +301,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         model.set_output_dim(len(y_pred_temp.shape), orig=True)
         if save_model:
             model.to('cpu')  # temp
-            self.save_model(model, method_name=method_name)
+            postfix = misc_helpers.get_random_string() if warm_start_model_name is not None else None
+            self.io_helper.save_torch_model_statedict(model, method_name=method_name, postfix=postfix)
             misc_helpers.object_to_cuda(model)  # temp
         # noinspection PyTypeChecker
         model.set_params(verbose=False)
@@ -271,6 +319,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             base_model: Union['ModelWrapper', 'NN_Estimator'],
             base_model_name='',
             n_estimators=10,
+            n_iter_base: int = None,
             bootstrap_n_blocks=10,
             bootstrap_overlapping_blocks=False,
             random_seed=42,
@@ -280,6 +329,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ):
         """
 
+        :param n_iter_base: if base_model has attribute n_iter, set it to this value
         :param base_model_name:
         :param y_val:
         :param X_val:
@@ -316,6 +366,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 y_val,
                 base_model,
                 n_estimators=n_estimators,
+                n_iter_base=n_iter_base,
                 bootstrap_n_blocks=bootstrap_n_blocks,
                 bootstrap_overlapping_blocks=bootstrap_overlapping_blocks,
                 random_seed=random_seed,
@@ -345,6 +396,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             save_model=True,
             verbose=True,
             show_progress_bar=True,
+            subset_of_weights='last_layer',
+            hessian_structure='kron',
     ):
         from src_uq_methods_posthoc.laplace_approximation import (
             la_instantiator, train_laplace_approximation, predict_with_laplace_approximation
@@ -377,6 +430,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 random_seed=random_seed,
                 verbose=verbose,
                 show_progress_bar=show_progress_bar,
+                subset_of_weights=subset_of_weights,
+                hessian_structure=hessian_structure,
             )
             if save_model:
                 logging.info('saving model...')
@@ -490,13 +545,16 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             hidden_layer_size=50,
             activation=None,
             lr=1e-4,
+            use_scheduler=True,
             lr_patience=30,
-            weight_decay=0,  # 1e-2,
+            lr_reduction_factor=0.5,
+            weight_decay=1e-3,
             warmup_period=50,
             frozen_var_value=0.1,
             show_losses_plot=True,
             save_losses_plot=True,
             show_progress_bar=True,
+            random_seed=42,
             skip_training=True,
             save_model=True,
     ):
@@ -541,19 +599,22 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
                 "y_val": y_val,
                 "lr": lr,
                 "lr_patience": lr_patience,
+                "lr_reduction_factor": lr_reduction_factor,
                 "weight_decay": weight_decay,
                 'show_progress_bar': show_progress_bar,
-                "use_scheduler": True,
+                "use_scheduler": use_scheduler,
+                "random_seed": random_seed,
             }
             model = None
             if warmup_period > 0:
                 logging.info('running warmup...')
                 model = train_mean_var_nn(
                     n_iter=warmup_period,
-                    train_var=False,
+                    do_train_var=False,
                     frozen_var_value=frozen_var_value,
                     show_losses_plot=False,  # never show for warmup
                     save_losses_plot=False,  # never save for warmup
+                    io_helper=self.io_helper,
                     num_hidden_layers=num_hidden_layers,
                     hidden_layer_size=hidden_layer_size,
                     activation=activation,
@@ -563,7 +624,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             model = train_mean_var_nn(
                 model=model,
                 n_iter=n_iter,
-                train_var=True,
+                do_train_var=True,
                 show_losses_plot=show_losses_plot,
                 save_losses_plot=save_losses_plot,
                 io_helper=self.io_helper,

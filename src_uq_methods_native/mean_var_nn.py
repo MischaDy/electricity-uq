@@ -10,6 +10,12 @@ from tqdm import tqdm
 
 from helpers import misc_helpers
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from helpers.io_helper import IO_Helper
+
+
 torch.set_default_device(misc_helpers.get_device())
 torch.set_default_dtype(torch.float32)
 
@@ -45,11 +51,9 @@ class MeanVarNN(torch.nn.Module):
 
     def freeze_variance(self, value: float):
         assert value > 0
-        # self.last_layer_var.requires_grad_(False)
         self._frozen_var = value
 
     def unfreeze_variance(self):
-        # self.last_layer_var.requires_grad_(True)
         self._frozen_var = None
 
 
@@ -65,22 +69,23 @@ def train_mean_var_nn(
     hidden_layer_size=50,
     activation=torch.nn.LeakyReLU,
     random_seed=42,
-    lr=0.1,
+    lr=None,
     use_scheduler=True,
     lr_patience=30,
     lr_reduction_factor=0.5,
-    weight_decay=0.0,
-    train_var=True,
-    frozen_var_value=0.5,
+    weight_decay=1e-3,
+    do_train_var=True,
+    frozen_var_value=0.1,
     loss_skip=10,
     show_progress_bar=True,
     show_losses_plot=True,
     save_losses_plot=True,
-    io_helper=None,
+    io_helper: 'IO_Helper' = None,
 ):
     torch.manual_seed(random_seed)
 
-    y_val_np = y_val.copy()  # for eval
+    if lr is None:
+        lr = 1e-2 if use_scheduler else 1e-4
 
     X_train, y_train, X_val, y_val = misc_helpers.np_arrays_to_tensors(X_train, y_train, X_val, y_val)
     X_train, y_train, X_val, y_val = misc_helpers.objects_to_cuda(X_train, y_train, X_val, y_val)
@@ -100,7 +105,7 @@ def train_mean_var_nn(
     # noinspection PyTypeChecker
     train_loader = misc_helpers.get_train_loader(X_train, y_train, batch_size)
 
-    if train_var:
+    if do_train_var:
         model.unfreeze_variance()
         criterion = torch.nn.GaussianNLLLoss()
         criterion = misc_helpers.object_to_cuda(criterion)
@@ -126,23 +131,24 @@ def train_mean_var_nn(
             loss = criterion(y_pred_mean, y_train, y_pred_var)
             loss.backward()
             optimizer.step()
+        if not any([use_scheduler, show_losses_plot, save_losses_plot]):
+            continue
+
         model.eval()
-
         with torch.no_grad():
-            y_pred_mean_train, y_pred_var_train = model(X_train)
-            y_pred_mean_train, y_pred_var_train, y_train = misc_helpers.tensors_to_np_arrays(
-                y_pred_mean_train,
-                y_pred_var_train,
-                y_train)
-            train_loss = _nll_loss_np(y_pred_mean_train, y_pred_var_train, y_train)
-            train_losses.append(train_loss)
-
             y_pred_mean_val, y_pred_var_val = model(X_val)
-            y_pred_mean_val, y_pred_var_val = misc_helpers.tensors_to_np_arrays(y_pred_mean_val, y_pred_var_val)
-            val_loss = _nll_loss_np(y_pred_mean_val, y_pred_var_val, y_val_np)
-            val_losses.append(val_loss)
+            val_loss = criterion(y_pred_mean_val, y_val, y_pred_var_val)
+            if show_losses_plot or save_losses_plot:
+                val_loss = misc_helpers.tensor_to_np_array(val_loss)
+                val_losses.append(val_loss)
+
+                y_pred_mean_train, y_pred_var_train = model(X_train)
+                train_loss = criterion(y_pred_mean_train, y_train, y_pred_var_train)
+                train_loss = misc_helpers.tensor_to_np_array(train_loss)
+                train_losses.append(train_loss)
         if use_scheduler:
             scheduler.step(val_loss)
+    filename = misc_helpers.timestamped_filename('train_mean_var_nn')
     misc_helpers.plot_nn_losses(
         train_losses,
         val_losses,
@@ -150,21 +156,13 @@ def train_mean_var_nn(
         show_plot=show_losses_plot,
         save_plot=save_losses_plot,
         io_helper=io_helper,
-        filename='train_mean_var_nn',
+        filename=filename,
     )
     model.eval()
     return model
 
 
-def _nll_loss_np(y_pred_mean: np.ndarray, y_pred_var: np.ndarray, y_test: np.ndarray):
-    # todo: use torch.nn.NLLLoss instead!
-    from uncertainty_toolbox import nll_gaussian
-    y_pred_std = np.sqrt(y_pred_var)
-    y_pred_mean, y_pred_std, y_test = misc_helpers.make_arrs_1d(y_pred_mean, y_pred_std, y_test)
-    return nll_gaussian(y_pred_mean, y_pred_std, y_test)
-
-
-def predict_with_mvnn(model, X_pred, quantiles):
+def predict_with_mvnn(model: MeanVarNN, X_pred: np.ndarray, quantiles: list[float]):
     X_pred = misc_helpers.preprocess_array_to_tensor(X_pred)
     with torch.no_grad():
         y_pred, y_var = model(X_pred)

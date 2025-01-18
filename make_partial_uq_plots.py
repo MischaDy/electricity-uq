@@ -16,15 +16,16 @@ SAVE_PLOT = True
 PLOT_EXT = 'png'
 
 SMALL_IO_HELPER = False
+BIG_ARRAYS_FOLDER = 'cp_run2'
 
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
     # 'qr',
-    'gp',
+    # 'gp',
     # 'mvnn',
     # 'cp_hgbr',
     # 'cp_linreg',
-    # 'cp_nn',
+    'cp_nn',
     # 'la_nn',
 }
 UQ_METHOD_TO_ARR_NAMES_DICT = {
@@ -85,7 +86,7 @@ METHOD_NAME_TO_BASE_FILENAME = {
 if SMALL_IO_HELPER:
     IO_HELPER = IO_Helper(arrays_folder='arrays_small', models_folder='models_small')
 else:
-    IO_HELPER = IO_Helper(arrays_folder='arrays_gp', models_folder='models_gp')
+    IO_HELPER = IO_Helper(arrays_folder=BIG_ARRAYS_FOLDER)
 
 
 def main():
