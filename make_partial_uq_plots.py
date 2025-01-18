@@ -16,7 +16,7 @@ SAVE_PLOT = True
 PLOT_EXT = 'png'
 
 SMALL_IO_HELPER = False
-BIG_ARRAYS_FOLDER = 'cp_run2'
+BIG_ARRAYS_FOLDER = 'la_run2'
 
 UQ_METHODS_WHITELIST = {
     # 'qhgbr',
@@ -25,8 +25,8 @@ UQ_METHODS_WHITELIST = {
     # 'mvnn',
     # 'cp_hgbr',
     # 'cp_linreg',
-    'cp_nn',
-    # 'la_nn',
+    # 'cp_nn',
+    'la_nn',
 }
 UQ_METHOD_TO_ARR_NAMES_DICT = {
     'qhgbr': [
@@ -65,9 +65,9 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
         'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy',
     ],
     'la_nn': [
-        'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it100.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it100.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it100.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it1000.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it1000.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it1000.npy',
     ],
 }
 
