@@ -1,24 +1,41 @@
 {
-  "base_model_nn": {
-    "skip_training": true,
-    "n_iter": 300,
-    "num_hidden_layers": 2,
-    "hidden_layer_size": 50,
-    "activation": "torch.nn.LeakyReLU",
-    "weight_decay": 1e-3,
-    "lr": 1e-5,
-    "use_scheduler": true,
-    "lr_patience": 10,
-    "lr_reduction_factor": 0.5,
-    "show_progress_bar": false,
-    "show_losses_plot": false,
-    "save_losses_plot": true,
-    "n_samples_train_loss_plot": 10000,
-    "random_seed": 42,
-    "verbose": 1,
-    "save_model": true,
-    "warm_start_model_name": null,
-    "early_stop_patience": 30,
-    "filename_trained_model": "base_model_nn_n210432_it100ex_nh2_hs50.pth"
-  }
+  "base_model_nn": [
+    {
+      "n_iter": 200,
+      "num_hidden_layers": 2,
+      "hidden_layer_size": 50,
+      "activation": "torch.nn.LeakyReLU",
+      "weight_decay": 1e-3,
+      "lr": 1e-5,
+      "lr_patience": 10,
+      "lr_reduction_factor": 0.5,
+      "warm_start_model_name": null,
+      "early_stop_patience": 30
+    },
+    {
+      "n_iter": 300,
+      "num_hidden_layers": 2,
+      "hidden_layer_size": 50,
+      "activation": "torch.nn.LeakyReLU",
+      "weight_decay": 1e-3,
+      "lr": 1e-5,
+      "lr_patience": 10,
+      "lr_reduction_factor": 0.5,
+      "warm_start_model_name": "TODO",
+      "early_stop_patience": 30
+    },
+    {
+      "n_iter": 100,
+      "comment": "via CP",
+      "num_hidden_layers": 2,
+      "hidden_layer_size": 50,
+      "activation": "torch.nn.LeakyReLU",
+      "weight_decay": 1e-3,
+      "lr": 1e-5,
+      "lr_patience": 10,
+      "lr_reduction_factor": 0.5,
+      "warm_start_model_name": null,
+      "early_stop_patience": 30
+    }
+  ]
 }
