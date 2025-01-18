@@ -328,7 +328,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             if self.method_whitelist is not None and method_name not in self.method_whitelist:
                 logging.info(f'{method_name} not in whitelist, skipping')
                 continue
-            logging.info(f'training {method_name}...')
+            logging.info(f'running {method_name}...')
             base_model_kwargs = self.methods_kwargs[method_name]
             base_model = method(X_train, y_train, X_val, y_val, **base_model_kwargs)
             base_models[method_name] = base_model
