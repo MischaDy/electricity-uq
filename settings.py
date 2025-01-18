@@ -9,7 +9,7 @@ from scipy import stats
 RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
 DO_TRAIN_ALL = False
-SKIP_TRAINING_ALL = True
+SKIP_TRAINING_ALL = False
 
 
 ### NORMAL SETTINGS ###
@@ -51,7 +51,7 @@ METHOD_WHITELIST = [
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
     # 'posthoc_conformal_prediction',
-    # 'posthoc_laplace_approximation',
+    'posthoc_laplace_approximation',
 ]
 
 METHODS_KWARGS = {
@@ -122,8 +122,8 @@ METHODS_KWARGS = {
         'verbose': True,
         'show_progress_bar': True,
         'batch_size': 20,
-        'subset_of_weights': 'all',
-        'hessian_structure': 'full',
+        'subset_of_weights': 'last_layer',
+        'hessian_structure': 'kron',
     },
     "base_model_linreg": {
         "skip_training": True,
