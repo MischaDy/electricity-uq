@@ -10,6 +10,8 @@ from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
 logging.basicConfig(level=logging.INFO)
 
 RUN_SIZE = 'full'
+ARRAYS_FOLDER = 'arrays2'
+MODELS_FOLDER = 'models'
 TIMESTAMPED_FILES = False
 METHODS = {
     'base_model_hgbr',
@@ -74,7 +76,7 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
 def main():
     # todo: sharpness? calibration? PIT? coverage?
     logging.info('running metrics computation script')
-    io_helper = IO_Helper()
+    io_helper = IO_Helper(arrays_folder=ARRAYS_FOLDER, models_folder=MODELS_FOLDER)
     logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
     logging.info('loading predictions')
