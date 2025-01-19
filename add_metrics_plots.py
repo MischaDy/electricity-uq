@@ -144,7 +144,7 @@ def _plot_save_close(io_helper, filename):
 
 
 def plot_histogram(error_arr, io_helper, filename, bins=25):
-    sns.displot(error_arr, bins=bins)
+    sns.displot(error_arr, bins=bins, log_scale=True, element="step", fill=False)
     _plot_save_close(io_helper, filename)
 
 
