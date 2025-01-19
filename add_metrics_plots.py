@@ -86,8 +86,8 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
 
 
 def main():
-    assert PLOT_FOR_TRAIN or PLOT_FOR_TEST
-    assert any([PLOT_KDE, PLOT_HIST, PLOT_HIST_WITH_KDE])
+    if not (PLOT_FOR_TRAIN or PLOT_FOR_TEST) or not any([PLOT_KDE, PLOT_HIST, PLOT_HIST_WITH_KDE]):
+        logging.warning('plotting disabled! only computing and saving errors arrays')
 
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = misc_helpers._quick_load_data(RUN_SIZE)
     X_train, y_train = misc_helpers.add_val_to_train(X_train, X_val, y_train, y_val)
