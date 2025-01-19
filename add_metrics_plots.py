@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, force=True)
 RUN_SIZE = 'full'
 SMALL_IO_HELPER = False
 ARRAYS_FOLDER_BIG = 'arrays2'
-MODELS_FOLDER_BIG = None
+MODELS_FOLDER_BIG = 'models'
 
 PLOT_HIST = False
 PLOT_KDE = False
