@@ -1,9 +1,5 @@
 from typing import Generator, Union, TYPE_CHECKING
 
-import settings
-import settings_update
-from helpers import misc_helpers
-
 if TYPE_CHECKING:
     import numpy as np
 
