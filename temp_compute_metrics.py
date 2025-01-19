@@ -10,7 +10,8 @@ from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
 logging.basicConfig(level=logging.INFO)
 
 RUN_SIZE = 'full'
-ARRAYS_FOLDER = 'arrays2'
+SHORTEN_TO_TEST = True
+ARRAYS_FOLDER = 'arrays'
 MODELS_FOLDER = 'models'
 TIMESTAMPED_FILES = False
 METHODS = {
@@ -79,6 +80,9 @@ def main():
     io_helper = IO_Helper(arrays_folder=ARRAYS_FOLDER, models_folder=MODELS_FOLDER)
     logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
+    y_true = y_test if SHORTEN_TO_TEST else y
+    n_test_samples = y_test.shape[0]
+
     logging.info('loading predictions')
     uq_method_to_arrs_gen = get_uq_method_to_arrs_gen(
         uq_methods_whitelist=METHODS,
@@ -91,20 +95,31 @@ def main():
             y_pred, y_quantiles, y_std = arrs
         else:
             y_pred, y_quantiles, y_std = arrs, None, None
+
+        if SHORTEN_TO_TEST:
+            y_pred, y_quantiles, y_std = _shorten_arrs_none_ok(n_test_samples, y_pred, y_quantiles, y_std)
+
         metrics = {}
         logging.info(f'deterministic metrics...')
-        metrics_det = compute_metrics_det(y_pred, y)
+        metrics_det = compute_metrics_det(y_pred, y_true)
         metrics.update(metrics_det)
         if len(arrs) > 1:
             logging.info(f'UQ metrics...')
-            metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
+            metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, settings.QUANTILES)
             metrics.update(metrics_uq)
         logging.info(f'metrics: {metrics}')
         logging.info('saving metrics...')
-        filename = f'uq_metrics_{method}'
+
+        infix = 'test_' if SHORTEN_TO_TEST else ''
+        filename = f'uq_metrics_{infix}{method}'
         if TIMESTAMPED_FILES:
             filename = misc_helpers.timestamped_filename(filename)
         io_helper.save_metrics(metrics, filename=filename)
+
+
+def _shorten_arrs_none_ok(lim, *arrs):
+    for arr in arrs:
+        yield arr[:lim] if arr is not None else None
 
 
 def _load_data():
