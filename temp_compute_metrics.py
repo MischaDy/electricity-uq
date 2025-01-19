@@ -101,7 +101,7 @@ def main():
             y_pred, y_quantiles, y_std = arrs[0], None, None
 
         if SHORTEN_TO_TEST:
-            y_pred, y_quantiles, y_std = _shorten_arrs_none_ok(n_test_samples, y_pred, y_quantiles, y_std)
+            y_pred, y_quantiles, y_std = _tail_shorten_arrs_none_ok(n_test_samples, y_pred, y_quantiles, y_std)
 
         metrics = {}
         logging.info(f'deterministic metrics...')
@@ -121,9 +121,9 @@ def main():
         io_helper.save_metrics(metrics, filename=filename)
 
 
-def _shorten_arrs_none_ok(lim, *arrs):
+def _tail_shorten_arrs_none_ok(lim, *arrs):
     for arr in arrs:
-        yield arr[:lim] if arr is not None else None
+        yield arr[-lim:] if arr is not None else None
 
 
 def _load_data():
