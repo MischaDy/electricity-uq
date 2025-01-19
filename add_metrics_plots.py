@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, force=True)
 
 RUN_SIZE = 'full'
 SMALL_IO_HELPER = False
-ARRAYS_FOLDER_BIG = 'arrays2'
+ARRAYS_FOLDER_BIG = 'arrays'
 MODELS_FOLDER_BIG = 'models'
 
 BASE_MODEL_ERROR_SCORES = ['ae']
