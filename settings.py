@@ -51,7 +51,7 @@ METHOD_WHITELIST = [
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
     # 'posthoc_conformal_prediction',
-    'posthoc_laplace_approximation',
+    # 'posthoc_laplace_approximation',
 ]
 
 METHODS_KWARGS = {
@@ -149,7 +149,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": True,
-        "n_iter": 300,
+        "n_iter": 400,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
@@ -167,7 +167,7 @@ METHODS_KWARGS = {
         "save_model": True,
         'warm_start_model_name': None,
         'early_stop_patience': 30,
-        'filename_trained_model': 'base_model_nn_n210432_it100ex_nh2_hs50.pth'
+        'filename_trained_model': 'base_model_nn_n210432_it400_nh2_hs50.pth'
     },
 }
 
