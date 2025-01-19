@@ -17,6 +17,8 @@ SMALL_IO_HELPER = False
 ARRAYS_FOLDER_BIG = 'arrays2'
 MODELS_FOLDER_BIG = 'models'
 
+BASE_MODEL_ERROR_SCORES = {'ae'}
+
 METHODS_WHITELIST = {
     'base_model_hgbr',
     'base_model_linreg',
@@ -104,13 +106,20 @@ def main():
         if COMPUTE_FOR_TEST:
             data_to_compute_for.append([y_test, arrs_test, False])
         for y_true, arrs, are_train_arrs in data_to_compute_for:
-            y_pred, y_quantiles, y_std = misc_helpers.make_arrs_1d(*arrs)
+            if _is_base_model(method):
+                y_pred, y_quantiles, y_std = arrs[0], None, None
+            else:
+                y_pred, y_quantiles, y_std = arrs
+            y_pred, y_quantiles, y_std = _make_arrs_1d_none_ok(y_pred, y_quantiles, y_std)
             y_true = misc_helpers.make_arr_1d(y_true)
             error_scores_dict = {
                 'crps': partial(crps, y_true, y_quantiles, keep_dim=True),
                 'ae': partial(mae, y_true, y_pred, keep_dim=True),
                 'ssr': partial(ssr, y_true, y_pred, y_std, keep_dim=True),
             }
+            if _is_base_model(method):
+                error_scores_dict = {k: v for k, v in error_scores_dict.items()
+                                     if k in BASE_MODEL_ERROR_SCORES}
             dataset = 'training' if are_train_arrs else 'test'
             for error_score_name, error_func in error_scores_dict.items():
                 logging.info(f"{method=}, error score={error_score_name.upper()}, {dataset=}")
@@ -119,6 +128,15 @@ def main():
                 error_arr = error_func()
                 logging.info('saving array')
                 io_helper.save_array(error_arr, filename=filename)
+
+
+def _is_base_model(uq_method):
+    return uq_method.startswith('base_model')
+
+
+def _make_arrs_1d_none_ok(*arrs):
+    for arr in arrs:
+        yield misc_helpers.make_arr_1d(arr) if arr is not None else None
 
 
 def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
