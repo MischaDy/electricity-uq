@@ -149,7 +149,7 @@ def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
     :return:
     """
     filename_y_pred = METHOD_TO_ARR_NAMES_DICT[uq_method][0]
-    assert 'y_pred' in filename_y_pred
+    assert 'y_pred' in filename_y_pred or _is_base_model(uq_method)
     base_filename = filename_y_pred.split('_y_pred_')[0]
     filename = f'{base_filename}_{infix}_{dataset}'
     if ext is not None:
