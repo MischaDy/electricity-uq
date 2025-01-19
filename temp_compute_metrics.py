@@ -98,7 +98,7 @@ def main():
         if len(arrs) > 1:
             y_pred, y_quantiles, y_std = arrs
         else:
-            y_pred, y_quantiles, y_std = arrs, None, None
+            y_pred, y_quantiles, y_std = arrs[0], None, None
 
         if SHORTEN_TO_TEST:
             y_pred, y_quantiles, y_std = _shorten_arrs_none_ok(n_test_samples, y_pred, y_quantiles, y_std)
