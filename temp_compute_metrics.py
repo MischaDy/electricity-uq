@@ -5,7 +5,7 @@ import settings_update
 from helpers import misc_helpers
 from helpers.compute_metrics import compute_metrics_uq, compute_metrics_det
 from helpers.io_helper import IO_Helper
-from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
+from helpers.arr_helpers import get_method_to_arrs_gen
 
 logging.basicConfig(level=logging.INFO)
 
@@ -88,9 +88,9 @@ def main():
     n_test_samples = y_test.shape[0]
 
     logging.info('loading predictions')
-    uq_method_to_arrs_gen = get_uq_method_to_arrs_gen(
-        uq_methods_whitelist=METHODS,
-        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
+    uq_method_to_arrs_gen = get_method_to_arrs_gen(
+        methods_whitelist=METHODS,
+        method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
         io_helper=io_helper,
     )
     for method, arrs in uq_method_to_arrs_gen:

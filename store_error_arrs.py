@@ -4,7 +4,7 @@ from functools import partial
 from helpers.io_helper import IO_Helper
 from helpers import misc_helpers
 from helpers._metrics import crps, mae, ssr
-from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
+from helpers.arr_helpers import get_method_to_arrs_gen
 
 
 logging.basicConfig(level=logging.INFO, force=True)
@@ -17,7 +17,7 @@ SMALL_IO_HELPER = False
 ARRAYS_FOLDER_BIG = 'arrays2'
 MODELS_FOLDER_BIG = 'models'
 
-UQ_METHODS_WHITELIST = {
+METHODS_WHITELIST = {
     'base_model_hgbr',
     'base_model_linreg',
     'base_model_nn',
@@ -32,7 +32,7 @@ UQ_METHODS_WHITELIST = {
 }
 
 
-UQ_METHOD_TO_ARR_NAMES_DICT = {
+METHOD_TO_ARR_NAMES_DICT = {
     'base_model_hgbr': ['base_model_hgbr_n210432_it30_its3.npy'],
     'base_model_linreg': ['base_model_linreg_n210432.npy'],
     'base_model_nn': ['base_model_nn_n210432_it400_nh2_hs50.npy'],
@@ -91,12 +91,12 @@ def main():
     else:
         io_helper_kwargs = {'arrays_folder': ARRAYS_FOLDER_BIG, 'models_folder': MODELS_FOLDER_BIG}
     io_helper = IO_Helper(**io_helper_kwargs)
-    uq_method_to_arrs_gen = get_uq_method_to_arrs_gen(
-        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
-        uq_methods_whitelist=UQ_METHODS_WHITELIST,
+    uq_method_to_arrs_gen = get_method_to_arrs_gen(
+        method_to_arr_names_dict=METHOD_TO_ARR_NAMES_DICT,
+        methods_whitelist=METHODS_WHITELIST,
         io_helper=io_helper,
     )
-    for uq_method, uq_arrs in uq_method_to_arrs_gen:
+    for method, uq_arrs in uq_method_to_arrs_gen:
         arrs_train, arrs_test = split_pred_arrs_train_test(uq_arrs, n_samples_train=n_samples_train)
         data_to_compute_for = []
         if COMPUTE_FOR_TRAIN:
@@ -113,8 +113,8 @@ def main():
             }
             dataset = 'training' if are_train_arrs else 'test'
             for error_score_name, error_func in error_scores_dict.items():
-                logging.info(f"{uq_method=}, error score={error_score_name.upper()}, {dataset=}")
-                filename = _get_filename(infix=error_score_name, uq_method=uq_method, dataset=dataset)
+                logging.info(f"{method=}, error score={error_score_name.upper()}, {dataset=}")
+                filename = _get_filename(infix=error_score_name, uq_method=method, dataset=dataset)
                 logging.info(f'computing {error_score_name}')
                 error_arr = error_func()
                 logging.info('saving array')
@@ -130,7 +130,7 @@ def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
     :param ext:
     :return:
     """
-    filename_y_pred = UQ_METHOD_TO_ARR_NAMES_DICT[uq_method][0]
+    filename_y_pred = METHOD_TO_ARR_NAMES_DICT[uq_method][0]
     assert 'y_pred' in filename_y_pred
     base_filename = filename_y_pred.split('_y_pred_')[0]
     filename = f'{base_filename}_{infix}_{dataset}'

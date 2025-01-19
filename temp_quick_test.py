@@ -3,7 +3,7 @@ import logging
 from matplotlib import pyplot as plt
 logging.basicConfig(level=logging.INFO, force=True)
 
-from helpers import uq_arr_helpers, misc_helpers
+from helpers import arr_helpers, misc_helpers
 from helpers.io_helper import IO_Helper
 
 

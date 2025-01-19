@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from helpers.io_helper import IO_Helper
 from helpers import misc_helpers
 from helpers._metrics import crps, mae, ssr
-from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
+from helpers.arr_helpers import get_method_to_arrs_gen
 from store_error_arrs import _get_filename
 
 logging.basicConfig(level=logging.INFO, force=True)
@@ -33,7 +33,7 @@ SAVE_PLOTS = True
 SAVE_ARRAYS = True
 
 
-UQ_METHODS_WHITELIST = {
+METHODS_WHITELIST = {
     'base_model_hgbr',
     'base_model_linreg',
     'base_model_nn',
@@ -48,7 +48,7 @@ UQ_METHODS_WHITELIST = {
 }
 
 
-UQ_METHOD_TO_ARR_NAMES_DICT = {
+METHOD_TO_ARR_NAMES_DICT = {
     'base_model_hgbr': ['base_model_hgbr_n210432_it30_its3.npy'],
     'base_model_linreg': ['base_model_linreg_n210432.npy'],
     'base_model_nn': ['base_model_nn_n210432_it400_nh2_hs50.npy'],
@@ -110,7 +110,7 @@ def main():
         dataset_to_plot_for.append('training')
     if PLOT_FOR_TEST:
         dataset_to_plot_for.append('test')
-    for uq_method in UQ_METHODS_WHITELIST:
+    for uq_method in METHODS_WHITELIST:
         error_scores = BASE_MODEL_ERROR_SCORES if uq_method.startswith('base_model') else PROB_MODEL_ERROR_SCORES
         for dataset in dataset_to_plot_for:
             for error_score in error_scores:
