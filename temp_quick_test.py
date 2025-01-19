@@ -49,7 +49,7 @@ if SMALL_IO_HELPER:
 else:
     io_helper = IO_Helper(arrays_folder=BIG_ARRAYS_FOLDER)
 
-y_pred, y_quantiles, y_std = uq_arr_helpers.load_arrs(arr_names, io_helper=io_helper)
+y_pred, y_quantiles, y_std = arr_helpers.load_arrs(arr_names, io_helper=io_helper)
 
 n_samples_train = y_train.shape[0]
 n_samples_val = y_val.shape[0]
