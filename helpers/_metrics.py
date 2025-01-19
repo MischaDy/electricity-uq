@@ -55,7 +55,8 @@ def ssr(y_true: np.ndarray, y_pred: np.ndarray, y_std: np.ndarray, keep_dim=Fals
         skill = rmse(y_true, y_pred)
 
     assert eps >= 0
-    skill = max(eps, skill)
+    eps_arr = np.zeros_like(skill) + eps
+    skill = np.max([skill, eps_arr], axis=0)
     return spread / skill
 
 
