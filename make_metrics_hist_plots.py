@@ -29,17 +29,17 @@ SAVE_PLOTS = True
 
 
 METHODS_WHITELIST = {
-    'base_model_hgbr',
-    'base_model_linreg',
-    'base_model_nn',
-    'native_qhgbr',
-    'native_qr',
+    # 'base_model_hgbr',
+    # 'base_model_linreg',
+    # 'base_model_nn',
+    # 'native_qhgbr',
+    # 'native_qr',
     'native_gp',
-    'native_mvnn',
-    'posthoc_cp_hgbr',
-    'posthoc_cp_linreg',
-    'posthoc_cp_nn',
-    'posthoc_la_nn',
+    # 'native_mvnn',
+    # 'posthoc_cp_hgbr',
+    # 'posthoc_cp_linreg',
+    # 'posthoc_cp_nn',
+    # 'posthoc_la_nn',
 }
 
 
