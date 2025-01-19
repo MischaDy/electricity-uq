@@ -1,0 +1,268 @@
+INFO:root:loading data
+INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
+INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
+INFO:numexpr.utils:NumExpr defaulting to 16 threads.
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+/mnt/qb/work/ludwig/lqb589/my_code/helpers/misc_helpers.py:116: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  arr.drop(columns=ts_cols, inplace=True)  # todo: works bc no ts cols present?
+WARNING:root:At least one IO_Helper param of [filename_parts, methods_kwargs] is None, so not all functionality will be available!
+INFO:root:loading array from comparison_storage/arrays2/base_model_hgbr_n210432_it30_its3.npy
+INFO:root:method='base_model_hgbr', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/base_model_hgbr_n210432_it30_its3.npy_ae_training
+INFO:root:method='base_model_hgbr', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/base_model_hgbr_n210432_it30_its3.npy_ae_test
+INFO:root:loading array from comparison_storage/arrays2/base_model_linreg_n210432.npy
+INFO:root:method='base_model_linreg', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/base_model_linreg_n210432.npy_ae_training
+INFO:root:method='base_model_linreg', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/base_model_linreg_n210432.npy_ae_test
+INFO:root:loading array from comparison_storage/arrays2/base_model_nn_n210432_it400_nh2_hs50.npy
+INFO:root:method='base_model_nn', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/base_model_nn_n210432_it400_nh2_hs50.npy_ae_training
+INFO:root:method='base_model_nn', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/base_model_nn_n210432_it400_nh2_hs50.npy_ae_test
+INFO:root:loading array from comparison_storage/arrays2/native_qhgbr_y_pred_n210432_it0.npy
+INFO:root:loading array from comparison_storage/arrays2/native_qhgbr_y_quantiles_n210432_it0.npy
+INFO:root:loading array from comparison_storage/arrays2/native_qhgbr_y_std_n210432_it0.npy
+INFO:root:method='qhgbr', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_qhgbr_crps_training
+INFO:root:method='qhgbr', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_qhgbr_ae_training
+INFO:root:method='qhgbr', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_qhgbr_ssr_training
+INFO:root:method='qhgbr', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_qhgbr_crps_test
+INFO:root:method='qhgbr', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_qhgbr_ae_test
+INFO:root:method='qhgbr', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_qhgbr_ssr_test
+INFO:root:loading array from comparison_storage/arrays2/native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy
+INFO:root:loading array from comparison_storage/arrays2/native_quantile_regression_nn_y_quantiles_n210432_it300_nh2_hs50.npy
+INFO:root:loading array from comparison_storage/arrays2/native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy
+INFO:root:method='qr', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_quantile_regression_nn_crps_training
+INFO:root:method='qr', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_quantile_regression_nn_ae_training
+INFO:root:method='qr', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_quantile_regression_nn_ssr_training
+INFO:root:method='qr', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_quantile_regression_nn_crps_test
+INFO:root:method='qr', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_quantile_regression_nn_ae_test
+INFO:root:method='qr', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_quantile_regression_nn_ssr_test
+INFO:root:loading array from comparison_storage/arrays2/native_gpytorch_y_pred_n210432_it200_new.npy
+INFO:root:loading array from comparison_storage/arrays2/native_gpytorch_y_quantiles_n210432_it200_new.npy
+INFO:root:loading array from comparison_storage/arrays2/native_gpytorch_y_std_n210432_it200_new.npy
+INFO:root:method='gp', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_gpytorch_crps_training
+INFO:root:method='gp', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_gpytorch_ae_training
+INFO:root:method='gp', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_gpytorch_ssr_training
+INFO:root:method='gp', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_gpytorch_crps_test
+INFO:root:method='gp', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_gpytorch_ae_test
+INFO:root:method='gp', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_gpytorch_ssr_test
+INFO:root:loading array from comparison_storage/arrays2/native_mvnn_y_pred_n210432_it100_nh2_hs50.npy
+INFO:root:loading array from comparison_storage/arrays2/native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy
+INFO:root:loading array from comparison_storage/arrays2/native_mvnn_y_std_n210432_it100_nh2_hs50.npy
+INFO:root:method='mvnn', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_mvnn_crps_training
+INFO:root:method='mvnn', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_mvnn_ae_training
+INFO:root:method='mvnn', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_mvnn_ssr_training
+INFO:root:method='mvnn', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_mvnn_crps_test
+INFO:root:method='mvnn', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_mvnn_ae_test
+INFO:root:method='mvnn', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/native_mvnn_ssr_test
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy
+INFO:root:method='cp_hgbr', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_crps_training
+INFO:root:method='cp_hgbr', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_ae_training
+INFO:root:method='cp_hgbr', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_ssr_training
+INFO:root:method='cp_hgbr', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_crps_test
+INFO:root:method='cp_hgbr', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_ae_test
+INFO:root:method='cp_hgbr', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_ssr_test
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_y_quantiles_n210432_it5.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy
+INFO:root:method='cp_linreg', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_crps_training
+INFO:root:method='cp_linreg', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_ae_training
+INFO:root:method='cp_linreg', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_ssr_training
+INFO:root:method='cp_linreg', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_crps_test
+INFO:root:method='cp_linreg', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_ae_test
+INFO:root:method='cp_linreg', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_ssr_test
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5_cp2.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5_cp2.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5_cp2.npy
+INFO:root:method='cp_nn', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_crps_training
+INFO:root:method='cp_nn', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_ae_training
+INFO:root:method='cp_nn', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_ssr_training
+INFO:root:method='cp_nn', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_crps_test
+INFO:root:method='cp_nn', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_ae_test
+INFO:root:method='cp_nn', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_ssr_test
+INFO:root:loading array from comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it1000_la2.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it1000_la2.npy
+INFO:root:loading array from comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_y_std_n210432_it1000_la2.npy
+INFO:root:method='la_nn', error score=CRPS, dataset='training'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_crps_training
+INFO:root:method='la_nn', error score=AE, dataset='training'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_ae_training
+INFO:root:method='la_nn', error score=SSR, dataset='training'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_ssr_training
+INFO:root:method='la_nn', error score=CRPS, dataset='test'
+INFO:root:computing crps
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_crps_test
+INFO:root:method='la_nn', error score=AE, dataset='test'
+INFO:root:computing ae
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_ae_test
+INFO:root:method='la_nn', error score=SSR, dataset='test'
+INFO:root:computing ssr
+INFO:root:saving array
+INFO:root:saving array to comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_ssr_test
