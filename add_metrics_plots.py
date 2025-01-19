@@ -15,6 +15,8 @@ logging.basicConfig(level=logging.INFO, force=True)
 
 RUN_SIZE = 'full'
 SMALL_IO_HELPER = False
+ARRAYS_FOLDER_BIG = 'arrays2'
+MODELS_FOLDER_BIG = None
 
 PLOT_HIST = False
 PLOT_KDE = False
@@ -40,6 +42,7 @@ UQ_METHODS_WHITELIST = {
     'cp_nn',
     'la_nn',
 }
+
 
 UQ_METHOD_TO_ARR_NAMES_DICT = {
     'qhgbr': [
@@ -95,7 +98,10 @@ def main():
 
     n_samples_train = X_train.shape[0]
 
-    io_helper_kwargs = {'arrays_folder': 'arrays_small', 'models_folder': 'models_small'} if SMALL_IO_HELPER else {}
+    if SMALL_IO_HELPER:
+        io_helper_kwargs = {'arrays_folder': 'arrays_small', 'models_folder': 'models_small'}
+    else:
+        io_helper_kwargs = {'arrays_folder': ARRAYS_FOLDER_BIG, 'models_folder': MODELS_FOLDER_BIG}
     io_helper = IO_Helper(**io_helper_kwargs)
     uq_method_to_arrs_gen = get_uq_method_to_arrs_gen(
         uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
