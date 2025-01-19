@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 RUN_SIZE = 'full'
 SHORTEN_TO_TEST = True
-ARRAYS_FOLDER = 'arrays'
+ARRAYS_FOLDER = 'arrays2'
 MODELS_FOLDER = 'models'
 TIMESTAMPED_FILES = False
 METHODS = {
