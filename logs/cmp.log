@@ -1,6 +1,7 @@
 INFO:root:running metrics computation script
 WARNING:root:At least one IO_Helper param of [filename_parts, methods_kwargs] is None, so not all functionality will be available!
 INFO:root:loading train/test data
+INFO:root:updating run size setup
 INFO:numexpr.utils:Note: detected 72 virtual cores but NumExpr set to maximum of 64, check "NUMEXPR_MAX_THREADS" environment variable.
 INFO:numexpr.utils:Note: NumExpr detected 72 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 16.
 INFO:numexpr.utils:NumExpr defaulting to 16 threads.
@@ -29,19 +30,19 @@ INFO:root:loading predictions
 INFO:root:loading array from comparison_storage/arrays2/base_model_hgbr_n210432_it30_its3.npy
 INFO:root:computing metrics for base_model_hgbr:
 INFO:root:deterministic metrics...
-INFO:root:metrics: {'mae': 2163.1651115034992, 'rmse': 2618.098560658135, 'smape_scaled': 0.15802571393490372}
+INFO:root:metrics: {'mae': 137.00952874299506, 'rmse': 182.22024990175242, 'smape_scaled': 0.010668871156271827}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_base_model_hgbr.json
 INFO:root:loading array from comparison_storage/arrays2/base_model_linreg_n210432.npy
 INFO:root:computing metrics for base_model_linreg:
 INFO:root:deterministic metrics...
-INFO:root:metrics: {'mae': 2172.5341796875, 'rmse': 2623.4990234375, 'smape_scaled': 0.1585327684879303}
+INFO:root:metrics: {'mae': 212.31085205078125, 'rmse': 283.3730163574219, 'smape_scaled': 0.01683916710317135}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_base_model_linreg.json
 INFO:root:loading array from comparison_storage/arrays2/base_model_nn_n210432_it400_nh2_hs50.npy
 INFO:root:computing metrics for base_model_nn:
 INFO:root:deterministic metrics...
-INFO:root:metrics: {'mae': 2121.836669921875, 'rmse': 2585.978759765625, 'smape_scaled': 0.1553136706352234}
+INFO:root:metrics: {'mae': 152.47723388671875, 'rmse': 197.17701721191406, 'smape_scaled': 0.011858620680868626}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_base_model_nn.json
 INFO:root:loading array from comparison_storage/arrays2/native_qhgbr_y_pred_n210432_it0.npy
@@ -50,7 +51,7 @@ INFO:root:loading array from comparison_storage/arrays2/native_qhgbr_y_std_n2104
 INFO:root:computing metrics for native_qhgbr:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2162.2648437516586, 'rmse': 2618.2755534495354, 'smape_scaled': 0.15797998823724563, 'crps': 2081.5934290399173, 'nll_gaussian': 211.99421080439092, 'mean_pinball': 23.505546214319427, 'ssr': 0.056111649545080036}
+INFO:root:metrics: {'mae': 146.04834811184008, 'rmse': 193.37619023624, 'smape_scaled': 0.01131276340713315, 'crps': 95.12779962658475, 'nll_gaussian': 6.65869389418966, 'mean_pinball': 28.686894836688225, 'ssr': 0.8163265178726956}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_native_qhgbr.json
 INFO:root:loading array from comparison_storage/arrays2/native_quantile_regression_nn_y_pred_n210432_it300_nh2_hs50.npy
@@ -59,7 +60,7 @@ INFO:root:loading array from comparison_storage/arrays2/native_quantile_regressi
 INFO:root:computing metrics for native_qr:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2109.4541015625, 'rmse': 2574.197265625, 'smape_scaled': 0.15446804463863373, 'crps': 2014.0536270060622, 'nll_gaussian': 103.59136974035177, 'mean_pinball': 18.979900360107422, 'ssr': 0.07009702035617486}
+INFO:root:metrics: {'mae': 144.5478973388672, 'rmse': 188.0083770751953, 'smape_scaled': 0.011198005639016628, 'crps': 103.47415866836371, 'nll_gaussian': 6.691803974377721, 'mean_pinball': 17.510683059692383, 'ssr': 0.925160203482286}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_native_qr.json
 INFO:root:loading array from comparison_storage/arrays2/native_gpytorch_y_pred_n210432_it200_new.npy
@@ -68,7 +69,7 @@ INFO:root:loading array from comparison_storage/arrays2/native_gpytorch_y_std_n2
 INFO:root:computing metrics for native_gp:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2164.377685546875, 'rmse': 2621.1455078125, 'smape_scaled': 0.1581229418516159, 'crps': 2084.7934097969332, 'nll_gaussian': 222.4915322754776, 'mean_pinball': 17.571113556300986, 'ssr': 0.05683136683236966}
+INFO:root:metrics: {'mae': 135.6634979248047, 'rmse': 179.49716186523438, 'smape_scaled': 0.010449154302477837, 'crps': 96.33389239803527, 'nll_gaussian': 6.60204953880807, 'mean_pinball': 18.667144212255973, 'ssr': 0.8816581988029228}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_native_gp.json
 INFO:root:loading array from comparison_storage/arrays2/native_mvnn_y_pred_n210432_it100_nh2_hs50.npy
@@ -77,7 +78,7 @@ INFO:root:loading array from comparison_storage/arrays2/native_mvnn_y_std_n21043
 INFO:root:computing metrics for native_mvnn:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2126.904541015625, 'rmse': 2589.872314453125, 'smape_scaled': 0.15556150674819946, 'crps': 2055.127576692707, 'nll_gaussian': 232.98454396313892, 'mean_pinball': 15.657107500129197, 'ssr': 0.05125227194741927}
+INFO:root:metrics: {'mae': 152.9539337158203, 'rmse': 197.52330017089844, 'smape_scaled': 0.011976061388850212, 'crps': 111.23457908485594, 'nll_gaussian': 6.9657040752057835, 'mean_pinball': 15.858065698144665, 'ssr': 0.6806311599966159}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_native_mvnn.json
 INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy
@@ -86,7 +87,7 @@ INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_predic
 INFO:root:computing metrics for posthoc_cp_hgbr:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2163.1651115034992, 'rmse': 2618.098560658135, 'smape_scaled': 0.15802571393490372, 'crps': 2083.171329604334, 'nll_gaussian': 165.99241619976934, 'mean_pinball': 16.03511006735679, 'ssr': 0.055886383674689274}
+INFO:root:metrics: {'mae': 137.00952874299506, 'rmse': 182.22024990175242, 'smape_scaled': 0.010668871156271827, 'crps': 99.19522777601125, 'nll_gaussian': 6.6802031111016795, 'mean_pinball': 16.03511006735679, 'ssr': 0.8029626824569794}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_posthoc_cp_hgbr.json
 INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy
@@ -95,7 +96,7 @@ INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_predic
 INFO:root:computing metrics for posthoc_cp_linreg:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2172.533935546875, 'rmse': 2623.4990234375, 'smape_scaled': 0.1585327535867691, 'crps': 2016.6550090958917, 'nll_gaussian': 45.82902095781734, 'mean_pinball': 31.13543076532468, 'ssr': 0.11291117245156566}
+INFO:root:metrics: {'mae': 212.31094360351562, 'rmse': 283.373046875, 'smape_scaled': 0.016839176416397095, 'crps': 152.77682913302723, 'nll_gaussian': 7.067612506515193, 'mean_pinball': 31.135430538177612, 'ssr': 1.0453441282738993}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_posthoc_cp_linreg.json
 INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5_cp2.npy
@@ -104,7 +105,7 @@ INFO:root:loading array from comparison_storage/arrays2/posthoc_conformal_predic
 INFO:root:computing metrics for posthoc_cp_nn:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2121.836669921875, 'rmse': 2585.978759765625, 'smape_scaled': 0.1553136706352234, 'crps': 2024.7668497070802, 'nll_gaussian': 111.17239205711643, 'mean_pinball': 19.816665692891334, 'ssr': 0.06898373523609098}
+INFO:root:metrics: {'mae': 152.4772186279297, 'rmse': 197.17701721191406, 'smape_scaled': 0.011858620680868626, 'crps': 108.41700300498587, 'nll_gaussian': 6.7137698884969605, 'mean_pinball': 19.816665475179263, 'ssr': 0.9047224499704415}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_posthoc_cp_nn.json
 INFO:root:loading array from comparison_storage/arrays2/posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it1000_la2.npy
@@ -113,6 +114,6 @@ INFO:root:loading array from comparison_storage/arrays2/posthoc_laplace_approxim
 INFO:root:computing metrics for posthoc_la_nn:
 INFO:root:deterministic metrics...
 INFO:root:UQ metrics...
-INFO:root:metrics: {'mae': 2121.836669921875, 'rmse': 2585.978759765625, 'smape_scaled': 0.1553136706352234, 'crps': 2019.0691466500184, 'nll_gaussian': 96.92549499025252, 'mean_pinball': 22.64168053397598, 'ssr': 0.0742272994481267}
+INFO:root:metrics: {'mae': 152.4772186279297, 'rmse': 197.17701721191406, 'smape_scaled': 0.011858620680868626, 'crps': 108.16621751186423, 'nll_gaussian': 6.703755257151063, 'mean_pinball': 22.641995871496103, 'ssr': 0.9735054200953219}
 INFO:root:saving metrics...
 INFO:root:saving metrics to comparison_storage/metrics/uq_metrics_test_posthoc_la_nn.json
