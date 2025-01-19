@@ -123,7 +123,8 @@ def main():
             dataset = 'training' if are_train_arrs else 'test'
             for error_score_name, error_func in error_scores_dict.items():
                 logging.info(f"{method=}, error score={error_score_name.upper()}, {dataset=}")
-                filename = _get_filename(infix=error_score_name, uq_method=method, dataset=dataset)
+                filename = _get_filename(infix=error_score_name, uq_method=method, dataset=dataset,
+                                         method_to_arr_names_dict=METHOD_TO_ARR_NAMES_DICT)
                 logging.info(f'computing {error_score_name}')
                 error_arr = error_func()
                 logging.info('saving array')
@@ -139,7 +140,7 @@ def _make_arrs_1d_none_ok(*arrs):
         yield misc_helpers.make_arr_1d(arr) if arr is not None else None
 
 
-def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
+def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None, method_to_arr_names_dict=None):
     """
 
     :param infix:
@@ -148,7 +149,9 @@ def _get_filename(infix: str, uq_method: str, dataset: str, ext: str = None):
     :param ext:
     :return:
     """
-    filename_y_pred = METHOD_TO_ARR_NAMES_DICT[uq_method][0]
+    if method_to_arr_names_dict is None:
+        method_to_arr_names_dict = METHOD_TO_ARR_NAMES_DICT
+    filename_y_pred = method_to_arr_names_dict[uq_method][0]
     assert 'y_pred' in filename_y_pred or _is_base_model(uq_method)
     base_filename = filename_y_pred.split('_y_pred_')[0]
     filename = f'{base_filename}_{infix}_{dataset}'

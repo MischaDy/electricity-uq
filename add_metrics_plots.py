@@ -110,7 +110,8 @@ def main():
         for dataset in dataset_to_plot_for:
             for error_score in error_scores:
                 logging.info(f"{uq_method=}, error score={error_score.upper()}, {dataset=}")
-                filename = _get_filename(infix=error_score, uq_method=uq_method, dataset=dataset)
+                filename = _get_filename(infix=error_score, uq_method=uq_method, dataset=dataset,
+                                         method_to_arr_names_dict=METHOD_TO_ARR_NAMES_DICT)
                 error_arr_filename = f'{filename}.npy'
                 try:
                     error_arr = io_helper.load_array(filename=error_arr_filename)
