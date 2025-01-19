@@ -80,7 +80,11 @@ def main():
     io_helper = IO_Helper(arrays_folder=ARRAYS_FOLDER, models_folder=MODELS_FOLDER)
     logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
-    y_true = y_test if SHORTEN_TO_TEST else y
+    if SHORTEN_TO_TEST:
+        logging.info('computing metrics on test data only')
+        y_true = y_test
+    else:
+        y_true = y
     n_test_samples = y_test.shape[0]
 
     logging.info('loading predictions')
