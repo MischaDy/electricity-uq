@@ -40,7 +40,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             storage_path="comparison_storage",
             methods_kwargs: dict[str, dict[str, Any]] = None,
             n_points_per_group=None,
-            method_whitelist=None,
+            method_whitelist: set[str] = None,
             do_standardize_data=True,
     ):
         """

@@ -50,7 +50,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             data_path,
             methods_kwargs,
             filename_parts,
-            method_whitelist=None,
+            method_whitelist: set[str] = None,
             do_standardize_data=True,
     ):
         """
