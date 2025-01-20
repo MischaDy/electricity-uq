@@ -14,6 +14,20 @@ SHORTEN_TO_TEST = True
 ARRAYS_FOLDER = 'arrays2'
 MODELS_FOLDER = 'models'
 TIMESTAMPED_FILES = False
+
+METRICS_WHITELIST_DET = set([
+    # "mae",
+    # "rmse",
+    # "smape_scaled",
+])
+METRICS_WHITELIST_UQ = set([
+    # "crps",
+    # "nll_gaussian",
+    # "mean_pinball",
+    # "ssr",
+    "coverage",
+])
+
 METHODS_WHITELIST = set([
     'base_model_hgbr',
     'base_model_linreg',
@@ -105,12 +119,15 @@ def main():
 
         metrics = {}
         logging.info(f'deterministic metrics...')
-        metrics_det = compute_metrics_det(y_pred, y_true)
-        metrics.update(metrics_det)
+        metrics_det = compute_metrics_det(y_pred, y_true, metrics_whitelist=METRICS_WHITELIST_DET)
+        if metrics_det:
+            metrics.update(metrics_det)
         if len(arrs) > 1:
             logging.info(f'UQ metrics...')
-            metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, settings.QUANTILES)
-            metrics.update(metrics_uq)
+            metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, settings.QUANTILES,
+                                            metrics_whitelist=METRICS_WHITELIST_UQ)
+            if metrics_uq:
+                metrics.update(metrics_uq)
         logging.info(f'metrics: {metrics}')
         logging.info('saving metrics...')
 
