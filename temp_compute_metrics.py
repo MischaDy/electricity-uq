@@ -14,7 +14,7 @@ SHORTEN_TO_TEST = True
 ARRAYS_FOLDER = 'arrays2'
 MODELS_FOLDER = 'models'
 TIMESTAMPED_FILES = False
-METHODS = {
+METHODS_WHITELIST = set([
     'base_model_hgbr',
     'base_model_linreg',
     'base_model_nn',
@@ -26,7 +26,7 @@ METHODS = {
     'posthoc_cp_linreg',
     'posthoc_cp_nn',
     'posthoc_la_nn',
-}
+])
 UQ_METHOD_TO_ARR_NAMES_DICT = {
     'base_model_hgbr': ['base_model_hgbr_n210432_it30_its3.npy'],
     'base_model_linreg': ['base_model_linreg_n210432.npy'],
@@ -89,7 +89,7 @@ def main():
 
     logging.info('loading predictions')
     uq_method_to_arrs_gen = get_method_to_arrs_gen(
-        methods_whitelist=METHODS,
+        methods_whitelist=METHODS_WHITELIST,
         method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
         io_helper=io_helper,
     )
