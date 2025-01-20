@@ -43,6 +43,14 @@ def mae(y_true: np.ndarray, y_pred: np.ndarray, keep_dim=False):
 ### PROBABILISTIC ##
 
 
+def coverage(y_true: np.ndarray, y_quantiles: np.ndarray, quantiles: list[float], coverage_level=0.9,
+             keep_dim=False):
+    # todo: compute for all quantiles at once?
+    quantile_ind_high, quantile_ind_low = _get_quantile_inds(quantiles, pi_interval=coverage_level)
+    coverage_arr = (y_quantiles[:, quantile_ind_low] <= y_true) & (y_true <= y_quantiles[:, quantile_ind_high])
+    return coverage_arr if keep_dim else coverage_arr.mean()
+
+
 def ssr(y_true: np.ndarray, y_pred: np.ndarray, y_std: np.ndarray, keep_dim=False, eps=1e-9):
     """
     compute spread-skill ratio
@@ -125,3 +133,16 @@ def crps(y_true: np.ndarray, y_quantiles: np.ndarray, keep_dim=False):
         y_quantiles, y_true, ensemble_member_dim=ensemble_member_dim, method='fair', preserve_dims=preserve_dims,
     )
     return crps.to_numpy()
+
+
+### HELPERS
+
+
+def _get_quantile_inds(quantiles, pi_interval=0.9):
+    assert 0 < pi_interval < 1
+    quantiles = np.array(quantiles)
+    shift = (1 - pi_interval) / 2
+    quantile_low, quantile_high = shift, pi_interval + shift
+    diffs_low, diffs_high = np.abs(quantiles - quantile_low), np.abs(quantiles - quantile_high)
+    quantile_ind_low, quantile_ind_high = np.argmin(diffs_low), np.argmin(diffs_high)
+    return quantile_ind_high, quantile_ind_low
