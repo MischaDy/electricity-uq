@@ -1,5 +1,12 @@
+"""
+all metrics expect 1D arrays
+all UQ metrics allow y_std and/or y_quantiles to be None, in which case they return None
+"""
+
 import numpy as np
 
+
+### DETERMINISTIC ###
 
 def smape_scaled(y_true: np.ndarray, y_pred: np.ndarray):
     """
@@ -31,6 +38,9 @@ def mae(y_true: np.ndarray, y_pred: np.ndarray, keep_dim=False):
     """
     absolute_errors = np.abs(y_true - y_pred)
     return absolute_errors if keep_dim else np.mean(absolute_errors)
+
+
+### PROBABILISTIC ##
 
 
 def ssr(y_true: np.ndarray, y_pred: np.ndarray, y_std: np.ndarray, keep_dim=False, eps=1e-9):
