@@ -43,6 +43,19 @@ LOGGING_LEVEL = logging.INFO
 
 STORAGE_PATH = "comparison_storage"
 
+METRICS_WHITELIST_DET = {
+    # "mae",
+    # "rmse",
+    # "smape_scaled",
+}
+METRICS_WHITELIST_UQ = {
+    # "crps",
+    # "nll_gaussian",
+    # "mean_pinball",
+    # "ssr",
+    "coverage",
+}
+
 METHOD_WHITELIST = {
     # 'base_model_linreg',
     'base_model_nn',
