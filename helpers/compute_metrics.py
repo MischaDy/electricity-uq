@@ -32,7 +32,8 @@ def compute_metrics_det(y_pred, y_true, metrics_whitelist: set[str] = None) -> d
 
 def compute_metrics_uq(
         y_pred, y_quantiles, y_std, y_true, quantiles, coverage_level=0.9, metrics_whitelist: set[str] = None,
-    ) -> dict[str, float] | None:
+        eps=1e-6,
+) -> dict[str, float] | None:
     """
 
     :param metrics_whitelist: only compute these metrics. if None, compute all.
@@ -42,6 +43,7 @@ def compute_metrics_uq(
     :param y_true:
     :param quantiles:
     :param coverage_level: assumed to be 2-digit float in [0.01, 0.99]
+    :param eps: used to check coverage_level assumption noted above
     :return:
     """
     if metrics_whitelist is not None and not metrics_whitelist:
@@ -50,9 +52,15 @@ def compute_metrics_uq(
 
     from helpers._metrics import crps, nll_gaussian, mean_pinball_loss, ssr, coverage
 
-    y_pred, y_quantiles, y_std, y_true = _make_arrs_1d_allow_none(y_pred, y_quantiles, y_std, y_true)
+    coverage_level_perc = round(100 * coverage_level)
     if metrics_whitelist is None or 'coverage' in metrics_whitelist:
         logging.info(f'coverage will be computed at level {coverage_level}')
+        diff_after_rounding = abs(coverage_level - coverage_level_perc / 100)
+        if diff_after_rounding > eps:
+            logging.warning(f"coverage level {coverage_level} doesn't seem to be a 2-digit float."
+                            f" naming of the metric will be imprecise in outputs ({coverage_level_perc})")
+
+    y_pred, y_quantiles, y_std, y_true = _make_arrs_1d_allow_none(y_pred, y_quantiles, y_std, y_true)
     metrics_funcs = {
         "crps": partial(crps, y_true, y_quantiles),
         "nll_gaussian": partial(nll_gaussian, y_true, y_pred, y_std),
@@ -61,6 +69,8 @@ def compute_metrics_uq(
         "coverage": partial(coverage, y_true, y_quantiles, quantiles, coverage_level=coverage_level),
     }
     metrics = _metrics_funcs_dict_to_metrics_dict(metrics_funcs, metrics_whitelist)
+    if 'coverage' in metrics:
+        metrics[f'coverage_{coverage_level_perc}'] = metrics.pop('coverage')
     return _metrics_to_float_allow_none(metrics)
 
 
