@@ -64,7 +64,7 @@ def compute_metrics_uq(
     metrics_funcs = {
         "crps": partial(crps, y_true, y_quantiles),
         "nll_gaussian": partial(nll_gaussian, y_true, y_pred, y_std),
-        "mean_pinball": partial(mean_pinball_loss, y_pred, y_quantiles, quantiles),
+        "mean_pinball": partial(mean_pinball_loss, y_true, y_quantiles, quantiles),
         "ssr": partial(ssr, y_true, y_pred, y_std),
         "coverage": partial(coverage, y_true, y_quantiles, quantiles, coverage_level=coverage_level),
     }
