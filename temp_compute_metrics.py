@@ -23,9 +23,9 @@ METRICS_WHITELIST_DET = set([
 METRICS_WHITELIST_UQ = set([
     # "crps",
     # "nll_gaussian",
-    # "mean_pinball",
+    "mean_pinball",
     # "ssr",
-    "coverage",
+    # "coverage",
 ])
 
 METHODS_WHITELIST = set([
