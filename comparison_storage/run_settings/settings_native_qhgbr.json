@@ -1,17 +1,15 @@
 {
   "val_frac": 0.1,
   "cv_n_iter": 0,
-  "cv_n_splits": 2,
+  "cv_n_splits": "irrelevant",
   "n_iter_no_change": 15,
   "max_iter": 1000,
   "lr": 0.2,
   "l2_regularization": 0.001,
   "max_features": 0.5,
   "max_leaf_nodes": 10,
-  "model_param_distributions": {
-    "max_iter": [1000],
-    "learning_rate": [0.1],
-    "l2_regularization": [0.001]
-  },
-  "duration": 0
+  "min_samples_leaf": 20,
+  "max_workers": 24,
+  "model_param_distributions": "irrelevant",
+  "duration": "0:45:40"
 }
