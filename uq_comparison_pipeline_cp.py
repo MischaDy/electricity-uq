@@ -18,8 +18,8 @@ if TYPE_CHECKING:
 
 settings.METHOD_WHITELIST = [
     'base_model_linreg',
-    'base_model_nn',
-    'base_model_hgbr',
+    # 'base_model_nn',
+    # 'base_model_hgbr',
     'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
 ]
