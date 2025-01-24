@@ -1,6 +1,6 @@
 {
-  "base_model_nn": [
-    {
+  "base_model_nn": {
+    "run_1": {
       "n_iter": 200,
       "num_hidden_layers": 2,
       "hidden_layer_size": 50,
@@ -10,9 +10,10 @@
       "lr_patience": 10,
       "lr_reduction_factor": 0.5,
       "warm_start_model_name": null,
-      "early_stop_patience": 30
+      "early_stop_patience": 30,
+      "duration": 0
     },
-    {
+    "run_2": {
       "n_iter": 300,
       "num_hidden_layers": 2,
       "hidden_layer_size": 50,
@@ -22,9 +23,10 @@
       "lr_patience": 10,
       "lr_reduction_factor": 0.5,
       "warm_start_model_name": "TODO",
-      "early_stop_patience": 30
+      "early_stop_patience": 30,
+      "duration": 0
     },
-    {
+    "run_3": {
       "n_iter": 100,
       "comment": "via CP",
       "num_hidden_layers": 2,
@@ -35,7 +37,11 @@
       "lr_patience": 10,
       "lr_reduction_factor": 0.5,
       "warm_start_model_name": null,
-      "early_stop_patience": 30
+      "early_stop_patience": 30,
+      "duration": 0
+    },
+    "runs_overall": {
+      "duration": 0
     }
-  ]
+  }
 }

@@ -1,6 +1,7 @@
 {
   "posthoc_conformal_prediction": {
     "n_estimators": 5,
-    "n_iter_base": null
+    "n_iter_base": null,
+    "duration": 0
   }
 }

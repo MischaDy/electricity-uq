@@ -16,5 +16,6 @@
     "show_losses_plot": false,
     "save_losses_plot": true,
     "save_model": true
+    "duration": 0
   }
 }
