@@ -1,8 +1,8 @@
 {
     "base_model": {
-        "base_model_linreg": {
-            "rmse": 312.9999084472656,
-            "smape_scaled": 0.01682855561375618
+        "base_model_hgbr": {
+            "rmse": 144.8874805194339,
+            "smape_scaled": 0.007782410197490579
         }
     },
     "posthoc": {},
