@@ -43,9 +43,9 @@ LOGGING_LEVEL = logging.INFO
 STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
-    'base_model_linreg',
+    # 'base_model_linreg',
     # 'base_model_nn',
-    # 'base_model_hgbr',
+    'base_model_hgbr',
     # 'native_gpytorch',
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
