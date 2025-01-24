@@ -1,0 +1,2 @@
+srun --pty --ntasks=1 --cpus-per-task=1 --nodes=1 --time=0-00:30 --partition=2080-galvani --gres=gpu:1 --mem=5G bash
+actually elapsed (log): 0:00:02
