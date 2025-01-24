@@ -1,6 +1,8 @@
 import os
 import logging
 
+logging.basicConfig(level=logging.INFO)
+
 filename = os.path.split(__file__)[-1]
 logging.info(f'reading file {filename}...')
 
