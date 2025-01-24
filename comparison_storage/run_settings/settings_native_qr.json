@@ -11,6 +11,6 @@
     "lr": 1e-2,
     "reduction": "none",
     "weight_decay": 1e-3,
-    "duration": 0
+    "duration": "2:31:05"
   }
 }
