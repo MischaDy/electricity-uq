@@ -1,19 +1,17 @@
 {
-  "VAL_FRAC": 0.1,
-  "QUANTILES": "settings.QUANTILES",
-  "CV_N_ITER": 0,
-  "CV_N_SPLITS": 2,
-  "VERBOSE": 2,
-  "N_ITER_NO_CHANGE": 15,
-  "MAX_ITER": 1000,
-  "LR": 0.2,
-  "L2_REGULARIZATION": 1e-3,
-  "MAX_FEATURES": 0.5,
-  "MAX_LEAF_NODES": 10,
-  "MODEL_PARAM_DISTRIBUTIONS": {
+  "val_frac": 0.1,
+  "cv_n_iter": 0,
+  "cv_n_splits": 2,
+  "n_iter_no_change": 15,
+  "max_iter": 1000,
+  "lr": 0.2,
+  "l2_regularization": 0.001,
+  "max_features": 0.5,
+  "max_leaf_nodes": 10,
+  "model_param_distributions": {
     "max_iter": [1000],
     "learning_rate": [0.1],
-    "l2_regularization": [1e-3]
-    },
-    "duration": 0
+    "l2_regularization": [0.001]
+  },
+  "duration": 0
 }

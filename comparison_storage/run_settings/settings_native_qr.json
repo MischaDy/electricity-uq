@@ -1,6 +1,5 @@
 {
   "native_quantile_regression_nn": {
-    "skip_training": false,
     "n_iter": 300,
     "num_hidden_layers": 2,
     "hidden_layer_size": 50,
@@ -12,10 +11,6 @@
     "lr": 1e-2,
     "reduction": "none",
     "weight_decay": 1e-3,
-    "show_progress_bar": true,
-    "show_losses_plot": false,
-    "save_losses_plot": true,
-    "save_model": true
     "duration": 0
   }
 }
