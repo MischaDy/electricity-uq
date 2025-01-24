@@ -20,6 +20,6 @@
     "cv_n_splits": 3,
     "n_jobs": -1,
     "RandomizedSearchCV_scoring": "neg_root_mean_squared_error",
-    "duration": 0
+    "duration": "< 1:29:30"
   }
 }

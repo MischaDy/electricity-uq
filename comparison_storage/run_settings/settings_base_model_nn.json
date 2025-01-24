@@ -6,12 +6,12 @@
       "hidden_layer_size": 50,
       "activation": "torch.nn.LeakyReLU",
       "weight_decay": 1e-3,
-      "lr": 1e-5,
-      "lr_patience": 10,
+      "lr": 1e-2,
+      "lr_patience": 30,
       "lr_reduction_factor": 0.5,
       "warm_start_model_name": null,
       "early_stop_patience": 30,
-      "duration": 0
+      "duration": "< 1:29:30 bc of other models"
     },
     "run_2": {
       "n_iter": 300,
