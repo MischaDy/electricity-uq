@@ -1,0 +1,33 @@
+-------- PYTHON OUTPUT ----------
+
+base_model_linreg:
+	rmse: 312.9999084472656
+	smape_scaled: 0.016828548163175583
+
+optimal deterministic metrics:
+		rmse: 0.0
+		smape_scaled: 0.0
+
+base_model metrics:
+	base_model_linreg:
+		rmse: 312.9999084472656
+		smape_scaled: 0.016828548163175583
+
+posthoc metrics:
+	posthoc_conformal_prediction__base_model_linreg:
+		rmse: 312.9999084472656
+		smape_scaled: 0.01682855375111103
+		crps: 166.71202929394815
+		nll_gaussian: 7.168291141688336
+		mean_pinball: 31.135430698236334
+
+native metrics:
+
+optimal deterministic metrics:
+		rmse: 0.0
+		smape_scaled: 0.0
+	optimal uq metrics:
+		crps: None
+		nll_gaussian: None
+		mean_pinball: None
+---------------------------------
