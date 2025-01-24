@@ -11,7 +11,7 @@
     "lr_reduction_factor": 0.5,
     "warmup_period": 50,
     "frozen_var_value": 0.1,
-    "comment": "later experiments show better config to be: lr=1e-3, lr_pat=10, lr_red=0.8, forzen_var=1",
+    "comment": "later experiments show better config to be: lr=1e-3, lr_pat=10, lr_red=0.8, frozen_var=1",
     "duration": 0
   }
 }
