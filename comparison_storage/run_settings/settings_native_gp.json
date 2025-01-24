@@ -7,6 +7,6 @@
     "lr_reduction_factor": 0.8,
     "n_inducing_points": 500,
     "mean_type": "constant",
-    "duration": 0
+    "duration": "0:24:20"
   }
 }
