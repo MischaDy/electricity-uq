@@ -118,7 +118,7 @@ METHODS_KWARGS = {
     "posthoc_laplace_approximation": {
         'skip_training': False,
         "n_iter": 1000,
-        'save_model': True,
+        'save_model': False,
         'verbose': True,
         'show_progress_bar': True,
         'batch_size': 20,
@@ -164,7 +164,7 @@ METHODS_KWARGS = {
         'n_samples_train_loss_plot': 10000,
         "random_seed": 42,
         "verbose": 1,
-        "save_model": True,
+        "save_model": False,
         'warm_start_model_name': None,
         'early_stop_patience': 30,
         'filename_trained_model': 'base_model_nn_n210432_it100ex_nh2_hs50.pth'
