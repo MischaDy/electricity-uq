@@ -1,4 +1,5 @@
 import logging
+
 logging.basicConfig(level=logging.INFO, force=True)
 
 print('importing')
@@ -39,30 +40,29 @@ model = io_helper.load_torch_model_statedict(model_class=NN_Estimator, model_kwa
 
 print('training model')
 train_nn(
-        X_train,
-        y_train,
-        X_val,
-        y_val,
-        n_iter=2,
-        batch_size=20,
-        random_seed=42,
-        num_hidden_layers=2,
-        hidden_layer_size=50,
-        activation=torch.nn.LeakyReLU,
-        weight_decay=1e-3,
-        lr=None,
-        use_scheduler=True,
-        lr_patience=30,
-        lr_reduction_factor=0.5,
-        show_progress_bar=True,
-        show_losses_plot=True,
-        save_losses_plot=True,
-        io_helper=io_helper,
-        n_samples_train_loss_plot=10000,
-        verbose = 1,
-        warm_start_model=model,
-        early_stop_patience=None,
+    X_train,
+    y_train,
+    X_val,
+    y_val,
+    n_iter=2,
+    batch_size=20,
+    random_seed=42,
+    num_hidden_layers=2,
+    hidden_layer_size=50,
+    activation=torch.nn.LeakyReLU,
+    weight_decay=1e-3,
+    lr=None,
+    use_scheduler=True,
+    lr_patience=30,
+    lr_reduction_factor=0.5,
+    show_progress_bar=True,
+    show_losses_plot=True,
+    save_losses_plot=True,
+    io_helper=io_helper,
+    n_samples_train_loss_plot=10000,
+    verbose=1,
+    warm_start_model=model,
+    early_stop_patience=None,
 )
-
 
 # io_helper.save_torch_model(model, filename='base_model_nn_n210432_it200_nh2_hs50_model2.pth')

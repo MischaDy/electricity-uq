@@ -43,7 +43,20 @@ LOGGING_LEVEL = logging.INFO
 
 STORAGE_PATH = "comparison_storage"
 
-METHOD_WHITELIST = [
+METRICS_WHITELIST_DET = set([
+    # "mae",
+    # "rmse",
+    # "smape_scaled",
+])
+METRICS_WHITELIST_UQ = set([
+    # "crps",
+    # "nll_gaussian",
+    # "mean_pinball",
+    # "ssr",
+    "coverage",
+])
+
+METHOD_WHITELIST = set([
     # 'base_model_linreg',
     'base_model_nn',
     # 'base_model_hgbr',
@@ -52,7 +65,7 @@ METHOD_WHITELIST = [
     # 'native_quantile_regression_nn',
     # 'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
-]
+])
 
 METHODS_KWARGS = {
     "native_mvnn": {

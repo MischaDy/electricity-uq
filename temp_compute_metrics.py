@@ -5,15 +5,30 @@ import settings_update
 from helpers import misc_helpers
 from helpers.compute_metrics import compute_metrics_uq, compute_metrics_det
 from helpers.io_helper import IO_Helper
-from helpers.uq_arr_helpers import get_uq_method_to_arrs_gen
+from helpers.arr_helpers import get_method_to_arrs_gen
 
 logging.basicConfig(level=logging.INFO)
 
 RUN_SIZE = 'full'
-ARRAYS_FOLDER = 'arrays2'
+SHORTEN_TO_TEST = True
+ARRAYS_FOLDER = 'arrays'
 MODELS_FOLDER = 'models'
 TIMESTAMPED_FILES = False
-METHODS = {
+
+METRICS_WHITELIST_DET = set([
+    # "mae",
+    # "rmse",
+    # "smape_scaled",
+])
+METRICS_WHITELIST_UQ = set([
+    # "crps",
+    # "nll_gaussian",
+    "mean_pinball",
+    # "ssr",
+    # "coverage",
+])
+
+METHODS_WHITELIST = set([
     'base_model_hgbr',
     'base_model_linreg',
     'base_model_nn',
@@ -25,7 +40,7 @@ METHODS = {
     'posthoc_cp_linreg',
     'posthoc_cp_nn',
     'posthoc_la_nn',
-}
+])
 UQ_METHOD_TO_ARR_NAMES_DICT = {
     'base_model_hgbr': ['base_model_hgbr_n210432_it30_its3.npy'],
     'base_model_linreg': ['base_model_linreg_n210432.npy'],
@@ -79,10 +94,17 @@ def main():
     io_helper = IO_Helper(arrays_folder=ARRAYS_FOLDER, models_folder=MODELS_FOLDER)
     logging.info('loading train/test data')
     X_train, y_train, X_val, y_val, X_test, y_test, X, y, scaler_y = _load_data()
+    if SHORTEN_TO_TEST:
+        logging.info('computing metrics on test data only')
+        y_true = y_test
+    else:
+        y_true = y
+    n_test_samples = y_test.shape[0]
+
     logging.info('loading predictions')
-    uq_method_to_arrs_gen = get_uq_method_to_arrs_gen(
-        uq_methods_whitelist=METHODS,
-        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
+    uq_method_to_arrs_gen = get_method_to_arrs_gen(
+        methods_whitelist=METHODS_WHITELIST,
+        method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
         io_helper=io_helper,
     )
     for method, arrs in uq_method_to_arrs_gen:
@@ -90,21 +112,35 @@ def main():
         if len(arrs) > 1:
             y_pred, y_quantiles, y_std = arrs
         else:
-            y_pred, y_quantiles, y_std = arrs, None, None
+            y_pred, y_quantiles, y_std = arrs[0], None, None
+
+        if SHORTEN_TO_TEST:
+            y_pred, y_quantiles, y_std = _tail_shorten_arrs_none_ok(n_test_samples, y_pred, y_quantiles, y_std)
+
         metrics = {}
         logging.info(f'deterministic metrics...')
-        metrics_det = compute_metrics_det(y_pred, y)
-        metrics.update(metrics_det)
+        metrics_det = compute_metrics_det(y_pred, y_true, metrics_whitelist=METRICS_WHITELIST_DET)
+        if metrics_det:
+            metrics.update(metrics_det)
         if len(arrs) > 1:
             logging.info(f'UQ metrics...')
-            metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y, settings.QUANTILES)
-            metrics.update(metrics_uq)
+            metrics_uq = compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, settings.QUANTILES,
+                                            metrics_whitelist=METRICS_WHITELIST_UQ)
+            if metrics_uq:
+                metrics.update(metrics_uq)
         logging.info(f'metrics: {metrics}')
         logging.info('saving metrics...')
-        filename = f'uq_metrics_{method}'
+
+        infix = 'test_' if SHORTEN_TO_TEST else ''
+        filename = f'uq_metrics_{infix}{method}'
         if TIMESTAMPED_FILES:
             filename = misc_helpers.timestamped_filename(filename)
         io_helper.save_metrics(metrics, filename=filename)
+
+
+def _tail_shorten_arrs_none_ok(lim, *arrs):
+    for arr in arrs:
+        yield arr[-lim:] if arr is not None else None
 
 
 def _load_data():

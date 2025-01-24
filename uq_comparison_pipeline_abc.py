@@ -50,7 +50,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             data_path,
             methods_kwargs,
             filename_parts,
-            method_whitelist=None,
+            method_whitelist: set[str] = None,
             do_standardize_data=True,
     ):
         """
@@ -253,9 +253,13 @@ class UQ_Comparison_Pipeline_ABC(ABC):
         :param quantiles: list of quantiles with which test to measure performance. They are expected to be symmetric
         :return:
         """
-        metrics = self.compute_metrics_det(y_pred, y_true)
+        metrics = {}
+        metrics_det = self.compute_metrics_det(y_pred, y_true)
+        if metrics_det:
+            metrics.update(metrics_det)
         metrics_uq = self.compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
-        metrics.update(metrics_uq)
+        if metrics_uq:
+            metrics.update(metrics_uq)
         return metrics
 
     @abstractmethod
@@ -263,7 +267,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             self,
             y_pred,
             y_true,
-    ) -> dict[str, float]:
+    ) -> dict[str, float] | None:
         """
         Evaluate a UQ method by computing all desired deterministic metrics.
 
@@ -281,7 +285,7 @@ class UQ_Comparison_Pipeline_ABC(ABC):
             y_std: np.ndarray | None,
             y_true,
             quantiles,
-    ) -> dict[str, float]:
+    ) -> dict[str, float] | None:
         """
         Evaluate a UQ method by computing all desired uncertainty metrics.
 

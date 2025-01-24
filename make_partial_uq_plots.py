@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 import settings
 from helpers.io_helper import IO_Helper
 from helpers.misc_helpers import get_data
-from helpers import uq_arr_helpers
+from helpers import arr_helpers
 
 logging.basicConfig(level=logging.INFO)
 
@@ -106,10 +106,10 @@ def main():
     y_train, y_val, y_test, y = map(scaler_y.inverse_transform, [y_train, y_val, y_test, y])
 
     logging.info('loading predictions')
-    uq_method_to_arrs_gen = uq_arr_helpers.get_uq_method_to_arrs_gen(
+    uq_method_to_arrs_gen = arr_helpers.get_method_to_arrs_gen(
         io_helper=IO_HELPER,
-        uq_methods_whitelist=UQ_METHODS_WHITELIST,
-        uq_method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
+        methods_whitelist=UQ_METHODS_WHITELIST,
+        method_to_arr_names_dict=UQ_METHOD_TO_ARR_NAMES_DICT,
     )
     for uq_method, arrs in uq_method_to_arrs_gen:
         logging.info(f'plotting for method {uq_method}')
@@ -239,7 +239,8 @@ def plot_uq_worker(
     try:
         base_filename = METHOD_NAME_TO_BASE_FILENAME[uq_method]
     except KeyError:
-        logging.warning(f"method {uq_method} not found in base filenames dict. using the method name as a base filename.")
+        logging.warning(f"method {uq_method} not found in base filenames dict."
+                        f" using the method name as a base filename.")
         base_filename = uq_method
     dataset_label = 'training' if is_training_data else 'test'
 
