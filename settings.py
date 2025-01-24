@@ -44,8 +44,8 @@ STORAGE_PATH = "comparison_storage"
 
 METHOD_WHITELIST = [
     'base_model_linreg',
-    'base_model_nn',
-    'base_model_hgbr',
+    # 'base_model_nn',
+    # 'base_model_hgbr',
     # 'native_gpytorch',
     # 'native_mvnn',
     # 'native_quantile_regression_nn',
@@ -103,19 +103,19 @@ METHODS_KWARGS = {
         "skip_training": False,
         "n_estimators": 10,
         "verbose": 1,
-        "save_model": True,
+        "save_model": False,
     },
     "posthoc_laplace_approximation": {
         'skip_training': False,
         "n_iter": 300,
-        'save_model': True,
+        'save_model': False,
         'verbose': True,
         'show_progress_bar': False,
     },
     "base_model_linreg": {
         "skip_training": True,
         "n_jobs": -1,
-        "save_model": True,
+        "save_model": False,
     },
     "base_model_hgbr": {
         "skip_training": True,
@@ -132,7 +132,7 @@ METHODS_KWARGS = {
         "random_seed": 42,
         "verbose": 4,
         'n_jobs': -1,
-        "save_model": True,
+        "save_model": False,
     },
     "base_model_nn": {
         "skip_training": True,
@@ -149,7 +149,7 @@ METHODS_KWARGS = {
         "save_losses_plot": True,
         "random_seed": 42,
         "verbose": 1,
-        "save_model": True,
+        "save_model": False,
     },
 }
 
