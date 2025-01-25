@@ -19,9 +19,9 @@ if TYPE_CHECKING:
 
 
 settings.METHOD_WHITELIST = [
-    'base_model_linreg',
+    # 'base_model_linreg',
     # 'base_model_nn',
-    # 'base_model_hgbr',
+    'base_model_hgbr',
     'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
 ]
@@ -154,7 +154,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         from helpers.model_wrapper import ModelWrapper
         method_name = 'base_model_hgbr'
         if skip_training:
-            model = self.try_skipping_training(method_name)
+            model = self.try_skipping_training(filename='base_model_hgbr_n210432_it50_its5.model')
             if model is None:
                 skip_training = False
         if not skip_training:
@@ -674,10 +674,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
         }
         return metrics
 
-    def try_skipping_training(self, method_name):
+    def try_skipping_training(self, filename):
         try:
-            logging.info(f'skipping model training in method {method_name}')
-            model = self.io_helper.load_model(method_name=method_name)
+            logging.info(f'skipping model training in method {filename}')
+            model = self.io_helper.load_model(filename=filename)
             return model
         except FileNotFoundError as error:
             logging.warning(f"trained model '{error.filename}' not found. training from scratch.")
