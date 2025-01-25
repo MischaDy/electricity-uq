@@ -1,0 +1,68 @@
+---------- JOB INFOS ------------
+JobId=1085770 JobName=deploy_posthoc_cp.sh
+   UserId=lqb589(4852) GroupId=ludwig(4026) MCS_label=N/A
+   Priority=70279 Nice=0 Account=ludwig QOS=normal
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 Reboot=0 ExitCode=0:0
+   RunTime=00:00:01 TimeLimit=02:00:00 TimeMin=N/A
+   SubmitTime=2025-01-25T01:15:58 EligibleTime=2025-01-25T01:15:58
+   AccrueTime=2025-01-25T01:15:58
+   StartTime=2025-01-25T01:15:58 EndTime=2025-01-25T03:15:58 Deadline=N/A
+   PreemptEligibleTime=2025-01-25T01:16:58 PreemptTime=None
+   SuspendTime=None SecsPreSuspend=0 LastSchedEval=2025-01-25T01:15:58 Scheduler=Main
+   Partition=2080-galvani AllocNode:Sid=galvani-login:268996
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=galvani-cn112
+   BatchHost=galvani-cn112
+   NumNodes=1 NumCPUs=2 NumTasks=1 CPUs/Task=2 ReqB:S:C:T=0:0:*:*
+   ReqTRES=cpu=2,mem=7G,node=1,gres/gpu=2
+   AllocTRES=cpu=2,mem=7G,node=1,gres/gpu=2,gres/gpu:rtx2080ti=2
+   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=*
+   MinCPUsNode=2 MinMemoryNode=7G MinTmpDiskNode=0
+   Features=(null) DelayBoot=00:00:00
+   OverSubscribe=OK Contiguous=0 Licenses=(null) Network=(null)
+   Command=/mnt/qb/work/ludwig/lqb589/my_code/deploy_posthoc_cp.sh
+   WorkDir=/mnt/qb/work/ludwig/lqb589/my_code
+   StdErr=/mnt/qb/work/ludwig/lqb589/my_code/logs/job_1085770.err
+   StdIn=/dev/null
+   StdOut=/mnt/qb/work/ludwig/lqb589/my_code/logs/job_1085770.out
+   Power=
+   TresPerNode=gres:gpu:2
+   MailUser=mikhail.dubovoy@student.uni-tuebingen.de MailType=END,FAIL
+   
+
+---------------------------------
+
+-------- PYTHON OUTPUT ----------
+
+base_model_hgbr:
+	rmse: 144.8874805194339
+	smape_scaled: 0.007782410197490579
+
+optimal deterministic metrics:
+		rmse: 0.0
+		smape_scaled: 0.0
+
+base_model metrics:
+	base_model_hgbr:
+		rmse: 144.8874805194339
+		smape_scaled: 0.007782410197490579
+
+posthoc metrics:
+	posthoc_conformal_prediction__base_model_hgbr:
+		rmse: 144.8874805194339
+		smape_scaled: 0.007782410197490579
+		crps: 77.4408154237755
+		nll_gaussian: 6.3949916195490495
+		mean_pinball: 16.03511006735679
+
+native metrics:
+
+optimal deterministic metrics:
+		rmse: 0.0
+		smape_scaled: 0.0
+	optimal uq metrics:
+		crps: None
+		nll_gaussian: None
+		mean_pinball: None
+---------------------------------
