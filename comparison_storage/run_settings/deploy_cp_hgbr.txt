@@ -1,0 +1,39 @@
+Dear Mikhail Dubovoy,
+
+Your job 1085770 has ended on galvani.
+
+Details about the job can be found in the table below:
+ID: 	1085770
+Name: 	deploy_posthoc_cp.sh
+Partition: 	2080-galvani
+Nodes: 	1
+Requested Memory: 	7.00GiB
+Wallclock: 	2:00:00
+Std out: 	/mnt/qb/work/ludwig/lqb589/my_code/logs/job_1085770.out
+Std err: 	/mnt/qb/work/ludwig/lqb589/my_code/logs/job_1085770.err
+Work dir: 	/mnt/qb/work/ludwig/lqb589/my_code
+Admin Comment:
+Comment:
+Start: 	25/01/2025 01:15:58
+End: 	25/01/2025 01:39:37
+Elapsed: 	0:23:39
+CPU Time: 	0:17:07.000192
+CPU Efficiency: 	36.19%
+Maximum memory usage per node: 	1.77GiB
+Wallclock Accuracy: 	19.71%
+Node List: 	galvani-cn112
+Exit Code: 	0:0
+Exit state: 	COMPLETED
+
+Trackable Resources:
+cpu: 	2
+gres/gpu:rtx2080ti: 	2
+gres/gpu: 	2
+mem: 	7G
+node: 	1
+
+Regards,
+
+The ML Cloud Admin Team
+
+Note: This is an automated e-mail.
