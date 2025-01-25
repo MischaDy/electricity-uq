@@ -123,7 +123,7 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
 
         method_name = 'base_model_linreg'
         if skip_training:
-            model = self.try_skipping_training(method_name)
+            model = self.try_skipping_training(filename='base_model_linreg_n210432.model')
             if model is None:
                 skip_training = False
         if not skip_training:
