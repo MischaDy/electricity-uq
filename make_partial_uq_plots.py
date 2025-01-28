@@ -18,16 +18,16 @@ PLOT_EXT = 'png'
 N_SAMPLES_TO_PLOT = 700
 
 SMALL_IO_HELPER = False
-BIG_ARRAYS_FOLDER = 'la_run2'
+BIG_ARRAYS_FOLDER = 'arrays'
 
 UQ_METHODS_WHITELIST = {
-    # 'qhgbr',
-    # 'qr',
-    # 'gp',
-    # 'mvnn',
-    # 'cp_hgbr',
-    # 'cp_linreg',
-    # 'cp_nn',
+    'qhgbr',
+    'qr',
+    'gp',
+    'mvnn',
+    'cp_hgbr',
+    'cp_linreg',
+    'cp_nn',
     'la_nn',
 }
 UQ_METHOD_TO_ARR_NAMES_DICT = {
@@ -42,19 +42,19 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
         'native_quantile_regression_nn_y_std_n210432_it300_nh2_hs50.npy',
     ],
     'gp': [
-        'native_gpytorch_y_pred_n210432_it200.npy',
-        'native_gpytorch_y_quantiles_n210432_it200.npy',
-        'native_gpytorch_y_std_n210432_it200.npy',
+        'native_gpytorch_y_pred_n210432_it200_new.npy',
+        'native_gpytorch_y_quantiles_n210432_it200_new.npy',
+        'native_gpytorch_y_std_n210432_it200_new.npy',
     ],
     'mvnn': [
-        'native_mvnn_y_pred_n35136_it150_nh2_hs50.npy',
-        'native_mvnn_y_quantiles_n35136_it150_nh2_hs50.npy',
-        'native_mvnn_y_std_n35136_it150_nh2_hs50.npy',
+        'native_mvnn_y_pred_n210432_it100_nh2_hs50.npy',
+        'native_mvnn_y_quantiles_n210432_it100_nh2_hs50.npy',
+        'native_mvnn_y_std_n210432_it100_nh2_hs50.npy',
     ],
     'cp_hgbr': [
-        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n640_it5.npy',
-        'posthoc_conformal_prediction_base_model_hgbr_y_std_n640_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_pred_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_quantiles_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_hgbr_y_std_n210432_it5.npy',
     ],
     'cp_linreg': [
         'posthoc_conformal_prediction_base_model_linreg_y_pred_n210432_it5.npy',
@@ -62,14 +62,14 @@ UQ_METHOD_TO_ARR_NAMES_DICT = {
         'posthoc_conformal_prediction_base_model_linreg_y_std_n210432_it5.npy',
     ],
     'cp_nn': [
-        'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5.npy',
-        'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5.npy',
+        'posthoc_conformal_prediction_base_model_nn_y_pred_n210432_it5_cp2.npy',
+        'posthoc_conformal_prediction_base_model_nn_y_quantiles_n210432_it5_cp2.npy',
+        'posthoc_conformal_prediction_base_model_nn_y_std_n210432_it5_cp2.npy',
     ],
     'la_nn': [
-        'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it1000.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it1000.npy',
-        'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it1000.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_pred_n210432_it1000_la2.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_quantiles_n210432_it1000_la2.npy',
+        'posthoc_laplace_approximation_base_model_nn_y_std_n210432_it1000_la2.npy',
     ],
 }
 
