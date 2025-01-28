@@ -15,6 +15,8 @@ SHOW_PLOT = False
 SAVE_PLOT = True
 PLOT_EXT = 'png'
 
+N_SAMPLES_TO_PLOT = 700
+
 SMALL_IO_HELPER = False
 BIG_ARRAYS_FOLDER = 'la_run2'
 
@@ -121,7 +123,7 @@ def main():
             y_pred, y_quantiles = map(scaler_y.inverse_transform, [y_pred.reshape(-1, 1), y_quantiles])
             y_pred = y_pred.squeeze()
         plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval=90, show_plot=SHOW_PLOT,
-                save_plot=SAVE_PLOT, ext=PLOT_EXT)
+                save_plot=SAVE_PLOT, ext=PLOT_EXT, n_samples_to_plot=N_SAMPLES_TO_PLOT)
 
 
 def plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method, interval: int | float, is_training_data,
