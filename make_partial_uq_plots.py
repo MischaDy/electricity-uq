@@ -13,7 +13,10 @@ logging.basicConfig(level=logging.INFO)
 
 SHOW_PLOT = False
 SAVE_PLOT = True
-PLOT_EXT = 'png'
+PLOT_EXT = 'pdf'
+PLOT_TRAIN = False
+PLOT_TEST = True
+
 
 N_SAMPLES_TO_PLOT = 700
 
@@ -156,6 +159,7 @@ def plot_uq_single_dataset(y_true, y_pred, y_quantiles, uq_method, interval: int
 
 def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval: int | float, n_samples_to_plot=1600,
             show_plot=True, save_plot=True, ext=None):
+    assert PLOT_TRAIN or PLOT_TEST
     n_quantiles = y_quantiles.shape[1]
     if n_quantiles == 99:
         ind_5p, ind_95p = 5-1, 95-1  # starts with 1
@@ -165,43 +169,45 @@ def plot_uq(y_train, y_val, y_test, y_pred, y_quantiles, uq_method, interval: in
     # ci_low, ci_high = y_pred - n_stds * y_std, y_pred + n_stds * y_std
 
     # plot train
-    y_train_plot = y_train[:n_samples_to_plot]
-    y_pred_train = y_pred[:n_samples_to_plot]
-    ci_low_train = ci_low[:n_samples_to_plot]
-    ci_high_train = ci_high[:n_samples_to_plot]
-    plot_uq_worker(
-        y_train_plot,
-        y_pred_train,
-        ci_low_train,
-        ci_high_train,
-        uq_method=uq_method,
-        is_training_data=True,
-        interval=interval,
-        # n_stds=n_stds,
-        show_plot=show_plot,
-        save_plot=save_plot,
-        ext=ext,
-    )
+    if PLOT_TRAIN:
+        y_train_plot = y_train[:n_samples_to_plot]
+        y_pred_train = y_pred[:n_samples_to_plot]
+        ci_low_train = ci_low[:n_samples_to_plot]
+        ci_high_train = ci_high[:n_samples_to_plot]
+        plot_uq_worker(
+            y_train_plot,
+            y_pred_train,
+            ci_low_train,
+            ci_high_train,
+            uq_method=uq_method,
+            is_training_data=True,
+            interval=interval,
+            # n_stds=n_stds,
+            show_plot=show_plot,
+            save_plot=save_plot,
+            ext=ext,
+        )
 
     # plot test
-    start_test = y_train.shape[0] + y_val.shape[0]
-    y_test_plot = y_test[:n_samples_to_plot]
-    y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
-    ci_low_test = ci_low[start_test: start_test + n_samples_to_plot]
-    ci_high_test = ci_high[start_test: start_test + n_samples_to_plot]
-    plot_uq_worker(
-        y_test_plot,
-        y_pred_test,
-        ci_low_test,
-        ci_high_test,
-        uq_method=uq_method,
-        is_training_data=False,
-        interval=interval,
-        # n_stds=n_stds,
-        show_plot=show_plot,
-        save_plot=save_plot,
-        ext=ext,
-    )
+    if PLOT_TEST:
+        start_test = y_train.shape[0] + y_val.shape[0]
+        y_test_plot = y_test[:n_samples_to_plot]
+        y_pred_test = y_pred[start_test: start_test + n_samples_to_plot]
+        ci_low_test = ci_low[start_test: start_test + n_samples_to_plot]
+        ci_high_test = ci_high[start_test: start_test + n_samples_to_plot]
+        plot_uq_worker(
+            y_test_plot,
+            y_pred_test,
+            ci_low_test,
+            ci_high_test,
+            uq_method=uq_method,
+            is_training_data=False,
+            interval=interval,
+            # n_stds=n_stds,
+            show_plot=show_plot,
+            save_plot=save_plot,
+            ext=ext,
+        )
 
 
 def plot_uq_worker(
