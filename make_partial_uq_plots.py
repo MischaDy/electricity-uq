@@ -86,6 +86,16 @@ METHOD_NAME_TO_BASE_FILENAME = {
     'cp_nn': 'posthoc_conformal_prediction_base_model_nn',
     'la_nn': 'posthoc_laplace_approximation_base_model_nn',
 }
+METHOD_TO_TITLE = {
+    'qhgbr': 'QHGBR',
+    'qr': 'QR',
+    'gp': 'GP',
+    'mvnn': 'MVNN',
+    'cp_hgbr': 'CP HGBR',
+    'cp_linreg': 'CP Linreg',
+    'cp_nn': 'CP NN',
+    'la_nn': 'LA NN',
+}
 
 
 if SMALL_IO_HELPER:
@@ -243,7 +253,6 @@ def plot_uq_worker(
     if not plotting_quantiles:
         logging.error('only plotting quantiles supported right now, not stds. trying to ignore and plot quantiles...')
 
-    base_title = uq_method
     try:
         base_filename = METHOD_NAME_TO_BASE_FILENAME[uq_method]
     except KeyError:
@@ -256,7 +265,7 @@ def plot_uq_worker(
     uq_label = f'{interval}% CI' if plotting_quantiles else f'{n_stds} std'
 
     x_plot = np.arange(y_true_plot.shape[0])
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(14, 8))
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(7, 4), layout='constrained')
     ax.plot(x_plot, y_true_plot, label=f'{dataset_label} data', color="black", linestyle='dashed')
     ax.plot(x_plot, y_pred_plot, label="point prediction", color="green")
     ax.fill_between(
@@ -268,9 +277,10 @@ def plot_uq_worker(
         label=uq_label,
     )
     ax.legend()
-    ax.set_xlabel("data")
-    ax.set_ylabel("target")
-    ax.set_title(f'{base_title} ({dataset_label})')
+    ax.set_xlabel("Data Point in Test Data")
+    ax.set_ylabel("Grid Load [MWh]")
+    title = METHOD_TO_TITLE[uq_method]
+    ax.set_title(title)
     if save_plot:
         filename = f'{base_filename}_{dataset_label}'
         if ext is not None:
