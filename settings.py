@@ -46,7 +46,7 @@ STORAGE_PATH = "comparison_storage"
 METRICS_WHITELIST_DET = set([
     # "mae",
     # "rmse",
-    # "smape_scaled",
+    # "smape",
 ])
 METRICS_WHITELIST_UQ = set([
     # "crps",

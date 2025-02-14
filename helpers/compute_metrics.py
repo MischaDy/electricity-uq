@@ -18,13 +18,13 @@ def compute_metrics_det(y_pred, y_true, metrics_whitelist: set[str] = None) -> d
         logging.info('no deterministic metrics specified. skipping...')
         return
 
-    from helpers._metrics import rmse, smape_scaled, mae
+    from helpers._metrics import rmse, smape, mae
 
     y_pred, y_true = _make_arrs_1d_allow_none(y_pred, y_true)
     metrics_funcs = {
         "mae": partial(mae, y_true, y_pred),
         "rmse": partial(rmse, y_true, y_pred),
-        "smape_scaled": partial(smape_scaled, y_true, y_pred),
+        "smape": partial(smape, y_true, y_pred),
     }
     metrics = _metrics_funcs_dict_to_metrics_dict(metrics_funcs, metrics_whitelist)
     return _metrics_to_float_allow_none(metrics)

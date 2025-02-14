@@ -8,9 +8,9 @@ import numpy as np
 
 ### DETERMINISTIC ###
 
-def smape_scaled(y_true: np.ndarray, y_pred: np.ndarray):
+def smape(y_true: np.ndarray, y_pred: np.ndarray):
     """
-    output 100 * smape, which is in [0, 2]
+    output smape, which is in [0, 2]
     :param y_true:
     :param y_pred:
     :return:
