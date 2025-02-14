@@ -1,0 +1,17 @@
+{
+  "native_mvnn": {
+    "n_iter": 150,
+    "num_hidden_layers": 2,
+    "hidden_layer_size": 50,
+    "activation": "torch.nn.LeakyReLU",
+    "weight_decay": 1e-3,
+    "lr": 1e-4,
+    "use_scheduler": true,
+    "lr_patience": 30,
+    "lr_reduction_factor": 0.5,
+    "warmup_period": 50,
+    "frozen_var_value": 0.1,
+    "comment": "later experiments show better config to be: lr=1e-3, lr_pat=10, lr_red=0.8, frozen_var=1",
+    "duration": "1:22:38"
+  }
+}

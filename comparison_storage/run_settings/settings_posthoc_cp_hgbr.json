@@ -1,0 +1,8 @@
+{
+  "posthoc_conformal_prediction": {
+    "comment": "duration of training only, as printed in log. might be underestimation",
+    "n_estimators": 5,
+    "n_iter_base": null,
+    "duration": "0:01:07"
+  }
+}

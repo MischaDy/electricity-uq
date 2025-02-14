@@ -28,6 +28,7 @@ RUN_SIZE_DICT = {
 
 
 def update_training_flags(do_train_all=None, skip_training_all=None):
+    logging.info('updating training flags')
     if do_train_all is None:
         do_train_all = settings.DO_TRAIN_ALL
     if skip_training_all is None:
@@ -42,6 +43,7 @@ def update_training_flags(do_train_all=None, skip_training_all=None):
 
 
 def update_run_size_setup(run_size=None):
+    logging.info('updating run size setup')
     if run_size is None:
         run_size = settings.RUN_SIZE
     run_size_settings = RUN_SIZE_DICT.get(run_size)
@@ -63,6 +65,7 @@ def update_progress_bar_settings(show_progress_bars=None):
 
 
 def update_losses_plots_settings(show_losses_plots=None, save_losses_plots=None):
+    logging.info('updating losses plots settings')
     if show_losses_plots is None:
         show_losses_plots = settings.SHOW_LOSSES_PLOTS
     if save_losses_plots is None:

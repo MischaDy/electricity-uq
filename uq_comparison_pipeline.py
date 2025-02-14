@@ -40,8 +40,10 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             storage_path="comparison_storage",
             methods_kwargs: dict[str, dict[str, Any]] = None,
             n_points_per_group=None,
-            method_whitelist=None,
+            method_whitelist: set[str] = None,
             do_standardize_data=True,
+            metrics_whitelist_det: set[str] = None,
+            metrics_whitelist_uq: set[str] = None,
     ):
         """
         :param methods_kwargs: dict of (method_name, method_kwargs) pairs
@@ -57,6 +59,8 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             method_whitelist=method_whitelist,
             do_standardize_data=do_standardize_data,
         )
+        self.metrics_whitelist_uq = metrics_whitelist_uq
+        self.metrics_whitelist_det = metrics_whitelist_det
         self.n_points_per_group = n_points_per_group
         self.train_years = settings.TRAIN_YEARS
         self.val_years = settings.VAL_YEARS
@@ -79,13 +83,12 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
             do_standardize_data=self.do_standardize_data,
         )
 
-    @classmethod
-    def compute_metrics_det(cls, y_pred, y_true) -> dict[str, float]:
-        return compute_metrics_det(y_pred, y_true)
+    def compute_metrics_det(self, y_pred, y_true) -> dict[str, float]:
+        return compute_metrics_det(y_pred, y_true, metrics_whitelist=self.metrics_whitelist_det)
 
-    @classmethod
-    def compute_metrics_uq(cls, y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
-        return compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles)
+    def compute_metrics_uq(self, y_pred, y_quantiles, y_std, y_true, quantiles) -> dict[str, float]:
+        return compute_metrics_uq(y_pred, y_quantiles, y_std, y_true, quantiles,
+                                  metrics_whitelist=self.metrics_whitelist_uq)
 
     def base_model_linreg(
             self,
@@ -189,12 +192,9 @@ class UQ_Comparison_Pipeline(UQ_Comparison_Pipeline_ABC):
     ) -> 'NN_Estimator':
         """
 
-<<<<<<< HEAD
-=======
         :param filename_trained_model: if skipping training, the filename to load
         :param early_stop_patience:
         :param warm_start_model_name: model to load for warm-started training
->>>>>>> bugchecks
         :param n_samples_train_loss_plot:
         :param use_scheduler:
         :param weight_decay:
@@ -777,6 +777,8 @@ def main():
         methods_kwargs=settings.METHODS_KWARGS,
         method_whitelist=settings.METHOD_WHITELIST,
         n_points_per_group=settings.N_POINTS_PER_GROUP,
+        metrics_whitelist_det=settings.METRICS_WHITELIST_DET,
+        metrics_whitelist_uq=settings.METRICS_WHITELIST_UQ,
     )
     uq_comparer.compare_methods(
         settings.QUANTILES,

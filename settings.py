@@ -9,7 +9,7 @@ from scipy import stats
 RUN_SIZE: Literal['full', 'big', 'small'] = 'full'
 
 DO_TRAIN_ALL = False
-SKIP_TRAINING_ALL = True
+SKIP_TRAINING_ALL = False
 
 
 ### NORMAL SETTINGS ###
@@ -43,7 +43,20 @@ LOGGING_LEVEL = logging.INFO
 
 STORAGE_PATH = "comparison_storage"
 
-METHOD_WHITELIST = [
+METRICS_WHITELIST_DET = set([
+    # "mae",
+    # "rmse",
+    # "smape",
+])
+METRICS_WHITELIST_UQ = set([
+    # "crps",
+    # "nll_gaussian",
+    # "mean_pinball",
+    # "ssr",
+    "coverage",
+])
+
+METHOD_WHITELIST = set([
     # 'base_model_linreg',
     'base_model_nn',
     # 'base_model_hgbr',
@@ -52,7 +65,7 @@ METHOD_WHITELIST = [
     # 'native_quantile_regression_nn',
     # 'posthoc_conformal_prediction',
     # 'posthoc_laplace_approximation',
-]
+])
 
 METHODS_KWARGS = {
     "native_mvnn": {
@@ -117,13 +130,13 @@ METHODS_KWARGS = {
     },
     "posthoc_laplace_approximation": {
         'skip_training': False,
-        "n_iter": 100,
+        "n_iter": 1000,
         'save_model': True,
         'verbose': True,
         'show_progress_bar': True,
         'batch_size': 20,
-        'subset_of_weights': 'all',
-        'hessian_structure': 'full',
+        'subset_of_weights': 'last_layer',
+        'hessian_structure': 'kron',
     },
     "base_model_linreg": {
         "skip_training": True,
@@ -149,7 +162,7 @@ METHODS_KWARGS = {
     },
     "base_model_nn": {
         "skip_training": True,
-        "n_iter": 300,
+        "n_iter": 400,
         "num_hidden_layers": 2,
         "hidden_layer_size": 50,
         'activation': None,  # defaults to leaky ReLU
@@ -167,7 +180,7 @@ METHODS_KWARGS = {
         "save_model": True,
         'warm_start_model_name': None,
         'early_stop_patience': 30,
-        'filename_trained_model': 'base_model_nn_n210432_it100ex_nh2_hs50.pth'
+        'filename_trained_model': 'base_model_nn_n210432_it400_nh2_hs50.pth'
     },
 }
 

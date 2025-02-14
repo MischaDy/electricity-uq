@@ -1,0 +1,10 @@
+{
+  "posthoc_laplace_approximation": {
+    "comment": "NN after 200+300+100 iterations. duration as printed in log, excludes setup. ran via srun, not sbatch",
+    "n_iter": 1000,
+    "batch_size": 20,
+    "subset_of_weights": "last_layer",
+    "hessian_structure": "kron",
+    "duration": "0:00:02"
+  }
+}

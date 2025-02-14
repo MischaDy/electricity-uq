@@ -224,8 +224,9 @@ class IO_Helper:
         if filename is None:
             filename = self.make_filename(method_name, infix=infix, file_type='plot')
         else:
-            ext = os.path.splitext(filename)[-1]
-            if ext.lstrip('.') not in {'png', 'jpeg', 'jpg', 'svg'}:
+            ext = os.path.splitext(filename)[-1].lstrip('.')
+            if ext not in {'png', 'jpeg', 'jpg', 'svg', 'pdf'}:
+                logging.warning(f'no valid extension found (received {ext}')
                 filename += '.png'
         path = self._get_plot_savepath(filename, is_loss_plot=is_loss_plot)
         logging.info(f'saving plot to {path}')

@@ -1,0 +1,39 @@
+Dear Mikhail Dubovoy,
+
+Your job 1085279 has ended on galvani.
+
+Details about the job can be found in the table below:
+ID: 	1085279
+Name: 	deploy_base.sh
+Partition: 	2080-galvani
+Nodes: 	1
+Requested Memory: 	5.00GiB
+Wallclock: 	1:00:00
+Std out: 	/mnt/qb/work/ludwig/lqb589/my_code/logs/job_1085279.out
+Std err: 	/mnt/qb/work/ludwig/lqb589/my_code/logs/job_1085279.err
+Work dir: 	/mnt/qb/work/ludwig/lqb589/my_code
+Admin Comment:
+Comment:
+Start: 	24/01/2025 22:48:01
+End: 	24/01/2025 23:02:58
+Elapsed: 	0:14:57
+CPU Time: 	0:19:11.000622
+CPU Efficiency: 	64.16%
+Maximum memory usage per node: 	780.76MiB
+Wallclock Accuracy: 	24.92%
+Node List: 	galvani-cn118
+Exit Code: 	0:0
+Exit state: 	COMPLETED
+
+Trackable Resources:
+cpu: 	2
+gres/gpu:rtx2080ti: 	2
+gres/gpu: 	2
+mem: 	5G
+node: 	1
+
+Regards,
+
+The ML Cloud Admin Team
+
+Note: This is an automated e-mail.
